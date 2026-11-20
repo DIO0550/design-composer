@@ -4,7 +4,7 @@
   "headBranch": "claude/magical-cannon-t17xaj",
   "baseBranch": "main",
   "mergeBase": "459e6840663548f573d9121fec6fab515e6d0019",
-  "head": "6c124e1df1cc3f1e7fee8216a5f67281372f6ab3",
+  "head": "71f78c92a4ab363606f25aa9be37939bd923c73e",
   "groups": [
     {
       "label": "domains / unit",
@@ -159,7 +159,7 @@
           "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
           "status": "A",
           "oldPath": null,
-          "additions": 194,
+          "additions": 197,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -186,8 +186,8 @@
           "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
           "status": "M",
           "oldPath": null,
-          "additions": 90,
-          "deletions": 88,
+          "additions": 75,
+          "deletions": 105,
           "changed": true,
           "target": null
         },
@@ -1131,6 +1131,56 @@
           "deletions": 0,
           "patch": "@@ -368,6 +368,30 @@ test(\"色の hex を 2 回打って確定すると Ctrl+Z 1 回で 1 回目の\n   expect(row(\"primary #ff0000\")).toBeDefined();\n });\n \n+test(\"色の hex を 3 桁で打って確定すると、一覧の値と hex の欄が 6 桁に広がる\", async () => {\n+  await renderTokensView();\n+  await selectRow(\"primary\");\n+\n+  await userEvent.clear(field(\"hex\"));\n+  await userEvent.type(field(\"hex\"), \"abc{Enter}\");\n+\n+  expect(row(\"primary #aabbcc\")).toBeDefined();\n+  expect(field(\"hex\")).toHaveProperty(\"value\", \"aabbcc\");\n+});\n+\n+test(\"色の hex を 3 桁で打って確定したあと Ctrl+Z 1 回で元の色へ戻る\", async () => {\n+  await renderTokensView();\n+  await selectRow(\"primary\");\n+\n+  await userEvent.clear(field(\"hex\"));\n+  await userEvent.type(field(\"hex\"), \"abc{Enter}\");\n+  expect(row(\"primary #aabbcc\")).toBeDefined();\n+\n+  await userEvent.keyboard(\"{Control>}z{/Control}\");\n+\n+  expect(row(\"primary #3b82f6\")).toBeDefined();\n+});\n+\n test(\"ピッカーで色を変えると、hex の欄が `#` 無しで追随する\", async () => {\n   await renderTokensView();\n   await selectRow(\"primary\");",
           "patchLines": 31,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "71f78c92a4ab363606f25aa9be37939bd923c73e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-20T15:21:08Z",
+      "subject": "♻️ [Refactoring]: #1376 欄の書き戻しの手続きを欄の中で組み、changeRawOf を export しない",
+      "body": "- ValueField の props を onChangeRaw から target と onSetTokenValue に替え、\n  TokenControl.valueFrom で読んで送る手続きを中で組むようにした\n- ピッカー(ColorPickerField)も target と onSetTokenValue を受け取り、中で組む\n- 不透明度は HexColorInput の中の非公開の commitAlpha(valueFromAlpha)で送る\n- ColorField の読めない色のテキスト欄は ValueField に通した\n- changeRawOf / changeRawOfTarget / ChangeRaw を消した\n\n背景:\nPR #1418 のレビューで、value-field の changeRawOfTarget という純粋関数が\nなぜ export されているのかを問われた。export していたのは、値の欄・stop の\n比率・色の箱の 4 か所が手続きを組むのにこれを呼んでいたため。ただ呼び出し\n側が渡していたのは毎回「書き戻し先と onSetTokenValue」の組だけだった。\n\n採用理由:\n欄が書き戻し先を受け取って自分で手続きを組めば、呼び出し側に手続きを組む\n関数を見せる必要が無くなる。「読めたら送る」は Option.map 1 回で、欄ごとに\n違うのは読み手と続き方の組だけ。元の形で同じ組(valueFrom × Separate)が\n2 か所にあったのは ValueField と ColorField のテキスト欄だけなので、後者を\nValueField に通して 1 か所にした。\n\n代替案:\n- 共有の小さな関数を別のモジュールに置いて export する: 指摘された\n  「純粋関数の export」をもう一度作ることになる\n- value-field の非公開関数を color-field から呼ぶ: モジュールの公開 API の\n  決まり(index.ts 経由の import のみ)に反する\n\n影響とトレードオフ:\nDOM・読み上げ名・挙動は変えていない(テストの期待値は変えずに 6061 件が\n通る)。ColorField のテキスト欄は ValueField の text 枝を通るが、出る\nDraftField(key・type・value・見た目)は前と同じ。関数名の change は\nレビューで「一旦よし」とされたが、公開の手続きが無くなったので名前ごと\n消えた。\n\n参考:\n- PR #1418 のレビューコメント(value-field/index.tsx:251)\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2N49tBVVuTfGRW8zhJ",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/color-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 23,
+          "patch": "@@ -8,17 +8,17 @@ import {\n import {\n   type HexColorControl,\n   type TokenColorControl,\n+  type TokenColorTarget,\n   TokenControl,\n } from \"@/features/editor/features/tokens/domains/token-control\";\n import { useFirstThenRest } from \"@/hooks/use-first-then-rest\";\n import { Option } from \"@/utils/Option\";\n import {\n-  type ChangeRaw,\n-  changeRawOf,\n-  changeRawOfTarget,\n   DraftField,\n   DraftFieldLooks,\n+  FieldDensities,\n   type SetTokenValue,\n+  ValueField,\n } from \"../value-field\";\n \n /**\n@@ -31,11 +31,13 @@ import {\n function ColorPickerField({\n   id,\n   value,\n-  onChangeRaw,\n+  target,\n+  onSetTokenValue,\n }: Readonly<{\n   id: string;\n   value: Rgb;\n-  onChangeRaw: ChangeRaw;\n+  target: TokenColorTarget;\n+  onSetTokenValue: SetTokenValue;\n }>): ReactElement {\n   /*\n    * ピッカーは常に #rrggbb を返し `TokenControl.valueFrom` の `none` に届かないので、1 件目が\n@@ -57,7 +59,11 @@ function ColorPickerField({\n       onClick={continuitySequence.restart}\n       onBlur={continuitySequence.restart}\n       onChange={(event) => {\n-        onChangeRaw(event.target.value, continuitySequence.next());\n+        Option.map(\n+          TokenControl.valueFrom(target, event.target.value),\n+          (tokenValue) =>\n+            onSetTokenValue(tokenValue, continuitySequence.next()),\n+        );\n       }}\n       className=\"size-3.5 shrink-0 cursor-pointer rounded-sm border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-sm [&::-webkit-color-swatch]:border-none\"\n     />\n@@ -83,7 +89,6 @@ function HexColorInput({\n   /*\n    * 確定の回数を key に混ぜるのは、`ABC` のように通っても値が変わらない確定では key が動かず下書きが残るため。\n    * 回数はこの欄の表示だけが使い、文書（undo の履歴ごと親が持つ）と連動しないので reducer にまとめない。\n-   * `changeRawOf` に成否を返させないのは、成否を使わない他の呼び出し側まで戻り値を受けることになるため。\n    */\n   const [hexCommits, setHexCommits] = useState(0);\n   const commitHex = (raw: string) => {\n@@ -96,10 +101,11 @@ function HexColorInput({\n     setHexCommits((count) => count + 1);\n   };\n \n-  const changeAlpha = changeRawOf(\n-    (raw) => TokenControl.valueFromAlpha(color.target, raw),\n-    onSetTokenValue,\n-  );\n+  const commitAlpha = (raw: string) => {\n+    Option.map(TokenControl.valueFromAlpha(color.target, raw), (value) =>\n+      onSetTokenValue(value, EditContinuities.Separate),\n+    );\n+  };\n   const pickerId = `${id}-${color.picker.name}`;\n   const alphaId = `${id}-${color.alpha.name}`;\n   const hexDigits = TokenControl.hexDigitsOf(color);\n@@ -119,7 +125,8 @@ function HexColorInput({\n       <ColorPickerField\n         id={pickerId}\n         value={color.rgb}\n-        onChangeRaw={changeRawOfTarget(color.target, onSetTokenValue)}\n+        target={color.target}\n+        onSetTokenValue={onSetTokenValue}\n       />\n       <span aria-hidden=\"true\" className=\"text-[#b3b3b3]\">\n         #\n@@ -143,7 +150,7 @@ function HexColorInput({\n           type=\"number\"\n           value={String(color.alphaPercent)}\n           look={DraftFieldLooks.AlphaPercent}\n-          onCommit={(raw) => changeAlpha(raw, EditContinuities.Separate)}\n+          onCommit={commitAlpha}\n         />\n         %\n       </span>\n@@ -176,19 +183,15 @@ export function ColorField({\n           onSetTokenValue={onSetTokenValue}\n         />\n       );\n-    case \"text\": {\n-      const changeColorText = changeRawOfTarget(color.target, onSetTokenValue);\n-\n+    case \"text\":\n       return (\n-        <DraftField\n-          key={color.value}\n+        <ValueField\n           id={id}\n-          type=\"text\"\n-          value={color.value}\n-          look={DraftFieldLooks.Regular}\n-          onCommit={(raw) => changeColorText(raw, EditContinuities.Separate)}\n+          input={{ kind: \"text\", value: color.value }}\n+          density={FieldDensities.Regular}\n+          target={color.target}\n+          onSetTokenValue={onSetTokenValue}\n         />\n       );\n-    }\n   }\n }",
+          "patchLines": 119,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/gradient-fields/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -5,7 +5,6 @@ import type { GradientControl } from \"@/features/editor/features/tokens/domains/\n import { Option } from \"@/utils/Option\";\n import { ColorField } from \"../color-field\";\n import {\n-  changeRawOfTarget,\n   FieldDensities,\n   FieldRow,\n   type SetTokenValue,\n@@ -107,7 +106,8 @@ export function GradientFields({\n               id={fieldIdOf(row.ratio)}\n               input={row.ratio.input}\n               density={FieldDensities.Compact}\n-              onChangeRaw={changeRawOfTarget(row.ratio.target, onSetTokenValue)}\n+              target={row.ratio.target}\n+              onSetTokenValue={onSetTokenValue}\n             />\n           </div>\n           <div className=\"relative min-w-0 flex-1\">",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -12,7 +12,6 @@ import { Option } from \"@/utils/Option\";\n import { ColorField } from \"./color-field\";\n import { GradientFields } from \"./gradient-fields\";\n import {\n-  changeRawOfTarget,\n   DraftField,\n   DraftFieldLooks,\n   FieldDensities,\n@@ -144,7 +143,8 @@ function ValueRowControl({\n           id={id}\n           input={row.field.input}\n           density={FieldDensities.Regular}\n-          onChangeRaw={changeRawOfTarget(row.field.target, onSetTokenValue)}\n+          target={row.field.target}\n+          onSetTokenValue={onSetTokenValue}\n         />\n       );\n     case \"color\":",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/value-field/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 47,
+          "patch": "@@ -19,9 +19,6 @@ export type SetTokenValue = (\n   continuity: EditContinuity,\n ) => void;\n \n-/** 欄に入った文字列と、そのまとまり方を受け取る手続き。 */\n-export type ChangeRaw = (raw: string, continuity: EditContinuity) => void;\n-\n /**\n  * 欄の詰め具合。`Regular` は左に見出しを添えて 1 行に 1 欄ずつ置く欄、`Compact` は stop の行の\n  * ように 1 行へ横に並べる欄。\n@@ -157,7 +154,10 @@ function UnitField({\n  * トークンの 1 フィールドの入力欄。形は値の種別で決まる。\n  *\n  * 下書きを持つ欄は、現在値を key にして外の値（undo / redo・打った値の正規化・並べ直し）に\n- * 追随する。確定は 1 回ごとに別のまとまりとして送る。\n+ * 追随する。確定は `TokenControl.valueFrom` で書き戻し先の新しい値に読み、1 回ごとに別のまとまりとして送る。\n+ *\n+ * 数値として読めない入力と、値域を外れた入力では値を変えない。名前欄と同じで、通らなかったことは\n+ * 画面に出さず打ち直しに任せる。仕様に無い中間状態のエラー表示を発明しないため。\n  *\n  * @returns 比率なら % を、角度なら ° を添えた数値欄、数値なら数値欄、それ以外はテキスト欄\n  */\n@@ -165,14 +165,20 @@ export function ValueField({\n   id,\n   input,\n   density,\n-  onChangeRaw,\n+  target,\n+  onSetTokenValue,\n }: Readonly<{\n   id: string;\n   input: TokenControlInput;\n   density: FieldDensity;\n-  onChangeRaw: ChangeRaw;\n+  target: TokenFieldTarget;\n+  onSetTokenValue: SetTokenValue;\n }>): ReactElement {\n-  const onCommit = (raw: string) => onChangeRaw(raw, EditContinuities.Separate);\n+  const onCommit = (raw: string) => {\n+    Option.map(TokenControl.valueFrom(target, raw), (value) =>\n+      onSetTokenValue(value, EditContinuities.Separate),\n+    );\n+  };\n   switch (input.kind) {\n     case \"number\":\n       return (\n@@ -219,45 +225,6 @@ export function ValueField({\n   }\n }\n \n-/**\n- * その欄に打たれた文字列を、トークンの新しい値にして送る手続き（`ValueField` の `onChangeRaw`）。\n- *\n- * 数値として読めない入力と、値域を外れた入力では値を変えない（`tokenValueOf` の `none`）。名前欄と\n- * 同じで、通らなかったことは画面に出さず打ち直しに任せる。仕様に無い中間状態のエラー表示を\n- * 発明しないため。\n- *\n- * @param tokenValueOf 欄の文字列をトークンの新しい値へ読む手続き（`TokenControl.valueFrom` など）\n- * @param onSetTokenValue 読めた値と続き方を受け取る先\n- * @returns 欄の文字列と続き方を受け取る手続き\n- */\n-export function changeRawOf(\n-  tokenValueOf: (raw: string) => Option<TokenValue>,\n-  onSetTokenValue: SetTokenValue,\n-): ChangeRaw {\n-  return (raw, continuity) => {\n-    Option.map(tokenValueOf(raw), (value) =>\n-      onSetTokenValue(value, continuity),\n-    );\n-  };\n-}\n-\n-/**\n- * その書き戻し先の欄に打たれた文字列を、`TokenControl.valueFrom` で読んで送る手続き。\n- *\n- * @param target 欄が書き戻す先\n- * @param onSetTokenValue 読めた値と続き方を受け取る先\n- * @returns 欄の文字列と続き方を受け取る手続き\n- */\n-export function changeRawOfTarget(\n-  target: TokenFieldTarget,\n-  onSetTokenValue: SetTokenValue,\n-): ChangeRaw {\n-  return changeRawOf(\n-    (raw) => TokenControl.valueFrom(target, raw),\n-    onSetTokenValue,\n-  );\n-}\n-\n /**\n  * 見出しを左に置いた 1 行（UI 案 docs/Design Composer.html の Color のエディタの `hex` / `name`）。\n  *\n@@ -304,7 +271,8 @@ export function FieldRow({\n         id={id}\n         input={field.input}\n         density={FieldDensities.Regular}\n-        onChangeRaw={changeRawOfTarget(field.target, onSetTokenValue)}\n+        target={field.target}\n+        onSetTokenValue={onSetTokenValue}\n       />\n     </LabeledRow>\n   );",
+          "patchLines": 102,
           "truncated": false
         }
       ]
