@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1430,
+      "title": "[harness] PR #1427（flow:feature の 2 工程化）の記録を足す"
+    },
+    {
       "pr": 1429,
       "title": "ハーネス棚卸し: test の実例を rules/testing.md から判例へ寄せる"
     },
