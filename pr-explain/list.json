@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1433,
+      "title": "♻️ #1415 要素の実測（boundsOf / layoutSizeOf）を canvas-dom から libs/element-measure へ移す"
+    },
+    {
       "pr": 1432,
       "title": "📝 PR #1431 の振り返りを記録する"
     },
