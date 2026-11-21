@@ -14,7 +14,7 @@ model: inherit
 - **ゴール**
 - **計画と却下案** — `plan-reviewer` を通した計画。却下済みの案を新しい根拠なしに採らない
 - **Issue 番号**
-- **種類** — Issue の `flow:*` ラベル。`flow:bugfix` / `flow:refactor` では**工程**も渡される（値は `.claude/skills/implementation-flow/SKILL.md` フェーズ 5 の渡すもの）
+- **種類** — Issue の `flow:*` ラベル。`flow:feature` / `flow:bugfix` / `flow:refactor` では**工程**も渡される（値は `.claude/skills/implementation-flow/SKILL.md` フェーズ 5 の渡すもの）
 - （直しのときだけ）**直す指摘** — 呼び出し側が採用したものだけ。採らなかった指摘には手を出さない
 
 ## 先に読むもの
@@ -30,7 +30,7 @@ model: inherit
 2. **計画と渡された指摘のどちらにもない作業が必要になったら、その時点で止めて返す。** ファイル表にも指摘の対象にもないファイルを触る、計画にも指摘にもないテストケースを足す／外す、却下案を採る、のいずれかに当たるなら計画外（渡された指摘を直すためにテストを足す・表にないファイルを直すのは計画外ではない）。続けるかどうかは呼び出し側が Issue に理由を書いてから決める
 3. **コメント・doc に事実の主張を書いたら、書き終えるたびに `claim-verification` の手順で照合する。** Skill ツールは持たないため、上の `SKILL.md` を読んでその手順に従う（Issue・PR 本文は呼び出し側が担当する）
 4. UI を触ったなら `rules/ui-verification.md` の表示確認まで行う
-5. `.claude/skills/implementation-flow/SKILL.md` フェーズ 7 の `PRE_PUSH_REQUIRE_ALL=1 bash harness/githooks/pre-push` と `pnpm run test:run` を走らせ、**終了コードで**判定する（検査の一覧はここへ写さない）。`flow:bugfix` の `工程: 再現テスト` だけは、再現テストが落ちる状態が正しい。`.claude/skills/implementation-flow/bugfix.md` フェーズ 5 の第 1 工程で親が確かめる条件に照らし、満たすなら再現テストの検査出力を返し、満たさないならその時点で止めて返す
+5. `.claude/skills/implementation-flow/SKILL.md` フェーズ 7 の `PRE_PUSH_REQUIRE_ALL=1 bash harness/githooks/pre-push` と `pnpm run test:run` を走らせ、**終了コードで**判定する（検査の一覧はここへ写さない）。`flow:bugfix` の `工程: 再現テスト` と `flow:feature` の `工程: 仕様の固定` では、計画で落ちると書いたテストが落ちる状態が正しい。種類別手順ファイル（`.claude/skills/implementation-flow/bugfix.md` / `.claude/skills/implementation-flow/feature.md`）のフェーズ 5 の第 1 工程で親が確かめる条件に照らし、満たすならそのテストの検査出力を返し、満たさないならその時点で止めて返す
 
 ## 返すもの
 
@@ -38,6 +38,7 @@ model: inherit
 2. **走らせた検査と終了コード** — 落ちたものは出力の末尾も添える
 3. **計画との差分** — 計画外で止めたなら、どこで何が理由で外れたか。外れていないなら「無し」
 4. **表示確認の結果** — UI を触ったときだけ。取得コマンドと確認結果
+5. **種類別手順ファイルのフェーズ 5 が返させるとしたもの** — `flow:feature` の `工程: 仕様の実現` では、第 1 工程を省いていなければ各サイクルの記録、省いていれば計画に書いた代わりの確かめ方の結果
 
 ## してはいけないこと
 

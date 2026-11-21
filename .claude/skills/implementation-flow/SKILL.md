@@ -26,7 +26,7 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 
 | ラベル | 種類別手順ファイル | 変わるフェーズ |
 | --- | --- | --- |
-| `flow:feature` | なし（このファイルのまま） | なし |
+| `flow:feature` | [`feature.md`](feature.md) | 3 / 5 / 6 / 7 に追加 |
 | `flow:bugfix` | [`bugfix.md`](bugfix.md) | 1 / 3 / 5 / 6 / 7 に追加 |
 | `flow:refactor` | [`refactor.md`](refactor.md) | 3 / 5 / 6 / 7 に追加 |
 | `flow:investigation` | [`investigation.md`](investigation.md) | 1 に追加、3 / 4 / 8 を置換、5〜7 はなし |
@@ -145,15 +145,21 @@ Issue: #<番号>
 ゴール: <ゴール>
 Issue: #<番号>
 種類: <`flow:*` のラベル>
-工程: <`flow:bugfix` は 再現テスト / 修正、`flow:refactor` は 現状の固定 / リファクタ。この 2 つのときだけ>
+工程: <`flow:feature` は 仕様の固定 / 仕様の実現、`flow:bugfix` は 再現テスト / 修正、`flow:refactor` は 現状の固定 / リファクタ。この 3 つのときだけ>
 計画: <plan-reviewer を通した計画と却下案>
 ```
 
 - 実装の手順は `.claude/agents/implementer.md` を参照
-- **`flow:bugfix` / `flow:refactor` では `implementer` を 2 工程に分けて起動する。** `implementer` は commit しないため、1 回で書かせると「テストだけが先に入ったコミット」が作れない。各工程で書かせる範囲と確認方法は種類別手順ファイルのフェーズ 5 に従う
-  - **第 1 工程ではテストだけを書かせる。** 返ってきたら「サブエージェントの使い方」の `git status --porcelain` の突き合わせ対象を第 1 工程のテストファイルだけに絞る。種類別手順ファイルの確認に合格したら commit し、これを**第 1 工程のコミット**として第 2 工程以降の比較基準にする
+- **`flow:feature` / `flow:bugfix` / `flow:refactor` では `implementer` を 2 工程に分けて起動する。** `implementer` は commit しないため、1 回で書かせると第 1 工程の分だけが先に入ったコミットが作れない。各工程で書かせる範囲と確認方法は種類別手順ファイルのフェーズ 5 に従う
+  - **第 1 工程では、種類別手順ファイルのフェーズ 5 が第 1 工程に書かせるとしたものだけを書かせる。** 返ってきたら「サブエージェントの使い方」の `git status --porcelain` の突き合わせ対象を、計画のファイル表で第 1 工程に挙げたファイルだけに絞る。種類別手順ファイルの確認に合格したら commit し、これを**第 1 工程のコミット**として第 2 工程以降の比較基準にする
   - **第 1 工程に書くものがなければ省く。** 第 2 工程を起動する前の HEAD を第 1 工程のコミットの代わりとして Issue に記載する（省く条件は種類別手順ファイルを参照）
   - **第 2 工程で実装を変えさせる。** フェーズ 6・7 の修正でも第 2 工程の値を渡す
+  - **第 2 工程から返ったら（`flow:bugfix` / `flow:feature`）、親が次のコマンドを走らせ、終了コード 0 を確かめる。** この確認はフェーズ 5 の第 2 工程に限り、フェーズ 6・7 の直しのたびに何を確かめるかは各種類別手順ファイルのフェーズ 6 に従う
+
+    ```bash
+    git diff --exit-code <第 1 工程のコミット> -- <第 1 工程のテストのファイル>
+    ```
+
 - **`implementer` が計画から外れて止めて返ってきたら、** 親が外れた理由を Issue に追記したうえで続行を判断して起動し直す（後回しにすると理由を思い出しにくくなるため）
 - **Issue・PR 本文に事実の主張を書いたら、書き終えるたびに親が `claim-verification` スキルで確かめる**（フェーズ 6 まで持ち越さない → `.claude/skills/claim-verification/`）
 
@@ -267,6 +273,7 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
 | `.claude/agents/implementer.md` | 実装するエージェントの入力・出力 | フェーズ 5 / 6 / 7 |
 | `.claude/agents/` の `plan-reviewer.md`・`investigation-reviewer.md` 以外の `*-reviewer.md` | 実装の検証観点（エージェントが読む） | フェーズ 6 |
 | [`reviewer-instructions.md`](reviewer-instructions.md) | 実装の検証の観点別エージェントへの共通指示（エージェントが読む） | フェーズ 6 |
+| [`feature.md`](feature.md) | `flow:feature` の追加手順 | `flow:feature` で「作業の種類」の表にあるフェーズ |
 | [`bugfix.md`](bugfix.md) | `flow:bugfix` の追加手順 | `flow:bugfix` で「作業の種類」の表にあるフェーズ |
 | [`refactor.md`](refactor.md) | `flow:refactor` の追加手順 | `flow:refactor` で「作業の種類」の表にあるフェーズ |
 | [`investigation.md`](investigation.md) | `flow:investigation` の追加・置換手順 | `flow:investigation` で「作業の種類」の表にあるフェーズ |
