@@ -9,20 +9,24 @@
 # **字句への分け方がこの検査の中心なので、表を置く。** 検出器を呼ぶ層はこのフックしか無く、分け方が退行しても
 # 何も落ちない。
 #
-# 表は 4 つ。
+# 表は 5 つ。
 #
 # - 検出器の表は `期待|分類|形|ケース名|入力`。分類は deny のときの種別の末尾(`missing` など)で、他は `-`。
 #   形は `bash`(入力 `cwd` に作業ディレクトリを載せ、別のディレクトリから走らせる)・`bash-nocwd`(`cwd` を
 #   載せず、作業ディレクトリから走らせる)・`mcp`(入力は `mcp__github__issue_write` の `tool_input` の JSON)。
-#   入力の `⏎` は改行、`⇥` はタブ、`@W` は作業ディレクトリに置き換える
+#   入力の `⏎` は改行、`⇥` はタブ、`¦` は `|`、`@W` は作業ディレクトリに置き換える
 # - origin の表は `期待|origin の URL|ケース名|入力`。自リポジトリの決め方を見る
 # - フックの表は `期待|検出器|python3|jq|ケース名|入力`。フックを一時ディレクトリへ写して走らせる
 #   (`edit-detector-cases.sh` と同じ理由で、本番のフックに差し替え口を残さない)
 # - 拒否文の表は `期待|ケース名|含むはずの文`。拒否文の並びと文面を見る
+# - CLI の表は `期待する終了コード|ケース名|標準入力`。検出器を CLI として走らせ、終了コードを見る
+#
+# **どの表も、列の数が違う行があれば NG にする。** ケース名や入力に `|` を書くと、`read` は黙って後ろの列へ
+# 寄せ、別の入力のまま判定が合ってしまうことがある。入力の `|` は `¦` と書く。
 #
 # **検出器の表と origin の表は、python3 を 1 回だけ起動して検出器を import し、ケースごとに判定の関数を
 # 呼ぶ**(所要時間とこの形にした理由は README「判定表をどの層へ置くか」)。CLI の経路(`--origin-url` と標準入力の
-# JSON)は、フックの表が検出器を CLI として走らせて見る。
+# JSON)は、フックの表と CLI の表が検出器を CLI として走らせて見る。
 #
 # | 期待 | 意味 |
 # | --- | --- |
@@ -35,6 +39,10 @@
 #
 # 検出器と JSON の組み立てに python3 を使う(jq は使わない)。python3 が無いと表が 1 件も走らず NG になる。
 set -uo pipefail
+
+# 外側のリポジトリを指す git の環境変数を落とす(立ったまま、フックの写しで `git init` すると本物の
+# リポジトリを触る)。
+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE
 
 lib_dir="$(cd "$(dirname "$0")" && pwd)"
 repo_dir="$(cd "$lib_dir/../../.." && pwd)"
@@ -113,7 +121,7 @@ def hook_input(form, text):
 
 def verdict(form, origin, category, text):
     os.chdir(work if form == "bash-nocwd" else os.path.join(work, "elsewhere"))
-    expanded = text.replace("⏎", "\n").replace("⇥", "\t").replace("@W", work)
+    expanded = text.replace("⏎", "\n").replace("⇥", "\t").replace("¦", "|").replace("@W", work)
     try:
         data = hook_input(form, expanded)
         findings = detector.findings_for(data, detector.context_for(data, origin))
@@ -132,6 +140,22 @@ for line in sys.stdin:
 PY
 )"
 
+# 表の中で列の数が違う行を 1 行で報告する。違う行があれば `cases_failed` を立てる。
+#
+# $1 表の名前
+# $2 列の数
+# $3 表(1 行 1 ケース)
+report_column_count() {
+  local misaligned
+  misaligned="$(printf '%s\n' "$3" | awk -F '|' -v columns="$2" 'NF && NF != columns')"
+  if [ -z "$misaligned" ]; then
+    printf 'ok   %s の行はすべて %s 列\n' "$1" "$2"
+    return 0
+  fi
+  printf 'NG   %s に %s 列でない行がある: %s\n' "$1" "$2" "$(printf '%s' "$misaligned" | paste -sd ' ' -)"
+  cases_failed=1
+}
+
 place_files
 
 cases="$(cat <<'CASES'
@@ -143,6 +167,7 @@ pass|-|bash|5 -lflow:feature で通す|gh issue create -t x -lflow:feature
 deny|missing|bash|6 flow: で始まらないラベルだけなら止める|gh issue create -t x --label bug --label noflow:x
 deny|missing|bash|7 空の flow: だけなら止める|gh issue create -t x --label flow:
 deny|multiple|bash|8 異なる flow:* が 2 つなら止める|gh issue create -t x --label flow:feature --label flow:bugfix
+deny|multiple|bash|8 異なる flow:* が 2 つなら提案の行があっても止める|gh issue create -t x --label flow:feature --label flow:bugfix -b '種類の提案: flow:feature（根拠）'
 pass|-|bash|9 同じ flow:* が 2 回なら通す|gh issue create -t x --label flow:feature -l flow:feature
 pass|-|bash|10 区切りが 'EOF' のヒアドキュメントに提案の行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類の提案: flow:feature（根拠）⏎EOF
 pass|-|bash|11 区切りが 'EOF' のヒアドキュメントに通さない行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類: implementation-flow に通さない（棚卸し）⏎EOF
@@ -161,7 +186,7 @@ pass|-|bash|23 ファイルが無くても、ラベルがあれば通す|gh issu
 deny|unreadable|bash|24 1 MiB を超えるファイルは止める|gh issue create -t x --body-file @W/big.md
 deny|unreadable|bash|25 /dev/zero は止める|gh issue create -t x --body-file /dev/zero
 pass|-|bash|26 -F - <<'EOF' で通す|gh issue create -t x -F - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF
-deny|unreadable|bash|27 パイプで渡したら止める|printf '%s\n' '種類の提案: flow:feature（根拠）' | gh issue create -t x --body-file -
+deny|unreadable|bash|27 パイプで渡したら止める|printf '%s\n' '種類の提案: flow:feature（根拠）' ¦ gh issue create -t x --body-file -
 pass|-|bash|28 前の断片でヒアドキュメントを書いたファイルを --body-file で渡す形は通す|cat > @W/written.md <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎gh issue create -t x --body-file @W/written.md
 deny|unreadable|bash|29 閉じない引用符は止める|gh issue create -t x --body '種類の提案: flow:feature（根拠）
 pass|-|bash|30 --body "$(cat <<'EOF'…)" で通す|gh issue create -t x --body "$(cat <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎)"
@@ -189,9 +214,14 @@ pass|-|bash|47 gh pr create --body の引用の中(改行入り)にある gh iss
 miss|-|bash|48 bash -c の中は読まない|bash -c 'gh issue create -t x'
 miss|-|bash|48 sh -c の中は読まない|sh -c 'gh issue create -t x'
 miss|-|bash|48 eval の中は読まない|eval 'gh issue create -t x'
-miss|-|bash|48 xargs の後ろは読まない|echo x | xargs gh issue create -t
+miss|-|bash|48 xargs の後ろは読まない|echo x ¦ xargs gh issue create -t
 miss|-|bash|48 スクリプトの中は読まない|bash @W/make-issue.sh
 miss|-|bash|48 gh alias は読まない|gh mkissue -t x
+miss|-|bash|165 time -p の後ろは読まない|time -p gh issue create -t x
+miss|-|bash|165 command -p の後ろは読まない|command -p gh issue create -t x
+miss|-|bash|165 exec -a NAME の後ろは読まない|exec -a NAME gh issue create -t x
+miss|-|bash|165 env -i の後ろは読まない|env -i gh issue create -t x
+miss|-|bash|165 名前付きの coproc NAME { … } の中は読まない|coproc NAME { gh issue create -t x; }
 deny|missing|bash|49 止めすぎを固定: export GH_REPO=other/r を先に実行しても止める|export GH_REPO=other/r; gh issue create -t x
 deny|missing|bash|50 止めすぎを固定: cd ../other の後でも止める|cd ../other && gh issue create -t x
 deny|unreadable|bash|51 読む位置の誤りを固定: cd sub の後の相対パスは cwd から読む|cd sub && gh issue create -t x --body-file rel.md
@@ -245,7 +275,7 @@ deny|missing|bash|111 -f body=@file は字面のまま送るので止める|gh a
 pass|-|bash|112 -Fbody=@file で通す|gh api repos/acme/widgets/issues -f title=x -Fbody=@@W/prop.md
 deny|missing|bash|113 --raw-field body=@file は止める|gh api repos/acme/widgets/issues -f title=x --raw-field body=@@W/prop.md
 pass|-|bash|114 -F body=@- <<'EOF' で通す|gh api repos/acme/widgets/issues -f title=x -F body=@- <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF
-deny|unreadable|bash|115 -F body=@- にパイプで渡したら止める|printf '%s' '種類の提案: flow:feature（根拠）' | gh api repos/acme/widgets/issues -f title=x -F body=@-
+deny|unreadable|bash|115 -F body=@- にパイプで渡したら止める|printf '%s' '種類の提案: flow:feature（根拠）' ¦ gh api repos/acme/widgets/issues -f title=x -F body=@-
 deny|unreadable|bash|116 <<< の後に続く行は本文として読まない|gh issue create -t x --body-file - <<<EOF⏎種類の提案: flow:feature（根拠）⏎EOF
 deny|missing|bash|117 issues?x=1 は止める|gh api 'repos/acme/widgets/issues?x=1' -f title=x
 pass|-|bash|118 issues/12/comments?x=1 は止めない|gh api 'repos/acme/widgets/issues/12/comments?x=1' -f body=x
@@ -259,6 +289,7 @@ deny|unreadable|bash|125 ダブルクォートの中で ` の範囲が提案の�
 deny|unreadable|bash|126 <<EOF の中で $(… の範囲が提案の行をまたぐなら止める|gh issue create -t x --body-file - <<EOF⏎説明 $(true⏎種類の提案: flow:feature（根拠）⏎)⏎EOF
 pass|-|bash|127 シングルクォートの本文に cat <<EOF と提案の行があれば通す|gh issue create -t x --body '前⏎cat <<EOF⏎種類の提案: flow:feature（根拠）⏎EOF⏎後'
 pass|-|bash|128 ダブルクォートの本文に cat <<EOF と提案の行があれば通す|gh issue create -t x --body "前⏎cat <<EOF⏎種類の提案: flow:feature（根拠）⏎EOF⏎後"
+deny|unreadable|bash|168 "$(cat <<'EOF' …)" の区切りの行と閉じ括弧の間にパイプが続けば止める|gh issue create -t x --body "$(cat <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎¦ tr a b)"
 pass|-|bash|129 $(cat <<'EOF') の本文に " と ) を含む行があっても通す|gh issue create -t x --body "$(cat <<'EOF'⏎" ) を含む行⏎種類の提案: flow:feature（根拠）⏎EOF⏎)"
 deny|unreadable|bash|130 止めすぎを固定: $(sed … <<'EOF' …) は止める|gh issue create -t x --body "$(sed s/a/b/ <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎)"
 deny|missing|bash|131 --label "flow:$K" だけなら止める|gh issue create -t x --label "flow:$K"
@@ -295,6 +326,8 @@ deny|missing|bash|154 クォートの外の `gh issue create …` も止める|x
 deny|missing|bash|155 echo の引数の `gh issue create …` も止める|echo `gh issue create -t x`
 deny|missing|bash|156 <<EOF の本文の $(gh issue create …) も止める|cat <<EOF⏎$(gh issue create -t x)⏎EOF
 pass|-|bash|157 シングルクォートの中の $(gh issue create …) は止めない|echo '$(gh issue create -t x)'
+pass|-|bash|166 区切りが 'EOF' のヒアドキュメントの本文の $(gh issue create …) は止めない|gh pr create -t x --body-file - <<'EOF'⏎$(gh issue create -t y)⏎EOF
+deny|missing|bash|167 "$(cat <<EOF …)" の本文の $(gh issue create …) も止める|gh pr create -t x --body "$(cat <<EOF⏎$(gh issue create -t y)⏎EOF⏎)"
 deny|missing|bash|158 repos/:owner/:repo/issues は自リポジトリとして止める|gh api repos/:owner/:repo/issues -f title=x
 deny|missing|bash|159 作成先が展開の "repos/$R/issues" は自リポジトリとして止める|gh api "repos/$R/issues" -f title=x
 deny|unreadable|bash|160 閉じない ` の後ろの gh を含むなら止める|x=`gh issue create -t x
@@ -344,6 +377,9 @@ report_verdicts() {
   done <<<"$verdicts"
 }
 
+report_column_count cases 5 "$cases"
+report_column_count origin_cases 4 "$origin_cases"
+
 cases_before=$cases_reported
 report_verdicts cases
 report_cases_ran cases "$cases_before"
@@ -389,6 +425,9 @@ run_hook() {
 }
 
 copy_hook
+# フックは origin を自リポジトリとして検出器へ渡す。写しを git リポジトリにしないと origin が空になり、
+# 渡し損ねても空どうしで判定が合ってしまう。
+git -C "$hook_copy" init -q && git -C "$hook_copy" remote add origin "$own_origin"
 
 hook_cases="$(cat <<'CASES'
 deny|real|ok|ok|84 欠けた作成は deny になる|gh issue create -t x
@@ -401,8 +440,10 @@ pass|real|broken|ok|91 python3 が起動できなければ通す|gh issue create
 deny|real|ok|broken|92 jq が exit 127 で落ちても deny する|gh issue create -t x
 deny|real|ok|ok|93 gh と issue の間の空白が 2 つでも deny する|gh  issue create -t x
 deny|real|ok|ok|94 gh issue -R <自> create は deny する|gh issue -R acme/widgets create -t x
+pass|real|ok|ok|95 -R other/repo の作成は通す|gh issue create -t x -R other/repo
 CASES
 )"
+report_column_count hook_cases 6 "$hook_cases"
 
 # 表の入力から PreToolUse の JSON を組む。`@mcp ` で始まれば MCP の入力、それ以外は Bash のコマンド。
 #
@@ -441,6 +482,7 @@ reason_cases="$(cat <<'CASES'
 140 理由に拒否文の 6 番目が全文のまま載る|本文はシングルクォート、'EOF' のヒアドキュメント、"$(cat <<'EOF' … EOF)" のどれかで渡す（ダブルクォートや、区切りをクォートしないヒアドキュメントの本文は、$ ` \ を含むと確定できないとして止まる）。相対パスで読めなければ絶対パスにする
 CASES
 )"
+report_column_count reason_cases 2 "$reason_cases"
 
 cases_before=$cases_reported
 while IFS='|' read -r label text; do
@@ -460,6 +502,22 @@ asks_before_both=$(( ask_at >= 0 && ask_at < unattended_at && ask_at < format_at
 asks_first="後"
 [ "$asks_before_both" -eq 1 ] && asks_first="先"
 report "先" "$asks_first" "86 「人に尋ね」が「人がいない起動」と書式より前に出る"
+
+# CLI として、PreToolUse の JSON のオブジェクトでない入力を使い方の誤り(exit 2)として扱うかを見る。
+cli_cases="$(cat <<'CASES'
+2|96 JSON の配列の入力は exit 2 で終える|[]
+2|96 JSON の null の入力は exit 2 で終える|null
+CASES
+)"
+report_column_count cli_cases 3 "$cli_cases"
+
+cases_before=$cases_reported
+while IFS='|' read -r expected label input; do
+  [ -n "$label" ] || continue
+  printf '%s' "$input" | python3 "$detector" --origin-url "$own_origin" >/dev/null 2>&1 && status=0 || status=$?
+  report "exit=$expected" "exit=$status" "$label"
+done <<<"$cli_cases"
+report_cases_ran cli_cases "$cases_before"
 
 report_documented_kinds "$detector"
 report_covered_kinds "$detector" "$(kinds_in_categories "$cases" issue-flow-kind-)"

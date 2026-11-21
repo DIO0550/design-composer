@@ -121,7 +121,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 
 | 残る穴 | 内容 |
 | --- | --- |
-| 取りこぼす | `bash -c` / `sh -c` / `eval` / `xargs` / スクリプトの中 / `gh alias` / GraphQL の `createIssue` / `curl` / GitHub の UI からの作成は見ない。入れ子のコマンドを解くと字句解析が二重になり、回避を防ぐことは目的にしない |
+| 取りこぼす | `bash -c` / `sh -c` / `eval` / `xargs` / スクリプトの中 / `gh alias` / GraphQL の `createIssue` / `curl` / GitHub の UI からの作成は見ない。入れ子のコマンドを解くと字句解析が二重になり、回避を防ぐことは目的にしない。前置きの後ろにオプションや名前が付く形（`time -p` / `command -p` / `exec -a NAME` / `env -i` / 名前付きの `coproc NAME { … }`）の後ろも読まない |
 | 止めすぎる | `export GH_REPO` を先に実行する形と `cd <他リポジトリ>` の後の作成は、1 回の入力から作成先が決まらないので自リポジトリとして止める。展開を含むラベル・`-R`・`gh api` の作成先も同じ（ラベルは数えず、作成先は自リポジトリとみなす）。展開はまねないので、ダブルクォートの中と区切りをクォートしないヒアドキュメントの本文は `$` `` ` `` `\` を 1 つでも含めば確定できないとして止め（`$(cat <<D …)` の形を除く）、クォートの外の `$` は `$'…'` `$"…"` も展開とみなす |
 | 止めすぎる（算術） | 算術の `((…))` の中の `<<` をヒアドキュメントの開始と読むので、`gh` を含むコマンド全体を読めないとして止める（`$((…))` は中身を別のコマンドとして読むので止めない） |
 | 読む位置を誤る | `cd sub && … --body-file rel.md` の相対パスは入力の `cwd` から読む |
@@ -179,7 +179,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 
 - **層 3 の部品を検査する 6 本（`canary-cases.sh` / `verification-agent-cases.sh` / `parent-session-edit-cases.sh` / `pre-push-detector-cases.sh` / `edit-detector-cases.sh` / `issue-flow-kind-cases.sh`）も層 2・層 1 で走らせる。** ゲートが見ているのは「リポジトリ内のスクリプト判定が変わっていないか」であり、使用層とは独立している。フェーズ 7 はカナリア出力で不発を判定し、フェーズ 5・6 は検証エージェント実行中の git ブロックを前提にしているため、判定が黙って変わると手順が破綻する。また `lib/pre-push-detector.sh` と `lib/edit-detector.sh` は壊れても git hooks や CI が検出器を直接呼ぶため緑のまま残る。`edit-detector-cases.sh` は対象フック 3 本ごと一時ディレクトリへ複製して検証する。`issue-flow-kind-violations.py` を呼ぶ層は層 3 しか無く、字句への分け方が退行しても判定表のほかに落ちるものが無い
 - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。** 対象の `check-added-*` と同じジョブに置き、`python3` と git だけで完結させる
-- **層 2 に載せる判断基準は、`pre-push` 全体の所要時間への影響。** `pre-push` 全体は 73.0 秒（実測・`node_modules` あり）。各判定表の実測時間は次のとおり: `check-pr-closing-issue-cases.sh` 0.8 秒（5xx 再試行待ちを差し替え口で 0 化、#1034）・`lib/canary-cases.sh` 1.0 秒（ともに全体 105.8 秒の別環境実測）、解説ページ 5 本合計 16.2 秒（地図 3.4・置き場 5.6［再試行待ち 0 化］・解説の検査 4.3・枠の検査 2.8・核 0.1）、`check-tally-cases.sh` 0.1 秒未満、`lib/import-rule-cases.sh` 2.2 秒、`lib/edit-detector-cases.sh` 1.5 秒、`upsert-sticky-comment-cases.sh` 0.9 秒（再試行待ち 0 化）、`lib/issue-flow-kind-cases.sh` 1.1 秒（検出器の表は python3 を 1 回だけ起動して回す。ケースごとに起動した形は 8.0 秒）
+- **層 2 に載せる判断基準は、`pre-push` 全体の所要時間への影響。** `pre-push` 全体は 73.0 秒（実測・`node_modules` あり）。各判定表の実測時間は次のとおり: `check-pr-closing-issue-cases.sh` 0.8 秒（5xx 再試行待ちを差し替え口で 0 化、#1034）・`lib/canary-cases.sh` 1.0 秒（ともに全体 105.8 秒の別環境実測）、解説ページ 5 本合計 16.2 秒（地図 3.4・置き場 5.6［再試行待ち 0 化］・解説の検査 4.3・枠の検査 2.8・核 0.1）、`check-tally-cases.sh` 0.1 秒未満、`lib/import-rule-cases.sh` 2.2 秒、`lib/edit-detector-cases.sh` 1.5 秒、`upsert-sticky-comment-cases.sh` 0.9 秒（再試行待ち 0 化）、`lib/issue-flow-kind-cases.sh` 1.4 秒（検出器の表は python3 を 1 回だけ起動して回す。ケースごとに起動した形は 8.0 秒）
 - **`check-duplicate-issue-pr-cases.sh` は層 1 のみ。** 問い合わせの再試行待ちで 22.0 秒（実測）かかり基準に収まらないため、`check-duplicate-issue-pr.sh` を触ったときは手動で走らせる（「動作確認」）。待ちを 0 にできるかは #1377 で扱う
 - 層 3（`pre-push-*.sh`）には足さない。層 1・層 2 に置く以上、守る範囲が増えないため
 
