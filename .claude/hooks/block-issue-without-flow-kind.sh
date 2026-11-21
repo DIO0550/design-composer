@@ -6,11 +6,7 @@
 # 何を満たせば通すか・どの形を作成とみなすか・行の書式は、検出器 lib/issue-flow-kind-violations.py の
 # docstring と定数だけが持つ。ここは入力を渡して、報告を deny の JSON にするだけ。
 #
-# **jq を使わない。** jq の無い環境では exit 127 で終わり、PreToolUse はそれを素通りさせる。JSON は python3 で組む。
-#
-# python3 が使えなければ通し、検出器が異常終了したら止める。`lib/pre-push-detector.sh` の
-# `deny_on_violations` と同じ非対称で、python3 の欠落はカナリアが名指しするが、検出器の落ちは誰にも見えない。
-# 後ろにこの検査を代わりに行う層(git hooks・CI)は無い(README「カバー範囲と残る穴」)。
+# python3 が使えなければ通し、検出器が異常終了したら止める(`lib/pre-push-detector.sh` の `deny_on_violations` と同じ非対称)。
 set -uo pipefail
 
 hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -19,7 +15,8 @@ source "$detector_lib_dir/detector-precondition.sh"
 source "$detector_lib_dir/detector-report.sh"
 detector="$hook_dir/lib/issue-flow-kind-violations.py"
 
-# deny の JSON を標準出力へ書く。
+# deny の JSON を標準出力へ書く。jq の無い環境では exit 127 で素通りになるので、`lib/pre-push-detector.sh` の
+# jq 版には寄せずに python3 で組む。
 #
 # $1 deny の理由
 print_deny() {
