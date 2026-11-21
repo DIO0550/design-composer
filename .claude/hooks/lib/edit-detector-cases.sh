@@ -31,13 +31,9 @@ source "$lib_dir/cases-fixtures.sh"
 
 # 判定に要るものだけを、リポジトリと同じ相対位置で一時ディレクトリへ写す。
 copy_hooks() {
-  local path
-  for path in .claude/hooks/block-lint-suppress.sh .claude/hooks/check-doc-comments.sh \
+  copy_repo_files "$work" .claude/hooks/block-lint-suppress.sh .claude/hooks/check-doc-comments.sh \
     .claude/hooks/check-test-helper-duplication.sh .claude/hooks/lib/edit-detector.sh \
-    .github/scripts/lib/detector-precondition.sh .github/scripts/lib/detector-report.sh; do
-    mkdir -p "$work/$(dirname "$path")"
-    cp "$repo_dir/$path" "$work/$path"
-  done
+    .github/scripts/lib/detector-precondition.sh .github/scripts/lib/detector-report.sh
 }
 
 # 違反のある入力と無い入力に使うファイルを置く。
@@ -160,7 +156,7 @@ check() {
   local expected="$1" hook="$2" kind="$3" input="$4" python3_state="$5" label="$6"
   local output status=0 prefix decision
   place_detector "$hook" "$kind"
-  prefix="$(python3_path_prefix "$python3_state" "$work")"
+  prefix="$(broken_command_path_prefix python3 "$python3_state" "$work")"
   output="$(edit_payload "$hook" "$input" | PATH="${prefix}${PATH}" bash "$work/.claude/hooks/$hook" 2>/dev/null)" || status=$?
   decision="$(verdict "$output" "$status" "$(profile_value "$hook" event)" "$(profile_value "$hook" heading)")"
   rm -rf "$work/broken-bin"

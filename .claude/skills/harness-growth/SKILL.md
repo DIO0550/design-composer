@@ -76,7 +76,7 @@ git worktree add /tmp/replay "${merge}^2"            # その PR のマージ前
 
 ## 6. PR にする
 
-- Issue を立て、数えた結果・選んだ分類・採らなかった置き場所と理由を書く。PR 本文は `Closes #<番号>` を記載する
+- Issue を立て（本文に `implementation-flow` に通さない行を書く → `implementation-flow` フェーズ 1「種類の確定」の手順 4）、数えた結果・選んだ分類・採らなかった置き場所と理由を書く。PR 本文は `Closes #<番号>` を記載する
 - **その分類が最後に出た記録**の「規約への反映」末尾に起点の行を足す（書けるのはこのスキルだけ）
 
   ```markdown

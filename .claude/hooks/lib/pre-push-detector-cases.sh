@@ -55,7 +55,7 @@ check() {
   rm -rf "$work/src"
   mkdir -p "$work/src"
   [ "$fixture" = "duplicate" ] && place_duplicate_helpers "$work/src"
-  prefix="$(python3_path_prefix "$python3_state" "$work")"
+  prefix="$(broken_command_path_prefix python3 "$python3_state" "$work")"
   output="$(push_payload "$command" | CLAUDE_PROJECT_DIR="$work" PATH="${prefix}${PATH}" bash "$hook")"
   decision="pass"
   if printf '%s' "$output" | jq -e '.hookSpecificOutput.permissionDecision == "deny"' >/dev/null 2>&1; then
@@ -88,7 +88,7 @@ place_stub_detectors() {
 check_violations() {
   local expected="$1" label="$2" command="$3" stub="$4" python3_state="${5:-ok}"
   local output reason decision prefix
-  prefix="$(python3_path_prefix "$python3_state" "$work")"
+  prefix="$(broken_command_path_prefix python3 "$python3_state" "$work")"
   output="$(push_payload "$command" | CLAUDE_PROJECT_DIR="$work" PATH="${prefix}${PATH}" \
     bash -c 'set -euo pipefail; source "$1"; deny_on_violations "$2" "判定表" "直してください"' _ \
     "$lib_dir/pre-push-detector.sh" "$work/stubs/$stub.py" 2>/dev/null)"

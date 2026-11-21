@@ -180,6 +180,9 @@ jobs:
       - name: テストヘルパーの重複の判定表
         run: bash .claude/hooks/lib/duplicate-test-helpers-cases.sh
 
+      - name: Issue の作業の種類の判定表
+        run: bash .claude/hooks/lib/issue-flow-kind-cases.sh
+
       # pre-push は jq の無い環境で飛ばすが、ランナーの image には jq がある
       # (ci-trace.yml も素の jq を呼ぶ)ので、ここは無条件に走らせる。
       - name: カナリアの判定表
