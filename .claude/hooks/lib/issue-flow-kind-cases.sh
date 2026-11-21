@@ -335,6 +335,28 @@ deny|unreadable|bash|161 閉じない " の後ろの gh を含むなら止める
 deny|unreadable|bash|162 閉じない ' の後ろの gh を含むなら止める|echo 'gh issue create -t x
 deny|unreadable|bash|163 止めすぎを固定: 算術の ((…<<…)) の後ろの作成はラベルがあっても止める|(( x = 1<<2 )); gh issue create -t x --label flow:feature
 pass|-|bash|163 $((…<<…)) は中身を別に読むので、ラベルのある作成は通す|gh issue create -t $((1<<2)) --label flow:feature
+deny|missing|bash|169 --input があれば -f 'labels[]=flow:*' はクエリに回るので止める|gh api repos/acme/widgets/issues --input @W/in-plain.json -f 'labels[]=flow:feature'
+deny|missing|bash|169 --input があれば -f body= の提案の行はクエリに回るので止める|gh api repos/acme/widgets/issues --input @W/in-plain.json -f body='種類の提案: flow:feature（根拠）'
+deny|missing|bash|169 --input を 2 つ書けば最後のものを読む|gh api repos/acme/widgets/issues --input @W/in-body.json --input @W/in-plain.json
+pass|-|bash|169 --input を 2 つ書き、最後のものに提案の行があれば通す|gh api repos/acme/widgets/issues --input @W/in-plain.json --input @W/in-body.json
+deny|unreadable|bash|170 ヒアドキュメントの後の < file が標準入力になるなら止める|gh issue create -t x --body-file - <<'EOF' < @W/plain.md⏎種類の提案: flow:feature（根拠）⏎EOF
+deny|unreadable|bash|170 ヒアドキュメントの後の <<< が標準入力になるなら止める|gh issue create -t x --body-file - <<'EOF' <<< x⏎種類の提案: flow:feature（根拠）⏎EOF
+pass|-|bash|170 < file の後のヒアドキュメントが標準入力になるなら通す|gh issue create -t x --body-file - < @W/plain.md <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF
+deny|missing|bash|171 根拠が空白だけの行は満たさない|gh issue create -t x -b '種類の提案: flow:feature（ 　 ）'
+pass|-|bash|171 根拠の前後に空白があっても通す|gh issue create -t x -b '種類の提案: flow:feature（ 根拠 ）  '
+deny|missing|bash|172 --body-file があれば --body の提案の行は送られないので止める|gh issue create -t x -b '種類の提案: flow:feature（根拠）' --body-file @W/plain.md
+deny|missing|bash|172 --body-file を後に書いても前に書いても --body-file を読む|gh issue create -t x --body-file @W/plain.md -b '種類の提案: flow:feature（根拠）'
+deny|missing|bash|172 --body を 2 つ書けば最後のものを読む|gh issue create -t x -b '種類の提案: flow:feature（根拠）' -b '本文だけ'
+pass|-|bash|172 --body を 2 つ書き、最後のものに提案の行があれば通す|gh issue create -t x -b '本文だけ' -b '種類の提案: flow:feature（根拠）'
+deny|missing|bash|172 --body-file を 2 つ書けば最後のものを読む|gh issue create -t x --body-file @W/prop.md --body-file @W/plain.md
+pass|-|bash|173 クォートした () は区切りでないので、ラベルのある作成は通す|gh issue create --title '()' -l flow:feature
+pass|-|bash|173 ダブルクォートした ; は区切りでないので、ラベルのある作成は通す|gh issue create --title ";" -l flow:feature
+pass|-|bash|173 \¦ は区切りでないので、ラベルのある作成は通す|gh issue create --title \¦ -l flow:feature
+deny|missing|bash|174 --web=false は作成するので止める|gh issue create -t x --web=false
+deny|missing|bash|174 -w=false は作成するので止める|gh issue create -t x -w=false
+deny|missing|bash|174 --web の後の --web=0 は作成するので止める|gh issue create -t x --web --web=0
+pass|-|bash|174 --web=true は通す|gh issue create -t x --web=true
+pass|-|bash|174 -l=flow:feature は gh が値として読むので通す|gh issue create -t x -l=flow:feature
 CASES
 )"
 

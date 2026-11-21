@@ -58,9 +58,14 @@ PROPOSAL_TEMPLATE = "種類の提案: flow:{kind}（{reason}）"
 OPT_OUT_TEMPLATE = "種類: implementation-flow に通さない（{reason}）"
 
 # 字面のままでは確定できない位置（展開と、ダブルクォートの中のバックスラッシュ）に置く印と、切り出した本文の
-# 置き場の印。どちらも私用領域の文字で、入力にもともと含まれていれば読めないものとして扱う。
+# 置き場の印と、クォートの開きとバックスラッシュの前に置く印。どれも私用領域の文字で、入力にもともと
+# 含まれていれば読めないものとして扱う。
 UNSETTLED = ""
 PLACEHOLDER = ""
+# shlex はクォートを外した字句しか返さず、`'()'` や `\;` が演算子と同じ字句になる。印を残して演算子と見分け、
+# 語に戻すときに外す。
+QUOTED = ""
+MARKERS = (UNSETTLED, PLACEHOLDER, QUOTED)
 
 # 展開する文脈の本文がこのどれかを含めば、bash が渡す字面を確定できないとする（展開はまねない）。
 EXPANDING_CHARS = frozenset("$`\\")
@@ -142,7 +147,7 @@ class Scanned(NamedTuple):
 
 
 class Segment(NamedTuple):
-    """区切り記号で分けた 1 つのコマンド。`stdin` はヒアドキュメントの本文（無ければ None）。"""
+    """区切り記号で分けた 1 つのコマンド。`stdin` は標準入力が最後にヒアドキュメントへつながれたときの本文（それ以外は None）。"""
 
     words: tuple[str, ...]
     stdin: str | None
@@ -198,30 +203,38 @@ API_FLAGS = FlagSpec(
 
 API_BODY_FLAGS = frozenset({"raw-field", "field", "input"})
 
+# 値を取らないフラグに `=value` で渡したとき、gh（pflag の strconv.ParseBool）が真と読む綴り。空は値の無い指定。
+PFLAG_TRUE_VALUES = frozenset({"", "1", "t", "T", "true", "TRUE", "True"})
+
 
 def line_pattern(template: str) -> re.Pattern[str]:
-    """行の書式から、行頭から行末までに当てる正規表現を組む。
+    """行の書式から、行頭から行末までに当てる正規表現を組む。`{reason}` は `reason` の群で取る。
+
+    `{reason}` に空白以外の文字があるかは正規表現に入れず、`has_declaration_line()` が群を見て決める。
+    `[^\n]*\S[^\n]*` と書くと、閉じ括弧の無い長い行でバックトラックが重なり、行の長さの 2 乗の時間がかかる。
 
     @param template `{kind}` と `{reason}` を含みうる書式
     @returns 1 行に当てる正規表現（行末の空白は許す）
     """
     parts = re.split(r"(\{kind\}|\{reason\})", template)
-    fills = {"{kind}": "[a-z]+", "{reason}": r"[^\n]*\S[^\n]*"}
+    fills = {"{kind}": "[a-z]+", "{reason}": r"(?P<reason>[^\n]*)"}
     body = "".join(fills.get(part, re.escape(part)) for part in parts)
     return re.compile(r"^" + body + r"[ \t]*$", re.M)
 
 
 # 種類を宣言する行（提案の行と、通さない行）。
 DECLARATION_LINES = (line_pattern(PROPOSAL_TEMPLATE), line_pattern(OPT_OUT_TEMPLATE))
+NON_SPACE = re.compile(r"\S")
 
 
 def has_declaration_line(body: str) -> bool:
-    """本文に、提案の行か通さない行があるか。
+    """本文に、提案の行か通さない行があるか。`{reason}` が空白だけの行は数えない。
 
     @param body 字面で確定した本文
     @returns 1 行でもあれば True
     """
-    return any(pattern.search(body) for pattern in DECLARATION_LINES)
+    matches = (match for pattern in DECLARATION_LINES for match in pattern.finditer(body))
+    return any(NON_SPACE.search(match.group("reason")) for match in matches)
 
 
 def starts_range_expansion(text: str, index: int) -> bool:
@@ -417,11 +430,11 @@ def unquoted_step(text: str, index: int) -> Step | Unreadable:
     char = text[index]
     if char == "'":
         end = text.find("'", index + 1)
-        return Unreadable("閉じない引用符がある") if end < 0 else Step(end + 1, text[index : end + 1])
+        return Unreadable("閉じない引用符がある") if end < 0 else Step(end + 1, QUOTED + text[index : end + 1])
     if char == '"':
-        return Step(index + 1, char, toggles_double=True)
+        return Step(index + 1, QUOTED + char, toggles_double=True)
     if char == "\\":
-        return Step(index + 2, text[index : index + 2])
+        return Step(index + 2, QUOTED + text[index : index + 2])
     if text.startswith("<<<", index):
         return Step(index + 3, "<<<")
     heredoc = HEREDOC_OPERATOR.match(text, index)
@@ -498,9 +511,8 @@ def scan(command: str) -> Scanned | Unreadable:
     @param command Bash のコマンド全体
     @returns 印を付けた入力と本文表とコマンド置換の中身。閉じない引用符・展開・ヒアドキュメントや、目印の文字を含む入力なら Unreadable
     """
-    has_marker = UNSETTLED in command or PLACEHOLDER in command
-    if has_marker:
-        return Unreadable("入力に目印の文字（U+E000 / U+E001）が含まれている")
+    if any(marker in command for marker in MARKERS):
+        return Unreadable("入力に目印の文字（U+E000〜U+E002）が含まれている")
     pieces: list[str] = []
     bodies: list[str] = []
     nested: list[str] = []
@@ -589,13 +601,13 @@ def is_redirect(token: str) -> bool:
 
 
 def resolve(word: str, bodies: tuple[str, ...]) -> str:
-    """語の中の置き場の印を、本文表の本文に戻す。
+    """語の中のクォートの印を外し、置き場の印を本文表の本文に戻す。
 
     @param word 字句
     @param bodies 本文表
     @returns 戻した語
     """
-    return SLOT.sub(lambda match: bodies[int(match.group(1))], word)
+    return SLOT.sub(lambda match: bodies[int(match.group(1))], word.replace(QUOTED, ""))
 
 
 def heredoc_slot(target: str) -> int | None:
@@ -608,8 +620,21 @@ def heredoc_slot(target: str) -> int | None:
     return int(match.group(1)) if match else None
 
 
+def reads_stdin_from(token: str) -> bool:
+    """リダイレクトの演算子が、標準入力をつなぎ替えるもの（`<` `<<` `<<<` `<&` `<>`）か。
+
+    `<(…)` はプロセス置換で、標準入力には触らない。
+
+    @param token リダイレクトの演算子
+    @returns つなぎ替えるなら True
+    """
+    return token.startswith("<") and "(" not in token
+
+
 def build_segment(tokens: list[str], bodies: tuple[str, ...]) -> Segment:
     """区切りの間の字句を、語・標準入力・書き出し先に分ける。
+
+    bash と同じく標準入力のリダイレクトは書いた順に当て、最後のものがヒアドキュメントのときだけ本文を持つ。
 
     @param tokens 区切りを含まない字句の並び
     @param bodies 本文表
@@ -628,8 +653,8 @@ def build_segment(tokens: list[str], bodies: tuple[str, ...]) -> Segment:
             continue
         slot = heredoc_slot(target)
         reads_heredoc = token == "<<" and slot is not None
-        if reads_heredoc:
-            stdin = bodies[slot]
+        if reads_stdin_from(token):
+            stdin = bodies[slot] if reads_heredoc else None
         if token in (">", ">>"):
             written_to.append(resolve(target, bodies))
         index += 2
@@ -718,6 +743,9 @@ def split_flag(word: str, spec: FlagSpec) -> tuple[str, str | None]:
     if not is_short_flag:
         return "", None
     name = spec.names.get(short, short)
+    # gh（pflag）は `-n=value` を、値を取らないフラグでも値として読む（`-w=false`）。
+    if word[2:3] == "=":
+        return name, word[3:]
     has_inline_value = len(word) > 2 and name in spec.valued
     return name, (word[2:] if has_inline_value else None)
 
@@ -834,7 +862,7 @@ def issue_create_finding(env: dict[str, str], args: tuple[str, ...], segment: Se
     @param args `gh issue` の後ろの語
     @param segment 作成のコマンド
     @param context 判定の周りの事実
-    @returns 違反なら Finding。作成でない・他のリポジトリ・`--web`・種類を決めているなら None
+    @returns 違反なら Finding。作成でない・他のリポジトリ・`--web` が真・種類を決めているなら None
     """
     flags = parse_flags(args, ISSUE_CREATE_FLAGS)
     positionals = [value for name, value in flags if name == ""]
@@ -842,14 +870,30 @@ def issue_create_finding(env: dict[str, str], args: tuple[str, ...], segment: Se
         return None
     values = {name: [value for flag, value in flags if flag == name] for name in ("repo", "label", "body", "body-file", "web")}
     repo = (values["repo"] or [env.get("GH_REPO")])[-1]
-    # `--web` はブラウザの画面で作るので、この呼び出しは作成しない。
-    creates_in_self = not values["web"] and targets_self(repo, context)
+    # `--web` が真ならブラウザの画面で作るので、この呼び出しは作成しない。`--web=false` は作成する。
+    opens_browser = bool(values["web"]) and values["web"][-1] in PFLAG_TRUE_VALUES
+    creates_in_self = not opens_browser and targets_self(repo, context)
     if not creates_in_self:
         return None
     labels = [label.strip() for value in values["label"] for label in value.split(",")]
-    bodies: list[str | Unreadable] = list(values["body"])
-    bodies += [stdin_body(segment, "--body-file -") if path == "-" else read_body_file(path, context) for path in values["body-file"]]
-    return judge("gh issue create", labels, bodies)
+    return judge("gh issue create", labels, sent_issue_body(values["body"], values["body-file"], segment, context))
+
+
+def sent_issue_body(body: list[str], body_file: list[str], segment: Segment, context: Context) -> list[str | Unreadable]:
+    """`gh issue create` が実際に送る本文を返す。
+
+    gh は `--body-file` があれば `--body` より優先し、同じフラグを繰り返せば最後の値を送る。
+
+    @param body `--body` の値（出てきた順）
+    @param body_file `--body-file` の値（出てきた順）
+    @param segment 作成のコマンド
+    @param context 判定の周りの事実
+    @returns 送る本文 1 つ（読めなければ Unreadable）。どちらも無ければ空
+    """
+    if not body_file:
+        return list(body[-1:])
+    path = body_file[-1]
+    return [stdin_body(segment, "--body-file -") if path == "-" else read_body_file(path, context)]
 
 
 def api_field_body(name: str, value: str, segment: Segment, context: Context) -> str | Unreadable:
@@ -918,6 +962,20 @@ def api_finding(args: tuple[str, ...], segment: Segment, context: Context) -> Fi
     targets_other = not uses_placeholder and not targets_self(repository, context)
     if targets_other:
         return None
+    inputs = [value for name, value in flags if name == "input"]
+    # `--input` があると、gh はその最後の 1 つを本文として送り、`-f` / `-F` は URL のクエリに回す。
+    labels, bodies = api_input(inputs[-1], segment, context) if inputs else api_fields(flags, segment, context)
+    return judge(f"gh api {endpoint}", labels, bodies)
+
+
+def api_fields(flags: list[tuple[str, str]], segment: Segment, context: Context) -> tuple[list[str], list[str | Unreadable]]:
+    """`-f` / `-F` のフィールドから、ラベルと本文を取る。
+
+    @param flags `gh api` のフラグと値の並び
+    @param segment 作成のコマンド
+    @param context 判定の周りの事実
+    @returns ラベルと本文の候補
+    """
     labels: list[str] = []
     bodies: list[str | Unreadable] = []
     for name, value in flags:
@@ -927,11 +985,7 @@ def api_finding(args: tuple[str, ...], segment: Segment, context: Context) -> Fi
             labels.append(field_value)
         if is_field and key == "body":
             bodies.append(api_field_body(name, field_value, segment, context))
-        if name == "input":
-            input_labels, input_bodies = api_input(value, segment, context)
-            labels += input_labels
-            bodies += input_bodies
-    return judge(f"gh api {endpoint}", labels, bodies)
+    return labels, bodies
 
 
 def segment_finding(segment: Segment, context: Context) -> Finding | None:
