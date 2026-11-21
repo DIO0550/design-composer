@@ -114,3 +114,28 @@ test("読めない色が外から別の読めない綴りに変わると、`値`
 
   expect(screen.getByLabelText<HTMLInputElement>("値").value).toBe("BLUE");
 });
+
+test("読めない色の `値` の欄に `#` 付きの 6 桁を打って確定すると、その色が別のまとまりで届く", async () => {
+  const user = userEvent.setup();
+  const onSetTokenValue = renderColor("RED");
+
+  const text = screen.getByLabelText<HTMLInputElement>("値");
+  await user.clear(text);
+  await user.type(text, "#aabbcc{Enter}");
+
+  expect(onSetTokenValue).toHaveBeenCalledWith(
+    { kind: "colors", value: "#aabbcc" },
+    EditContinuities.Separate,
+  );
+});
+
+test("読めない色の `値` の欄に `#` の無い 3 桁を打って確定しても、値は届かない", async () => {
+  const user = userEvent.setup();
+  const onSetTokenValue = renderColor("RED");
+
+  const text = screen.getByLabelText<HTMLInputElement>("値");
+  await user.clear(text);
+  await user.type(text, "abc{Enter}");
+
+  expect(onSetTokenValue).not.toHaveBeenCalled();
+});
