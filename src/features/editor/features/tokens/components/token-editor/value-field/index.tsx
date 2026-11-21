@@ -1,18 +1,17 @@
 import { type ReactElement, useState } from "react";
-import type { Rgb, TokenValue } from "@/domains/dcmp/token";
+import type { TokenValue } from "@/domains/dcmp/token";
 import {
   EditContinuities,
   type EditContinuity,
-  EditContinuityRun,
 } from "@/domains/session/edit-continuity";
-import {
-  TokenControl,
-  type TokenControlField,
-  type TokenControlInput,
+import type {
+  TokenControlField,
+  TokenControlInput,
+  TokenFieldTarget,
+  TokenRawEdit,
 } from "@/features/editor/features/tokens/domains/token-control";
-import { useFirstThenRest } from "@/hooks/use-first-then-rest";
 import type { ValueOf } from "@/types/ValueOf";
-import { Option } from "@/utils/Option";
+import type { Option } from "@/utils/Option";
 
 /** トークンの新しい値と、そのまとまり方を受け取る手続き。 */
 export type SetTokenValue = (
@@ -20,12 +19,20 @@ export type SetTokenValue = (
   continuity: EditContinuity,
 ) => void;
 
-/** 欄に入った文字列と、そのまとまり方を受け取る手続き。 */
-export type ChangeRaw = (raw: string, continuity: EditContinuity) => void;
+/**
+ * 欄に打たれた綴りと、そのまとまり方を受け手へ渡す手続き。綴りを読むのは受け手で、読めた値だけを
+ * 書き戻す。
+ *
+ * @returns 読めた値。読めなかった（値を変えなかった）ときは `none`
+ */
+export type SubmitTokenRawEdit = (
+  edit: TokenRawEdit,
+  continuity: EditContinuity,
+) => Option<TokenValue>;
 
 /**
- * 欄の詰め具合。`Regular` は見出しの下に 1 欄ずつ置く欄、`Compact` は stop の行のように
- * 1 行へ横に並べる欄。
+ * 欄の詰め具合。`Regular` は左に見出しを添えて 1 行に 1 欄ずつ置く欄、`Compact` は stop の行の
+ * ように 1 行へ横に並べる欄。
  */
 export const FieldDensities = {
   Regular: "regular",
@@ -36,12 +43,29 @@ export const FieldDensities = {
 export type FieldDensity = ValueOf<typeof FieldDensities>;
 
 /**
- * 下書きの欄の見た目。1 行に 5 つ並べる stop の行は、右ペインの幅に収めるため字と余白を詰める。
+ * 下書きの欄の見た目。詰め具合の 2 つに、色の箱の中に置く 6 桁と不透明度の欄を足したもの。
+ * 箱の中の 2 つは枠を箱に任せ、字は箱から継ぐ。
+ */
+export const DraftFieldLooks = {
+  ...FieldDensities,
+  HexDigits: "hex-digits",
+  AlphaPercent: "alpha-percent",
+} as const;
+
+/** 下書きの欄の見た目。 */
+type DraftFieldLook = ValueOf<typeof DraftFieldLooks>;
+
+/**
+ * 下書きの欄の綴り。1 行に比率・色の欄・− の 3 つを並べる stop の行は、右ペインの幅に収めるため
+ * 字と余白を詰める。
  */
 const DraftFieldClasses = {
   regular: "w-full rounded border border-gray-300 px-2 py-1",
   compact: "w-full rounded border border-gray-300 px-1 py-1 text-xs",
-} as const satisfies Readonly<Record<FieldDensity, string>>;
+  "hex-digits": "min-w-0 flex-1 bg-transparent outline-none",
+  "alpha-percent":
+    "w-[4ch] bg-transparent text-right outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+} as const satisfies Readonly<Record<DraftFieldLook, string>>;
 
 /** 単位を添えた欄の、欄と単位の間。 */
 const UnitGapClasses = {
@@ -49,11 +73,11 @@ const UnitGapClasses = {
   compact: "gap-1",
 } as const satisfies Readonly<Record<FieldDensity, string>>;
 
-/** ピッカーの大きさ。stop の行では見本と同じ 24px 角へ縮める。 */
-const PickerClasses = {
-  regular: "h-8 w-16 shrink-0 rounded border border-gray-300",
-  compact: "size-6 shrink-0 rounded border border-gray-300",
-} as const satisfies Readonly<Record<FieldDensity, string>>;
+/**
+ * 左に置く見出しの綴り。字はプロパティパネルのラベル欄と同じで、幅は UI 案の 52px。
+ * 幅ごと `LabelClass` を借りないのは、あちらは `Width Mode` を収めるため 5.25rem に広げてあるから。
+ */
+const RowLabelClass = "w-[52px] shrink-0 truncate text-[11px] text-gray-500";
 
 /**
  * 打っている途中の文字列を持ち、確定したときだけ外へ渡す入力欄。確定は入力欄を離れたと
@@ -63,7 +87,8 @@ const PickerClasses = {
  * 列が弾かれて打ち続けられない（`primary-` が弾かれると `-` の次を打てない）。
  *
  * 外の値が変わったときの取り直しは `key` で行う（`ValueField` が現在値を key にする。
- * 名前の欄は呼び出し側がトークンを key にする）。
+ * 読めない色のテキスト欄は `ColorField` が色を key にする。名前の欄は呼び出し側がトークンを key に
+ * する。hex の欄は `HexColorInput` が確定の回数も key に混ぜる）。
  * 確定が通らなかった入力では外の値も key も変わらないので下書きが残るが、
  * `type="number"` の欄は数値として読めない間ブラウザが表示を空にするので、画面に文字列
  * として残るのは `type="text"` の欄だけ。
@@ -72,13 +97,13 @@ export function DraftField({
   id,
   type,
   value,
-  density,
+  look,
   onCommit,
 }: Readonly<{
   id: string;
   type: "text" | "number";
   value: string;
-  density: FieldDensity;
+  look: DraftFieldLook;
   onCommit: (raw: string) => void;
 }>) {
   const [draft, setDraft] = useState(value);
@@ -95,52 +120,7 @@ export function DraftField({
           event.currentTarget.blur();
         }
       }}
-      className={DraftFieldClasses[density]}
-    />
-  );
-}
-
-/**
- * カラーピッカー。保存時に hex（小文字）へ正規化する。ピッカーを開いてから、開き直すか閉じて
- * ほかへ移るまでに動かした分を 1 つのまとまりとして送る（docs/06-ui.md「編集操作の一覧」の
- * tokens 編集）。
- *
- * @returns カラーピッカー
- */
-function ColorPickerField({
-  id,
-  value,
-  density,
-  onChangeRaw,
-}: Readonly<{
-  id: string;
-  value: Rgb;
-  density: FieldDensity;
-  onChangeRaw: ChangeRaw;
-}>): ReactElement {
-  /*
-   * ピッカーは常に #rrggbb を返し `TokenControl.valueFrom` の `none` に届かないので、1 件目が
-   * 落ちて続きが先に届くことは無い。
-   *
-   * 始め直すのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、
-   * ピッカーを閉じてもフォーカスが入力欄に残り、開き直しでは focus が発火しないため。blur でも
-   * 始め直すのは、色のパネルがモーダルでなく、別の欄を編集して戻ったときに続きとして送らないため。
-   * Chromium ではキーボード（Enter / Space）で開いても click が届くことを実測した。Tauri の
-   * WebView は未検証。
-   */
-  const continuitySequence = useFirstThenRest(EditContinuityRun);
-
-  return (
-    <input
-      id={id}
-      type="color"
-      value={value}
-      onClick={continuitySequence.restart}
-      onBlur={continuitySequence.restart}
-      onChange={(event) => {
-        onChangeRaw(event.target.value, continuitySequence.next());
-      }}
-      className={PickerClasses[density]}
+      className={DraftFieldClasses[look]}
     />
   );
 }
@@ -173,7 +153,7 @@ function UnitField({
         id={id}
         type="number"
         value={String(value)}
-        density={density}
+        look={density}
         onCommit={onCommit}
       />
       <span className="text-gray-600 text-xs">{unit}</span>
@@ -185,23 +165,30 @@ function UnitField({
  * トークンの 1 フィールドの入力欄。形は値の種別で決まる。
  *
  * 下書きを持つ欄は、現在値を key にして外の値（undo / redo・打った値の正規化・並べ直し）に
- * 追随する。確定は 1 回ごとに別のまとまりとして送る。
+ * 追随する。確定は書き戻し先の値として読む綴り（`TokenRawEdit` の `value`）にして、1 回ごとに別の
+ * まとまりとして渡す。
  *
- * @returns 色ならカラーピッカー、不透明度と比率なら % を、角度なら ° を添えた数値欄、
- *   数値なら数値欄、それ以外はテキスト欄
+ * 読めずに値が変わらなかったことは、名前欄と同じで画面に出さず打ち直しに任せる。仕様に無い中間状態の
+ * エラー表示を発明しないため。
+ *
+ * @returns 比率なら % を、角度なら ° を添えた数値欄、数値なら数値欄、それ以外はテキスト欄
  */
 export function ValueField({
   id,
   input,
   density,
-  onChangeRaw,
+  target,
+  onRawEdit,
 }: Readonly<{
   id: string;
   input: TokenControlInput;
   density: FieldDensity;
-  onChangeRaw: ChangeRaw;
+  target: TokenFieldTarget;
+  onRawEdit: SubmitTokenRawEdit;
 }>): ReactElement {
-  const onCommit = (raw: string) => onChangeRaw(raw, EditContinuities.Separate);
+  const onCommit = (raw: string) => {
+    onRawEdit({ kind: "value", target, raw }, EditContinuities.Separate);
+  };
   switch (input.kind) {
     case "number":
       return (
@@ -210,7 +197,7 @@ export function ValueField({
           id={id}
           type="number"
           value={String(input.value)}
-          density={density}
+          look={density}
           onCommit={onCommit}
         />
       );
@@ -221,7 +208,7 @@ export function ValueField({
           id={id}
           type="text"
           value={input.value}
-          density={density}
+          look={density}
           onCommit={onCommit}
         />
       );
@@ -245,65 +232,58 @@ export function ValueField({
           onCommit={onCommit}
         />
       );
-    case "color":
-      return (
-        <ColorPickerField
-          id={id}
-          value={input.value}
-          density={density}
-          onChangeRaw={onChangeRaw}
-        />
-      );
   }
 }
 
 /**
- * その欄に打たれた文字列を、トークンの新しい値にして送る手続き（`ValueField` の `onChangeRaw`）。
+ * 見出しを左に置いた 1 行（UI 案 docs/Design Composer.html の Color のエディタの `hex` / `name`）。
  *
- * 数値として読めない入力と、値域を外れた入力では値を変えない（`TokenControl.valueFrom` の
- * `none`）。名前欄と同じで、通らなかったことは画面に出さず打ち直しに任せる。仕様に無い
- * 中間状態のエラー表示を発明しないため。
+ * 見出しが左に並ぶことは happy-dom では確かめられず、気づく手段は Storybook の視覚差分だけ。
  *
- * @param field 打たれた欄
- * @param onSetTokenValue 読めた値と続き方を受け取る先
- * @returns 欄の文字列と続き方を受け取る手続き
+ * @returns 52px の見出しと、残りを占める欄
  */
-export function changeRawOf(
-  field: TokenControlField,
-  onSetTokenValue: SetTokenValue,
-): ChangeRaw {
-  return (raw, continuity) => {
-    Option.map(TokenControl.valueFrom(field.target, raw), (value) =>
-      onSetTokenValue(value, continuity),
-    );
-  };
+export function LabeledRow({
+  htmlFor,
+  label,
+  children,
+}: Readonly<{
+  htmlFor: string;
+  label: string;
+  children: ReactElement;
+}>): ReactElement {
+  return (
+    <div className="flex items-center gap-2">
+      <label htmlFor={htmlFor} className={RowLabelClass}>
+        {label}
+      </label>
+      <div className="min-w-0 flex-1">{children}</div>
+    </div>
+  );
 }
 
 /**
- * 見出しを上に置いた 1 フィールドの欄。
+ * 見出しを左に置いた 1 フィールドの欄。
  *
  * @returns 見出しと入力欄
  */
 export function FieldRow({
   id,
   field,
-  onSetTokenValue,
+  onRawEdit,
 }: Readonly<{
   id: string;
   field: TokenControlField;
-  onSetTokenValue: SetTokenValue;
+  onRawEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   return (
-    <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-gray-600 text-xs">
-        {field.label}
-      </label>
+    <LabeledRow htmlFor={id} label={field.label}>
       <ValueField
         id={id}
         input={field.input}
         density={FieldDensities.Regular}
-        onChangeRaw={changeRawOf(field, onSetTokenValue)}
+        target={field.target}
+        onRawEdit={onRawEdit}
       />
-    </div>
+    </LabeledRow>
   );
 }

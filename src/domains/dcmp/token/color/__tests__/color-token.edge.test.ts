@@ -24,11 +24,13 @@ test("5桁の hex は短縮形として展開されずそのまま返る", () =>
 });
 
 test.each([
-  "#fff",
+  "#ffff",
+  "#abcf",
+  "#aabbccff",
   "#3b82f6ff",
   "3b82f6",
   "rgb(59, 130, 246)",
-])("6桁の hex でない値 %s は RGB にできない", (value) => {
+])("6 桁の hex にも 3 桁の短縮形にも当たらない値 %s は RGB にできない", (value) => {
   expect(Rgb.create(value)).toEqual(Option.none);
 });
 
@@ -41,7 +43,7 @@ test.each([
   "3b82f6",
   "rgb(59, 130, 246)",
   "blue",
-])("hex として読めない値 %s からは6桁を取り出せない", (value) => {
+])("6 桁・8 桁の hex でない値 %s からは6桁を取り出せない", (value) => {
   expect(ColorToken.rgbOf(value)).toEqual(Option.none);
 });
 

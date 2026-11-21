@@ -5,3 +5,10 @@
  */
 export const FocusOutlineClass =
   "focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2";
+
+/**
+ * 枠の無い入力欄を並べて 1 つの入力に見せる箱へ、中の欄にフォーカスがある間だけ `FocusOutlineClass` と同じ枠を描く
+ * Tailwind のクラス。
+ */
+export const FocusWithinOutlineClass =
+  "focus-within:outline-2 focus-within:outline-[#0a74c9] focus-within:outline-offset-2";

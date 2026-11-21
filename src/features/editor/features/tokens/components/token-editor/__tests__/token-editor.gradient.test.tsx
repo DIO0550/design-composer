@@ -137,3 +137,23 @@ test("角度の欄には ° が、比率と不透明度の欄には % が添え�
   expect(unitOf("stop 1 の比率")).toBe("%");
   expect(unitOf("stop 1 の不透明度")).toBe("%");
 });
+
+test("stop の hex を `#` 無しで確定すると、その stop だけが変わった値が届く", async () => {
+  const user = userEvent.setup();
+  const onSetTokenValue = renderGradient(TwoStops);
+
+  await user.clear(screen.getByLabelText("stop 2 の hex"));
+  await user.type(screen.getByLabelText("stop 2 の hex"), "ff0000{Enter}");
+
+  expect(onSetTokenValue).toHaveBeenCalledWith(
+    {
+      kind: "gradients",
+      value: {
+        shape: "linear",
+        angle: 90,
+        stops: [TwoStops[0], { color: "#ff0000", ratio: 1 }],
+      },
+    },
+    EditContinuities.Separate,
+  );
+});

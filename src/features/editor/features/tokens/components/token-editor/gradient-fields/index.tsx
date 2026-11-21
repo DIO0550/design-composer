@@ -1,34 +1,19 @@
 import type { ReactElement } from "react";
 import { Button, ButtonKinds } from "@/components/button";
 import { EditContinuities } from "@/domains/session/edit-continuity";
-import type {
-  GradientControl,
-  TokenControlField,
-  TokenControlInput,
-} from "@/features/editor/features/tokens/domains/token-control";
+import type { GradientControl } from "@/features/editor/features/tokens/domains/token-control";
 import { Option } from "@/utils/Option";
+import { ColorField } from "../color-field";
 import {
-  changeRawOf,
   FieldDensities,
   FieldRow,
   type SetTokenValue,
+  type SubmitTokenRawEdit,
   ValueField,
 } from "../value-field";
 
-/** stop の行の数値の欄の幅。 */
+/** stop の行の比率の欄の幅。色の欄が余りを占める。 */
 const StopNumberCellClass = "w-[60px] shrink-0";
-
-/**
- * stop の行の 1 欄ぶんの幅。数値の欄は幅を決めて両端に置き、ピッカーは見本の大きさのまま、
- * hex（読めない色はそのテキスト欄）が余りを占める。
- */
-const StopCellClasses = {
-  percent: StopNumberCellClass,
-  degree: StopNumberCellClass,
-  number: StopNumberCellClass,
-  color: "shrink-0",
-  text: "min-w-0 flex-1",
-} as const satisfies Readonly<Record<TokenControlInput["kind"], string>>;
 
 /**
  * 階調のバーと、stop ごとのつまみ。
@@ -66,20 +51,25 @@ function GradientBar({
  *
  * @param idPrefix 欄の id の頭。欄の `name` を添えて label と結ぶ
  * @param tokenKey 編集しているトークン。行の key に混ぜ、別のトークンへ移ったら作り直す
+ * @param onRawEdit 角度・比率・色の欄に打たれた綴りの渡し先
+ * @param onSetTokenValue stop の +・− で作った値の渡し先
  * @returns 値の欄一式
  */
 export function GradientFields({
   gradient,
   idPrefix,
   tokenKey,
+  onRawEdit,
   onSetTokenValue,
 }: Readonly<{
   gradient: GradientControl;
   idPrefix: string;
   tokenKey: string;
+  onRawEdit: SubmitTokenRawEdit;
   onSetTokenValue: SetTokenValue;
 }>): ReactElement {
-  const fieldIdOf = (field: TokenControlField) => `${idPrefix}-${field.name}`;
+  const fieldIdOf = (field: Readonly<{ name: string }>) =>
+    `${idPrefix}-${field.name}`;
 
   return (
     <div className="flex flex-col gap-3">
@@ -94,7 +84,7 @@ export function GradientFields({
         key={`${tokenKey}/${gradient.angle.name}`}
         id={fieldIdOf(gradient.angle)}
         field={gradient.angle}
-        onSetTokenValue={onSetTokenValue}
+        onRawEdit={onRawEdit}
       />
       <div className="flex items-center justify-between">
         <span className="text-gray-600 text-xs">Stops</span>
@@ -113,19 +103,28 @@ export function GradientFields({
           key={`${tokenKey}/${row.name}`}
           className="flex items-center gap-1"
         >
-          {row.fields.map((field) => (
-            <div key={field.name} className={StopCellClasses[field.input.kind]}>
-              <label htmlFor={fieldIdOf(field)} className="sr-only">
-                {field.label}
-              </label>
-              <ValueField
-                id={fieldIdOf(field)}
-                input={field.input}
-                density={FieldDensities.Compact}
-                onChangeRaw={changeRawOf(field, onSetTokenValue)}
-              />
-            </div>
-          ))}
+          <div className={StopNumberCellClass}>
+            <label htmlFor={fieldIdOf(row.ratio)} className="sr-only">
+              {row.ratio.label}
+            </label>
+            <ValueField
+              id={fieldIdOf(row.ratio)}
+              input={row.ratio.input}
+              density={FieldDensities.Compact}
+              target={row.ratio.target}
+              onRawEdit={onRawEdit}
+            />
+          </div>
+          <div className="relative min-w-0 flex-1">
+            <label htmlFor={fieldIdOf(row.color.caption)} className="sr-only">
+              {row.color.caption.label}
+            </label>
+            <ColorField
+              id={fieldIdOf(row.color.caption)}
+              color={row.color}
+              onRawEdit={onRawEdit}
+            />
+          </div>
           {/* 2 件以下で消さずに押せない状態で並べるのは docs/06-ui.md「`Tokens` の `gradients`」 */}
           <Button
             kind={ButtonKinds.Icon}
