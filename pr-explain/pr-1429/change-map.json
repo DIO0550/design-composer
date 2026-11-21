@@ -1,0 +1,98 @@
+{
+  "version": 2,
+  "pr": 1429,
+  "headBranch": "claude/affectionate-hypatia-8znnyd",
+  "baseBranch": "main",
+  "mergeBase": "a6653bbdf22fbc703a8533dc393668e525895ee2",
+  "head": "14a5da97d5f5f561d7b8884ee94916b740a47fee",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/check-test-rules.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/test-rules-scan.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": "rules/testing.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "14a5da97d5f5f561d7b8884ee94916b740a47fee",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-21T00:02:08Z",
+      "subject": "rules/testing.md の「枠そのものを見る」実例を判例参照へ置き換える",
+      "body": "count.sh --shrink 節 2（以降 10 本以上で再発 0）の test に該当。\n同じ例は harness/case-law/testing.md「assert が落ちない形」が既に持つ。\n\nRefs #1428\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RmAJ4EeoWi9EhUx9j",
+      "files": [
+        {
+          "path": "rules/testing.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -46,7 +46,7 @@\n 判断の仕方: **その assert を落とすために実装をどう壊せるかを考える。** 壊し方が思いつかないなら、そのテストは何も守っていない。\n \n - **既定値・フォールバックがある処理では、既定値と違う答えになる入力を選ぶ。** 規則で決まる答えと既定値が同じ入力では、規則を丸ごと壊しても既定値で通ってしまう\n-- **「空になる」「出さない」を確かめるときは、対照を 1 件置き、入力から自明にならない側を見る。** 0 件のときに行がないのは入力から決まるので、行数では実装を守れない。「0 件なら枠を出さない」を守りたいなら枠そのものを見る\n+- **「空になる」「出さない」を確かめるときは、対照を 1 件置き、入力から自明にならない側を見る。** 0 件のときに行がないのは入力から決まるので、行数では実装を守れない（実例は判例「assert が落ちない形」）\n - **`queryBy*` が `null` になる理由が 2 通り以上あるなら、その assert は守っていない。** 対象を `getBy*` で引いてから、外れてほしい側だけを見る\n - **落ちるか迷ったら、その 1 件だけ実装を壊して走らせる。** 頭で判断せず実測する\n ",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/check-test-rules.sh",
+      "to": "rules/testing.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "to": "rules/testing.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/test-rules-scan.sh",
+      "to": "rules/testing.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-test-helper-duplication.sh",
+      "to": "rules/testing.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-added-test-helper-duplication.sh",
+      "to": "rules/testing.md",
+      "status": "kept"
+    }
+  ]
+}
