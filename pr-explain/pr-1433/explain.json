@@ -1,0 +1,1701 @@
+{
+  "version": 1,
+  "pr": 1433,
+  "sha": "c5fb1de7a64ea8d0f55616188d314668fa85fa9c",
+  "issue": 1415,
+  "overview": {
+    "title": "要素の実測を `canvas-dom` から汎用の `libs/element-measure` へ移す",
+    "lead": "`CanvasDom.boundsOf` / `CanvasDom.layoutSizeOf` を、本体を変えずに新しい `ElementMeasure` へ移し、呼び出し 9 行を付け替えた。キャンバスの外の要素（#1037 の階調のバー）も、`src/libs/` の同じ 1 箇所を通して測れるようになる。振る舞いは変えない。",
+    "before": [
+      {
+        "text": "ノードのドラッグ・画面へ収めるズーム・回ったノードのつまみ合わせは、`CanvasDom.boundsOf` / `CanvasDom.layoutSizeOf` で要素を実測していた",
+        "message": "drag-zone-old"
+      },
+      {
+        "text": "実測の置き場 `canvas-dom` の doc は範囲を「キャンバスに描かれた要素」としており、キャンバスの外の要素を測ると名前と実体がずれた"
+      },
+      {
+        "text": "`layoutSizeOf` の「HTML の要素でなければ `none`」の枝を守るテストが無かった（判定を外しても 0 件しか落ちない）"
+      }
+    ],
+    "after": [
+      {
+        "text": "同じ 4 つの呼び出し元（`use-node-drag` / `use-canvas-view` / `use-drawn-bounds` / `DrawnBounds`）は `ElementMeasure.boundsOf` / `ElementMeasure.layoutSizeOf` を呼ぶ",
+        "message": "drag-zone"
+      },
+      {
+        "text": "`boundsOf` / `layoutSizeOf` の実測（`getBoundingClientRect` / `offsetWidth` / `offsetHeight`）を読むのは `ElementMeasure` だけになり、`CanvasDom` 側の入口は残さない（委譲もしない）",
+        "message": "read-rect"
+      },
+      {
+        "text": "長さを当てて測る `CanvasDom.layoutSizeFor`（`getComputedStyle` を読む）は `canvas-dom` に残る"
+      },
+      {
+        "text": "`layoutSizeOf` の 2 つの枝（HTML の要素は変形前のレイアウトの大きさ / SVG は `none`）をテストで固定した",
+        "message": "read-layout"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "残した長さの当て測り",
+        "text": "`layoutSizeFor` も実測を読むが移していない。`style` を当てて戻す安全性がキャンバスの前提（中身は React の管理外）に乗っているため。ゴールの「読み口は 1 箇所」をこの意味で読み替えた点を見てほしい",
+        "go": {
+          "kind": "callBox",
+          "id": "box-layout-size-for"
+        }
+      },
+      {
+        "title": "同じ綴りのテストヘルパー",
+        "text": "新モジュールとテストヘルパーが同じ `element-measure` の名前になった。テスト側のコメント 6 箇所の「理由は `element-measure` の doc」は 2 通りに読めるが、書き換えない範囲なので触らず、新モジュールの doc からヘルパーへ案内した",
+        "go": {
+          "kind": "file",
+          "path": "src/libs/__tests__/element-measure.ts"
+        }
+      },
+      {
+        "title": "移した実測の入口",
+        "text": "本体は一字一句同じ。doc だけキャンバス前提の語（「描かれている」「キャンバスの feature」）を外した",
+        "go": {
+          "kind": "module",
+          "path": "src/libs/element-measure/index.ts"
+        }
+      },
+      {
+        "title": "落とし先の実測",
+        "text": "ドラッグの落とし先を測る呼び出しは、このページのテストでは直接守っていない（既存の通しのテストで、測る要素を取り違えると落ちることをレビューで実測済み）",
+        "go": {
+          "kind": "stepChange",
+          "flow": "drag",
+          "stepChange": 3
+        }
+      },
+      {
+        "title": "要素の実測の層",
+        "text": "移動は libs の中で閉じており、層の向き（libs が import するのは utils だけ）は変わらない",
+        "go": {
+          "kind": "layer",
+          "layer": "libs"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "measure",
+      "label": "要素の実測",
+      "role": "ブラウザが決めた要素の矩形とレイアウトの大きさを読む入口を、キャンバスに限らない汎用のモジュールへ移す",
+      "review": [
+        "`ElementMeasure` の 2 関数の本体が、移動元と一字一句同じか",
+        "`CanvasDom` に `boundsOf` / `layoutSizeOf` の入口が残っていないか（委譲も含む）"
+      ]
+    },
+    {
+      "id": "callers",
+      "label": "キャンバスの呼び出し側",
+      "role": "実測を使うキャンバスのフックと `DrawnBounds` の呼び出し先を付け替える",
+      "review": [
+        "付け替えた 9 行で、測る要素（親・子・器・土台）が変わっていないか",
+        "`CanvasDom.elementOf` を使うファイルで `CanvasDom` の import を残しているか"
+      ]
+    },
+    {
+      "id": "measure-tests",
+      "label": "実測のテスト",
+      "role": "移す前の振る舞いをテストで固定し、テストとテストヘルパーを新しいモジュールに合わせる",
+      "review": [
+        "移したテスト 2 本で、変えたのが import 名と呼び出し名だけか"
+      ]
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "libs",
+      "role": "ブラウザの実測を読む境界。この PR で `canvas-dom` から `element-measure` へ実測の入口を移した"
+    },
+    {
+      "layer": "features / editor/features/canvas",
+      "role": "キャンバスのドラッグ・ズーム・つまみ合わせ。実測の呼び出し先だけを付け替えた"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/libs/element-measure/index.ts",
+      "name": "要素の実測",
+      "role": "要素の client 座標の矩形と、変形を効かせる前のレイアウトの大きさを測る",
+      "feature": "measure",
+      "change": "新しく作り、`CanvasDom` から 2 関数を本体を変えずに移した",
+      "icon": "scan"
+    },
+    {
+      "path": "src/libs/canvas-dom/index.ts",
+      "name": "キャンバスの DOM",
+      "role": "名前で要素を引き、キャンバス固有の DOM 操作（長さを当てて測る・下の要素を引く）を閉じ込める",
+      "feature": "measure",
+      "change": "`boundsOf` / `layoutSizeOf` を削り、doc の参照を `ElementMeasure` に直した"
+    },
+    {
+      "path": "src/libs/__tests__/element-measure.ts",
+      "name": "実測の差し替え",
+      "role": "テストで要素の実測（矩形・レイアウトの大きさ・計算値）を差し替える",
+      "feature": "measure-tests",
+      "change": "型の import と doc を `ElementMeasure` に付け替えた"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "name": "ノードのドラッグ",
+      "role": "ドラッグ中の落とし先の親と子を測り、どこへ挿すかを決める",
+      "feature": "callers",
+      "change": "`boundsOf` の呼び出し 4 か所を付け替えた",
+      "icon": "widget"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "name": "キャンバスの見え方",
+      "role": "ズーム・パンと、名前で指したものを画面へ収める",
+      "feature": "callers",
+      "change": "土台を測る 1 か所を付け替えた",
+      "icon": "widget"
+    },
+    {
+      "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "name": "描かれた矩形の追いかけ",
+      "role": "回って描かれている矩形を器からの相対で追いかけ、リサイズのつまみを重ねる",
+      "feature": "callers",
+      "change": "器を測る 1 か所を付け替えた",
+      "icon": "widget"
+    },
+    {
+      "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "name": "名前で引いて測る",
+      "role": "名前で要素を引き、描かれている矩形や回る前の大きさを測る",
+      "feature": "callers",
+      "change": "`boundsOf` 2 か所と `layoutSizeOf` 1 か所を付け替えた"
+    },
+    {
+      "path": "src/libs/element-measure/__tests__/element-measure.bounds.test.ts",
+      "name": "矩形の実測のテスト",
+      "role": "要素の矩形を client 座標の位置と大きさで返すことを確かめる",
+      "feature": "measure-tests",
+      "change": "`canvas-dom/__tests__/` から移し、import 名と呼び出し名を付け替えた",
+      "graph": false
+    },
+    {
+      "path": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+      "name": "回る前の大きさのテスト",
+      "role": "レイアウトの大きさの 2 つの枝を確かめる",
+      "feature": "measure-tests",
+      "change": "第 1 コミットで `canvas-dom/__tests__/` に足し、第 2 コミットでここへ移した",
+      "graph": false
+    }
+  ],
+  "actors": [
+    {
+      "id": "user",
+      "label": "操作する人",
+      "role": "キャンバスでノードをドラッグし、選び、画面へ収める"
+    },
+    {
+      "id": "browser",
+      "label": "ブラウザのレイアウト",
+      "role": "要素の位置と大きさを決め、実測の API で答える",
+      "icon": "store"
+    }
+  ],
+  "messages": [
+    {
+      "id": "op-fit",
+      "from": "user",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "kind": "cmd",
+      "name": "画面へ収める",
+      "code": "canvasView.fitTo(names)",
+      "via": "call",
+      "payload": "収める artboard / ノードの名前（Shift+1 / Shift+2）"
+    },
+    {
+      "id": "op-drag",
+      "from": "user",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "kind": "cmd",
+      "name": "ノードをドラッグして落とす",
+      "code": "onPointerMove(event) / onPointerUp()",
+      "via": "call",
+      "payload": "ポインタの位置"
+    },
+    {
+      "id": "op-select",
+      "from": "user",
+      "to": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "kind": "evt",
+      "name": "回ったノードを選ぶ",
+      "code": "useDrawnBounds(target, container, basis)",
+      "via": "state",
+      "payload": "選んだノードの名前と、画面上の向き・倍率"
+    },
+    {
+      "id": "fit-enclosing",
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "kind": "qry",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "name": "収める範囲を測る",
+      "code": "DrawnBounds.enclosing(names)",
+      "via": "call",
+      "returns": "描かれているぶんを囲む矩形。どれも描かれていなければ `none`"
+    },
+    {
+      "id": "fit-surface",
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "kind": "qry",
+      "name": "土台を測る",
+      "code": "ElementMeasure.boundsOf(surface)",
+      "via": "call",
+      "returns": "土台の client 座標の矩形",
+      "status": "added"
+    },
+    {
+      "id": "fit-surface-old",
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "kind": "qry",
+      "name": "土台を測る（変更前）",
+      "code": "CanvasDom.boundsOf(surface)",
+      "via": "call",
+      "returns": "土台の client 座標の矩形",
+      "status": "removed"
+    },
+    {
+      "id": "drag-rotated",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "kind": "qry",
+      "name": "運ぶものと落とし先の回った矩形を測る",
+      "code": "DrawnBounds.measureRotated(name, rotation, view)",
+      "via": "call",
+      "returns": "回って描かれている矩形と向き"
+    },
+    {
+      "id": "drag-zone",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "kind": "qry",
+      "name": "落とし先の親と子を測る",
+      "code": "ElementMeasure.boundsOf(element)",
+      "via": "call",
+      "payload": "`CanvasDom.elementOf` で引いた落とし先の親と、名前を持つ直下の子",
+      "returns": "親と子の client 座標の矩形",
+      "status": "added"
+    },
+    {
+      "id": "drag-zone-old",
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "kind": "qry",
+      "name": "落とし先の親と子を測る（変更前）",
+      "code": "CanvasDom.boundsOf(element)",
+      "via": "call",
+      "returns": "親と子の client 座標の矩形",
+      "status": "removed"
+    },
+    {
+      "id": "handles-origin",
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "kind": "qry",
+      "name": "つまみを重ねる器を測る",
+      "code": "ElementMeasure.boundsOf(container)",
+      "via": "call",
+      "returns": "座標の原点にする器の矩形",
+      "status": "added"
+    },
+    {
+      "id": "handles-origin-old",
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "kind": "qry",
+      "name": "つまみを重ねる器を測る（変更前）",
+      "code": "CanvasDom.boundsOf(container)",
+      "via": "call",
+      "returns": "座標の原点にする器の矩形",
+      "status": "removed"
+    },
+    {
+      "id": "handles-rotated",
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "kind": "qry",
+      "name": "選んだノードの回った矩形を測る",
+      "code": "DrawnBounds.measureRotated(name, basis.rotation, basis.view)",
+      "via": "call",
+      "returns": "回って描かれている矩形と向き"
+    },
+    {
+      "id": "drawn-lookup",
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "kind": "qry",
+      "name": "名前で要素を引く",
+      "code": "CanvasDom.elementOf(name)",
+      "via": "call",
+      "returns": "その名前で描かれた要素。画面に出ていなければ `none`"
+    },
+    {
+      "id": "drawn-rect",
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "kind": "qry",
+      "name": "引いた要素の外接矩形を測る",
+      "code": "ElementMeasure.boundsOf(element)",
+      "via": "call",
+      "returns": "軸に平行な外接矩形",
+      "status": "added"
+    },
+    {
+      "id": "drawn-rect-old",
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "kind": "qry",
+      "name": "引いた要素の外接矩形を測る（変更前）",
+      "code": "CanvasDom.boundsOf(element)",
+      "via": "call",
+      "returns": "軸に平行な外接矩形",
+      "status": "removed"
+    },
+    {
+      "id": "drawn-layout",
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "kind": "qry",
+      "name": "回る前の大きさを測る",
+      "code": "ElementMeasure.layoutSizeOf(element)",
+      "via": "call",
+      "returns": "変形前のレイアウトの幅と高さ。HTML の要素でなければ `none`",
+      "status": "added"
+    },
+    {
+      "id": "drawn-layout-old",
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "kind": "qry",
+      "name": "回る前の大きさを測る（変更前）",
+      "code": "CanvasDom.layoutSizeOf(element)",
+      "via": "call",
+      "returns": "変形前のレイアウトの幅と高さ。HTML の要素でなければ `none`",
+      "status": "removed"
+    },
+    {
+      "id": "read-rect",
+      "from": "src/libs/element-measure/index.ts",
+      "to": "browser",
+      "kind": "qry",
+      "name": "矩形を読む",
+      "code": "element.getBoundingClientRect()",
+      "via": "call",
+      "returns": "client 座標の `DOMRect`",
+      "status": "added"
+    },
+    {
+      "id": "read-rect-old",
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "browser",
+      "kind": "qry",
+      "name": "矩形を読む（変更前）",
+      "code": "element.getBoundingClientRect()",
+      "via": "call",
+      "returns": "client 座標の `DOMRect`",
+      "status": "removed"
+    },
+    {
+      "id": "read-layout",
+      "from": "src/libs/element-measure/index.ts",
+      "to": "browser",
+      "kind": "qry",
+      "name": "レイアウトの大きさを読む",
+      "code": "element.offsetWidth / element.offsetHeight",
+      "via": "call",
+      "returns": "border を含む整数の幅と高さ",
+      "status": "added"
+    },
+    {
+      "id": "read-layout-old",
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "browser",
+      "kind": "qry",
+      "name": "レイアウトの大きさを読む（変更前）",
+      "code": "element.offsetWidth / element.offsetHeight",
+      "via": "call",
+      "returns": "border を含む整数の幅と高さ",
+      "status": "removed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "fit",
+      "label": "選んだものを画面へ収めたとき",
+      "gist": "土台の矩形を測る先が `CanvasDom` から `ElementMeasure` に替わった。測る値と手順の数は同じ",
+      "text": "Shift+1 / Shift+2 で、名前で指したものが画面に収まる倍率と位置を決める。収める先はキャンバスの土台で、その左上が中身の transform の原点になる。",
+      "steps": [
+        "op-fit",
+        "fit-enclosing",
+        "fit-surface",
+        "read-rect"
+      ],
+      "beforeSteps": [
+        "op-fit",
+        "fit-enclosing",
+        "fit-surface-old",
+        "read-rect-old"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1
+        },
+        {
+          "beforeStep": 2,
+          "afterStep": 2
+        },
+        {
+          "status": "changed",
+          "beforeStep": 3,
+          "afterStep": 3,
+          "beforeText": "`CanvasDom.boundsOf(surface)` で土台を測っていた",
+          "afterText": "`ElementMeasure.boundsOf(surface)` で土台を測る",
+          "change": "呼び出し先のモジュールだけが替わった。土台は描かれた要素ではない器で、`canvas-dom` の範囲（描かれた要素）から既に外れていた"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 4,
+          "afterStep": 4,
+          "beforeText": "`canvas-dom` が `getBoundingClientRect` を読んでいた",
+          "afterText": "`element-measure` が `getBoundingClientRect` を読む",
+          "change": "読む API と返す形は同じ"
+        }
+      ],
+      "measure": {
+        "what": "土台を測るまでの手順",
+        "before": "4",
+        "after": "4"
+      }
+    },
+    {
+      "id": "drag",
+      "label": "ノードをドラッグして落としたとき",
+      "gist": "落とし先の親と子を測る先が `ElementMeasure` に替わった。運ぶものの回った矩形は従来どおり `DrawnBounds` が測る",
+      "text": "ドラッグ中は、落とし先の親と、名前を持つ直下の子の矩形を測って、挿す位置（落とし先の帯）や別の親へ移すときの座標を決める。",
+      "steps": [
+        "op-drag",
+        "drag-rotated",
+        "drag-zone",
+        "read-rect"
+      ],
+      "beforeSteps": [
+        "op-drag",
+        "drag-rotated",
+        "drag-zone-old",
+        "read-rect-old"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1
+        },
+        {
+          "beforeStep": 2,
+          "afterStep": 2
+        },
+        {
+          "status": "changed",
+          "beforeStep": 3,
+          "afterStep": 3,
+          "beforeText": "`measureZone` / `measureReposition` が `CanvasDom.boundsOf` を 4 か所で呼んでいた",
+          "afterText": "同じ 4 か所が `ElementMeasure.boundsOf` を呼ぶ",
+          "change": "測る要素（親・子・落とし先）は変えていない。`CanvasDom` の import は `elementOf` に使うので残した"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 4,
+          "afterStep": 4,
+          "beforeText": "`canvas-dom` が `getBoundingClientRect` を読んでいた",
+          "afterText": "`element-measure` が `getBoundingClientRect` を読む",
+          "change": "読む API と返す形は同じ"
+        }
+      ]
+    },
+    {
+      "id": "handles",
+      "label": "回ったノードを選んだとき",
+      "gist": "器・外接矩形・回る前の大きさを測る 3 つの呼び出しが `ElementMeasure` に替わった。名前で要素を引くのは `CanvasDom` のまま",
+      "text": "リサイズのつまみを回った辺に重ねるため、外接矩形と回る前のレイアウトの大きさを測り、器の左上からの相対に直す。",
+      "steps": [
+        "op-select",
+        "handles-origin",
+        "handles-rotated",
+        "drawn-lookup",
+        "drawn-rect",
+        "drawn-layout",
+        "read-layout"
+      ],
+      "beforeSteps": [
+        "op-select",
+        "handles-origin-old",
+        "handles-rotated",
+        "drawn-lookup",
+        "drawn-rect-old",
+        "drawn-layout-old",
+        "read-layout-old"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "`CanvasDom.boundsOf(container)` で器を測っていた",
+          "afterText": "`ElementMeasure.boundsOf(container)` で器を測る",
+          "change": "器は ref で掴んだ要素で、描かれた要素ではない"
+        },
+        {
+          "beforeStep": 3,
+          "afterStep": 3
+        },
+        {
+          "beforeStep": 4,
+          "afterStep": 4
+        },
+        {
+          "status": "changed",
+          "beforeStep": 5,
+          "afterStep": 5,
+          "beforeText": "`CanvasDom.boundsOf(element)` で外接矩形を測っていた",
+          "afterText": "`ElementMeasure.boundsOf(element)` で外接矩形を測る",
+          "change": "呼び出し先のモジュールだけが替わった"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 6,
+          "afterStep": 6,
+          "beforeText": "`CanvasDom.layoutSizeOf(element)` で回る前の大きさを測っていた",
+          "afterText": "`ElementMeasure.layoutSizeOf(element)` で回る前の大きさを測る",
+          "change": "呼び出し先のモジュールだけが替わった。HTML の要素でなければ `none` になる枝も同じ"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 7,
+          "afterStep": 7,
+          "beforeText": "`canvas-dom` が `offsetWidth` / `offsetHeight` を読んでいた",
+          "afterText": "`element-measure` が `offsetWidth` / `offsetHeight` を読む",
+          "change": "読む API と返す形は同じ"
+        }
+      ]
+    }
+  ],
+  "calls": {
+    "gist": "実測の 2 関数を `CanvasDom` から `ElementMeasure` へ移し、9 行の呼び出しをすべて付け替えた",
+    "text": "変更前は `CanvasDom` が名前で要素を引く関数と実測の関数を両方持っていた。変更後は実測（`boundsOf` / `layoutSizeOf`）だけを `ElementMeasure` に移し、呼び出し元は要素を引くのに `CanvasDom.elementOf`、測るのに `ElementMeasure` を使う。`CanvasDom` に委譲の入口は残していない。長さを当てて測る `layoutSizeFor` は `CanvasDom` に残る。",
+    "review": [
+      "`CanvasDom.boundsOf` / `CanvasDom.layoutSizeOf` を呼ぶ線が残っていないか（`src` での grep が 0 行）",
+      "残した `layoutSizeFor` の理由（キャンバスの前提に乗る）が `ElementMeasure` の doc と合っているか"
+    ],
+    "boxes": [
+      {
+        "id": "box-em-bounds",
+        "name": "ElementMeasure.boundsOf",
+        "role": "要素の client 座標の矩形を測る",
+        "module": "src/libs/element-measure/index.ts",
+        "status": "added",
+        "now": "移動元と同じ本体で `getBoundingClientRect` を読む。doc から「描かれている」を外した"
+      },
+      {
+        "id": "box-em-layout",
+        "name": "ElementMeasure.layoutSizeOf",
+        "role": "変形を効かせる前のレイアウトの大きさを測る",
+        "module": "src/libs/element-measure/index.ts",
+        "status": "added",
+        "now": "移動元と同じ本体。HTML の要素なら `offsetWidth` / `offsetHeight`、そうでなければ `none`"
+      },
+      {
+        "id": "box-cd-bounds",
+        "name": "CanvasDom.boundsOf",
+        "role": "要素の client 座標の矩形を測る",
+        "module": "src/libs/canvas-dom/index.ts",
+        "status": "removed",
+        "was": "`canvas-dom` の中で `getBoundingClientRect` を読んでいた"
+      },
+      {
+        "id": "box-cd-layout",
+        "name": "CanvasDom.layoutSizeOf",
+        "role": "変形を効かせる前のレイアウトの大きさを測る",
+        "module": "src/libs/canvas-dom/index.ts",
+        "status": "removed",
+        "was": "`canvas-dom` の中で `offsetWidth` / `offsetHeight` を読んでいた"
+      },
+      {
+        "id": "box-element-of",
+        "name": "CanvasDom.elementOf",
+        "role": "名前の属性を選択子にして描かれた要素を引く",
+        "module": "src/libs/canvas-dom/index.ts",
+        "now": "変えていない。引いた要素を測るのは `ElementMeasure` になった"
+      },
+      {
+        "id": "box-layout-size-for",
+        "name": "CanvasDom.layoutSizeFor",
+        "role": "長さを当てて描いたときのレイアウトの大きさを測る",
+        "module": "src/libs/canvas-dom/index.ts",
+        "now": "移さずに残した。doc の参照を「`ElementMeasure.boundsOf` と同じ」に直しただけ"
+      },
+      {
+        "id": "box-measure-zone",
+        "name": "measureZone",
+        "role": "落とし先の親と、名前を持つ直下の子の矩形を測る",
+        "module": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+        "now": "親を `CanvasDom.elementOf` で引き、親と子を `ElementMeasure.boundsOf` で測る"
+      },
+      {
+        "id": "box-measure-reposition",
+        "name": "measureReposition",
+        "role": "別の親へ移すときの落とし先と、運ばない兄弟を測る",
+        "module": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+        "now": "落とし先と兄弟を `ElementMeasure.boundsOf` で測る"
+      },
+      {
+        "id": "box-fit-to",
+        "name": "fitTo",
+        "role": "名前で指したものが画面に収まる倍率と位置にする",
+        "module": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+        "now": "土台を `ElementMeasure.boundsOf` で測る"
+      },
+      {
+        "id": "box-hook-measure",
+        "name": "measure（use-drawn-bounds）",
+        "role": "回って描かれている矩形を器からの相対に直す",
+        "module": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+        "now": "器を `ElementMeasure.boundsOf` で測る"
+      },
+      {
+        "id": "box-drawn-measure",
+        "name": "DrawnBounds.measure",
+        "role": "名前で引いた要素の描かれている矩形",
+        "module": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+        "now": "`CanvasDom.elementOf` で引き、`ElementMeasure.boundsOf` で測る"
+      },
+      {
+        "id": "box-drawn-rotated",
+        "name": "DrawnBounds.measureRotated",
+        "role": "名前で引いた要素の回って描かれている矩形",
+        "module": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+        "now": "外接矩形を `ElementMeasure.boundsOf`、回る前の大きさを `ElementMeasure.layoutSizeOf` で測る"
+      },
+      {
+        "id": "box-measured-bounds",
+        "name": "MeasuredBounds（テストヘルパーの型）",
+        "role": "テストで差し替える矩形の形",
+        "module": "src/libs/__tests__/element-measure.ts",
+        "status": "changed",
+        "was": "`CanvasDom.boundsOf` の戻り値の形から取っていた",
+        "now": "`ElementMeasure.boundsOf` の戻り値の形から取る"
+      }
+    ],
+    "edges": [
+      {
+        "id": "e-zone-new",
+        "from": "box-measure-zone",
+        "to": "box-em-bounds",
+        "code": "ElementMeasure.boundsOf(element) / namedChildrenOf(element).map(ElementMeasure.boundsOf)",
+        "status": "added",
+        "now": "親と子を測る 2 か所"
+      },
+      {
+        "id": "e-zone-old",
+        "from": "box-measure-zone",
+        "to": "box-cd-bounds",
+        "code": "CanvasDom.boundsOf(element) / namedChildrenOf(element).map(CanvasDom.boundsOf)",
+        "status": "removed",
+        "was": "同じ 2 か所が `CanvasDom` を呼んでいた"
+      },
+      {
+        "id": "e-zone-lookup",
+        "from": "box-measure-zone",
+        "to": "box-element-of",
+        "code": "CanvasDom.elementOf(parent.name)",
+        "now": "親を名前で引くのは変わらない"
+      },
+      {
+        "id": "e-reposition-new",
+        "from": "box-measure-reposition",
+        "to": "box-em-bounds",
+        "code": "ElementMeasure.boundsOf(droppedElement.value) / .map(ElementMeasure.boundsOf)",
+        "status": "added",
+        "now": "落とし先と兄弟を測る 2 か所"
+      },
+      {
+        "id": "e-reposition-old",
+        "from": "box-measure-reposition",
+        "to": "box-cd-bounds",
+        "code": "CanvasDom.boundsOf(droppedElement.value) / .map(CanvasDom.boundsOf)",
+        "status": "removed",
+        "was": "同じ 2 か所が `CanvasDom` を呼んでいた"
+      },
+      {
+        "id": "e-fit-new",
+        "from": "box-fit-to",
+        "to": "box-em-bounds",
+        "code": "ElementMeasure.boundsOf(surface)",
+        "status": "added",
+        "now": "土台（描かれた要素ではない器）を測る"
+      },
+      {
+        "id": "e-fit-old",
+        "from": "box-fit-to",
+        "to": "box-cd-bounds",
+        "code": "CanvasDom.boundsOf(surface)",
+        "status": "removed",
+        "was": "土台を `CanvasDom` で測っていた"
+      },
+      {
+        "id": "e-hook-new",
+        "from": "box-hook-measure",
+        "to": "box-em-bounds",
+        "code": "ElementMeasure.boundsOf(container)",
+        "status": "added",
+        "now": "つまみを重ねる器を測る"
+      },
+      {
+        "id": "e-hook-old",
+        "from": "box-hook-measure",
+        "to": "box-cd-bounds",
+        "code": "CanvasDom.boundsOf(container)",
+        "status": "removed",
+        "was": "器を `CanvasDom` で測っていた"
+      },
+      {
+        "id": "e-hook-rotated",
+        "from": "box-hook-measure",
+        "to": "box-drawn-rotated",
+        "code": "DrawnBounds.measureRotated(name, basis.rotation, basis.view)",
+        "now": "変えていない"
+      },
+      {
+        "id": "e-drawn-measure-new",
+        "from": "box-drawn-measure",
+        "to": "box-em-bounds",
+        "code": "Option.map(CanvasDom.elementOf(name), ElementMeasure.boundsOf)",
+        "status": "added",
+        "now": "引いた要素を `ElementMeasure` で測る"
+      },
+      {
+        "id": "e-drawn-measure-old",
+        "from": "box-drawn-measure",
+        "to": "box-cd-bounds",
+        "code": "Option.map(CanvasDom.elementOf(name), CanvasDom.boundsOf)",
+        "status": "removed",
+        "was": "引くのも測るのも `CanvasDom` だった"
+      },
+      {
+        "id": "e-drawn-measure-lookup",
+        "from": "box-drawn-measure",
+        "to": "box-element-of",
+        "code": "CanvasDom.elementOf(name)",
+        "now": "変えていない"
+      },
+      {
+        "id": "e-rotated-bounds-new",
+        "from": "box-drawn-rotated",
+        "to": "box-em-bounds",
+        "code": "ElementMeasure.boundsOf(element)",
+        "status": "added",
+        "now": "外接矩形を測る"
+      },
+      {
+        "id": "e-rotated-bounds-old",
+        "from": "box-drawn-rotated",
+        "to": "box-cd-bounds",
+        "code": "CanvasDom.boundsOf(element)",
+        "status": "removed",
+        "was": "外接矩形を `CanvasDom` で測っていた"
+      },
+      {
+        "id": "e-rotated-layout-new",
+        "from": "box-drawn-rotated",
+        "to": "box-em-layout",
+        "code": "ElementMeasure.layoutSizeOf(element)",
+        "status": "added",
+        "now": "回る前の大きさを測る（回りが一周の整数倍なら呼ばない）"
+      },
+      {
+        "id": "e-rotated-layout-old",
+        "from": "box-drawn-rotated",
+        "to": "box-cd-layout",
+        "code": "CanvasDom.layoutSizeOf(element)",
+        "status": "removed",
+        "was": "回る前の大きさを `CanvasDom` で測っていた"
+      },
+      {
+        "id": "e-rotated-lookup",
+        "from": "box-drawn-rotated",
+        "to": "box-element-of",
+        "code": "CanvasDom.elementOf(name)",
+        "now": "変えていない"
+      },
+      {
+        "id": "e-stub-type-new",
+        "from": "box-measured-bounds",
+        "to": "box-em-bounds",
+        "code": "ReturnType<typeof ElementMeasure.boundsOf>",
+        "status": "added",
+        "now": "差し替える矩形の形を移動先から取る"
+      },
+      {
+        "id": "e-stub-type-old",
+        "from": "box-measured-bounds",
+        "to": "box-cd-bounds",
+        "code": "ReturnType<typeof CanvasDom.boundsOf>",
+        "status": "removed",
+        "was": "移動元から取っていた"
+      }
+    ]
+  },
+  "commitStories": [
+    {
+      "sha": "1f9b9951f19f3ccf3d60cd2a2152a0c6c9807133",
+      "phase": "prep",
+      "role": "移す前に `layoutSizeOf` の 2 つの枝を、今のコードのままテストで固定する",
+      "why": "リファクタの「振る舞いが変わっていない」根拠は書き換えない既存テストだけになる。計画の段階で実装を壊して測ると、`layoutSizeOf` の HTML 判定を外しても落ちるテストが 0 件で、`none` の枝を守るものが無かった。移動の前に足して、第 2 コミットの比較基準にした。",
+      "review": [
+        "外接矩形とレイアウトの大きさ、幅と高さをすべて違う値にしているか（取り違えや外接矩形を読む実装で落ちるように）",
+        "テストを足しただけで、実装に触れていないか"
+      ],
+      "before": [
+        {
+          "text": "`layoutSizeOf` の `none` の枝（HTML でない要素）を守るテストが無い"
+        }
+      ],
+      "after": [
+        {
+          "text": "HTML の要素は変形前の大きさ、SVG は `none` を返すことをテストが固定する",
+          "message": "read-layout-old"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.untransformed-size.test.ts",
+          "start": 6,
+          "end": 14,
+          "text": "外接矩形（150 × 130）とレイアウトの大きさ（100 × 60）を違う値にしてある。外接矩形を読む実装へ差し替えると落ちる"
+        },
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.untransformed-size.test.ts",
+          "start": 16,
+          "end": 23,
+          "text": "HTML の要素かどうかの判定を守るのはこの 1 件だけ（フェーズ 6 の実測で、判定を外すと落ちるのはこれ 1 件）"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.untransformed-size.test.ts",
+          "start": 1,
+          "end": 23,
+          "feature": "measure-tests",
+          "text": "`layoutSizeOf` の 2 つの枝を固定するテストを足した"
+        }
+      ]
+    },
+    {
+      "sha": "c5fb1de7a64ea8d0f55616188d314668fa85fa9c",
+      "phase": "core",
+      "role": "`boundsOf` / `layoutSizeOf` を `ElementMeasure` へ移し、呼び出し 9 行とテストを付け替える",
+      "why": "#1037 で階調のバー（キャンバスの外の要素）を測る必要があり、`canvas-dom`（範囲はキャンバスに描かれた要素）で測ると名前と実体がずれる。`boundsOf` 自体には canvas 固有のものが無く、`use-canvas-view` は既に描かれた要素ではない土台を測っていた。委譲を残すと入口が 2 つになるので、全呼び出しを付け替えた。",
+      "flows": [
+        "fit",
+        "drag",
+        "handles"
+      ],
+      "review": [
+        "移した 2 関数の本体が移動元と一字一句同じか（差分は doc の語だけ）",
+        "`use-node-drag` と `DrawnBounds` は `CanvasDom.elementOf` を使い続けるので、`CanvasDom` の import を残しているか",
+        "`layoutSizeFor` を残す理由が新しいモジュールの doc に書かれているか",
+        "移したテスト 2 本で、変えたのが import 名と呼び出し名だけか"
+      ],
+      "before": [
+        {
+          "text": "実測の入口は `CanvasDom.boundsOf` / `CanvasDom.layoutSizeOf`",
+          "message": "drawn-layout-old"
+        }
+      ],
+      "after": [
+        {
+          "text": "実測の入口は `ElementMeasure.boundsOf` / `ElementMeasure.layoutSizeOf` だけ",
+          "message": "drawn-layout"
+        },
+        {
+          "text": "要素を名前で引くのは引き続き `CanvasDom.elementOf`",
+          "message": "drawn-lookup"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/libs/element-measure/index.ts",
+          "start": 3,
+          "end": 12,
+          "text": "`canvas-dom` に置かない理由と、`layoutSizeFor` を移さない理由。テストヘルパーへの案内もここに置き、テスト側のコメント 6 箇所は書き換えていない"
+        },
+        {
+          "path": "src/libs/element-measure/index.ts",
+          "start": 15,
+          "end": 20,
+          "text": "移動元の「描かれている要素の矩形」「キャンバスの feature」をキャンバスに限らない語に直した。`@param` の「`elementOf` などで引いた後の要素」も外した"
+        },
+        {
+          "path": "src/libs/element-measure/index.ts",
+          "start": 45,
+          "end": 54,
+          "text": "本体は移動元と同じ。`instanceof HTMLElement` の判定は第 1 コミットの SVG のテストだけが守っている"
+        },
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "side": "old",
+          "start": 47,
+          "end": 87,
+          "text": "移した 2 関数。ここから `ElementMeasure` へ本体を変えずに移した"
+        },
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "start": 14,
+          "end": 14,
+          "text": "モジュール doc の「DOM を触る場所の地図」で、実測の項を `ElementMeasure` に差し替えた（同じ括弧には変更前から外のモジュールが並んでいる）"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "start": 122,
+          "end": 128,
+          "text": "`CanvasDom.elementOf` で引いて `ElementMeasure.boundsOf` で測る。引く側と測る側のモジュールが分かれた"
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "start": 53,
+          "end": 53,
+          "text": "回る前の大きさの読み口。回りが一周の整数倍なら上の早期 return で呼ばれない"
+        },
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "start": 15,
+          "end": 16,
+          "text": "差し替える矩形の型を移動先から取る。テストヘルパーを import する 16 ファイルはパスが変わらないので触っていない"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/libs/element-measure/index.ts",
+          "start": 1,
+          "end": 55,
+          "feature": "measure",
+          "text": "実測の 2 関数を移す先のモジュールを作った"
+        },
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "start": 14,
+          "end": 14,
+          "feature": "measure",
+          "text": "モジュール doc の実測の項を差し替えた"
+        },
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "side": "old",
+          "start": 47,
+          "end": 88,
+          "feature": "measure",
+          "text": "移した 2 関数を削った"
+        },
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "start": 55,
+          "end": 55,
+          "feature": "measure",
+          "text": "`layoutSizeFor` の doc の参照を移動先に直した"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "start": 45,
+          "end": 250,
+          "feature": "callers",
+          "text": "落とし先を測る 4 か所を付け替えた"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "start": 16,
+          "end": 197,
+          "feature": "callers",
+          "text": "土台を測る 1 か所を付け替えた"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+          "start": 7,
+          "end": 30,
+          "feature": "callers",
+          "text": "器を測る 1 か所を付け替えた"
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "start": 7,
+          "end": 53,
+          "feature": "callers",
+          "text": "外接矩形 2 か所と回る前の大きさ 1 か所を付け替えた"
+        },
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "start": 2,
+          "end": 16,
+          "feature": "measure-tests",
+          "text": "テストヘルパーの型 import と doc を付け替えた"
+        },
+        {
+          "path": "src/libs/element-measure/__tests__/element-measure.bounds.test.ts",
+          "start": 3,
+          "end": 17,
+          "feature": "measure-tests",
+          "text": "矩形のテストを移し、import 名と呼び出し名を付け替えた"
+        },
+        {
+          "path": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+          "start": 4,
+          "end": 22,
+          "feature": "measure-tests",
+          "text": "第 1 コミットのテストを移し、import 名と呼び出し名を付け替えた"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "em-bounds",
+      "label": "矩形の実測",
+      "file": "src/libs/element-measure/__tests__/element-measure.bounds.test.ts"
+    },
+    {
+      "id": "em-untransformed",
+      "label": "回る前の大きさの実測",
+      "file": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts"
+    },
+    {
+      "id": "fit-existing",
+      "label": "画面へ収める（既存）",
+      "file": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx"
+    },
+    {
+      "id": "drawn-existing",
+      "label": "描かれた矩形の追いかけ（既存）",
+      "file": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx"
+    }
+  ],
+  "tests": [
+    {
+      "id": "layout-size-html",
+      "suite": "em-untransformed",
+      "name": "HTML の要素は、外接矩形ではなく変形を効かせる前のレイアウトの幅と高さで測れる",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "回った要素の外接矩形からは回る前の大きさが決まらない。レイアウトの大きさを読むことと、幅と高さを取り違えないことを移動の前後で固定する",
+      "given": "外接矩形を (10, 20) 150 × 130、レイアウトの大きさを 100 × 60 に差し替えた `div`",
+      "when": "`ElementMeasure.layoutSizeOf` で測る",
+      "then": "`some({ width: 100, height: 60 })` になる（外接矩形の値は出てこない）",
+      "commit": "1f9b9951f19f3ccf3d60cd2a2152a0c6c9807133",
+      "excerpt": {
+        "path": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+        "start": 6,
+        "end": 14,
+        "emphasis": [
+          {
+            "start": 8,
+            "end": 9
+          }
+        ],
+        "text": "test(\"HTML の要素は、外接矩形ではなく変形を効かせる前のレイアウトの幅と高さで測れる\", () => {\n  const element = globalThis.document.createElement(\"div\");\n  stubBounds(element, { left: 10, top: 20, width: 150, height: 130 });\n  stubLayoutSize(element, { width: 100, height: 60 });\n\n  expect(ElementMeasure.layoutSizeOf(element)).toEqual(\n    Option.some({ width: 100, height: 60 }),\n  );\n});"
+      },
+      "values": {
+        "columns": [
+          "測るもの",
+          "差し替えた値",
+          "結果に出るか"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "外接矩形",
+              "(10, 20) 150 × 130",
+              "出ない"
+            ]
+          },
+          {
+            "cells": [
+              "レイアウトの大きさ",
+              "100 × 60",
+              "そのまま出る"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/libs/element-measure/index.ts"
+      ],
+      "covers": [
+        "read-layout"
+      ]
+    },
+    {
+      "id": "layout-size-svg",
+      "suite": "em-untransformed",
+      "name": "HTML の要素でない SVG はレイアウトの大きさを測れない",
+      "techniques": [
+        "boundary",
+        "equivalence",
+        "regression"
+      ],
+      "why": "`offsetWidth` / `offsetHeight` は HTML の要素にしかない。HTML の要素かどうかの判定を守るテストは、これを足すまで 0 件だった",
+      "given": "`createElementNS` で作った SVG の `svg` 要素",
+      "when": "`ElementMeasure.layoutSizeOf` で測る",
+      "then": "`none` になる",
+      "commit": "1f9b9951f19f3ccf3d60cd2a2152a0c6c9807133",
+      "excerpt": {
+        "path": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+        "start": 16,
+        "end": 23,
+        "text": "test(\"HTML の要素でない SVG はレイアウトの大きさを測れない\", () => {\n  const element = globalThis.document.createElementNS(\n    \"http://www.w3.org/2000/svg\",\n    \"svg\",\n  );\n\n  expect(ElementMeasure.layoutSizeOf(element)).toEqual(Option.none);\n});"
+      },
+      "values": {
+        "columns": [
+          "要素",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "HTML の `div`",
+              "`some(幅と高さ)`"
+            ]
+          },
+          {
+            "cells": [
+              "SVG の `svg`",
+              "`none`"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/libs/element-measure/index.ts"
+      ],
+      "covers": [
+        "read-layout"
+      ]
+    },
+    {
+      "id": "bounds-client",
+      "suite": "em-bounds",
+      "name": "描かれている要素の矩形を client 座標の位置と大きさで返す",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`getBoundingClientRect` の 4 値を取り違えずに写すこと。移動前の `canvas-dom.bounds.test.ts` をそのまま移した（テスト名は書き換えない範囲なので「描かれている」が残る）",
+      "given": "矩形を (10, 20) 30 × 40 に差し替えた `div`（4 値はすべて違う値）",
+      "when": "`ElementMeasure.boundsOf` で測る",
+      "then": "`{ left: 10, top: 20, width: 30, height: 40 }` を返す",
+      "commit": "c5fb1de7a64ea8d0f55616188d314668fa85fa9c",
+      "excerpt": {
+        "path": "src/libs/element-measure/__tests__/element-measure.bounds.test.ts",
+        "start": 10,
+        "end": 20,
+        "emphasis": [
+          {
+            "start": 17,
+            "end": 17
+          }
+        ],
+        "text": "function stubbedElement(): Element {\n  const element = globalThis.document.createElement(\"div\");\n  stubBounds(element, { left: 10, top: 20, width: 30, height: 40 });\n  return element;\n}\n\ntest(\"描かれている要素の矩形を client 座標の位置と大きさで返す\", () => {\n  const bounds = ElementMeasure.boundsOf(stubbedElement());\n\n  expect(bounds).toEqual({ left: 10, top: 20, width: 30, height: 40 });\n});"
+      },
+      "targets": [
+        "src/libs/element-measure/index.ts"
+      ],
+      "covers": [
+        "read-rect"
+      ]
+    },
+    {
+      "id": "fit-scale",
+      "suite": "fit-existing",
+      "name": "名前で指したものが収まる倍率と位置になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "この PR では触っていない既存テスト。付け替えた `ElementMeasure.boundsOf(surface)` を通るので、土台の矩形を取り違えると倍率と位置がずれる",
+      "given": "土台を (100, 50) 800 × 600、`home` を (100, 50) 1552 × 352 として描いた状態",
+      "when": "「収める」を押して `home` を収める",
+      "then": "transform が `translate(12px, 212px) scale(0.5)` になる",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx",
+        "start": 55,
+        "end": 63,
+        "text": "test(\"名前で指したものが収まる倍率と位置になる\", async () => {\n  // 等倍・原点で描かれている 1552 × 352 を、余白込みの 1600 × 400 として 0.5 倍で収める\n  drawNamed(\"home\", { left: 100, top: 50, width: 1552, height: 352 });\n  render(<FitHarness names={[\"home\"]} />);\n\n  await pressFit();\n\n  expect(transform()).toBe(\"translate(12px, 212px) scale(0.5)\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+        "src/features/editor/features/canvas/utils/DrawnBounds.ts"
+      ],
+      "covers": [
+        "fit-surface",
+        "fit-enclosing"
+      ]
+    },
+    {
+      "id": "drawn-rotated",
+      "suite": "drawn-existing",
+      "name": "回った要素は、レイアウトの大きさに倍率を掛けた矩形を外接矩形の中心に置いたものになる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "この PR では触っていない既存テスト。付け替えた器の実測・外接矩形の実測・回る前の大きさの実測の 3 つを通る",
+      "given": "器を (10, 20)、`card` の外接矩形を (100, 40) 300 × 200、回る前の大きさを 100 × 40 にし、30 度・2 倍で測る",
+      "when": "`useDrawnBounds` で `card` を追いかける",
+      "then": "器からの相対で `140,80,200,80` になる",
+      "excerpt": {
+        "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx",
+        "start": 103,
+        "end": 126,
+        "text": "test(\"回った要素は、レイアウトの大きさに倍率を掛けた矩形を外接矩形の中心に置いたものになる\", () => {\n  /*\n   * 外接矩形 (100, 40) 300x200 の中心は (250, 140)。回る前の大きさ 100x40 を 2 倍した\n   * 200x80 をそこへ置く。外接矩形の大きさからは導けない大きさにしてある。\n   */\n  const target = drawNamed(\"card\", {\n    left: 100,\n    top: 40,\n    width: 300,\n    height: 200,\n  });\n  stubLayoutSize(target, { width: 100, height: 40 });\n\n  render(\n    <BoundsProbe\n      target={Option.some(\"card\")}\n      rotation={30}\n      view={{ ...CanvasView.create(), scale: 2 }}\n    />,\n  );\n\n  // 器の左上（10, 20）を原点に置き直すので、(150, 100) は (140, 80) になる\n  expect(screen.getByTestId(\"bounds\").textContent).toBe(\"140,80,200,80\");\n});"
+      },
+      "targets": [
+        "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+        "src/features/editor/features/canvas/utils/DrawnBounds.ts"
+      ],
+      "covers": [
+        "handles-origin",
+        "handles-rotated",
+        "drawn-rect",
+        "drawn-layout"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "使う人から見て変わることはない",
+    "lead": "キャンバスで要素の位置と大きさを測る仕組みの置き場所を移しただけで、操作も画面も保存されるファイルも変わりません。次の作業（階調のバーのつまみのドラッグ）で、キャンバスの外の部品も同じ仕組みで測れるようにするための下準備です。",
+    "kept": [
+      {
+        "text": "Shift+1 / Shift+2 で画面へ収めたときの倍率と位置は今までどおり",
+        "tests": [
+          "fit-scale"
+        ]
+      },
+      {
+        "text": "回ったノードを選ぶと、リサイズのつまみは今までどおり回った辺に重なる",
+        "tests": [
+          "drawn-rotated"
+        ]
+      },
+      {
+        "text": "ノードをドラッグして親の中や別の親へ落とすとき、挿す位置と落とした後の座標の決まり方は今までどおり"
+      },
+      {
+        "text": "要素の位置と大きさは今までどおり、画面に実際に描かれている位置と大きさから測る",
+        "tests": [
+          "bounds-client"
+        ]
+      },
+      {
+        "text": "回った要素の回る前の大きさも今までどおり測れ、外接する四角の大きさと取り違えない",
+        "tests": [
+          "layout-size-html"
+        ]
+      },
+      {
+        "text": "大きさを持たない図形の要素（SVG）は、今までどおり大きさを測れないものとして扱う",
+        "tests": [
+          "layout-size-svg"
+        ]
+      },
+      {
+        "text": "範囲選択・アートボードのドラッグ・テキストの直接編集など、位置を測るほかの操作も変わらない"
+      },
+      {
+        "text": "保存されるドキュメントの中身は変わらない"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「キャンバス直接操作」の「ズーム」の項",
+        "text": "Shift+1 / Shift+2 で収める倍率と位置の記述は変えていない"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「キャンバス直接操作」の「リサイズハンドル」の項",
+        "text": "回って描かれているノードのつまみの重ね方の記述は変えていない"
+      },
+      {
+        "path": "docs/06-ui.md",
+        "locator": "「キャンバス直接操作」の「移動（ドラッグ）」の項",
+        "text": "ドラッグで運んで落とす先の決まり方の記述は変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "get-bounding-client-rect",
+      "category": "web · DOM",
+      "label": "`getBoundingClientRect`",
+      "gist": "要素が今、画面のどこにどの大きさで描かれているかを[[ブラウザ|browser]]に尋ねる DOM の関数。[[レイアウト|layout]]はブラウザが行うので、JavaScript からは位置も大きさもこうして実測するしかない。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "element.getBoundingClientRect(): DOMRect"
+        },
+        {
+          "kind": "text",
+          "text": "返る `DOMRect` は `left` / `top` / `width` / `height` などを持つ。座標は[[client 座標|client-coords]]で、スクロールすれば同じ要素でも値が変わる。"
+        },
+        {
+          "kind": "caution",
+          "text": "`transform` で回した要素では、回った形をちょうど囲む軸に平行な四角（[[外接矩形|enclosing]]）が返る。回る前の大きさはここからは決まらないので、別に `offsetWidth` / `offsetHeight` を読む。"
+        },
+        {
+          "kind": "memo",
+          "text": "テストで使う happy-dom はレイアウトを行わないので、どの要素も 0 を返す。そのためテストでは実測を差し替える。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/element-measure/index.ts",
+          "lineRange": {
+            "start": 23,
+            "end": 33
+          },
+          "text": "`ElementMeasure.boundsOf` が `DOMRect` から 4 値だけを写したオブジェクトを返す",
+          "shas": [
+            "c5fb1de7a64ea8d0f55616188d314668fa85fa9c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "offset-size",
+        "measure-boundary"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "offset-size",
+      "category": "web · DOM",
+      "label": "`offsetWidth` / `offsetHeight` と `instanceof HTMLElement`",
+      "gist": "`offsetWidth` / `offsetHeight` は、`transform` を効かせる前に[[レイアウト|layout]]が決めた幅と高さ（border を含み、整数に丸める）。HTML の要素だけが持つので、`instanceof` で確かめてから読む。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`a instanceof B` は、値 `a` が `B` から作られたものかを真偽で答える演算子。`HTMLElement` は HTML の要素（`div` など）の型で、SVG の要素（`svg` など）は `Element` ではあっても `HTMLElement` ではない。"
+        },
+        {
+          "kind": "caution",
+          "text": "SVG の要素には `offsetWidth` / `offsetHeight` が無い。確かめずに読むと型の上でも誤りになるので、HTML の要素でなければ `Option.none` を返す。"
+        },
+        {
+          "kind": "memo",
+          "text": "整数に丸められるので、2 回測った差が 1px ずれうる。長さを当てて測る `CanvasDom.layoutSizeFor` が `getComputedStyle` で読むのはこのため（この PR では移していない）。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/element-measure/index.ts",
+          "lineRange": {
+            "start": 45,
+            "end": 54
+          },
+          "text": "`ElementMeasure.layoutSizeOf` が HTML の要素なら幅と高さを `some` で、そうでなければ `none` を返す",
+          "shas": [
+            "c5fb1de7a64ea8d0f55616188d314668fa85fa9c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "get-bounding-client-rect"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "return-type",
+      "category": "typescript · 型",
+      "label": "`ReturnType<typeof f>`",
+      "gist": "関数 `f` が返す値の型を、名前を付けずに取り出す書き方。型を二重に書かずに、関数の戻り値と同じ形を[[テストヘルパー|test-helper]]で使える。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`typeof f` は値 `f`（関数）の型を取り出し、`ReturnType<…>` はその関数型の戻り値の型を取り出す。`import type` で取り込んだ値にも使え、実行時の import は生じない。"
+        },
+        {
+          "kind": "rule",
+          "text": "戻り値の型を名前で持たない関数（`libs/` は feature の型を import できない）の形を借りるときに使う。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "lineRange": {
+            "start": 15,
+            "end": 16
+          },
+          "text": "差し替える矩形の型を `ElementMeasure.boundsOf` の戻り値から取る",
+          "shas": [
+            "c5fb1de7a64ea8d0f55616188d314668fa85fa9c"
+          ]
+        }
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "measure-boundary",
+      "category": "libs · 境界",
+      "label": "実測は `libs/` を通す",
+      "gist": "要素の実測はブラウザが行う I/O なので、フックや feature が直接読まず `src/libs/` のモジュールを通す。読み口を 1 箇所にまとめ、テストで差し替える境界にもする。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "rule",
+          "text": "実測 API（`getBoundingClientRect` / `offsetWidth` / `offsetHeight` / `getComputedStyle`）を `src/` の本番コードで読むのは、`element-measure` の 3 行と `canvas-dom` の `layoutSizeFor` の 1 行だけにする（完了条件の grep で確認）。"
+        },
+        {
+          "kind": "spec",
+          "text": "I/O と外部フォーマットの解釈は必ず `src/libs/` を経由する（`rules/architecture.md`「配置の判断基準」）。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は `CanvasDom` が名前で要素を引くことと測ることの両方を持っていた。キャンバスの外の要素（#1037 の階調のバー）を測るために、測ることだけを `ElementMeasure` に分けた。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/libs/element-measure/index.ts",
+            "start": 3,
+            "end": 13,
+            "emphasis": [
+              {
+                "start": 6,
+                "end": 8
+              }
+            ],
+            "text": "/**\n * 要素の実測。キャンバスに描かれた要素に限らず、ref で掴んだ要素（キャンバスの器など）も測る。\n *\n * 名前で要素を引く `CanvasDom` に置かないのは、測ることが要素の引き方に依らないため。長さを\n * 当てて測る `CanvasDom.layoutSizeFor` を移さないのは、`style` を当てて戻しても安全なことが\n * 「中身は React の管理外」というキャンバスの前提に乗っているため。\n *\n * テストで実測を差し替える理由と差し替え方は、テストヘルパー `src/libs/__tests__/element-measure.ts`\n * の doc にある。\n */\nexport const ElementMeasure = {"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/element-measure/index.ts",
+          "lineRange": {
+            "start": 3,
+            "end": 12
+          },
+          "text": "`canvas-dom` に置かない理由と `layoutSizeFor` を移さない理由",
+          "shas": [
+            "c5fb1de7a64ea8d0f55616188d314668fa85fa9c"
+          ]
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "lineRange": {
+            "start": 122,
+            "end": 128
+          },
+          "text": "引くのは `CanvasDom.elementOf`、測るのは `ElementMeasure.boundsOf`",
+          "shas": [
+            "c5fb1de7a64ea8d0f55616188d314668fa85fa9c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "get-bounding-client-rect",
+        "measure-stub"
+      ],
+      "tests": [
+        "bounds-client",
+        "layout-size-html",
+        "layout-size-svg"
+      ],
+      "flows": [
+        "fit",
+        "drag",
+        "handles"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "measure-stub",
+      "category": "テスト · 差し替え",
+      "label": "実測の差し替え（`stubBounds` / `stubLayoutSize`）",
+      "gist": "テストで要素の実測だけを差し替える[[テストヘルパー|test-helper]]。差し替えるのはブラウザが行う測定だけで、そこから何が決まるかは実物のコードが答える。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`stubBounds` は要素の `getBoundingClientRect` を、決めた矩形を返す関数に置き換える。`stubLayoutSize` は `offsetWidth` / `offsetHeight` を決めた値にする。"
+        },
+        {
+          "kind": "caution",
+          "text": "新しいモジュール `src/libs/element-measure/index.ts` と、このヘルパー `src/libs/__tests__/element-measure.ts` は同じ綴り。テストのコメントにある「`element-measure` の doc」はこのヘルパーの doc を指す。"
+        },
+        {
+          "kind": "spec",
+          "text": "代替してよいのは `libs/` が包むプロセス外の境界だけ（`rules/testing.md`「モックは原則使わない」）。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "lineRange": {
+            "start": 4,
+            "end": 16
+          },
+          "text": "doc の測る側の名前と、差し替える矩形の型を `ElementMeasure` に付け替えた",
+          "shas": [
+            "c5fb1de7a64ea8d0f55616188d314668fa85fa9c"
+          ]
+        },
+        {
+          "path": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+          "lineRange": {
+            "start": 7,
+            "end": 9
+          },
+          "text": "外接矩形とレイアウトの大きさを違う値で差し替える",
+          "shas": [
+            "1f9b9951f19f3ccf3d60cd2a2152a0c6c9807133",
+            "c5fb1de7a64ea8d0f55616188d314668fa85fa9c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "measure-boundary",
+        "return-type"
+      ],
+      "tests": [
+        "layout-size-html",
+        "bounds-client"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "browser",
+      "label": "ブラウザ",
+      "text": "HTML を読み、要素を並べて画面に描くプログラム。Tauri のアプリでも中身はブラウザの仕組み（WebView）で描かれる。"
+    },
+    {
+      "id": "layout",
+      "label": "レイアウト",
+      "text": "ブラウザが CSS に従って各要素の位置と大きさを決める処理。結果は JavaScript から実測の API で読む。"
+    },
+    {
+      "id": "client-coords",
+      "label": "client 座標",
+      "text": "ブラウザの表示領域の左上を原点にした座標。ページのスクロール位置によって同じ要素の値が変わる。"
+    },
+    {
+      "id": "enclosing",
+      "label": "外接矩形",
+      "text": "回った形をちょうど囲む、画面の縦横に平行な四角。回っていなければ要素の形そのもの。"
+    },
+    {
+      "id": "test-helper",
+      "label": "テストヘルパー",
+      "text": "複数のテストで使う準備用の関数を集めたファイル。このリポジトリでは `__tests__/` に置き、本番コードからは import しない。"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "kept-in-canvas-dom",
+      "kind": "choice",
+      "title": "残した長さの当て測り",
+      "prompt": "この PR のあとも `CanvasDom` に残り、ブラウザの実測（`getComputedStyle`）を読む関数はどれですか。",
+      "options": [
+        "`CanvasDom.boundsOf`",
+        "`CanvasDom.layoutSizeOf`",
+        "`CanvasDom.layoutSizeFor`",
+        "`CanvasDom.elementOf`"
+      ],
+      "answer": 3,
+      "why": "`layoutSizeFor` は長さを `style` に当てて測り、測り終えたら戻す。これが安全なのは「キャンバスの中身は React の管理外」という前提があるからで、キャンバス固有の操作として残した。`boundsOf` / `layoutSizeOf` は移り、`elementOf` は要素を引くだけで測らない。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "box-layout-size-for"
+        }
+      ]
+    },
+    {
+      "id": "no-delegation",
+      "kind": "yesno",
+      "title": "実測の入口の数",
+      "prompt": "変更後も `CanvasDom.boundsOf` は残っており、中で `ElementMeasure.boundsOf` へ委譲している。",
+      "holds": false,
+      "why": "委譲を残すと実測の入口が 2 つになり、「読み口は 1 箇所」というゴールに反する。呼び出しは本番で 9 行しかなかったので、すべて `ElementMeasure` に付け替えて `CanvasDom` 側は削った。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "box-cd-bounds"
+        },
+        {
+          "kind": "callEdge",
+          "id": "e-zone-new"
+        }
+      ]
+    },
+    {
+      "id": "html-branch-guard",
+      "kind": "choice",
+      "title": "HTML の要素かの判定",
+      "prompt": "`layoutSizeOf` の `instanceof HTMLElement` の判定を外すと、落ちるテストはどれですか。",
+      "options": [
+        "「描かれている要素の矩形を client 座標の位置と大きさで返す」",
+        "「HTML の要素でない SVG はレイアウトの大きさを測れない」",
+        "「名前で指したものが収まる倍率と位置になる」",
+        "どれも落ちない"
+      ],
+      "answer": 2,
+      "why": "test-reviewer の実測で、判定を外して落ちるのは第 1 コミットで足した SVG のテスト 1 件だけだった。計画の段階では 0 件で、この枝を守るテストが無かったために足した。",
+      "go": [
+        {
+          "kind": "file",
+          "path": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts"
+        },
+        {
+          "kind": "callBox",
+          "id": "box-em-layout"
+        }
+      ]
+    },
+    {
+      "id": "refactor-order",
+      "kind": "order",
+      "title": "移動の進め方",
+      "prompt": "この PR で振る舞いを変えずに移すまでの順に並べてください。",
+      "items": [
+        "計画で実装を壊し、今の振る舞いを守るテストの数を測る",
+        "守られていない枝のテストを、今のコードのまま足して通す",
+        "2 関数を移し、呼び出し側とテストを付け替える",
+        "レビューで実装を壊し、移した後も同じテストが落ちることを測り直す"
+      ],
+      "why": "リファクタは「振る舞いが変わっていない」根拠を書き換えないテストに置く。先に守りの穴（`none` の枝が 0 件）を見つけて埋めてから移し、最後に test-reviewer が壊して確かめた。",
+      "go": [
+        {
+          "kind": "module",
+          "path": "src/libs/element-measure/index.ts"
+        },
+        {
+          "kind": "flow",
+          "id": "handles"
+        }
+      ]
+    }
+  ]
+}
