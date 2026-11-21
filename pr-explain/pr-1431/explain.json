@@ -1,0 +1,3257 @@
+{
+  "version": 1,
+  "pr": 1431,
+  "sha": "ca8093a7c1e7d58a5f20b2c49004e19c50276b7a",
+  "issue": 1424,
+  "overview": {
+    "title": "Issue を作る呼び出しが作業の種類を決めていなければ、フックで止める",
+    "lead": "Claude が Issue を作るとき、`flow:*` ラベル・種類の提案の行・`implementation-flow` に通さない行のどれも無ければ、PreToolUse フック `block-issue-without-flow-kind.sh` が作成を止め、直し方を返す。あわせて Issue を作る場面の文書から、フェーズ 1「種類の確定」の手順 4 へ辿れるようにした。",
+    "before": [
+      {
+        "text": "`gh issue create` / `gh api … /issues` の POST / `mcp__github__issue_write` の create は、種類が無くてもそのまま Issue を作っていた",
+        "message": "create-issue"
+      },
+      {
+        "text": "種類を決める手順はフェーズ 1 の手順 4 にだけあり、フェーズ 2・フェーズ 8・`post-merge-review.sh` の案内からは辿れなかった",
+        "message": "notify-merge"
+      },
+      {
+        "text": "作成を見る判定表は無く、pre-push と CI にも対応する検査は無かった"
+      }
+    ],
+    "after": [
+      {
+        "text": "作成の呼び出しは PreToolUse で検出器 `issue-flow-kind-violations.py` に渡り、種類を決めていなければ deny になる",
+        "message": "judge-kind"
+      },
+      {
+        "text": "通す条件は 3 つのどれか: `flow:*` ラベルがちょうど 1 つ・本文に `種類の提案: flow:<種類>（<根拠>）` の行・本文に `種類: implementation-flow に通さない（<理由>）` の行"
+      },
+      {
+        "text": "`flow:*` が 2 つ以上なら multiple、本文を確定できなければ unreadable、どれも無ければ missing として止め、拒否文は人に尋ねる道を先に出す",
+        "message": "deny-create"
+      },
+      {
+        "text": "他のリポジトリへの作成、`--web`、一覧・編集・コメント・コミットの文面などの作成でない呼び出しは通す"
+      },
+      {
+        "text": "python3 が使えなければ通し、検出器が異常終了したら「検査できなかった」として止める"
+      },
+      {
+        "text": "判定表 `issue-flow-kind-cases.sh`（216 件・約 1.4 秒）を pre-push と CI の `rules-check` で回す",
+        "message": "run-table-prepush"
+      },
+      {
+        "text": "フェーズ 2・フェーズ 8・`post-merge-review.sh`・`AGENTS.md`・`harness-growth` から手順 4 を指す",
+        "message": "read-step4"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "フックの発火は本物のセッションで未確認",
+        "text": "このセッションではフックが不発だった(カナリアが通った)。ラベルなしの作成が止まること、MCP の作成で発火することは、発火する環境で確かめる必要がある",
+        "go": {
+          "kind": "callBox",
+          "id": "settings-entry"
+        }
+      },
+      {
+        "title": "拒否文の並び",
+        "text": "人に尋ねる道を、提案の行より先に出す。逆にすると対話中でも人に尋ねない道が最短になる",
+        "go": {
+          "kind": "callBox",
+          "id": "guidance"
+        }
+      },
+      {
+        "title": "展開をまねない",
+        "text": "展開する文脈の本文は `$` `` ` `` `\\` を含めば確定できないとして止める。実装の検証で、まねる処理(約 150 行)を削った判断",
+        "go": {
+          "kind": "callBox",
+          "id": "scan"
+        }
+      },
+      {
+        "title": "検査できなかったときは止める",
+        "text": "python3 が無いときは通し、検出器が落ちたら止める非対称。後ろに控える層が無いため",
+        "go": {
+          "kind": "callEdge",
+          "id": "hook-deny"
+        }
+      },
+      {
+        "title": "残る穴の表",
+        "text": "取りこぼす形と止めすぎる形は README の表と判定表の miss / deny で固定している。許容してよいかを見てほしい",
+        "go": {
+          "kind": "module",
+          "path": ".claude/hooks/README.md"
+        }
+      },
+      {
+        "title": "先に書くテストの工程",
+        "text": "途中でマージされた #1427 の工程(テストを先にコミットする)を踏めていない。扱いは Issue #1424 で判断待ち",
+        "go": {
+          "kind": "feature",
+          "id": "table"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "stop",
+      "label": "作成を止める",
+      "role": "Issue を作る呼び出しを PreToolUse で検出器に渡し、種類を決めていなければ deny する",
+      "review": [
+        "作成とみなす 3 つの形の外(`bash -c`・GraphQL・`curl` など)を取りこぼしとして許容してよいか",
+        "検出器が落ちたら止め、python3 が無ければ通す非対称が妥当か",
+        "展開を含む本文・ラベル・作成先を、通す側ではなく止める側に倒しているか"
+      ]
+    },
+    {
+      "id": "table",
+      "label": "判定表と配線",
+      "role": "検出器とフックの判定表を作り、pre-push と CI で回す",
+      "review": [
+        "検出器の表を python3 1 プロセスで回す形にしたぶん、CLI の経路がフックの表と CLI の表で守られているか",
+        "通すケースと止めるケースが対になっているか(片側だけだと実装を壊しても落ちない)"
+      ]
+    },
+    {
+      "id": "guide",
+      "label": "手順 4 へ辿る",
+      "role": "Issue を作る場面の文書から、フェーズ 1「種類の確定」の手順 4 を指す",
+      "review": [
+        "常時ロードと `harness-growth` の行数を増やさずに参照を差し込めているか",
+        "行の書式を文書へ写さず、検出器の定数を指しているか"
+      ]
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "フック・検出器・判定表と、それを指す手順の文書"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/settings.json",
+      "name": "フックの配線",
+      "role": "PreToolUse でどのツールにどのフックを走らせるかを決める",
+      "feature": "stop",
+      "change": "matcher `Bash|mcp__github__issue_write` のエントリを足した"
+    },
+    {
+      "path": ".claude/hooks/block-issue-without-flow-kind.sh",
+      "name": "種類の検査フック",
+      "role": "作成の呼び出しを検出器へ渡し、報告があれば deny の JSON を返す",
+      "feature": "stop",
+      "change": "新しく作った"
+    },
+    {
+      "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+      "name": "種類の検出器",
+      "role": "Issue を作る呼び出しかを見分け、作るなら種類を決めているかを判定する。行の書式の唯一の定義元",
+      "feature": "stop",
+      "change": "新しく作った",
+      "icon": "scan"
+    },
+    {
+      "path": ".github/scripts/lib/detector-report.sh",
+      "name": "検出器の終了の読み方",
+      "role": "検出器を走らせ、違反ありと検査できなかったを見分ける",
+      "feature": "stop",
+      "change": "使う側の一覧にフックを足した"
+    },
+    {
+      "path": ".github/scripts/lib/detector-precondition.sh",
+      "name": "検出器の前提",
+      "role": "python3 が使えるかを確かめる",
+      "feature": "stop",
+      "graph": false
+    },
+    {
+      "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "name": "種類の判定表",
+      "role": "検出器・origin・フック・拒否文・CLI の 5 つの表で deny / pass / miss を確かめる",
+      "feature": "table",
+      "change": "新しく作った(216 件)",
+      "icon": "scan"
+    },
+    {
+      "path": ".claude/hooks/lib/cases-fixtures.sh",
+      "name": "判定表の部品",
+      "role": "起動できないコマンドや、フックの一時ディレクトリへの写しを作る",
+      "feature": "table",
+      "change": "起動できないコマンドの差し替えとリポジトリのファイルの写しを共有の部品にした"
+    },
+    {
+      "path": "harness/githooks/pre-push",
+      "name": "push 前の検査",
+      "role": "push の前に判定表と検出器を回す",
+      "feature": "table",
+      "change": "判定表を 1 本足した"
+    },
+    {
+      "path": ".github/workflows/frontend.yml",
+      "name": "CI の規約検査",
+      "role": "`rules-check` ジョブで判定表を回す",
+      "feature": "table",
+      "change": "判定表のステップを足した"
+    },
+    {
+      "path": ".claude/skills/implementation-flow/SKILL.md",
+      "name": "実装の手順",
+      "role": "種類の確定から PR までの手順。手順 4 が作成時の種類の決め方を持つ",
+      "feature": "guide",
+      "change": "手順 4 を (a)〜(c) に分け、フェーズ 2・フェーズ 8 から参照させた",
+      "icon": "store"
+    },
+    {
+      "path": ".claude/hooks/post-merge-review.sh",
+      "name": "マージ後の案内",
+      "role": "PR のマージを検知し、マージ後の 3 つを案内する",
+      "feature": "guide",
+      "change": "続きの Issue の種類を手順 4 で決める 1 行を足した"
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "フックの説明書",
+      "role": "フックの配線・層・残る穴・動作確認をまとめる",
+      "feature": "stop",
+      "change": "新しいフックの配線と、残る穴の表を足した",
+      "graph": false
+    },
+    {
+      "path": "AGENTS.md",
+      "name": "常時ロードの規約",
+      "role": "毎セッション読まれる実装規約の入口",
+      "feature": "guide",
+      "change": "行を増やさずに手順 4 への参照を 2 か所に差し込んだ",
+      "graph": false
+    },
+    {
+      "path": ".claude/skills/implementation-flow/investigation.md",
+      "name": "調査の手順",
+      "role": "調査の続きの Issue を立てる手順",
+      "feature": "guide",
+      "change": "手順 4 を指すようにした",
+      "graph": false
+    },
+    {
+      "path": ".claude/skills/harness-growth/SKILL.md",
+      "name": "ハーネスを育てる手順",
+      "role": "介入の Issue と PR を出す手順",
+      "feature": "guide",
+      "change": "介入の Issue に通さない行を書くよう差し込んだ",
+      "graph": false
+    }
+  ],
+  "actors": [
+    {
+      "id": "session",
+      "label": "利用セッション",
+      "role": "Issue を作ろうとする Claude のセッション",
+      "icon": "person"
+    },
+    {
+      "id": "human",
+      "label": "人",
+      "role": "対話中に作業の種類を答える",
+      "icon": "person"
+    },
+    {
+      "id": "github",
+      "label": "GitHub",
+      "role": "Issue を受け取って作る",
+      "icon": "store"
+    }
+  ],
+  "messages": [
+    {
+      "id": "invoke-hook",
+      "from": "session",
+      "to": ".claude/hooks/block-issue-without-flow-kind.sh",
+      "kind": "cmd",
+      "name": "作成の呼び出しを検査にかける",
+      "code": "PreToolUse(matcher: Bash|mcp__github__issue_write)",
+      "via": "exec",
+      "payload": "PreToolUse の JSON(ツール名・入力・`cwd`)",
+      "status": "added"
+    },
+    {
+      "id": "judge-kind",
+      "from": ".claude/hooks/block-issue-without-flow-kind.sh",
+      "to": ".claude/hooks/lib/issue-flow-kind-violations.py",
+      "kind": "qry",
+      "name": "種類を判定する",
+      "code": "printf '%s' \"$input\" | detector_report '^\\[' \"$detector\" --origin-url \"$origin_url\"",
+      "via": "exec",
+      "payload": "PreToolUse の JSON と origin の URL",
+      "returns": "`[種別] …` の行と直し方(違反が無ければ空)",
+      "status": "added"
+    },
+    {
+      "id": "deny-create",
+      "from": ".claude/hooks/block-issue-without-flow-kind.sh",
+      "to": "session",
+      "kind": "evt",
+      "name": "作成を拒否する",
+      "code": "print_deny \"Issue を作る呼び出しが作業の種類を決めていないため、止めました。…\"",
+      "via": "exec",
+      "payload": "deny の JSON(理由に違反の行と直し方)",
+      "status": "added"
+    },
+    {
+      "id": "create-issue",
+      "from": "session",
+      "to": "github",
+      "kind": "cmd",
+      "name": "Issue を作る",
+      "code": "gh issue create -t … --label flow:<種類>",
+      "via": "http",
+      "payload": "題・本文・ラベル",
+      "status": "changed"
+    },
+    {
+      "id": "ask-kind",
+      "from": "session",
+      "to": "human",
+      "kind": "qry",
+      "name": "種類を尋ねる",
+      "code": "AskUserQuestion",
+      "via": "call",
+      "returns": "人が選んだ `flow:*` ラベル"
+    },
+    {
+      "id": "notify-merge",
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": "session",
+      "kind": "evt",
+      "name": "マージ後の 3 つを案内する",
+      "code": "message=\"${target} がマージされました。マージ後の 3 つを行っ…\"",
+      "via": "log",
+      "status": "changed"
+    },
+    {
+      "id": "read-step4",
+      "from": "session",
+      "to": ".claude/skills/implementation-flow/SKILL.md",
+      "kind": "qry",
+      "name": "種類の確定の手順 4 を読む",
+      "code": "フェーズ 1「種類の確定」の手順 4",
+      "via": "file",
+      "returns": "対話中・人がいない起動・通さない Issue ごとの決め方",
+      "status": "added"
+    },
+    {
+      "id": "run-table-prepush",
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "kind": "cmd",
+      "name": "判定表を走らせる",
+      "code": "run_check \"Issue の作業の種類の判定表\" bash .claude/hooks/lib/issue-flow-kind-cases.sh",
+      "via": "exec",
+      "status": "added"
+    },
+    {
+      "id": "run-table-ci",
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "kind": "cmd",
+      "name": "CI で判定表を走らせる",
+      "code": "bash .claude/hooks/lib/issue-flow-kind-cases.sh",
+      "via": "exec",
+      "status": "added"
+    },
+    {
+      "id": "import-detector",
+      "from": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "to": ".claude/hooks/lib/issue-flow-kind-violations.py",
+      "kind": "qry",
+      "name": "検出器を 1 回だけ読み込んで判定する",
+      "code": "detector.findings_for(data, detector.context_for(data, origin))",
+      "via": "call",
+      "payload": "表の 1 行から組んだ入力",
+      "returns": "違反の並び",
+      "status": "added"
+    },
+    {
+      "id": "run-hook-copy",
+      "from": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "to": ".claude/hooks/block-issue-without-flow-kind.sh",
+      "kind": "qry",
+      "name": "写したフックを走らせる",
+      "code": "printf '%s' \"$4\" | PATH=\"${prefix}${PATH}\" bash \"$hook\"",
+      "via": "exec",
+      "payload": "PreToolUse の JSON(検出器を落ちるスタブに差し替えることもある)",
+      "returns": "deny の JSON か空",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "create-missing",
+      "label": "種類を決めずに Issue を作ろうとしたとき",
+      "gist": "作成の前に検査が入り、種類が無ければ GitHub へ届かずに止まるようになった",
+      "text": "ラベルも提案の行も通さない行も無い `gh issue create` を、利用セッションが走らせた場合。",
+      "steps": [
+        "invoke-hook",
+        "judge-kind",
+        "deny-create"
+      ],
+      "beforeSteps": [
+        "create-issue"
+      ],
+      "stepChanges": [
+        {
+          "status": "removed",
+          "beforeStep": 1,
+          "beforeText": "種類の無い Issue がそのまま作られていた",
+          "change": "作成は検査に落ちて走らない"
+        },
+        {
+          "status": "added",
+          "afterStep": 1,
+          "afterText": "PreToolUse でフックが起動する",
+          "change": "この PR で足したフック"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "検出器がコマンドを bash と同じ規則で字句に分け、作成を見つけて判定する",
+          "change": "この PR で足した検出器",
+          "afterCost": "heavy"
+        },
+        {
+          "status": "added",
+          "afterStep": 3,
+          "afterText": "`[issue-flow-kind-missing]` の行と、人に尋ねる道を先にした直し方を返す",
+          "change": "拒否文が直し方を示す"
+        }
+      ],
+      "measure": {
+        "what": "この呼び出しで作られる、種類の無い Issue",
+        "before": "1 件",
+        "after": "0 件"
+      }
+    },
+    {
+      "id": "create-asked",
+      "label": "対話中に種類を尋ねて作るとき",
+      "gist": "人が答えたラベルを、作った後ではなく作成の呼び出しに含めるようになった",
+      "steps": [
+        "ask-kind",
+        "invoke-hook",
+        "judge-kind",
+        "create-issue"
+      ],
+      "beforeSteps": [
+        "ask-kind",
+        "create-issue"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1,
+          "afterText": "人に種類を尋ねる(変わらない)"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "フックが起動する",
+          "change": "この PR で足した手順"
+        },
+        {
+          "status": "added",
+          "afterStep": 3,
+          "afterText": "`flow:*` が 1 つなので違反なし。何も出さずに通す",
+          "change": "この PR で足した手順"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 4,
+          "beforeText": "作った後で `issues/<番号>/labels` へ POST してラベルを付けることもできた",
+          "afterText": "`--label flow:<種類>` を作成の呼び出しに含めて作る",
+          "change": "作った後に付ける形は、作成の時点で止められる(手順 4 の (a))"
+        }
+      ]
+    },
+    {
+      "id": "follow-up",
+      "label": "マージ後に続きの Issue を立てるとき",
+      "gist": "マージ後の案内から手順 4 へ辿り、欠けても作成の時点で止まるようになった",
+      "text": "続きの Issue はほとんどフェーズ 8 で作られ、その時点のセッションはフェーズ 1 を読み返さない(#1415・#1416・#1419 で抜けた経路)。",
+      "steps": [
+        "notify-merge",
+        "read-step4",
+        "invoke-hook",
+        "judge-kind",
+        "create-issue"
+      ],
+      "beforeSteps": [
+        "notify-merge",
+        "create-issue"
+      ],
+      "stepChanges": [
+        {
+          "status": "changed",
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "続きの Issue を立てるよう案内するだけだった",
+          "afterText": "種類は作成の呼び出しの中で手順 4 で決める、の 1 行が付く",
+          "change": "案内に 1 行足した"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "手順 4 の (a)〜(c) から、対話中かどうかで決め方を選ぶ",
+          "change": "参照を足した"
+        },
+        {
+          "status": "added",
+          "afterStep": 3,
+          "afterText": "フックが起動する",
+          "change": "この PR で足した手順"
+        },
+        {
+          "status": "added",
+          "afterStep": 4,
+          "afterText": "種類が決まっていれば通す",
+          "change": "この PR で足した手順"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 5,
+          "beforeText": "種類が無いまま作られることがあった",
+          "afterText": "ラベルか行を含めて作られる",
+          "change": "検査を通ったものだけが作られる"
+        }
+      ]
+    },
+    {
+      "id": "push-table",
+      "label": "push と CI で判定表を回すとき",
+      "gist": "push 前と CI の `rules-check` で、検出器とフックの判定表を回すようになった",
+      "text": "検出器を呼ぶ層はフックしか無く、字句への分け方が退行しても他に落ちるものが無いため、判定表を層 2・層 1 に置く。",
+      "steps": [
+        "run-table-prepush",
+        "import-detector",
+        "run-hook-copy",
+        "judge-kind"
+      ],
+      "beforeSteps": [],
+      "stepChanges": [
+        {
+          "status": "added",
+          "afterStep": 1,
+          "afterText": "pre-push が判定表を走らせる(CI も同じものを走らせる)",
+          "change": "この PR で足した配線"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "検出器の表と origin の表(185 件)を、python3 1 プロセスで import して回す",
+          "change": "ケースごとに起動した形は 8.0 秒かかり上限 5 秒を超えたため、1 プロセスにした",
+          "afterCost": "heavy"
+        },
+        {
+          "status": "added",
+          "afterStep": 3,
+          "afterText": "フックを一時ディレクトリへ写し、python3・jq・検出器を壊した状態で走らせる",
+          "change": "この PR で足した手順"
+        },
+        {
+          "status": "added",
+          "afterStep": 4,
+          "afterText": "写しのフックが検出器を CLI として呼ぶ",
+          "change": "CLI の経路はここで守る"
+        }
+      ],
+      "measure": {
+        "what": "push 前に走る検査",
+        "before": "33 本",
+        "after": "34 本"
+      }
+    }
+  ],
+  "calls": {
+    "gist": "PreToolUse の配線からフック・検出器までの呼び出しを新しく足し、判定表が検出器とフックの両方を呼ぶ",
+    "text": "変更前は Issue の作成を見る呼び出しが無かった。変更後は `settings.json` のエントリがフックを起動し、フックが `detector_report` 経由で検出器の `main` を走らせる。検出器は `findings_for` から Bash と MCP に分かれ、どちらも最後は `judge` が決める。判定表は検出器を import して `findings_for` を直接呼び、フックは写しを走らせる。",
+    "review": [
+      "フックから検出器への線が `detector_report` を通り、報告の行が無い exit 1 を「検査できなかった」と読めているか",
+      "`bash_findings` がコマンド置換の中身を同じ手順で読み直しているか(入れ子の作成)"
+    ],
+    "boxes": [
+      {
+        "id": "settings-entry",
+        "name": "PreToolUse のエントリ",
+        "role": "Bash と MCP の `issue_write` でフックを起動する",
+        "module": ".claude/settings.json",
+        "status": "added",
+        "now": "matcher `Bash|mcp__github__issue_write` でフックを 1 本走らせる"
+      },
+      {
+        "id": "hook-main",
+        "name": "block-issue-without-flow-kind.sh",
+        "role": "入力を絞り、検出器を走らせて deny を返す",
+        "module": ".claude/hooks/block-issue-without-flow-kind.sh",
+        "status": "added",
+        "now": "`issue` を含まない入力はすぐ通し、検出器の報告か異常終了で deny する"
+      },
+      {
+        "id": "python3-usable",
+        "name": "python3_usable",
+        "role": "python3 が起動できるかを確かめる",
+        "module": ".github/scripts/lib/detector-precondition.sh",
+        "now": "起動できなければフックは通す"
+      },
+      {
+        "id": "detector-report",
+        "name": "detector_report",
+        "role": "検出器を走らせ、違反ありと検査できなかったを見分ける",
+        "module": ".github/scripts/lib/detector-report.sh",
+        "now": "報告の行を出して exit 1 なら違反あり、出さずに 1 や 0・1 以外なら検査できなかった"
+      },
+      {
+        "id": "print-deny",
+        "name": "print_deny",
+        "role": "deny の JSON を python3 で組んで書く",
+        "module": ".claude/hooks/block-issue-without-flow-kind.sh",
+        "status": "added",
+        "now": "jq に依存せず、理由の文を JSON の文字列にする"
+      },
+      {
+        "id": "main",
+        "name": "main",
+        "role": "引数と標準入力を読み、違反と直し方を出す",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "added",
+        "now": "違反なら exit 1、なければ 0、入力が JSON のオブジェクトでなければ 2"
+      },
+      {
+        "id": "findings-for",
+        "name": "findings_for",
+        "role": "ツール名で Bash と MCP に振り分ける",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "added",
+        "now": "MCP の `issue_write` と Bash の `command` だけを見る"
+      },
+      {
+        "id": "bash-findings",
+        "name": "bash_findings",
+        "role": "コマンド全体を字句とコマンドに分け、作成を 1 件ずつ判定する",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "added",
+        "now": "コマンド置換の中身も同じ手順で読み直す"
+      },
+      {
+        "id": "scan",
+        "name": "scan",
+        "role": "クォートの状態を追い、ヒアドキュメントの本文と展開に印を付ける",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "added",
+        "now": "展開はまねず、確定できない本文は印 1 つにする"
+      },
+      {
+        "id": "split-tokens",
+        "name": "split_tokens",
+        "role": "印を付けた入力を shlex で語に分ける",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "added",
+        "now": "閉じないクォートなどで分けられなければ読めないとする"
+      },
+      {
+        "id": "segment-finding",
+        "name": "segment_finding",
+        "role": "1 つのコマンドが `gh issue` か `gh api` かを見分ける",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "added",
+        "now": "予約語・前置コマンド・`VAR=val` を読み飛ばしてから見る"
+      },
+      {
+        "id": "issue-create-finding",
+        "name": "issue_create_finding",
+        "role": "`gh issue create` のラベル・本文・作成先を読む",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "added",
+        "now": "`--web` と他のリポジトリは通し、本文ファイルは読んで判定に渡す"
+      },
+      {
+        "id": "api-finding",
+        "name": "api_finding",
+        "role": "`gh api` の issues への POST を見分け、ラベルと本文を読む",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "added",
+        "now": "暗黙の POST・`-F` の `@file`・`--input` の JSON を扱う"
+      },
+      {
+        "id": "mcp-findings",
+        "name": "mcp_findings",
+        "role": "MCP の `issue_write` の create を判定する",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "added",
+        "now": "`owner` / `repo` が他のリポジトリなら通す"
+      },
+      {
+        "id": "judge",
+        "name": "judge",
+        "role": "ラベルと本文の候補から、種類を決めているかを決める",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "added",
+        "now": "multiple → ラベル 1 つ → 行 → unreadable → missing の順に決める"
+      },
+      {
+        "id": "guidance",
+        "name": "guidance",
+        "role": "報告の後ろに付ける直し方",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "added",
+        "now": "人に尋ねる道を先に、提案の行と通さない行の書式を後に出す"
+      },
+      {
+        "id": "cases-script",
+        "name": "issue-flow-kind-cases.sh",
+        "role": "5 つの表を流して ok / NG を出す",
+        "module": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "status": "added",
+        "now": "列の数が違う行も NG にする"
+      },
+      {
+        "id": "detector-runner",
+        "name": "detector_runner",
+        "role": "検出器を 1 回だけ import し、表の行ごとに判定する",
+        "module": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "status": "added",
+        "now": "判定が例外で落ちたら broken と出す"
+      },
+      {
+        "id": "run-hook",
+        "name": "run_hook",
+        "role": "写しのフックを、壊したコマンドや落ちる検出器と一緒に走らせる",
+        "module": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "status": "added",
+        "now": "写しを `git init` して origin を置き、origin の受け渡しも確かめる"
+      },
+      {
+        "id": "run-check",
+        "name": "run_check",
+        "role": "pre-push の 1 検査を走らせて集計する",
+        "module": "harness/githooks/pre-push",
+        "now": "判定表を 1 本ぶん多く走らせる"
+      }
+    ],
+    "edges": [
+      {
+        "id": "settings-hook",
+        "from": "settings-entry",
+        "to": "hook-main",
+        "code": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-issue-without-flow-kind.sh\"",
+        "status": "added",
+        "now": "Bash と MCP の作成でフックを起動する"
+      },
+      {
+        "id": "hook-python3",
+        "from": "hook-main",
+        "to": "python3-usable",
+        "code": "python3_usable || exit 0",
+        "status": "added",
+        "now": "python3 が使えなければ通す(カナリアが名指しするため)"
+      },
+      {
+        "id": "hook-report",
+        "from": "hook-main",
+        "to": "detector-report",
+        "code": "printf '%s' \"$input\" | detector_report '^\\[' \"$detector\" --origin-url \"$origin_url\"",
+        "status": "added",
+        "now": "origin の URL を添えて検出器を走らせる"
+      },
+      {
+        "id": "report-main",
+        "from": "detector-report",
+        "to": "main",
+        "code": "output=\"$(python3 \"$@\")\"",
+        "status": "added",
+        "now": "検出器を python3 で走らせ、終了コードと報告の行を見る"
+      },
+      {
+        "id": "hook-deny",
+        "from": "hook-main",
+        "to": "print-deny",
+        "code": "print_deny \"Issue の作業の種類の検査(${detector})が異常終了したため、検査できませんでした。…\"",
+        "status": "added",
+        "now": "報告があれば違反として、異常終了なら検査できなかったとして deny する"
+      },
+      {
+        "id": "main-findings",
+        "from": "main",
+        "to": "findings-for",
+        "code": "findings_for(hook_input, context_for(hook_input, arguments[1]))",
+        "status": "added",
+        "now": "入力の `cwd` と origin から判定の周りの事実を組んで渡す"
+      },
+      {
+        "id": "main-guidance",
+        "from": "main",
+        "to": "guidance",
+        "code": "print(guidance())",
+        "status": "added",
+        "now": "違反の行の後ろに直し方を出す"
+      },
+      {
+        "id": "findings-bash",
+        "from": "findings-for",
+        "to": "bash-findings",
+        "code": "bash_findings(command, context)",
+        "status": "added",
+        "now": "Bash の `command` を渡す"
+      },
+      {
+        "id": "findings-mcp",
+        "from": "findings-for",
+        "to": "mcp-findings",
+        "code": "mcp_findings(tool_input, context)",
+        "status": "added",
+        "now": "MCP の入力を渡す"
+      },
+      {
+        "id": "bash-scan",
+        "from": "bash-findings",
+        "to": "scan",
+        "code": "scanned = scan(command)",
+        "status": "added",
+        "now": "印を付け、本文とコマンド置換の中身を切り出す"
+      },
+      {
+        "id": "bash-split",
+        "from": "bash-findings",
+        "to": "split-tokens",
+        "code": "split_tokens(scanned.text)",
+        "status": "added",
+        "now": "印を付けた入力を語に分ける"
+      },
+      {
+        "id": "bash-segment",
+        "from": "bash-findings",
+        "to": "segment-finding",
+        "code": "segment_finding(segment, context)",
+        "status": "added",
+        "now": "コマンドごとに作成かを判定する"
+      },
+      {
+        "id": "segment-issue",
+        "from": "segment-finding",
+        "to": "issue-create-finding",
+        "code": "issue_create_finding(env, words[2:], segment, context)",
+        "status": "added",
+        "now": "`gh issue` の後ろを渡す"
+      },
+      {
+        "id": "segment-api",
+        "from": "segment-finding",
+        "to": "api-finding",
+        "code": "api_finding(words[2:], segment, context)",
+        "status": "added",
+        "now": "`gh api` の後ろを渡す"
+      },
+      {
+        "id": "issue-judge",
+        "from": "issue-create-finding",
+        "to": "judge",
+        "code": "judge(\"gh issue create\", labels, bodies)",
+        "status": "added",
+        "now": "ラベルと本文の候補で判定する"
+      },
+      {
+        "id": "api-judge",
+        "from": "api-finding",
+        "to": "judge",
+        "code": "judge(f\"gh api {endpoint}\", labels, bodies)",
+        "status": "added",
+        "now": "`labels[]=`・`body=`・`--input` から集めて判定する"
+      },
+      {
+        "id": "mcp-judge",
+        "from": "mcp-findings",
+        "to": "judge",
+        "code": "judge(MCP_ISSUE_WRITE, labels, [body] if isinstance(body, str) else [])",
+        "status": "added",
+        "now": "`labels` と `body` で判定する"
+      },
+      {
+        "id": "prepush-cases",
+        "from": "run-check",
+        "to": "cases-script",
+        "code": "run_check \"Issue の作業の種類の判定表\" bash .claude/hooks/lib/issue-flow-kind-cases.sh",
+        "status": "added",
+        "now": "push の前に判定表を回す"
+      },
+      {
+        "id": "cases-runner",
+        "from": "cases-script",
+        "to": "detector-runner",
+        "code": "detector_rows | python3 -c \"$detector_runner\" \"$detector\" \"$work\"",
+        "status": "added",
+        "now": "検出器の表と origin の表を 1 プロセスで流す"
+      },
+      {
+        "id": "runner-findings",
+        "from": "detector-runner",
+        "to": "findings-for",
+        "code": "detector.findings_for(data, detector.context_for(data, origin))",
+        "status": "added",
+        "now": "CLI を通さずに判定の関数を直接呼ぶ"
+      },
+      {
+        "id": "cases-run-hook",
+        "from": "cases-script",
+        "to": "run-hook",
+        "code": "run_hook \"$stub\" \"$python3_state\" \"$jq_state\" \"$(hook_payload \"$input\")\"",
+        "status": "added",
+        "now": "フックの表を 1 行ずつ流す"
+      },
+      {
+        "id": "run-hook-main",
+        "from": "run-hook",
+        "to": "hook-main",
+        "code": "printf '%s' \"$4\" | PATH=\"${prefix}${PATH}\" bash \"$hook\"",
+        "status": "added",
+        "now": "写しのフックを走らせ、deny / pass を読む"
+      }
+    ]
+  },
+  "commitStories": [
+    {
+      "sha": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "phase": "core",
+      "role": "検出器・フック・判定表を足す",
+      "why": "作成の呼び出しそのものを見ないと、作った後のラベル付けを忘れても何も止まらない。書式の定義元を検出器の定数 1 か所にし、文書はそこを指す形にした。",
+      "flows": [
+        "create-missing"
+      ],
+      "review": [
+        "作成とみなす 3 つの形(MCP の create・`gh issue create`・`gh api` の issues への POST)が、計画の判定表どおりに見分けられているか",
+        "検出器が異常終了したときにフックが通さず止めているか"
+      ],
+      "before": [
+        {
+          "text": "Issue の作成を見るフックは無かった"
+        }
+      ],
+      "after": [
+        {
+          "text": "フックが検出器へ入力を渡し、報告があれば deny する",
+          "message": "judge-kind"
+        },
+        {
+          "text": "判定表がケースごとに検出器を起動して deny / pass / miss を確かめる"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 48,
+          "end": 53,
+          "text": "違反の種別と 2 つの行の書式。この時点の提案の行は `flow:<種類>` をバッククォートで囲む形で、後の 8a01cbf で外した"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 728,
+          "end": 747,
+          "text": "ラベルと本文の候補から決める判定の本体。multiple をラベルにだけ当て、行は提案なので数えない"
+        },
+        {
+          "path": ".claude/hooks/block-issue-without-flow-kind.sh",
+          "start": 37,
+          "end": 39,
+          "text": "`issue` を含まない入力はすぐ通し、python3 が無ければ通す。無関係な Bash で python3 を起動しない"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 1,
+          "end": 1006,
+          "feature": "stop",
+          "text": "作成を見分けて判定する検出器を足した"
+        },
+        {
+          "path": ".claude/hooks/block-issue-without-flow-kind.sh",
+          "start": 1,
+          "end": 53,
+          "feature": "stop",
+          "text": "検出器を呼んで deny を返すフックを足した"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 1,
+          "end": 410,
+          "feature": "table",
+          "text": "検出器とフックの判定表を足した"
+        }
+      ]
+    },
+    {
+      "sha": "be4b20add487dcaa1bd90d1826bf606656f3b68f",
+      "phase": "core",
+      "role": "フックを配線し、判定表を 1 プロセスで回す",
+      "why": "判定表がケースごとに python3 を起動すると 8.0 秒かかり、pre-push に載せる上限 5 秒を超えた。検出器の表は 1 プロセスで import して回し、CLI の経路はフックの表で守る。",
+      "flows": [
+        "push-table"
+      ],
+      "review": [
+        "検出器の表を import 経由にしたあと、`--origin-url` と標準入力の JSON を読む CLI の経路がどこかで走っているか",
+        "matcher が `Bash|mcp__github__issue_write` の 1 エントリにまとまっているか"
+      ],
+      "before": [
+        {
+          "text": "フックは配線されておらず、判定表は 8.0 秒かかっていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "PreToolUse でフックが起動する",
+          "message": "invoke-hook"
+        },
+        {
+          "text": "pre-push と CI が判定表を回す(約 1.4 秒)",
+          "message": "run-table-prepush"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/settings.json",
+          "start": 174,
+          "end": 182,
+          "text": "Bash と MCP の作成を 1 エントリで受ける。2 か所に配線を割らない"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 979,
+          "end": 989,
+          "text": "判定表が判定の関数を直接呼べるよう、入力から判定の周りの事実を組む関数を切り出した"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".claude/settings.json",
+          "start": 174,
+          "end": 182,
+          "feature": "stop",
+          "text": "PreToolUse にフックを配線した"
+        },
+        {
+          "path": ".github/scripts/lib/detector-report.sh",
+          "start": 16,
+          "end": 17,
+          "feature": "stop",
+          "text": "使う側の一覧にフックを足した"
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "start": 50,
+          "end": 50,
+          "feature": "table",
+          "text": "push 前に判定表を回す"
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "start": 183,
+          "end": 185,
+          "feature": "table",
+          "text": "CI の `rules-check` で判定表を回す"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 93,
+          "end": 134,
+          "feature": "table",
+          "text": "検出器を 1 回だけ import して表を流す"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 979,
+          "end": 989,
+          "feature": "table",
+          "text": "判定表が呼ぶ入口を切り出した"
+        }
+      ]
+    },
+    {
+      "sha": "a42cb311c7a3aee3489d29fc4978e5bc9bb350bf",
+      "phase": "core",
+      "role": "Issue を作る場面から手順 4 へ辿れるようにする",
+      "why": "続きの Issue はフェーズ 8 で作られることが多く、その時点のセッションはフェーズ 1 を読み返さない。常時ロードと `harness-growth` は行数の上限ちょうどなので、行を足さずに参照を差し込んだ。",
+      "flows": [
+        "follow-up"
+      ],
+      "review": [
+        "手順 4 の (a)〜(c) が、対話中・人がいない起動・通さない Issue の 3 場面を取り違えなく分けているか",
+        "手順の番号を変えていないか(他の手順ファイルが番号で参照している)"
+      ],
+      "before": [
+        {
+          "text": "手順 4 は「その場で種類を尋ねてラベルを付ける(3 と同じ)」だけだった"
+        }
+      ],
+      "after": [
+        {
+          "text": "手順 4 は作成の呼び出しの中で決める形になり、7 か所から指される",
+          "message": "read-step4"
+        },
+        {
+          "text": "マージ後の案内にも手順 4 を指す 1 行が付く",
+          "message": "notify-merge"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 81,
+          "end": 84,
+          "text": "書式は写さず、検出器の定数とフックを指す"
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 120,
+          "end": 131,
+          "text": "発火する環境でも残る穴の表。取りこぼす・止めすぎる形を判定表の miss / deny と対応させる"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 81,
+          "end": 84,
+          "feature": "guide",
+          "text": "手順 4 を (a)〜(c) に分けた"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 90,
+          "end": 90,
+          "feature": "guide",
+          "text": "フェーズ 2 から手順 4 を指す"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 248,
+          "end": 248,
+          "feature": "guide",
+          "text": "フェーズ 8 の手順 2 から手順 4 を指す"
+        },
+        {
+          "path": ".claude/hooks/post-merge-review.sh",
+          "start": 69,
+          "end": 69,
+          "feature": "guide",
+          "text": "マージ後の案内に 1 行足した"
+        },
+        {
+          "path": "AGENTS.md",
+          "start": 53,
+          "end": 53,
+          "feature": "guide",
+          "text": "タスクの分割から手順 4 を指す"
+        },
+        {
+          "path": "AGENTS.md",
+          "start": 63,
+          "end": 63,
+          "feature": "guide",
+          "text": "続きの Issue から手順 4 を指す"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/investigation.md",
+          "start": 52,
+          "end": 52,
+          "feature": "guide",
+          "text": "調査の続きから手順 4 を指す"
+        },
+        {
+          "path": ".claude/skills/harness-growth/SKILL.md",
+          "start": 79,
+          "end": 79,
+          "feature": "guide",
+          "text": "介入の Issue に通さない行を書く"
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 30,
+          "end": 30,
+          "feature": "stop",
+          "text": "強制している規約の表にフックを足した"
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 120,
+          "end": 131,
+          "feature": "stop",
+          "text": "残る穴の表を足した"
+        }
+      ]
+    },
+    {
+      "sha": "8a01cbf140ab3fefda7d9a451f88f9203fdded8c",
+      "phase": "revise",
+      "role": "展開のまねをやめ、作成の位置と入れ子を直す",
+      "why": "提案の行がバッククォートを必須にしていたため、ダブルクォートやクォートしないヒアドキュメントでの展開をまねる処理(約 150 行)が生まれていた。書式からバッククォートを外し、展開する文脈の本文は `$` `` ` `` `\\` を含めば確定できないとして止める形にした。あわせて harness-reviewer の高(予約語の後ろと `\"$(gh issue create)\"` の取りこぼし)を直した。",
+      "flows": [
+        "create-missing"
+      ],
+      "review": [
+        "展開する文脈の本文に `$` `` ` `` `\\` が 1 つでもあれば unreadable になり、字面で確定できる本文だけを読んでいるか",
+        "コマンド置換の中身を、シングルクォートとクォートした区切りのヒアドキュメントを除いて読み直しているか"
+      ],
+      "before": [
+        {
+          "text": "展開する文脈の本文を、展開をまねて印に置き換えていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "展開はまねず、確定できない本文は unreadable として止める",
+          "message": "judge-kind"
+        },
+        {
+          "text": "`do` `then` `{` `!` `time` `command` `env` の後ろと、コマンド置換の中の作成も読む"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 57,
+          "end": 57,
+          "text": "提案の行の書式からバッククォートを外した"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 66,
+          "end": 66,
+          "text": "展開する文脈で、これを 1 つでも含めば確定できないとする文字"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 82,
+          "end": 87,
+          "text": "後ろの語をコマンドとして走らせる予約語と前置コマンド"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 57,
+          "end": 66,
+          "feature": "stop",
+          "text": "書式からバッククォートを外し、展開をまねない形にした"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 82,
+          "end": 87,
+          "feature": "stop",
+          "text": "予約語と前置コマンドの後ろも読む"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 294,
+          "end": 307,
+          "feature": "stop",
+          "text": "コマンド置換の中身を取り出す"
+        },
+        {
+          "path": ".claude/hooks/block-issue-without-flow-kind.sh",
+          "start": 18,
+          "end": 19,
+          "feature": "stop",
+          "text": "jq 版の拒否に寄せない理由を 1 行にした"
+        },
+        {
+          "path": ".claude/hooks/lib/cases-fixtures.sh",
+          "start": 41,
+          "end": 64,
+          "feature": "table",
+          "text": "起動できないコマンドとフックの写しを共有の部品にした"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 276,
+          "end": 297,
+          "feature": "table",
+          "text": "入れ子と前置コマンドのケースを足した"
+        }
+      ]
+    },
+    {
+      "sha": "f8efb78a29f61bf4ef8c1eadb9a9f421540c26a9",
+      "phase": "hard",
+      "role": "if / elif / while / until / coproc / exec の直後の作成も読む",
+      "why": "前のコミットで足した前置の一覧に、条件の位置に置く予約語と `coproc` / `exec` が抜けていた(implementer の報告)。",
+      "review": [
+        "`if gh issue create …; then` の形が deny になり、`if ! …` も読めているか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 83,
+          "end": 85,
+          "text": "予約語と前置コマンドの一覧を広げた"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 83,
+          "end": 85,
+          "feature": "stop",
+          "text": "条件の位置の予約語と coproc / exec を足した"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 285,
+          "end": 291,
+          "feature": "table",
+          "text": "それぞれの形を deny で固定した"
+        }
+      ]
+    },
+    {
+      "sha": "d2fbeae8b85b419c216bba214b18e6a09989cb5f",
+      "phase": "revise",
+      "role": "判定表の守れていなかった判断にケースを足す",
+      "why": "test-reviewer が判断を 70 件壊して判定表を走らせ、11 件が落ちなかった。中の 4 件と低の 2 件を採り、判定の順・origin の受け渡し・入れ子の文脈・本文の置き換えの範囲をケースで固定した。",
+      "flows": [
+        "push-table"
+      ],
+      "review": [
+        "フックの写しを `git init` して origin を置き、他のリポジトリを通すケースで origin の受け渡しが守られているか",
+        "列の数が違う行を NG にする検査が、5 つの表すべてに掛かっているか"
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 170,
+          "end": 170,
+          "text": "判定の順(multiple を行より先に見る)を入れ替えると落ちるケース"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 428,
+          "end": 430,
+          "text": "写しが git リポジトリでないと origin が常に空になり、渡し損ねても空どうしで合ってしまう"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 170,
+          "end": 170,
+          "feature": "table",
+          "text": "flow:* が 2 つと提案の行がある入力を足した"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 220,
+          "end": 224,
+          "feature": "table",
+          "text": "前置きの後ろにオプションが付く形を miss で固定した"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 292,
+          "end": 292,
+          "feature": "table",
+          "text": "閉じ括弧の前にパイプが続く形を unreadable で固定した"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 329,
+          "end": 330,
+          "feature": "table",
+          "text": "入れ子を読む・読まない文脈を 1 件ずつ足した"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 428,
+          "end": 430,
+          "feature": "table",
+          "text": "フックの写しに origin を置いた"
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 506,
+          "end": 520,
+          "feature": "table",
+          "text": "CLI の表を足した"
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 124,
+          "end": 124,
+          "feature": "stop",
+          "text": "取りこぼす形に前置きのオプションを足した"
+        }
+      ]
+    },
+    {
+      "sha": "ca8093a7c1e7d58a5f20b2c49004e19c50276b7a",
+      "phase": "fin",
+      "role": "origin/main(#1427)を取り込む",
+      "why": "PR を出す前に #1427 がマージされ、`flow:feature` にテストを先にコミットする工程が加わった。force push せずに merge で取り込み、骨組みの検出器(常に 0 件)に最終の判定表を当てた結果(NG 103 件・broken 0 件)を PR 本文に載せた。",
+      "review": [
+        "先に書くテストの工程を踏めなかった扱い(受け入れるか、履歴を組み直すか)を Issue #1424 で判断する"
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "detector",
+      "label": "検出器の表",
+      "file": ".claude/hooks/lib/issue-flow-kind-cases.sh"
+    },
+    {
+      "id": "origin",
+      "label": "自リポジトリの表",
+      "file": ".claude/hooks/lib/issue-flow-kind-cases.sh"
+    },
+    {
+      "id": "hook",
+      "label": "フックの表",
+      "file": ".claude/hooks/lib/issue-flow-kind-cases.sh"
+    },
+    {
+      "id": "reason",
+      "label": "拒否文の表",
+      "file": ".claude/hooks/lib/issue-flow-kind-cases.sh"
+    },
+    {
+      "id": "cli",
+      "label": "CLI の表",
+      "file": ".claude/hooks/lib/issue-flow-kind-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "t1",
+      "suite": "detector",
+      "name": "1 ラベルも行もない作成は止める",
+      "techniques": [
+        "error"
+      ],
+      "why": "ゴール 1 の中心。種類を決めていない作成を止める",
+      "given": "ラベルも提案の行も通さない行も無い本文",
+      "when": "`gh issue create -t x -b 本文` を判定する",
+      "then": "`issue-flow-kind-missing` で報告する",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 162,
+        "end": 162,
+        "text": "deny|missing|bash|1 ラベルも行もない作成は止める|gh issue create -t x -b 本文"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t2",
+      "suite": "detector",
+      "name": "2 --label flow:feature で通す",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "人が答えたラベルを作成の呼び出しに含める形(手順 4 の (a))を通す",
+      "given": "`flow:feature` ラベル 1 つ",
+      "when": "`gh issue create -t x --label flow:feature` を判定する",
+      "then": "報告しない",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 163,
+        "end": 166,
+        "emphasis": [
+          {
+            "start": 163,
+            "end": 163
+          }
+        ],
+        "text": "pass|-|bash|2 --label flow:feature で通す|gh issue create -t x --label flow:feature\npass|-|bash|3 -l bug,flow:bugfix で通す|gh issue create -t x -l bug,flow:bugfix\npass|-|bash|4 --label=flow:refactor で通す|gh issue create -t x --label=flow:refactor\npass|-|bash|5 -lflow:feature で通す|gh issue create -t x -lflow:feature"
+      },
+      "values": {
+        "columns": [
+          "ラベルの渡し方",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`--label flow:feature`",
+              "通す"
+            ]
+          },
+          {
+            "cells": [
+              "`-l bug,flow:bugfix`(カンマ区切り)",
+              "通す(ケース 3)"
+            ]
+          },
+          {
+            "cells": [
+              "`--label=flow:refactor`",
+              "通す(ケース 4)"
+            ]
+          },
+          {
+            "cells": [
+              "`-lflow:feature`",
+              "通す(ケース 5)"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t8",
+      "suite": "detector",
+      "name": "8 異なる flow:* が 2 つなら止める",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "人の決定は「`flow:*` が 1 つ」。2 つ以上は種類が決まっていない",
+      "given": "`flow:feature` と `flow:bugfix`",
+      "when": "両方のラベルで作成を判定する",
+      "then": "`issue-flow-kind-multiple` で報告する",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 169,
+        "end": 171,
+        "emphasis": [
+          {
+            "start": 169,
+            "end": 169
+          }
+        ],
+        "text": "deny|multiple|bash|8 異なる flow:* が 2 つなら止める|gh issue create -t x --label flow:feature --label flow:bugfix\ndeny|multiple|bash|8 異なる flow:* が 2 つなら提案の行があっても止める|gh issue create -t x --label flow:feature --label flow:bugfix -b '種類の提案: flow:feature（根拠）'\npass|-|bash|9 同じ flow:* が 2 回なら通す|gh issue create -t x --label flow:feature -l flow:feature"
+      },
+      "values": {
+        "columns": [
+          "flow:* ラベル",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "0 個(ほかに何も無い)",
+              "missing"
+            ]
+          },
+          {
+            "cells": [
+              "1 個",
+              "通す"
+            ]
+          },
+          {
+            "cells": [
+              "同じものを 2 回",
+              "通す(1 つと数える)"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "異なるものを 2 個",
+              "multiple"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t8b",
+      "suite": "detector",
+      "name": "8 異なる flow:* が 2 つなら提案の行があっても止める",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "判定の順(multiple を行より先に見る)を守る。test-reviewer が順を入れ替えても落ちるケースが無いと指摘した",
+      "given": "異なる `flow:*` 2 つと、本文の提案の行",
+      "when": "作成を判定する",
+      "then": "`issue-flow-kind-multiple` で報告する(行があっても通さない)",
+      "commit": "d2fbeae8b85b419c216bba214b18e6a09989cb5f",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 170,
+        "end": 170,
+        "text": "deny|multiple|bash|8 異なる flow:* が 2 つなら提案の行があっても止める|gh issue create -t x --label flow:feature --label flow:bugfix -b '種類の提案: flow:feature（根拠）'"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t10",
+      "suite": "detector",
+      "name": "10 区切りが 'EOF' のヒアドキュメントに提案の行があれば通す",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "人がいない起動の逃げ道(手順 4 の (b))を、案内している渡し方で通す",
+      "given": "`--body-file - <<'EOF'` の本文に提案の行",
+      "when": "作成を判定する",
+      "then": "報告しない",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 172,
+        "end": 172,
+        "text": "pass|-|bash|10 区切りが 'EOF' のヒアドキュメントに提案の行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類の提案: flow:feature（根拠）⏎EOF"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t11",
+      "suite": "detector",
+      "name": "11 区切りが 'EOF' のヒアドキュメントに通さない行があれば通す",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`implementation-flow` に通さない Issue(手順 4 の (c))を通す",
+      "given": "本文に `種類: implementation-flow に通さない（棚卸し）`",
+      "when": "作成を判定する",
+      "then": "報告しない",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 173,
+        "end": 173,
+        "text": "pass|-|bash|11 区切りが 'EOF' のヒアドキュメントに通さない行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類: implementation-flow に通さない（棚卸し）⏎EOF"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t15",
+      "suite": "detector",
+      "name": "15 全角コロンの行も半角括弧の行も満たさない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "綴りの揺れを許すと書式がぼやける。拒否文の書式をそのまま写せば通るので困らない",
+      "given": "全角コロンの行と半角括弧の行",
+      "when": "作成を判定する",
+      "then": "どちらも行として数えず `missing` で報告する",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 176,
+        "end": 178,
+        "emphasis": [
+          {
+            "start": 177,
+            "end": 177
+          }
+        ],
+        "text": "deny|missing|bash|14 根拠が空の行は満たさない|gh issue create -t x --body-file - <<'EOF'⏎種類の提案: flow:feature（）⏎EOF\ndeny|missing|bash|15 全角コロンの行も半角括弧の行も満たさない|gh issue create -t x --body-file - <<'EOF'⏎種類の提案：flow:feature（根拠）⏎種類の提案: flow:feature(根拠)⏎EOF\ndeny|missing|bash|16 行頭にない行は満たさない|gh issue create -t x --body-file - <<'EOF'⏎  種類の提案: flow:feature（根拠）⏎EOF"
+      },
+      "values": {
+        "columns": [
+          "行",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "`種類の提案: flow:feature（根拠）`",
+              "通す"
+            ]
+          },
+          {
+            "cells": [
+              "`種類の提案：flow:feature（根拠）`(全角コロン)",
+              "missing"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`種類の提案: flow:feature(根拠)`(半角括弧)",
+              "missing"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "`種類の提案: flow:feature（）`(根拠が空)",
+              "missing(ケース 14)"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "行頭に空白(ケース 16)",
+              "missing"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t22",
+      "suite": "detector",
+      "name": "22 ファイルが無く、ラベルも無ければ止める",
+      "techniques": [
+        "error"
+      ],
+      "why": "作成と分かったのに本文を読めないときは、通さず止める(読めない値を通すと抜けが素通りする)",
+      "given": "存在しない本文ファイル",
+      "when": "`--body-file @W/none.md` で作成を判定する",
+      "then": "`issue-flow-kind-unreadable` で報告する",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 184,
+        "end": 184,
+        "text": "deny|unreadable|bash|22 ファイルが無く、ラベルも無ければ止める|gh issue create -t x --body-file @W/none.md"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t23",
+      "suite": "detector",
+      "name": "23 ファイルが無くても、ラベルがあれば通す",
+      "techniques": [
+        "state"
+      ],
+      "why": "通す条件はどれか 1 つでよい。本文が読めなくてもラベルで決まっていれば通す",
+      "given": "存在しない本文ファイルと `flow:feature` ラベル",
+      "when": "作成を判定する",
+      "then": "報告しない",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 185,
+        "end": 185,
+        "text": "pass|-|bash|23 ファイルが無くても、ラベルがあれば通す|gh issue create -t x --body-file @W/none.md --label flow:feature"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t100a",
+      "suite": "detector",
+      "name": "100 ダブルクォートの --body に $ も ` も \\ も無ければ字面で読んで通す",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "展開をまねない代わりに、展開しようのない本文は字面で読む",
+      "given": "ダブルクォートの本文に提案の行(`$` `` ` `` `\\` なし)",
+      "when": "作成を判定する",
+      "then": "報告しない",
+      "commit": "8a01cbf140ab3fefda7d9a451f88f9203fdded8c",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 259,
+        "end": 259,
+        "text": "pass|-|bash|100 ダブルクォートの --body に $ も ` も \\ も無ければ字面で読んで通す|gh issue create -t x --body \"前置き⏎種類の提案: flow:feature（根拠）\""
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t100b",
+      "suite": "detector",
+      "name": "100 ダブルクォートの --body の本文に ` があれば止める",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "bash が展開して行が消えうる本文を、まねずに確定できないとする",
+      "given": "ダブルクォートの本文に `` `code` `` と提案の行",
+      "when": "作成を判定する",
+      "then": "`issue-flow-kind-unreadable` で報告する",
+      "commit": "8a01cbf140ab3fefda7d9a451f88f9203fdded8c",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 260,
+        "end": 260,
+        "text": "deny|unreadable|bash|100 ダブルクォートの --body の本文に ` があれば止める|gh issue create -t x --body \"前置き `code`⏎種類の提案: flow:feature（根拠）\""
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t39",
+      "suite": "detector",
+      "name": "39 -R other/repo は通す",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "他のリポジトリへの作成は対象外(止めると通さない行の乱用を招く)",
+      "given": "origin が `acme/widgets`",
+      "when": "`-R other/repo` で作成を判定する",
+      "then": "報告しない",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 201,
+        "end": 202,
+        "text": "pass|-|bash|39 -R other/repo は通す|gh issue create -t x -R other/repo\ndeny|missing|bash|40 -R が大文字小文字違いの自リポジトリなら止める|gh issue create -t x -R ACME/Widgets"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t40",
+      "suite": "detector",
+      "name": "40 -R が大文字小文字違いの自リポジトリなら止める",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "他のリポジトリかどうかを大文字小文字で取り違えない",
+      "given": "origin が `acme/widgets`",
+      "when": "`-R ACME/Widgets` で作成を判定する",
+      "then": "`missing` で報告する",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 202,
+        "end": 202,
+        "text": "deny|missing|bash|40 -R が大文字小文字違いの自リポジトリなら止める|gh issue create -t x -R ACME/Widgets"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t52",
+      "suite": "detector",
+      "name": "52 -f title=x(暗黙の POST)は止める",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "`gh api` はフィールドを渡すとメソッドの指定が無くても POST になる(`GH_DEBUG=api` で実測)",
+      "given": "`gh api repos/acme/widgets/issues -f title=x`",
+      "when": "判定する",
+      "then": "`missing` で報告する",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 228,
+        "end": 229,
+        "text": "deny|missing|bash|52 -f title=x(暗黙の POST)は止める|gh api repos/acme/widgets/issues -f title=x\npass|-|bash|53 -f 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature'"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t67",
+      "suite": "detector",
+      "name": "67 issues/12/comments への POST は止めない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "issues の下のコメントやラベルへの POST は作成ではない",
+      "given": "`gh api repos/acme/widgets/issues/12/comments -f body=x`",
+      "when": "判定する",
+      "then": "報告しない",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 243,
+        "end": 244,
+        "text": "pass|-|bash|67 issues/12/labels への POST は止めない|gh api repos/acme/widgets/issues/12/labels -f 'labels[]=bug'\npass|-|bash|67 issues/12/comments への POST は止めない|gh api repos/acme/widgets/issues/12/comments -f body=x"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ]
+    },
+    {
+      "id": "t73",
+      "suite": "detector",
+      "name": "73 MCP でラベルも行もなければ止める",
+      "techniques": [
+        "error"
+      ],
+      "why": "Bash だけでなく MCP の `issue_write` の create も止める",
+      "given": "`method: create`・自リポジトリ・ラベル無し・本文に行無し",
+      "when": "MCP の入力を判定する",
+      "then": "`missing` で報告する",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 250,
+        "end": 250,
+        "text": "deny|missing|mcp|73 MCP でラベルも行もなければ止める|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"body\":\"本文\"}"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t80",
+      "suite": "detector",
+      "name": "80 MCP で他リポジトリは通す",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "MCP でも他のリポジトリへの作成は対象外",
+      "given": "`owner: other`・`repo: repo`",
+      "when": "MCP の create を判定する",
+      "then": "報告しない",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 257,
+        "end": 258,
+        "text": "pass|-|mcp|80 MCP で他リポジトリは通す|{\"method\":\"create\",\"owner\":\"other\",\"repo\":\"repo\",\"title\":\"x\"}\ndeny|missing|mcp|81 MCP で大文字小文字違いの自リポジトリは止める|{\"method\":\"create\",\"owner\":\"ACME\",\"repo\":\"Widgets\",\"title\":\"x\"}"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ]
+    },
+    {
+      "id": "t36",
+      "suite": "detector",
+      "name": "36 url=$(gh issue create -t x) も止める",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "作った URL を変数に受ける形はよく使う。コマンド置換の中の作成も読む",
+      "given": "`url=$(gh issue create -t x)`",
+      "when": "判定する",
+      "then": "`missing` で報告する",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 198,
+        "end": 198,
+        "text": "deny|missing|bash|36 url=$(gh issue create -t x) も止める|url=$(gh issue create -t x)"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t152",
+      "suite": "detector",
+      "name": "152 ダブルクォートの中の $(gh issue create …) も止める",
+      "techniques": [
+        "regression"
+      ],
+      "why": "harness-reviewer の高。ダブルクォートの中のコマンド置換も実際に走る",
+      "given": "`url=\"$(gh issue create -t x)\"`",
+      "when": "判定する",
+      "then": "`missing` で報告する",
+      "commit": "8a01cbf140ab3fefda7d9a451f88f9203fdded8c",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 323,
+        "end": 326,
+        "text": "deny|missing|bash|152 ダブルクォートの中の $(gh issue create …) も止める|url=\"$(gh issue create -t x)\"\ndeny|missing|bash|153 ダブルクォートの中の `gh issue create …` も止める|url=\"`gh issue create -t x`\"\ndeny|missing|bash|154 クォートの外の `gh issue create …` も止める|x=`gh issue create -t x`\ndeny|missing|bash|155 echo の引数の `gh issue create …` も止める|echo `gh issue create -t x`"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t166",
+      "suite": "detector",
+      "name": "166 区切りが 'EOF' のヒアドキュメントの本文の $(gh issue create …) は止めない",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "クォートした区切りの本文は字面のまま渡るので、中の文字は走らない。test-reviewer が欠けを指摘した",
+      "given": "`gh pr create … <<'EOF'` の本文に `$(gh issue create -t y)`",
+      "when": "判定する",
+      "then": "報告しない",
+      "commit": "d2fbeae8b85b419c216bba214b18e6a09989cb5f",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 329,
+        "end": 330,
+        "text": "pass|-|bash|166 区切りが 'EOF' のヒアドキュメントの本文の $(gh issue create …) は止めない|gh pr create -t x --body-file - <<'EOF'⏎$(gh issue create -t y)⏎EOF\ndeny|missing|bash|167 \"$(cat <<EOF …)\" の本文の $(gh issue create …) も止める|gh pr create -t x --body \"$(cat <<EOF⏎$(gh issue create -t y)⏎EOF⏎)\""
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ]
+    },
+    {
+      "id": "t164",
+      "suite": "detector",
+      "name": "164 if の直後の作成も止める",
+      "techniques": [
+        "regression"
+      ],
+      "why": "条件の位置に置いた作成も実際に走る(implementer の報告で抜けが見つかった)",
+      "given": "`if gh issue create -t x; then :; fi`",
+      "when": "判定する",
+      "then": "`missing` で報告する",
+      "commit": "f8efb78a29f61bf4ef8c1eadb9a9f421540c26a9",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 316,
+        "end": 322,
+        "text": "deny|missing|bash|164 if の直後の作成も止める|if gh issue create -t x; then :; fi\ndeny|missing|bash|164 elif の直後の作成も止める|if false; then :; elif gh issue create -t x; then :; fi\ndeny|missing|bash|164 while の直後の作成も止める|while gh issue create -t x; do break; done\ndeny|missing|bash|164 until の直後の作成も止める|until gh issue create -t x; do :; done\ndeny|missing|bash|164 if ! の後ろの作成も止める|if ! gh issue create -t x; then :; fi\ndeny|missing|bash|164 coproc の後ろの作成も止める|coproc gh issue create -t x\ndeny|missing|bash|164 exec の後ろの作成も止める|exec gh issue create -t x"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "t45",
+      "suite": "detector",
+      "name": "45 git commit -m の中の文字列は止めない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "字句に分けてから読むので、他のコマンドの引数に書いた `gh issue create` を作成と取り違えない",
+      "given": "`git commit -m \"gh issue create を止める\"`",
+      "when": "判定する",
+      "then": "報告しない",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 207,
+        "end": 211,
+        "emphasis": [
+          {
+            "start": 210,
+            "end": 210
+          }
+        ],
+        "text": "pass|-|bash|45 gh issue list は止めない|gh issue list --label flow:feature\npass|-|bash|45 gh issue edit は止めない|gh issue edit 1 --add-label x\npass|-|bash|45 echo の中の文字列は止めない|echo 'gh issue create -t x'\npass|-|bash|45 git commit -m の中の文字列は止めない|git commit -m \"gh issue create を止める\"\npass|-|bash|45 grep は止めない|grep -rn \"gh issue create\" ."
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ]
+    },
+    {
+      "id": "t48",
+      "suite": "detector",
+      "name": "48 bash -c の中は読まない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "意図した取りこぼし(miss)。入れ子のコマンドを解くと字句解析が二重になり、回避を防ぐことは目的にしない",
+      "given": "`bash -c 'gh issue create -t x'`",
+      "when": "判定する",
+      "then": "報告しない(miss として固定)",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 214,
+        "end": 219,
+        "emphasis": [
+          {
+            "start": 214,
+            "end": 214
+          }
+        ],
+        "text": "miss|-|bash|48 bash -c の中は読まない|bash -c 'gh issue create -t x'\nmiss|-|bash|48 sh -c の中は読まない|sh -c 'gh issue create -t x'\nmiss|-|bash|48 eval の中は読まない|eval 'gh issue create -t x'\nmiss|-|bash|48 xargs の後ろは読まない|echo x ¦ xargs gh issue create -t\nmiss|-|bash|48 スクリプトの中は読まない|bash @W/make-issue.sh\nmiss|-|bash|48 gh alias は読まない|gh mkissue -t x"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ]
+    },
+    {
+      "id": "o82",
+      "suite": "origin",
+      "name": "82 ssh の origin から自リポジトリを読む",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "origin の綴り(https / `.git` 付き / ssh / パス付き)から同じ `owner/repo` を取り出す。止める側と通す側の対で見る",
+      "given": "origin が `git@github.com:acme/widgets.git`",
+      "when": "`-R acme/widgets` で作成を判定する",
+      "then": "自リポジトリとして `missing` で報告する",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 344,
+        "end": 352,
+        "emphasis": [
+          {
+            "start": 348,
+            "end": 349
+          }
+        ],
+        "text": "deny|https://github.com/acme/widgets|82 https の origin から自リポジトリを読む|gh issue create -t x -R acme/widgets\npass|https://github.com/acme/widgets|82 https の origin で他リポジトリは通す|gh issue create -t x -R other/repo\ndeny|https://github.com/acme/widgets.git|82 .git 付きの origin から自リポジトリを読む|gh issue create -t x -R acme/widgets\npass|https://github.com/acme/widgets.git|82 .git 付きの origin で他リポジトリは通す|gh issue create -t x -R other/repo\ndeny|git@github.com:acme/widgets.git|82 ssh の origin から自リポジトリを読む|gh issue create -t x -R acme/widgets\npass|git@github.com:acme/widgets.git|82 ssh の origin で他リポジトリは通す|gh issue create -t x -R other/repo\ndeny|http://proxy@127.0.0.1:8080/git/acme/widgets|82 パス付きの origin から自リポジトリを読む|gh issue create -t x -R acme/widgets\npass|http://proxy@127.0.0.1:8080/git/acme/widgets|82 パス付きの origin で他リポジトリは通す|gh issue create -t x -R other/repo\ndeny||83 origin の URL が空なら -R other も止める|gh issue create -t x -R other/repo"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ]
+    },
+    {
+      "id": "h84",
+      "suite": "hook",
+      "name": "84 欠けた作成は deny になる",
+      "techniques": [
+        "error"
+      ],
+      "why": "フックが CLI としての検出器の報告を deny の JSON に変える経路を守る",
+      "given": "写しのフックと実物の検出器",
+      "when": "`gh issue create -t x` の入力を流す",
+      "then": "`permissionDecision: deny` が出る",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 433,
+        "end": 433,
+        "text": "deny|real|ok|ok|84 欠けた作成は deny になる|gh issue create -t x"
+      },
+      "targets": [
+        ".claude/hooks/block-issue-without-flow-kind.sh"
+      ],
+      "covers": [
+        "invoke-hook",
+        "deny-create"
+      ]
+    },
+    {
+      "id": "h89",
+      "suite": "hook",
+      "name": "89 traceback で落ちる検出器なら deny になる",
+      "techniques": [
+        "error",
+        "state"
+      ],
+      "why": "検出器が落ちたときに通すと、後ろに層が無いので穴が開く",
+      "given": "traceback で落ちる検出器のスタブ",
+      "when": "作成の入力を流す",
+      "then": "deny が出る(「検査できなかった」)",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 435,
+        "end": 437,
+        "emphasis": [
+          {
+            "start": 435,
+            "end": 435
+          }
+        ],
+        "text": "deny|crash|ok|ok|89 traceback で落ちる検出器なら deny になる|gh issue create -t x\ndeny|summary-exit1|ok|ok|89 報告の行を出さずに exit 1 で終わる検出器なら deny になる|gh issue create -t x\ndeny|usage|ok|ok|89 exit 2 で終わる検出器なら deny になる|gh issue create -t x"
+      },
+      "values": {
+        "columns": [
+          "検出器の落ち方",
+          "結果"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "traceback",
+              "deny"
+            ]
+          },
+          {
+            "cells": [
+              "報告の行なしで exit 1",
+              "deny"
+            ]
+          },
+          {
+            "cells": [
+              "exit 2",
+              "deny"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        ".claude/hooks/block-issue-without-flow-kind.sh"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "h90",
+      "suite": "hook",
+      "name": "90 検出器が落ちても pnpm run lint は通す",
+      "techniques": [
+        "state"
+      ],
+      "why": "止める側に倒しても、作成と無関係な Bash まで巻き込まない(`issue` を含まない入力は検出器を呼ばない)",
+      "given": "落ちる検出器のスタブ",
+      "when": "`pnpm run lint` の入力を流す",
+      "then": "deny は出ない",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 438,
+        "end": 438,
+        "text": "pass|crash|ok|ok|90 検出器が落ちても pnpm run lint は通す|pnpm run lint"
+      },
+      "targets": [
+        ".claude/hooks/block-issue-without-flow-kind.sh"
+      ]
+    },
+    {
+      "id": "h91",
+      "suite": "hook",
+      "name": "91 python3 が起動できなければ通す",
+      "techniques": [
+        "state"
+      ],
+      "why": "python3 の欠落はカナリアが名指しするので通す(`deny_on_violations` と同じ非対称)",
+      "given": "起動できない python3",
+      "when": "作成の入力を流す",
+      "then": "deny は出ない",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 439,
+        "end": 439,
+        "text": "pass|real|broken|ok|91 python3 が起動できなければ通す|gh issue create -t x"
+      },
+      "targets": [
+        ".claude/hooks/block-issue-without-flow-kind.sh"
+      ]
+    },
+    {
+      "id": "h95",
+      "suite": "hook",
+      "name": "95 -R other/repo の作成は通す",
+      "techniques": [
+        "regression"
+      ],
+      "why": "フックが origin を検出器へ渡していることを守る。写しを git リポジトリにしないと origin が空になり、渡し損ねても合ってしまう(test-reviewer の指摘)",
+      "given": "`git init` して origin を置いた写しのフック",
+      "when": "`gh issue create -t x -R other/repo` を流す",
+      "then": "deny は出ない",
+      "commit": "d2fbeae8b85b419c216bba214b18e6a09989cb5f",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 428,
+        "end": 443,
+        "emphasis": [
+          {
+            "start": 430,
+            "end": 430
+          },
+          {
+            "start": 443,
+            "end": 443
+          }
+        ],
+        "text": "# フックは origin を自リポジトリとして検出器へ渡す。写しを git リポジトリにしないと origin が空になり、\n# 渡し損ねても空どうしで判定が合ってしまう。\ngit -C \"$hook_copy\" init -q && git -C \"$hook_copy\" remote add origin \"$own_origin\"\n\nhook_cases=\"$(cat <<'CASES'\ndeny|real|ok|ok|84 欠けた作成は deny になる|gh issue create -t x\npass|real|ok|ok|88 ラベル付きの MCP 作成は通す|@mcp {\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"]}\ndeny|crash|ok|ok|89 traceback で落ちる検出器なら deny になる|gh issue create -t x\ndeny|summary-exit1|ok|ok|89 報告の行を出さずに exit 1 で終わる検出器なら deny になる|gh issue create -t x\ndeny|usage|ok|ok|89 exit 2 で終わる検出器なら deny になる|gh issue create -t x\npass|crash|ok|ok|90 検出器が落ちても pnpm run lint は通す|pnpm run lint\npass|real|broken|ok|91 python3 が起動できなければ通す|gh issue create -t x\ndeny|real|ok|broken|92 jq が exit 127 で落ちても deny する|gh issue create -t x\ndeny|real|ok|ok|93 gh と issue の間の空白が 2 つでも deny する|gh  issue create -t x\ndeny|real|ok|ok|94 gh issue -R <自> create は deny する|gh issue -R acme/widgets create -t x\npass|real|ok|ok|95 -R other/repo の作成は通す|gh issue create -t x -R other/repo"
+      },
+      "targets": [
+        ".claude/hooks/block-issue-without-flow-kind.sh"
+      ],
+      "covers": [
+        "judge-kind"
+      ]
+    },
+    {
+      "id": "r85",
+      "suite": "reason",
+      "name": "85 理由に提案の行の書式が載る",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "拒否文の書式をそのまま写せば通るようにする",
+      "given": "欠けた作成 1 件の拒否文",
+      "when": "文面を探す",
+      "then": "`種類の提案: flow:<種類>（<根拠>）` が載る",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 479,
+        "end": 484,
+        "emphasis": [
+          {
+            "start": 480,
+            "end": 480
+          }
+        ],
+        "text": "reason_cases=\"$(cat <<'CASES'\n85 理由に提案の行の書式が載る|種類の提案: flow:<種類>（<根拠>）\n87 理由に「種類の確定」の手順 4 が載る|「種類の確定」の手順 4\n140 理由に拒否文の 6 番目が全文のまま載る|本文はシングルクォート、'EOF' のヒアドキュメント、\"$(cat <<'EOF' … EOF)\" のどれかで渡す（ダブルクォートや、区切りをクォートしないヒアドキュメントの本文は、$ ` \\ を含むと確定できないとして止まる）。相対パスで読めなければ絶対パスにする\nCASES\n)\""
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "deny-create"
+      ]
+    },
+    {
+      "id": "r86",
+      "suite": "reason",
+      "name": "86 「人に尋ね」が「人がいない起動」と書式より前に出る",
+      "techniques": [
+        "state"
+      ],
+      "why": "書式を先に出すと、対話中でも人に尋ねずに提案の行を写す道が最短になる(計画の検証 1 回目の指摘 4)",
+      "given": "欠けた作成 1 件の拒否文",
+      "when": "3 つの文の位置を比べる",
+      "then": "人に尋ねる文が、人がいない起動の文と書式より先に出る",
+      "commit": "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 496,
+        "end": 504,
+        "text": "# 86: 人に尋ねる道が、人がいない起動の行と書式より先に出る(拒否文が写せる行を先に出すと、\n# 対話中でも人に尋ねない道が最短になる)。\nask_at=\"$(position_in_reason AskUserQuestion)\"\nunattended_at=\"$(position_in_reason 人がいない起動)\"\nformat_at=\"$(position_in_reason '種類の提案: flow:<種類>')\"\nasks_before_both=$(( ask_at >= 0 && ask_at < unattended_at && ask_at < format_at ))\nasks_first=\"後\"\n[ \"$asks_before_both\" -eq 1 ] && asks_first=\"先\"\nreport \"先\" \"$asks_first\" \"86 「人に尋ね」が「人がいない起動」と書式より前に出る\""
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "deny-create"
+      ]
+    },
+    {
+      "id": "c96",
+      "suite": "cli",
+      "name": "96 JSON の配列の入力は exit 2 で終える",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "JSON としては読めるがオブジェクトでない入力を、使い方の誤りとして扱う。フックはこれを検査できなかったとして止める",
+      "given": "標準入力が `[]`",
+      "when": "検出器を CLI として走らせる",
+      "then": "終了コード 2",
+      "commit": "d2fbeae8b85b419c216bba214b18e6a09989cb5f",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 507,
+        "end": 511,
+        "text": "cli_cases=\"$(cat <<'CASES'\n2|96 JSON の配列の入力は exit 2 で終える|[]\n2|96 JSON の null の入力は exit 2 で終える|null\nCASES\n)\""
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "Issue を作るとき、作業の種類を決めないと止められるようになった",
+    "lead": "使う人(Issue を作る利用セッション)から見て変わったのは、種類を決めずに作ろうとすると作成が止まり、直し方が返ってくることです。",
+    "changed": {
+      "before": [
+        {
+          "text": "種類を決めずに Issue を作っても、何も言われずに作られていた",
+          "message": "create-issue"
+        },
+        {
+          "text": "マージ後に続きの Issue を立てる案内は、種類の決め方に触れていなかった",
+          "message": "notify-merge"
+        }
+      ],
+      "after": [
+        {
+          "text": "種類を決めずに作ろうとすると、作成の前に止められる",
+          "message": "deny-create"
+        },
+        {
+          "text": "止めた理由の文が、まず人に尋ねて答えのラベルを付けること、人がいないときだけ提案の行を書くこと、対象外の Issue なら通さない行を書くことを、この順で示す",
+          "message": "deny-create"
+        },
+        {
+          "text": "マージ後の案内と手順の文書から、種類の決め方の手順へ辿れる",
+          "message": "read-step4"
+        }
+      ],
+      "text": "通す条件は、作業の種類のラベルがちょうど 1 つあるか、本文の行頭に「種類の提案: flow:種類（根拠）」か「種類: implementation-flow に通さない（理由）」の行があることです。",
+      "specs": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "locator": "フェーズ 1「種類の確定」の手順 4",
+          "text": "その場で尋ねてラベルを付ける、から、作成の呼び出しの中で決める形に変え、対話中・人がいない起動・通さない Issue の 3 つに分けた",
+          "shas": [
+            "a42cb311c7a3aee3489d29fc4978e5bc9bb350bf"
+          ]
+        },
+        {
+          "path": "AGENTS.md",
+          "locator": "「タスクの分割」と「着手した Issue は、その回で閉じる」の続きの Issue の行",
+          "text": "新しく立てる Issue の種類を、種類の確定の手順 4 で決めると添えた",
+          "shas": [
+            "a42cb311c7a3aee3489d29fc4978e5bc9bb350bf"
+          ]
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "locator": "「カバー範囲と残る穴」の新しいフックの残る穴の表",
+          "text": "取りこぼす形・止めすぎる形・まだ確かめていないことを並べた",
+          "shas": [
+            "a42cb311c7a3aee3489d29fc4978e5bc9bb350bf",
+            "d2fbeae8b85b419c216bba214b18e6a09989cb5f"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1405,
+          "text": "作業の種類をラベルで決める仕組みを入れた回。その後に作られた Issue で種類が抜けた"
+        },
+        {
+          "issue": 1427,
+          "text": "途中でマージされ、テストを先に書く工程が加わった。この PR はその工程を踏めていない"
+        }
+      ],
+      "primers": [
+        "pretooluse",
+        "flow-kind-detector"
+      ]
+    },
+    "tables": [
+      {
+        "label": "Issue を作ろうとしたときの結果",
+        "gist": "結果を決めるのは、種類の決め方と、作成先が自分のリポジトリかの 2 つ。",
+        "text": "他のリポジトリへの作成は、何を書いても今までどおり作られます。",
+        "rowHeads": [
+          {
+            "id": "one-label",
+            "label": "種類のラベルが 1 つ"
+          },
+          {
+            "id": "two-labels",
+            "label": "種類のラベルが 2 つ以上",
+            "note": "提案の行があっても同じ"
+          },
+          {
+            "id": "proposal",
+            "label": "本文に提案の行"
+          },
+          {
+            "id": "opt-out",
+            "label": "本文に通さない行"
+          },
+          {
+            "id": "none",
+            "label": "どれも無い"
+          },
+          {
+            "id": "unreadable",
+            "label": "ラベルが無く本文を確定できない",
+            "note": "本文のファイルが無い、ダブルクォートの本文に記号を含む等"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "self",
+            "label": "自分のリポジトリへ"
+          },
+          {
+            "id": "other",
+            "label": "他のリポジトリへ"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "one-label",
+            "columnHead": "self",
+            "result": "作られる",
+            "tests": [
+              "t2"
+            ]
+          },
+          {
+            "rowHead": "two-labels",
+            "columnHead": "self",
+            "result": "止められ、ラベルが 2 つ以上あると示される",
+            "was": "作られる",
+            "tests": [
+              "t8",
+              "t8b"
+            ]
+          },
+          {
+            "rowHead": "proposal",
+            "columnHead": "self",
+            "result": "作られる",
+            "tests": [
+              "t10"
+            ]
+          },
+          {
+            "rowHead": "opt-out",
+            "columnHead": "self",
+            "result": "作られる",
+            "tests": [
+              "t11"
+            ]
+          },
+          {
+            "rowHead": "none",
+            "columnHead": "self",
+            "result": "止められ、直し方が示される",
+            "was": "作られる",
+            "tests": [
+              "t1",
+              "t73",
+              "t36"
+            ]
+          },
+          {
+            "rowHead": "unreadable",
+            "columnHead": "self",
+            "result": "止められ、本文を確定できない理由が示される",
+            "was": "作られる",
+            "tests": [
+              "t22",
+              "t100b"
+            ]
+          },
+          {
+            "rowHead": "one-label",
+            "columnHead": "other",
+            "result": "作られる"
+          },
+          {
+            "rowHead": "two-labels",
+            "columnHead": "other",
+            "result": "作られる"
+          },
+          {
+            "rowHead": "proposal",
+            "columnHead": "other",
+            "result": "作られる"
+          },
+          {
+            "rowHead": "opt-out",
+            "columnHead": "other",
+            "result": "作られる"
+          },
+          {
+            "rowHead": "none",
+            "columnHead": "other",
+            "result": "作られる",
+            "tests": [
+              "t39",
+              "t80",
+              "h95"
+            ]
+          },
+          {
+            "rowHead": "unreadable",
+            "columnHead": "other",
+            "result": "作られる"
+          }
+        ]
+      },
+      {
+        "label": "検査が動けないときの結果",
+        "gist": "検査が動けないときは、Python が無ければ通し、検査が途中で落ちたら止める。",
+        "text": "Python が無いことは発火の確認で名指しされますが、検査が落ちたことは誰にも見えないため、こちらは止める側に倒しています。",
+        "rowHeads": [
+          {
+            "id": "works",
+            "label": "検査が動く"
+          },
+          {
+            "id": "no-python",
+            "label": "Python が使えない"
+          },
+          {
+            "id": "crash",
+            "label": "検査が途中で落ちる"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "create",
+            "label": "種類の無い Issue を作る"
+          },
+          {
+            "id": "unrelated",
+            "label": "Issue と無関係なコマンド"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "works",
+            "columnHead": "create",
+            "result": "止められる",
+            "was": "作られる",
+            "tests": [
+              "h84"
+            ]
+          },
+          {
+            "rowHead": "works",
+            "columnHead": "unrelated",
+            "result": "そのまま走る"
+          },
+          {
+            "rowHead": "no-python",
+            "columnHead": "create",
+            "result": "作られる",
+            "tests": [
+              "h91"
+            ]
+          },
+          {
+            "rowHead": "no-python",
+            "columnHead": "unrelated",
+            "result": "そのまま走る"
+          },
+          {
+            "rowHead": "crash",
+            "columnHead": "create",
+            "result": "止められ、検査できなかったと示される",
+            "was": "作られる",
+            "tests": [
+              "h89"
+            ]
+          },
+          {
+            "rowHead": "crash",
+            "columnHead": "unrelated",
+            "result": "そのまま走る",
+            "tests": [
+              "h90"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "Issue の作成を止められたとき",
+        "before": [],
+        "after": [
+          {
+            "text": "止めた理由に、欠けているものと、人に尋ねる道・提案の行の書式・通さない行の書式・手順の場所が、この順で並ぶ",
+            "message": "deny-create"
+          },
+          {
+            "text": "本文は一重引用符か、区切りを引用符で囲んだヒアドキュメントで渡すよう案内される"
+          }
+        ],
+        "text": "書式は理由の文からそのまま写せます。",
+        "tests": [
+          "r85",
+          "r86"
+        ],
+        "primers": [
+          "pretooluse"
+        ]
+      },
+      {
+        "label": "マージ後に続きの Issue を立てるとき",
+        "before": [
+          {
+            "text": "案内は続きの Issue を立ててリンクするよう言うだけだった",
+            "message": "notify-merge"
+          }
+        ],
+        "after": [
+          {
+            "text": "案内が、種類は作成の中で決めること、その手順の場所を示す",
+            "message": "notify-merge"
+          },
+          {
+            "text": "決め忘れても作成の時点で止められる",
+            "message": "deny-create"
+          }
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "Issue の一覧・編集・コメントや、コミットの文面に作成の文字が入っているだけのコマンドは止められない",
+        "tests": [
+          "t45",
+          "t67"
+        ]
+      },
+      {
+        "text": "他のリポジトリへの作成は今までどおり作られる",
+        "tests": [
+          "t39",
+          "t80"
+        ]
+      },
+      {
+        "text": "別のシェルに渡したコマンドやスクリプトの中の作成は見ない(意図した取りこぼし)",
+        "tests": [
+          "t48"
+        ]
+      },
+      {
+        "text": "人が画面から作る Issue は何も変わらない"
+      },
+      {
+        "text": "種類のラベルの値が表にあるかは見ない。値の正しさは種類の確定の手順で人が決める"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": ".claude/skills/implementation-flow/SKILL.md",
+        "locator": "フェーズ 1「種類の確定」の手順 5",
+        "text": "親が自分で選んだラベルは付けない・外さない、は変えていない(拒否文もこの手順を指す)"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "pretooluse",
+      "category": "claude code · フック",
+      "label": "PreToolUse フック",
+      "gist": "Claude Code が[[ツール|tool]]を実行する直前に、決めておいたコマンドを走らせ、その呼び出しを止めるかどうかを決めさせる仕組み。`.claude/settings.json` の `hooks.PreToolUse` に、ツール名に当てる `matcher` と走らせるコマンドを書く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "フックのコマンドは、呼び出しの中身を[[JSON|json]]にしたものを[[標準入力|stdin]]から受け取る。`tool_name` にツール名、`tool_input` に引数(Bash なら `command`、MCP のツールならその引数一式)、`cwd` に作業ディレクトリが入る。止めたいときは標準出力に下の形の JSON を書く。何も書かずに[[終了コード|exit-code]] 0 で終われば、呼び出しはそのまま進む。"
+        },
+        {
+          "kind": "declaration",
+          "code": "{\"hookSpecificOutput\": {\"hookEventName\": \"PreToolUse\", \"permissionDecision\": \"deny\", \"permissionDecisionReason\": \"<理由>\"}}"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/settings.json",
+            "start": 174,
+            "end": 182,
+            "emphasis": [
+              {
+                "start": 175,
+                "end": 175
+              }
+            ],
+            "text": "      {\n        \"matcher\": \"Bash|mcp__github__issue_write\",\n        \"hooks\": [\n          {\n            \"type\": \"command\",\n            \"command\": \"bash \\\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-issue-without-flow-kind.sh\\\"\"\n          }\n        ]\n      },"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "`matcher` はツール名に当てる[[正規表現|regex]]。`Bash|mcp__github__issue_write` は Bash と GitHub の MCP の `issue_write` に当たるので、Bash ではどのコマンドでもフックが起動する。関係のない入力はフックの先頭ですぐ通し、python3 を起動しない。"
+        },
+        {
+          "kind": "memo",
+          "text": "フック自体が起動しない実行環境もある。このリポジトリはカナリア(`echo hook-canary`)で発火を確かめ、この PR を作ったセッションでは不発だった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/settings.json",
+          "lineRange": {
+            "start": 174,
+            "end": 182
+          },
+          "text": "Bash と MCP の作成でフックを起動するエントリ",
+          "shas": [
+            "be4b20add487dcaa1bd90d1826bf606656f3b68f"
+          ]
+        },
+        {
+          "path": ".claude/hooks/block-issue-without-flow-kind.sh",
+          "lineRange": {
+            "start": 22,
+            "end": 28
+          },
+          "text": "`print_deny` が deny の JSON を python3 で組む",
+          "shas": [
+            "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+            "8a01cbf140ab3fefda7d9a451f88f9203fdded8c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "flow-kind-detector",
+        "detector-report"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "heredoc",
+      "category": "bash · クォート",
+      "label": "ヒアドキュメントと展開",
+      "gist": "コマンドの後ろに複数行の文をそのまま渡す書き方(`<<EOF` から区切りの行 `EOF` まで)。[[区切りの語|delimiter]]をクォートするかどうかで、本文の中の[[展開|expansion]]が起きるかが変わる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`<<'EOF'` のように区切りの語をクォートすると、本文は 1 文字も変わらずに渡る。`<<EOF` のようにクォートしないと、ダブルクォートの中と同じく `$X`・`$(…)`・`` `…` `` が展開され、`\\` は次の文字をエスケープする。`<<-EOF` は行頭のタブを除く。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+            "start": 345,
+            "end": 358,
+            "emphasis": [
+              {
+                "start": 355,
+                "end": 358
+              }
+            ],
+            "text": "def settle_heredoc(body: str, next_index: int, quoted: bool) -> HeredocBody:\n    \"\"\"切り出した本文を、bash が渡す字面として確定する。\n\n    区切りをクォートしないとき、本文が `$` `` ` `` `\\\\` のどれかを含めば展開をまねずに `UNSETTLED` にする。\n\n    @param body 切り出した本文\n    @param next_index 区切りの行の次の位置\n    @param quoted 区切りをクォートしたか\n    @returns 確定した本文と、本文の中のコマンド置換の中身\n    \"\"\"\n    if quoted:\n        return HeredocBody(body, next_index, ())\n    expands = any(char in EXPANDING_CHARS for char in body)\n    return HeredocBody(UNSETTLED if expands else body, next_index, nested_commands(body))"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "展開する文脈の本文は、実行するまで中身が決まらない。検出器は展開をまねず、`$` `` ` `` `\\` を 1 つでも含めば確定できないとして止める。区切りをクォートしたヒアドキュメントか一重引用符で渡せば止まらない。"
+        },
+        {
+          "kind": "history",
+          "text": "最初は提案の行がバッククォートを含む書式だったため、展開を印に置き換えてまねる処理を持っていた。書式からバッククォートを外し、まねる処理を削った。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "lineRange": {
+            "start": 66,
+            "end": 66
+          },
+          "text": "展開する文脈で確定できないとする 3 文字",
+          "shas": [
+            "8a01cbf140ab3fefda7d9a451f88f9203fdded8c"
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "lineRange": {
+            "start": 345,
+            "end": 358
+          },
+          "text": "`settle_heredoc` が切り出した本文を字面として確定する",
+          "shas": [
+            "8a01cbf140ab3fefda7d9a451f88f9203fdded8c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "shlex"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "shlex",
+      "category": "python · 字句解析",
+      "label": "`shlex`",
+      "gist": "[[標準ライブラリ|stdlib]]の `shlex` は、シェルと同じ規則で文字列を語に分けるためのモジュール。クォートで囲んだ空白を区切りにしないので、`gh issue create --body 'a b'` を `--body` と `a b` に分けられる。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "shlex.shlex(instream, posix=True, punctuation_chars=\"();<>|&\\n\")"
+        },
+        {
+          "kind": "text",
+          "text": "`punctuation_chars` に挙げた文字は、続けて並んだ分を 1 つの語として切り出す(`&&` や `;` がコマンドの区切りになる)。`whitespace_split = True` にすると、それ以外の語は空白でだけ切るので `flow:feature` が割れない。閉じないクォートがあれば `ValueError` を投げる。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+            "start": 548,
+            "end": 561,
+            "emphasis": [
+              {
+                "start": 554,
+                "end": 557
+              }
+            ],
+            "text": "def split_tokens(marked: str) -> list[str] | Unreadable:\n    \"\"\"印を付けた入力を、bash と同じ区切りで字句に分ける。\n\n    @param marked `scan()` が返した入力\n    @returns 字句の並び。shlex が分けられなければ Unreadable\n    \"\"\"\n    lexer = shlex.shlex(marked, posix=True, punctuation_chars=\"();<>|&\\n\")\n    lexer.whitespace = \" \\t\\r\"\n    lexer.whitespace_split = True\n    lexer.commenters = \"\"\n    try:\n        return list(lexer)\n    except ValueError as error:\n        return Unreadable(f\"字句に分けられない（{error}）\")"
+          }
+        },
+        {
+          "kind": "memo",
+          "text": "`shlex` は展開もヒアドキュメントも知らない。そのため検出器は先に自前の走査(`scan`)でヒアドキュメントの本文と展開を印に置き換え、残りだけを渡す。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "lineRange": {
+            "start": 548,
+            "end": 561
+          },
+          "text": "`split_tokens` が印を付けた入力を語に分ける",
+          "shas": [
+            "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "heredoc",
+        "flow-kind-detector"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "detector-report",
+      "category": "harness · 検出器",
+      "label": "検出器と `detector_report`",
+      "gist": "このリポジトリの検出器は、違反があれば `[種別] …` の行を出して[[終了コード|exit-code]] 1、無ければ 0 で終わる。`detector_report` はこの約束から、報告の行が無いのに 1 で終わったものを「検査できなかった」と見分ける。",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/lib/detector-report.sh",
+            "start": 26,
+            "end": 36,
+            "text": "detector_report() {\n  local report_pattern=\"$1\" output status=0\n  shift\n  output=\"$(python3 \"$@\")\" || status=$?\n  if scan_completed \"$status\" \"$report_pattern\" \"$output\"; then\n    printf '%s' \"$output\"\n    return 0\n  fi\n  printf '%s\\n' \"$output\" >&2\n  return 1\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "検査できなかったときに通すか止めるかは、呼ぶ側が決める。このフックは止める側(`deny_on_violations` と同じ)で、python3 そのものが使えないときだけ通す。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/block-issue-without-flow-kind.sh",
+          "lineRange": {
+            "start": 40,
+            "end": 45
+          },
+          "text": "異常終了なら「検査できなかった」として deny する",
+          "shas": [
+            "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd"
+          ]
+        },
+        {
+          "path": ".github/scripts/lib/detector-report.sh",
+          "lineRange": {
+            "start": 16,
+            "end": 17
+          },
+          "text": "使う側の一覧にフックを足した",
+          "shas": [
+            "be4b20add487dcaa1bd90d1826bf606656f3b68f"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "flow-kind-detector",
+        "pretooluse"
+      ],
+      "tests": [
+        "h89",
+        "h91"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "flow-kind-detector",
+      "category": "harness · 検出器",
+      "label": "種類の検出器",
+      "status": "added",
+      "gist": "Issue を作る呼び出しかを見分け、作るなら作業の種類を決めているかを判定する検出器。通す条件と行の書式はこのファイルの定数だけが持ち、文書はここを指す。",
+      "passages": [
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+            "start": 53,
+            "end": 58,
+            "text": "KINDS = (\"issue-flow-kind-missing\", \"issue-flow-kind-multiple\", \"issue-flow-kind-unreadable\")\nMISSING, MULTIPLE, UNREADABLE = KINDS\n\n# 提案の行と、通さない行。`{kind}` は小文字の語、`{reason}` は空でない文に当たる。\nPROPOSAL_TEMPLATE = \"種類の提案: flow:{kind}（{reason}）\"\nOPT_OUT_TEMPLATE = \"種類: implementation-flow に通さない（{reason}）\""
+          }
+        },
+        {
+          "kind": "text",
+          "text": "Bash の入力は `scan` → `split_tokens` → `split_segments` の順に語とコマンドへ分け、`segment_finding` が `gh issue create` と `gh api … /issues` を見分ける。MCP の入力は `mcp_findings` が `method` と `owner` / `repo` を見る。どちらも最後は `judge` がラベルと本文から決める。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+            "start": 797,
+            "end": 817,
+            "text": "def judge(target: str, labels: list[str], bodies: list[str | Unreadable]) -> Finding | None:\n    \"\"\"ラベルと本文から、種類を決めているかを判定する。\n\n    @param target 報告に出す作成の呼び出し\n    @param labels 作成に付けるラベル\n    @param bodies 本文の候補（読めなかったものは Unreadable、字面で確定できないものは `UNSETTLED` を含む）\n    @returns 違反なら Finding。決めていれば None\n    \"\"\"\n    flow_labels = sorted({label for label in labels if is_flow_label(label)})\n    if len(flow_labels) >= 2:\n        return Finding(MULTIPLE, target, f\"flow:* ラベルが 2 つ以上ある（{', '.join(flow_labels)}）\")\n    if flow_labels:\n        return None\n    texts = [body for body in bodies if isinstance(body, str)]\n    if any(has_declaration_line(text) for text in texts if UNSETTLED not in text):\n        return None\n    reasons = [body.reason for body in bodies if isinstance(body, Unreadable)]\n    reasons += [\"本文が展開か、展開する文脈の $ ` \\\\ を含み、字面で確定できない\" for text in texts if UNSETTLED in text]\n    if reasons:\n        return Finding(UNREADABLE, target, f\"flow:* ラベルが無く、本文を確定できない（{reasons[0]}）\")\n    return Finding(MISSING, target, \"flow:* ラベルも、種類の提案の行も、implementation-flow に通さない行も無い\")"
+          }
+        },
+        {
+          "kind": "spec",
+          "text": "通す条件は 3 つのどれか: `flow:*` ラベルがちょうど 1 つ、提案の行、通さない行(Issue #1424 の人の決定)。"
+        },
+        {
+          "kind": "caution",
+          "text": "他のリポジトリへの作成は通す。自リポジトリは origin の URL の末尾 2 要素で決め、URL が空ならどこへの作成も自分とみなす。作成先が展開を含むときも自分とみなす(止めすぎる側)。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "lineRange": {
+            "start": 53,
+            "end": 58
+          },
+          "text": "違反の種別と 2 つの行の書式",
+          "shas": [
+            "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+            "8a01cbf140ab3fefda7d9a451f88f9203fdded8c"
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "lineRange": {
+            "start": 797,
+            "end": 817
+          },
+          "text": "`judge` が通すか、どの種別で止めるかを決める",
+          "shas": [
+            "9fc75a7740d416e4b8d1fb367d2bdd9d2eebdffd",
+            "8a01cbf140ab3fefda7d9a451f88f9203fdded8c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "pretooluse",
+        "detector-report",
+        "shlex",
+        "heredoc"
+      ],
+      "tests": [
+        "t1",
+        "t8b",
+        "t10",
+        "t11",
+        "t22"
+      ],
+      "flows": [
+        "create-missing",
+        "push-table"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "tool",
+      "label": "ツール",
+      "text": "Claude Code が呼び出せる操作の単位。コマンドを走らせる Bash や、MCP サーバーが提供する `mcp__github__issue_write` などがある。"
+    },
+    {
+      "id": "json",
+      "label": "JSON",
+      "text": "データを文字で書き表す形式。`{…}` のオブジェクト・`[…]` の配列・文字列・数値などを組み合わせて書く。"
+    },
+    {
+      "id": "stdin",
+      "label": "標準入力",
+      "text": "コマンドが起動時に読み込む入力の流れ。パイプ(`|`)やヒアドキュメントで別のコマンドの出力や文を流し込める。"
+    },
+    {
+      "id": "exit-code",
+      "label": "終了コード",
+      "text": "コマンドが終わるときに返す 0〜255 の数。0 が成功を表し、それ以外の値の意味はコマンドごとに決める。"
+    },
+    {
+      "id": "regex",
+      "label": "正規表現",
+      "text": "文字列の形を表す書き方。`A|B` は A か B のどちらかに当たる。"
+    },
+    {
+      "id": "delimiter",
+      "label": "区切りの語",
+      "text": "ヒアドキュメントの終わりを示す語。`<<EOF` の `EOF` で、本文の後にこの語だけの行を置くと本文が終わる。"
+    },
+    {
+      "id": "expansion",
+      "label": "展開",
+      "text": "シェルがコマンドを走らせる前に、`$X` を変数の値に、`$(…)` を中のコマンドの出力に置き換えること。"
+    },
+    {
+      "id": "stdlib",
+      "label": "標準ライブラリ",
+      "text": "Python に最初から付いてくるモジュールの集まり。インストールせずに `import shlex` のように取り込むだけで使える。"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "pass-condition",
+      "kind": "choice",
+      "title": "作成が通る条件",
+      "prompt": "自分のリポジトリへ Issue を作るとき、フックに止められないのはどれですか。",
+      "options": [
+        "`--label flow:feature --label flow:bugfix` を付け、本文に提案の行も書く",
+        "本文の行頭に `種類の提案: flow:feature（根拠）` と書き、`'EOF'` のヒアドキュメントで渡す",
+        "ラベルを付けずに作り、作った後で `issues/<番号>/labels` へ POST する",
+        "本文に `種類の提案：flow:feature（根拠）`(全角コロン)と書く"
+      ],
+      "answer": 2,
+      "why": "通す条件は `flow:*` ラベルがちょうど 1 つ・提案の行・通さない行のどれか。ラベル 2 つは提案の行があっても multiple で止まり、作った後に付ける形は作成の時点で止まり、全角コロンは書式に合わない。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "judge"
+        }
+      ]
+    },
+    {
+      "id": "crash-policy",
+      "kind": "yesno",
+      "title": "検出器が落ちたとき",
+      "prompt": "検出器が異常終了したとき、フックは Issue の作成を通す。",
+      "holds": false,
+      "why": "後ろに控える層が無いので、検出器が落ちたら「検査できなかった」として止める。通すのは python3 そのものが使えないときだけで、それはカナリアが名指しする。",
+      "go": [
+        {
+          "kind": "callEdge",
+          "id": "hook-deny"
+        },
+        {
+          "kind": "callEdge",
+          "id": "hook-python3"
+        }
+      ]
+    },
+    {
+      "id": "other-repo",
+      "kind": "yesno",
+      "title": "他のリポジトリへの作成",
+      "prompt": "origin が設定されているとき、`gh issue create -R other/repo` はラベルが無くても止められない。",
+      "holds": true,
+      "why": "他のリポジトリへの作成は対象外。自リポジトリは origin の URL の末尾 2 要素で決め、大文字小文字は区別しない。origin が空のときだけ、明示されたどのリポジトリも自分とみなして止める。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "issue-create-finding"
+        },
+        {
+          "kind": "message",
+          "id": "judge-kind"
+        }
+      ]
+    },
+    {
+      "id": "reason-order",
+      "kind": "order",
+      "title": "拒否文の並び",
+      "prompt": "止めたときの直し方が出る順に並べてください。",
+      "items": [
+        "対話中なら人に尋ね、答えの flow:* をラベルに含める",
+        "人がいない起動のときだけ、提案の行を書く",
+        "手順 4 の (c) に当たる Issue は、通さない行を書く",
+        "手順の場所と、本文の渡し方の案内"
+      ],
+      "why": "書式を先に出すと、対話中でも人に尋ねずに提案の行を写す道が最短になる。そのため人に尋ねる道を先頭に置き、判定表のケース 86 で順を固定している。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "guidance"
+        }
+      ]
+    },
+    {
+      "id": "no-emulation",
+      "kind": "choice",
+      "title": "展開をまねない理由",
+      "prompt": "実装の検証の後、検出器が bash の展開をまねるのをやめられたのはなぜですか。",
+      "options": [
+        "bash の展開は shlex が代わりに行うから",
+        "提案の行の書式からバッククォートを外し、記号を含む展開文脈の本文は確定できないとして止めれば足りるから",
+        "ダブルクォートの本文は検出器が読まないことにしたから",
+        "展開を含む本文はすべて通すことにしたから"
+      ],
+      "answer": 2,
+      "why": "バッククォート必須の書式が、ダブルクォートやクォートしないヒアドキュメントでの展開をまねる処理(約 150 行)を生んでいた。書式から外せば、`$` `` ` `` `\\` を含む展開文脈の本文を確定できないとするだけで済む。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "scan"
+        },
+        {
+          "kind": "file",
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py"
+        }
+      ]
+    },
+    {
+      "id": "table-layers",
+      "kind": "choice",
+      "title": "判定表を回す場所",
+      "prompt": "この PR の判定表を、フックとは別に pre-push と CI でも回す理由はどれですか。",
+      "options": [
+        "フックが発火しない環境では、判定表が作成を止める代わりになるから",
+        "検出器を呼ぶ層はフックしか無く、字句への分け方が退行しても他に落ちるものが無いから",
+        "判定表が GitHub に Issue を作って確かめるから",
+        "pre-push で Issue の作成を止めるため"
+      ],
+      "answer": 2,
+      "why": "判定表は作成を止めない。リポジトリ内の判定が変わっていないかを見るゲートで、検出器を呼ぶのがフックだけなので、ここで回さないと退行に気づけない。",
+      "go": [
+        {
+          "kind": "flow",
+          "id": "push-table"
+        }
+      ]
+    }
+  ]
+}
