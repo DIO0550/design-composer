@@ -132,11 +132,11 @@ function TokenEditorTitle({
 function ValueRowControl({
   id,
   row,
-  onEdit,
+  onRawEdit,
 }: Readonly<{
   id: string;
   row: TokenControlRow;
-  onEdit: SubmitTokenRawEdit;
+  onRawEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   switch (row.kind) {
     case "field":
@@ -146,11 +146,11 @@ function ValueRowControl({
           input={row.field.input}
           density={FieldDensities.Regular}
           target={row.field.target}
-          onEdit={onEdit}
+          onRawEdit={onRawEdit}
         />
       );
     case "color":
-      return <ColorField id={id} color={row.color} onEdit={onEdit} />;
+      return <ColorField id={id} color={row.color} onRawEdit={onRawEdit} />;
   }
 }
 
@@ -189,13 +189,17 @@ function TokenEditorBody({
   }
 
   const { token, valueFields } = control.value;
-  const onEdit: SubmitTokenRawEdit = (edit, continuity) => {
+
+  const onRawEdit: SubmitTokenRawEdit = (edit, continuity) => {
     const value = TokenRawEdit.toTokenValue(edit);
+
     if (Option.isSome(value)) {
       onSetTokenValue(value.value, continuity);
     }
+
     return value;
   };
+
   /** どのトークンを編集しているか。名前は種別の中でしか一意でないので種別も混ぜる。 */
   const tokenKey = `${token.kind}/${token.name}`;
 
@@ -218,7 +222,7 @@ function TokenEditorBody({
               htmlFor={id}
               label={caption.label}
             >
-              <ValueRowControl id={id} row={row} onEdit={onEdit} />
+              <ValueRowControl id={id} row={row} onRawEdit={onRawEdit} />
             </LabeledRow>
           );
         })
@@ -227,7 +231,7 @@ function TokenEditorBody({
           gradient={valueFields.gradient}
           idPrefix={valueId}
           tokenKey={tokenKey}
-          onEdit={onEdit}
+          onRawEdit={onRawEdit}
           onSetTokenValue={onSetTokenValue}
         />
       )}

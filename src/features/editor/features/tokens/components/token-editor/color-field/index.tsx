@@ -30,12 +30,12 @@ function ColorPickerField({
   id,
   value,
   target,
-  onEdit,
+  onRawEdit,
 }: Readonly<{
   id: string;
   value: Rgb;
   target: TokenColorTarget;
-  onEdit: SubmitTokenRawEdit;
+  onRawEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   /*
    * ピッカーは常に #rrggbb を返し `value` の読み方の `none` に届かないので、1 件目が
@@ -57,7 +57,7 @@ function ColorPickerField({
       onClick={continuitySequence.restart}
       onBlur={continuitySequence.restart}
       onChange={(event) => {
-        onEdit(
+        onRawEdit(
           { kind: "value", target, raw: event.target.value },
           continuitySequence.next(),
         );
@@ -77,11 +77,11 @@ function ColorPickerField({
 function HexColorInput({
   id,
   color,
-  onEdit,
+  onRawEdit,
 }: Readonly<{
   id: string;
   color: HexColorControl;
-  onEdit: SubmitTokenRawEdit;
+  onRawEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   /*
    * 確定の回数を key に混ぜるのは、`ABC` のように通っても値が変わらない確定では key が動かず下書きが残るため。
@@ -89,7 +89,7 @@ function HexColorInput({
    */
   const [hexCommits, setHexCommits] = useState(0);
   const commitHex = (raw: string) => {
-    const read = onEdit(
+    const read = onRawEdit(
       { kind: "hex", target: color.target, raw },
       EditContinuities.Separate,
     );
@@ -101,7 +101,7 @@ function HexColorInput({
   };
 
   const commitAlpha = (raw: string) => {
-    onEdit(
+    onRawEdit(
       { kind: "alpha", target: color.target, raw },
       EditContinuities.Separate,
     );
@@ -126,7 +126,7 @@ function HexColorInput({
         id={pickerId}
         value={color.rgb}
         target={color.target}
-        onEdit={onEdit}
+        onRawEdit={onRawEdit}
       />
       <span aria-hidden="true" className="text-[#b3b3b3]">
         #
@@ -168,15 +168,15 @@ function HexColorInput({
 export function ColorField({
   id,
   color,
-  onEdit,
+  onRawEdit,
 }: Readonly<{
   id: string;
   color: TokenColorControl;
-  onEdit: SubmitTokenRawEdit;
+  onRawEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   switch (color.kind) {
     case "hex":
-      return <HexColorInput id={id} color={color} onEdit={onEdit} />;
+      return <HexColorInput id={id} color={color} onRawEdit={onRawEdit} />;
     case "text":
       return (
         <DraftField
@@ -186,7 +186,7 @@ export function ColorField({
           value={color.value}
           look={DraftFieldLooks.Regular}
           onCommit={(raw) => {
-            onEdit(
+            onRawEdit(
               { kind: "value", target: color.target, raw },
               EditContinuities.Separate,
             );

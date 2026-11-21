@@ -178,16 +178,16 @@ export function ValueField({
   input,
   density,
   target,
-  onEdit,
+  onRawEdit,
 }: Readonly<{
   id: string;
   input: TokenControlInput;
   density: FieldDensity;
   target: TokenFieldTarget;
-  onEdit: SubmitTokenRawEdit;
+  onRawEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   const onCommit = (raw: string) => {
-    onEdit({ kind: "value", target, raw }, EditContinuities.Separate);
+    onRawEdit({ kind: "value", target, raw }, EditContinuities.Separate);
   };
   switch (input.kind) {
     case "number":
@@ -269,11 +269,11 @@ export function LabeledRow({
 export function FieldRow({
   id,
   field,
-  onEdit,
+  onRawEdit,
 }: Readonly<{
   id: string;
   field: TokenControlField;
-  onEdit: SubmitTokenRawEdit;
+  onRawEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   return (
     <LabeledRow htmlFor={id} label={field.label}>
@@ -282,7 +282,7 @@ export function FieldRow({
         input={field.input}
         density={FieldDensities.Regular}
         target={field.target}
-        onEdit={onEdit}
+        onRawEdit={onRawEdit}
       />
     </LabeledRow>
   );
