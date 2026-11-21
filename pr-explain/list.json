@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1431,
+      "title": "✨ #1424 Issue 作成時に flow:* が無ければ PreToolUse で止める"
+    },
+    {
       "pr": 1430,
       "title": "[harness] PR #1427（flow:feature の 2 工程化）の記録を足す"
     },
