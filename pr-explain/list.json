@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1432,
+      "title": "📝 PR #1431 の振り返りを記録する"
+    },
+    {
       "pr": 1431,
       "title": "✨ #1424 Issue 作成時に flow:* が無ければ PreToolUse で止める"
     },
