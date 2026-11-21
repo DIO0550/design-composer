@@ -27,7 +27,7 @@
 - Bash の `gh issue create`（`gh issue -R <repo> create` を含む）
 - Bash の `gh api` で、エンドポイントが `repos/<owner>/<repo>/issues` で終わる POST
 
-Bash では、予約語・前置コマンド（`do` `then` `{` `time` `env` など）の後ろと、コマンド置換
+Bash では、予約語・前置コマンド（`if` `while` `do` `then` `{` `time` `exec` `env` など）の後ろと、コマンド置換
 （`$(…)` と `` `…` ``。シングルクォートとクォートした区切りのヒアドキュメントの中を除く）の中身も作成として読む。
 
 他のリポジトリへの作成は通す（自リポジトリは `--origin-url` の末尾 2 要素。空ならどのリポジトリも自分とみなす）。
@@ -80,7 +80,9 @@ SEPARATOR_CHARS = frozenset(";&|()\n")
 REDIRECT_CHARS = frozenset("<>")
 ASSIGNMENT = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
 # コマンドの頭に置かれ、後ろの語をコマンドとして走らせる予約語と前置コマンド。
-COMMAND_PREFIXES = frozenset({"do", "then", "else", "{", "!", "time", "command", "env"})
+COMMAND_PREFIXES = frozenset(
+    {"if", "elif", "then", "else", "while", "until", "do", "{", "!", "time", "coproc", "command", "exec", "env"}
+)
 API_ISSUES_ENDPOINT = re.compile(r"(?:^|/)repos/(.+?)/issues/?$")
 # `gh api` のエンドポイントで、gh が自リポジトリの値で埋める綴り。
 SELF_PLACEHOLDERS = ("{owner}", "{repo}", ":owner", ":repo")

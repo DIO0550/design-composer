@@ -282,6 +282,13 @@ deny|missing|bash|148 time の後ろの作成も止める|time gh issue create -
 deny|missing|bash|149 command の後ろの作成も止める|command gh issue create -t x
 deny|missing|bash|150 env VAR=val の後ろの作成も止める|env FOO=1 gh issue create -t x
 pass|-|bash|151 env GH_REPO=other/repo の後ろの作成は通す|env GH_REPO=other/repo gh issue create -t x
+deny|missing|bash|164 if の直後の作成も止める|if gh issue create -t x; then :; fi
+deny|missing|bash|164 elif の直後の作成も止める|if false; then :; elif gh issue create -t x; then :; fi
+deny|missing|bash|164 while の直後の作成も止める|while gh issue create -t x; do break; done
+deny|missing|bash|164 until の直後の作成も止める|until gh issue create -t x; do :; done
+deny|missing|bash|164 if ! の後ろの作成も止める|if ! gh issue create -t x; then :; fi
+deny|missing|bash|164 coproc の後ろの作成も止める|coproc gh issue create -t x
+deny|missing|bash|164 exec の後ろの作成も止める|exec gh issue create -t x
 deny|missing|bash|152 ダブルクォートの中の $(gh issue create …) も止める|url="$(gh issue create -t x)"
 deny|missing|bash|153 ダブルクォートの中の `gh issue create …` も止める|url="`gh issue create -t x`"
 deny|missing|bash|154 クォートの外の `gh issue create …` も止める|x=`gh issue create -t x`
