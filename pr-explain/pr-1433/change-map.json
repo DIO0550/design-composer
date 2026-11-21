@@ -1,0 +1,1130 @@
+{
+  "version": 2,
+  "pr": 1433,
+  "headBranch": "claude/magical-cannon-n21uj8",
+  "baseBranch": "main",
+  "mergeBase": "953d0a6ea7a5dba6f4351ea89b1b0ef9fb22ce66",
+  "head": "c5fb1de7a64ea8d0f55616188d314668fa85fa9c",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/px/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/axis-length/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-position/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reposition-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/sibling-placements/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / compiled",
+      "files": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/under-pointer/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 44,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/dom-event/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/element-measure/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 55,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.beneath.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/element-measure/__tests__/element-measure.bounds.test.ts",
+          "status": "R",
+          "oldPath": "src/libs/canvas-dom/__tests__/canvas-dom.bounds.test.ts",
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": "src/libs/element-measure/index.ts"
+        },
+        {
+          "path": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/libs/element-measure/index.ts"
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Css.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/ElementEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/NonEmptyArray.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.zoom-fit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-targets/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-placement.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-artboards.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+        "name": "HTML の要素でない SVG はレイアウトの大きさを測れない"
+      },
+      {
+        "file": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+        "name": "HTML の要素は、外接矩形ではなく変形を効かせる前のレイアウトの幅と高さで測れる"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/libs/element-measure/__tests__/element-measure.bounds.test.ts",
+      "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "1f9b9951f19f3ccf3d60cd2a2152a0c6c9807133",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-21T16:04:15Z",
+      "subject": "🧪 [Tests]: #1415 layoutSizeOf の今の振る舞いをテストで固定する",
+      "body": "- canvas-dom.untransformed-size.test.ts を足し、CanvasDom.layoutSizeOf の\n  2 つの枝（HTML の要素はレイアウトの大きさ / SVG は none）を固定する\n\n背景:\nboundsOf / layoutSizeOf を libs/element-measure へ移す（flow:refactor）。\n振る舞いが変わっていない根拠は書き換えていない既存テストだけになるが、\nlayoutSizeOf の none の枝（HTML でない要素）を守るテストが無かった。\n計画時に HTMLElement 判定を Element に緩めても落ちるテストは 0 件だった。\n\n採用理由:\n移動の前に今のコードで通るテストを足し、第 2 工程（移動）の比較基準にする。\n外接矩形とレイアウトの大きさ、幅と高さをそれぞれ違う値にして、\n取り違えや外接矩形を読む実装への差し替えで落ちるようにした。\n\n影響とトレードオフ:\nテストを 2 件足すだけで、実装は変えない。ファイルは第 2 工程で\nelement-measure/__tests__/ へ移す（移動表に記載済み）。\n\n代替案:\n既存の通しのテスト（artboard-canvas.* など）で間接的に守られているとみなし、\n足さない案。幅と高さの入れ替えは 17 件落ちるが none の枝は 0 件で、\nこの枝を守れないため採らなかった。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1415\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RK7P8qDCh5QrmUvgq",
+      "files": [
+        {
+          "path": "src/libs/canvas-dom/__tests__/canvas-dom.untransformed-size.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,23 @@\n+import { expect, test } from \"vitest\";\n+import { stubBounds, stubLayoutSize } from \"@/libs/__tests__/element-measure\";\n+import { Option } from \"@/utils/Option\";\n+import { CanvasDom } from \"../index\";\n+\n+test(\"HTML の要素は、外接矩形ではなく変形を効かせる前のレイアウトの幅と高さで測れる\", () => {\n+  const element = globalThis.document.createElement(\"div\");\n+  stubBounds(element, { left: 10, top: 20, width: 150, height: 130 });\n+  stubLayoutSize(element, { width: 100, height: 60 });\n+\n+  expect(CanvasDom.layoutSizeOf(element)).toEqual(\n+    Option.some({ width: 100, height: 60 }),\n+  );\n+});\n+\n+test(\"HTML の要素でない SVG はレイアウトの大きさを測れない\", () => {\n+  const element = globalThis.document.createElementNS(\n+    \"http://www.w3.org/2000/svg\",\n+    \"svg\",\n+  );\n+\n+  expect(CanvasDom.layoutSizeOf(element)).toEqual(Option.none);\n+});",
+          "patchLines": 24,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "c5fb1de7a64ea8d0f55616188d314668fa85fa9c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-21T16:10:56Z",
+      "subject": "♻️ [Refactoring]: #1415 boundsOf / layoutSizeOf を libs/element-measure へ移す",
+      "body": "- CanvasDom.boundsOf / layoutSizeOf を新設の ElementMeasure へ本体を変えずに移す\n- 呼び出し側（use-node-drag / use-canvas-view / use-drawn-bounds / DrawnBounds）を付け替える\n- 既存テスト canvas-dom.bounds と第 1 工程の untransformed-size を element-measure/__tests__/ へ移す\n- テストヘルパー src/libs/__tests__/element-measure.ts の型 import と doc を付け替える\n- canvas-dom のモジュール doc と移した 2 関数の doc からキャンバス前提の語を外す\n\n背景:\n#1037 で gradients の階調のバー（キャンバスの外の要素）を測る必要がある。\ncanvas-dom の範囲は「キャンバスに描かれた要素」なので、そこで測ると名前と\n実体がずれる。boundsOf 自体には canvas 固有のものが無く、use-canvas-view は\n既に描かれた要素ではない器を測っていた。\n\n採用理由:\n実測を libs の汎用モジュールへ移す（#1037 の plan-reviewer で比較した案 B）。\nI/O は libs を通す規約を保ったまま、フックが実測 API を直接読まずに済む。\n委譲を残さず全呼び出し（本番 9 行）を付け替え、入口を 1 つに保つ。\n名前はテストヘルパー element-measure と揃え、測る側と差し替える側を対にした。\n\n影響とトレードオフ:\n振る舞いは変えない（既存テストは import 名と改名表の名前以外を書き換えていない）。\nCanvasDom.layoutSizeFor は getComputedStyle を読むが canvas-dom に残る。\nstyle を当てて戻す安全性が「中身は React の管理外」というキャンバスの前提に\n乗っているため。テスト側の「理由は element-measure の doc」というコメント\n6 箇所は、新モジュールとヘルパーのどちらとも読める。書き換えない範囲に\nあるので触らず、新モジュールの doc からヘルパーへ案内する形にした。\n\n代替案:\n- CanvasDom.boundsOf を残して ElementMeasure へ委譲する: 入口が 2 つになる\n- フックで直接 getBoundingClientRect を読む: I/O を libs に閉じる規約に反する\n- layoutSizeFor も移す: キャンバス固有の前提に乗っており、スコープ外\n- src/utils/ElementEx に置く: レイアウトの実測はブラウザが行う I/O。\n  ElementEx は要素の種類・属性・祖先を読むだけ\n- 既存テストを canvas-dom/__tests__/ に残す: 対象モジュールとテストの置き場・名前が食い違う\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1415\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2RK7P8qDCh5QrmUvgq",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -13,8 +13,8 @@ import {\n } from \"@/features/editor/features/canvas/domains/canvas-view\";\n import { CanvasPointer } from \"@/features/editor/features/canvas/utils/CanvasPointer\";\n import { DrawnBounds } from \"@/features/editor/features/canvas/utils/DrawnBounds\";\n-import { CanvasDom } from \"@/libs/canvas-dom\";\n import { CommandKey } from \"@/libs/dom-event\";\n+import { ElementMeasure } from \"@/libs/element-measure\";\n import { Option } from \"@/utils/Option\";\n \n /** キャンバスの見え方に対する操作（docs/06-ui.md「ズーム / パンは非永続の view state」）。 */\n@@ -194,7 +194,7 @@ export function useCanvasView(): CanvasViewControl {\n         bounds: {\n           target: target.value,\n           // 収める先は土台そのもの。その左上が中身の transform の原点になる\n-          viewport: CanvasDom.boundsOf(surface),\n+          viewport: ElementMeasure.boundsOf(surface),\n         },\n       });\n     },",
+          "patchLines": 19,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -4,7 +4,7 @@ import type { CanvasView } from \"@/features/editor/features/canvas/domains/canva\n import { RotatedBounds } from \"@/features/editor/features/canvas/domains/rotated-bounds\";\n import { useMeasured } from \"@/features/editor/features/canvas/hooks/use-measured\";\n import { DrawnBounds } from \"@/features/editor/features/canvas/utils/DrawnBounds\";\n-import { CanvasDom } from \"@/libs/canvas-dom\";\n+import { ElementMeasure } from \"@/libs/element-measure\";\n import { Option } from \"@/utils/Option\";\n \n /** 測るものの画面上の向きと、レイアウトの大きさを画面上へ直す倍率。 */\n@@ -27,7 +27,7 @@ function measure(\n   if (container === null) {\n     return Option.none;\n   }\n-  const origin = CanvasDom.boundsOf(container);\n+  const origin = ElementMeasure.boundsOf(container);\n   return Option.map(\n     Option.flatMap(target, (name) =>\n       DrawnBounds.measureRotated(name, basis.rotation, basis.view),",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "patch": "@@ -42,6 +42,7 @@ import { CanvasPointer } from \"@/features/editor/features/canvas/utils/CanvasPoi\n import { DrawnBounds } from \"@/features/editor/features/canvas/utils/DrawnBounds\";\n import { CanvasDom } from \"@/libs/canvas-dom\";\n import { AltKey, CommandKey } from \"@/libs/dom-event\";\n+import { ElementMeasure } from \"@/libs/element-measure\";\n import type { NonEmptyArray } from \"@/types/NonEmptyArray\";\n import { ArrayEx } from \"@/utils/ArrayEx\";\n import { ElementEx } from \"@/utils/ElementEx\";\n@@ -121,8 +122,8 @@ function measureZone(parent: InsertionParent): Option<DropZone> {\n   return Option.map(CanvasDom.elementOf(parent.name), (element) =>\n     DropZone.create(\n       parent,\n-      CanvasDom.boundsOf(element),\n-      namedChildrenOf(element).map(CanvasDom.boundsOf),\n+      ElementMeasure.boundsOf(element),\n+      namedChildrenOf(element).map(ElementMeasure.boundsOf),\n     ),\n   );\n }\n@@ -238,7 +239,7 @@ function measureReposition(\n   if (!measurable) {\n     return Option.none;\n   }\n-  const droppedBounds = CanvasDom.boundsOf(droppedElement.value);\n+  const droppedBounds = ElementMeasure.boundsOf(droppedElement.value);\n   const carriedNames = new Set<string | null>(\n     grabbed.members.map((member) => member.name),\n   );\n@@ -246,7 +247,7 @@ function measureReposition(\n     carriedNames.has(child.getAttribute(ElementNameAttribute));\n   const siblings = namedChildrenOf(droppedElement.value)\n     .filter((child) => !isCarried(child))\n-    .map(CanvasDom.boundsOf);\n+    .map(ElementMeasure.boundsOf);\n   return Option.some({\n     dropParent: {\n       name: dropped.name,",
+          "patchLines": 37,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "patch": "@@ -4,6 +4,7 @@ import { CanvasBounds } from \"@/features/editor/features/canvas/domains/canvas-b\n import { CanvasView } from \"@/features/editor/features/canvas/domains/canvas-view\";\n import { RotatedBounds } from \"@/features/editor/features/canvas/domains/rotated-bounds\";\n import { CanvasDom } from \"@/libs/canvas-dom\";\n+import { ElementMeasure } from \"@/libs/element-measure\";\n import { ArrayEx } from \"@/utils/ArrayEx\";\n import { Option } from \"@/utils/Option\";\n \n@@ -21,7 +22,7 @@ export const DrawnBounds = {\n    * @returns 描かれている矩形。その名前の要素がまだ画面に出ていなければ `none`\n    */\n   measure(name: string): Option<CanvasBounds> {\n-    return Option.map(CanvasDom.elementOf(name), CanvasDom.boundsOf);\n+    return Option.map(CanvasDom.elementOf(name), ElementMeasure.boundsOf);\n   },\n \n   /**\n@@ -43,13 +44,13 @@ export const DrawnBounds = {\n     view: CanvasView,\n   ): Option<RotatedBounds> {\n     return Option.flatMap(CanvasDom.elementOf(name), (element) => {\n-      const enclosing = CanvasDom.boundsOf(element);\n+      const enclosing = ElementMeasure.boundsOf(element);\n       if (Angle.isWholeTurns(rotation)) {\n         return Option.some(\n           RotatedBounds.fromEnclosing(enclosing, enclosing, rotation),\n         );\n       }\n-      return Option.map(CanvasDom.layoutSizeOf(element), (size) => {\n+      return Option.map(ElementMeasure.layoutSizeOf(element), (size) => {\n         const drawn = CanvasView.toScreenOffset(view, {\n           x: size.width,\n           y: size.height,",
+          "patchLines": 33,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -1,9 +1,9 @@\n import { ElementNameAttribute } from \"@/domains/compiled/compiled-element\";\n-import type { CanvasDom } from \"@/libs/canvas-dom\";\n+import type { ElementMeasure } from \"@/libs/element-measure\";\n \n /**\n  * 要素の実測（`getBoundingClientRect` / `offsetWidth` / `offsetHeight` / `getComputedStyle` の\n- * 幅と高さ）を差し替える。測る側は `CanvasDom.boundsOf` / `CanvasDom.layoutSizeOf` /\n+ * 幅と高さ）を差し替える。測る側は `ElementMeasure.boundsOf` / `ElementMeasure.layoutSizeOf` /\n  * `CanvasDom.layoutSizeFor`。\n  *\n  * happy-dom はレイアウトを行わず、矩形も大きさもすべて 0 で返し、計算値の幅と高さはインラインの\n@@ -12,8 +12,8 @@ import type { CanvasDom } from \"@/libs/canvas-dom\";\n  * ここで差し替えるのはブラウザが行う測定だけで、そこから何が決まるかは実物が答える。\n  */\n \n-/** 差し替える矩形。`CanvasDom.boundsOf` が返す形に揃えている。 */\n-type MeasuredBounds = ReturnType<typeof CanvasDom.boundsOf>;\n+/** 差し替える矩形。`ElementMeasure.boundsOf` が返す形に揃えている。 */\n+type MeasuredBounds = ReturnType<typeof ElementMeasure.boundsOf>;\n \n /**\n  * その要素が描かれている矩形を決める。",
+          "patchLines": 23,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/canvas-dom/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 44,
+          "patch": "@@ -11,7 +11,7 @@ import { Option } from \"@/utils/Option\";\n  * キャンバスの中身はコンパイル結果の HTML を流し込んでおり React の管理下に無いため、\n  * ref では掴めず名前の属性を選択子にして引くしかない。引き方はどこでも同じなので、\n  * 名前で要素を引く選択子の綴りと、DOM を触るところをここへ閉じ込める（要素の実測は\n- * `boundsOf` と `layoutSizeOf`、長さを当てて測るのは `layoutSizeFor`、名前で引いて測るのは\n+ * `ElementMeasure`、長さを当てて測るのは `layoutSizeFor`、名前で引いて測るのは\n  * `DrawnBounds`、規則の差し込みは `NameStyleRule`、重ねた器（overlay）の下を点で引くのは\n  * `elementBeneath`）。\n  *\n@@ -44,48 +44,6 @@ export const CanvasDom = {\n     );\n   },\n \n-  /**\n-   * 描かれている要素の矩形。位置も大きさもレイアウトはブラウザが行うので実測で取る。\n-   *\n-   * 戻り値の型は名前を付けずに書く。描かれた矩形の型はキャンバスの feature が持っており、\n-   * `libs/` からは import できないため。\n-   *\n-   * @param element 測る要素（名前ではなく、`elementOf` などで引いた後の要素）\n-   * @returns その要素の今の client 座標の矩形\n-   */\n-  boundsOf(\n-    element: Element,\n-  ): Readonly<{ left: number; top: number; width: number; height: number }> {\n-    const rect = element.getBoundingClientRect();\n-    return {\n-      left: rect.left,\n-      top: rect.top,\n-      width: rect.width,\n-      height: rect.height,\n-    };\n-  },\n-\n-  /**\n-   * 変形（`transform`）を効かせる前の、レイアウトが決めた大きさ。回っている要素の実測\n-   * （`boundsOf`）は軸に平行な外接矩形になるので、回る前の大きさはこちらで測る。\n-   *\n-   * 戻り値の型を名前を付けずに書く理由は `boundsOf` と同じ。\n-   *\n-   * @param element 測る要素\n-   * @returns border を含む幅と高さ（整数へ丸められている）。レイアウトの大きさを持たない\n-   *   要素（HTML の要素でないもの）は `none`\n-   */\n-  layoutSizeOf(\n-    element: Element,\n-  ): Option<Readonly<{ width: number; height: number }>> {\n-    return element instanceof HTMLElement\n-      ? Option.some({\n-          width: element.offsetWidth,\n-          height: element.offsetHeight,\n-        })\n-      : Option.none;\n-  },\n-\n   /**\n    * その長さを当てて描いたときの、変形を効かせる前のレイアウトの大きさ。当てた長さは測り終えたら\n    * 外し、`style` 属性を測る前の文字列へ戻す。\n@@ -94,7 +52,7 @@ export const CanvasDom = {\n    * 行うので、当てた長さのまま描かれることは無い。`offsetWidth` / `offsetHeight` で読まないのは、\n    * 整数へ丸められて 2 回測った差が 1px ずれうるため。\n    *\n-   * 戻り値の型を名前を付けずに書く理由は `boundsOf` と同じ。\n+   * 戻り値の型を名前を付けずに書く理由は `ElementMeasure.boundsOf` と同じ。\n    *\n    * @param element 測る要素\n    * @param lengths 当てる長さ。並びに無い軸は今の描かれ方のまま",
+          "patchLines": 67,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/element-measure/__tests__/element-measure.bounds.test.ts",
+          "status": "R",
+          "oldPath": "src/libs/canvas-dom/__tests__/canvas-dom.bounds.test.ts",
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -1,6 +1,6 @@\n import { expect, test } from \"vitest\";\n import { stubBounds } from \"@/libs/__tests__/element-measure\";\n-import { CanvasDom } from \"../index\";\n+import { ElementMeasure } from \"../index\";\n \n /**\n  * 実測がその矩形を返す要素を作る。\n@@ -14,7 +14,7 @@ function stubbedElement(): Element {\n }\n \n test(\"描かれている要素の矩形を client 座標の位置と大きさで返す\", () => {\n-  const bounds = CanvasDom.boundsOf(stubbedElement());\n+  const bounds = ElementMeasure.boundsOf(stubbedElement());\n \n   expect(bounds).toEqual({ left: 10, top: 20, width: 30, height: 40 });\n });",
+          "patchLines": 17,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+          "status": "R",
+          "oldPath": "src/libs/canvas-dom/__tests__/canvas-dom.untransformed-size.test.ts",
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -1,14 +1,14 @@\n import { expect, test } from \"vitest\";\n import { stubBounds, stubLayoutSize } from \"@/libs/__tests__/element-measure\";\n import { Option } from \"@/utils/Option\";\n-import { CanvasDom } from \"../index\";\n+import { ElementMeasure } from \"../index\";\n \n test(\"HTML の要素は、外接矩形ではなく変形を効かせる前のレイアウトの幅と高さで測れる\", () => {\n   const element = globalThis.document.createElement(\"div\");\n   stubBounds(element, { left: 10, top: 20, width: 150, height: 130 });\n   stubLayoutSize(element, { width: 100, height: 60 });\n \n-  expect(CanvasDom.layoutSizeOf(element)).toEqual(\n+  expect(ElementMeasure.layoutSizeOf(element)).toEqual(\n     Option.some({ width: 100, height: 60 }),\n   );\n });\n@@ -19,5 +19,5 @@ test(\"HTML の要素でない SVG はレイアウトの大きさを測れない\"\n     \"svg\",\n   );\n \n-  expect(CanvasDom.layoutSizeOf(element)).toEqual(Option.none);\n+  expect(ElementMeasure.layoutSizeOf(element)).toEqual(Option.none);\n });",
+          "patchLines": 24,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/element-measure/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 55,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,55 @@\n+import { Option } from \"@/utils/Option\";\n+\n+/**\n+ * 要素の実測。キャンバスに描かれた要素に限らず、ref で掴んだ要素（キャンバスの器など）も測る。\n+ *\n+ * 名前で要素を引く `CanvasDom` に置かないのは、測ることが要素の引き方に依らないため。長さを\n+ * 当てて測る `CanvasDom.layoutSizeFor` を移さないのは、`style` を当てて戻しても安全なことが\n+ * 「中身は React の管理外」というキャンバスの前提に乗っているため。\n+ *\n+ * テストで実測を差し替える理由と差し替え方は、テストヘルパー `src/libs/__tests__/element-measure.ts`\n+ * の doc にある。\n+ */\n+export const ElementMeasure = {\n+  /**\n+   * 要素の矩形。位置も大きさもレイアウトはブラウザが行うので実測で取る。\n+   *\n+   * 戻り値の型は名前を付けずに書く。測った矩形を受け取る型は使う側の feature が持っており、\n+   * `libs/` からは import できないため。\n+   *\n+   * @param element 測る要素\n+   * @returns その要素の今の client 座標の矩形\n+   */\n+  boundsOf(\n+    element: Element,\n+  ): Readonly<{ left: number; top: number; width: number; height: number }> {\n+    const rect = element.getBoundingClientRect();\n+    return {\n+      left: rect.left,\n+      top: rect.top,\n+      width: rect.width,\n+      height: rect.height,\n+    };\n+  },\n+\n+  /**\n+   * 変形（`transform`）を効かせる前の、レイアウトが決めた大きさ。回っている要素の実測\n+   * （`boundsOf`）は軸に平行な外接矩形になるので、回る前の大きさはこちらで測る。\n+   *\n+   * 戻り値の型を名前を付けずに書く理由は `boundsOf` と同じ。\n+   *\n+   * @param element 測る要素\n+   * @returns border を含む幅と高さ（整数へ丸められている）。レイアウトの大きさを持たない\n+   *   要素（HTML の要素でないもの）は `none`\n+   */\n+  layoutSizeOf(\n+    element: Element,\n+  ): Option<Readonly<{ width: number; height: number }>> {\n+    return element instanceof HTMLElement\n+      ? Option.some({\n+          width: element.offsetWidth,\n+          height: element.offsetHeight,\n+        })\n+      : Option.none;\n+  },\n+} as const;",
+          "patchLines": 56,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.multi-selection.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.zoom-fit.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__stories__/canvas-controls.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.drag-placement.test.tsx",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-artboards.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/canvas-body/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/name-style-rule/index.tsx",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/dcmp/placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/dcmp/reposition-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/dcmp/sibling-placements/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/session/document-selection/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/session/node-template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/session/under-pointer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/distance-targets/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/node-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-lines/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/reposition-target/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/domains/side-snap/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/types/NonEmptyArray.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/utils/ElementEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/features/editor/features/canvas/domains/rotated-bounds/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/__tests__/element-measure.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/__tests__/element-measure.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/libs/__tests__/element-measure.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/canvas-dom/__tests__/canvas-dom.beneath.test.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/__tests__/canvas-dom.layout-size.test.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/__tests__/canvas-dom.normal.test.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/domains/unit/px/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/utils/Css.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/canvas-dom/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/element-measure/__tests__/element-measure.bounds.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/element-measure/__tests__/element-measure.bounds.test.ts",
+      "to": "src/libs/canvas-dom/index.ts",
+      "status": "removed"
+    },
+    {
+      "from": "src/libs/element-measure/__tests__/element-measure.bounds.test.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/element-measure/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    }
+  ]
+}
