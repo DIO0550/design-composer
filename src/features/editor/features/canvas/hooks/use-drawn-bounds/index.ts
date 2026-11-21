@@ -4,7 +4,7 @@ import type { CanvasView } from "@/features/editor/features/canvas/domains/canva
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { useMeasured } from "@/features/editor/features/canvas/hooks/use-measured";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
-import { CanvasDom } from "@/libs/canvas-dom";
+import { ElementMeasure } from "@/libs/element-measure";
 import { Option } from "@/utils/Option";
 
 /** 測るものの画面上の向きと、レイアウトの大きさを画面上へ直す倍率。 */
@@ -27,7 +27,7 @@ function measure(
   if (container === null) {
     return Option.none;
   }
-  const origin = CanvasDom.boundsOf(container);
+  const origin = ElementMeasure.boundsOf(container);
   return Option.map(
     Option.flatMap(target, (name) =>
       DrawnBounds.measureRotated(name, basis.rotation, basis.view),

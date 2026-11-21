@@ -4,6 +4,7 @@ import { CanvasBounds } from "@/features/editor/features/canvas/domains/canvas-b
 import { CanvasView } from "@/features/editor/features/canvas/domains/canvas-view";
 import { RotatedBounds } from "@/features/editor/features/canvas/domains/rotated-bounds";
 import { CanvasDom } from "@/libs/canvas-dom";
+import { ElementMeasure } from "@/libs/element-measure";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
 
@@ -21,7 +22,7 @@ export const DrawnBounds = {
    * @returns 描かれている矩形。その名前の要素がまだ画面に出ていなければ `none`
    */
   measure(name: string): Option<CanvasBounds> {
-    return Option.map(CanvasDom.elementOf(name), CanvasDom.boundsOf);
+    return Option.map(CanvasDom.elementOf(name), ElementMeasure.boundsOf);
   },
 
   /**
@@ -43,13 +44,13 @@ export const DrawnBounds = {
     view: CanvasView,
   ): Option<RotatedBounds> {
     return Option.flatMap(CanvasDom.elementOf(name), (element) => {
-      const enclosing = CanvasDom.boundsOf(element);
+      const enclosing = ElementMeasure.boundsOf(element);
       if (Angle.isWholeTurns(rotation)) {
         return Option.some(
           RotatedBounds.fromEnclosing(enclosing, enclosing, rotation),
         );
       }
-      return Option.map(CanvasDom.layoutSizeOf(element), (size) => {
+      return Option.map(ElementMeasure.layoutSizeOf(element), (size) => {
         const drawn = CanvasView.toScreenOffset(view, {
           x: size.width,
           y: size.height,

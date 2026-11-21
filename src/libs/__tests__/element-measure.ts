@@ -1,9 +1,9 @@
 import { ElementNameAttribute } from "@/domains/compiled/compiled-element";
-import type { CanvasDom } from "@/libs/canvas-dom";
+import type { ElementMeasure } from "@/libs/element-measure";
 
 /**
  * 要素の実測（`getBoundingClientRect` / `offsetWidth` / `offsetHeight` / `getComputedStyle` の
- * 幅と高さ）を差し替える。測る側は `CanvasDom.boundsOf` / `CanvasDom.layoutSizeOf` /
+ * 幅と高さ）を差し替える。測る側は `ElementMeasure.boundsOf` / `ElementMeasure.layoutSizeOf` /
  * `CanvasDom.layoutSizeFor`。
  *
  * happy-dom はレイアウトを行わず、矩形も大きさもすべて 0 で返し、計算値の幅と高さはインラインの
@@ -12,8 +12,8 @@ import type { CanvasDom } from "@/libs/canvas-dom";
  * ここで差し替えるのはブラウザが行う測定だけで、そこから何が決まるかは実物が答える。
  */
 
-/** 差し替える矩形。`CanvasDom.boundsOf` が返す形に揃えている。 */
-type MeasuredBounds = ReturnType<typeof CanvasDom.boundsOf>;
+/** 差し替える矩形。`ElementMeasure.boundsOf` が返す形に揃えている。 */
+type MeasuredBounds = ReturnType<typeof ElementMeasure.boundsOf>;
 
 /**
  * その要素が描かれている矩形を決める。

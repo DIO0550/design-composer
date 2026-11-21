@@ -13,8 +13,8 @@ import {
 } from "@/features/editor/features/canvas/domains/canvas-view";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
-import { CanvasDom } from "@/libs/canvas-dom";
 import { CommandKey } from "@/libs/dom-event";
+import { ElementMeasure } from "@/libs/element-measure";
 import { Option } from "@/utils/Option";
 
 /** キャンバスの見え方に対する操作（docs/06-ui.md「ズーム / パンは非永続の view state」）。 */
@@ -194,7 +194,7 @@ export function useCanvasView(): CanvasViewControl {
         bounds: {
           target: target.value,
           // 収める先は土台そのもの。その左上が中身の transform の原点になる
-          viewport: CanvasDom.boundsOf(surface),
+          viewport: ElementMeasure.boundsOf(surface),
         },
       });
     },
