@@ -7,6 +7,7 @@ import {
   TokenControl,
   type TokenControlRow,
   type TokenPaint,
+  TokenRawEdit,
 } from "@/features/editor/features/tokens/domains/token-control";
 import { Option } from "@/utils/Option";
 import { ColorField } from "./color-field";
@@ -17,6 +18,7 @@ import {
   FieldDensities,
   LabeledRow,
   type SetTokenValue,
+  type SubmitTokenRawEdit,
   ValueField,
 } from "./value-field";
 
@@ -130,11 +132,11 @@ function TokenEditorTitle({
 function ValueRowControl({
   id,
   row,
-  onSetTokenValue,
+  onEdit,
 }: Readonly<{
   id: string;
   row: TokenControlRow;
-  onSetTokenValue: SetTokenValue;
+  onEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   switch (row.kind) {
     case "field":
@@ -144,17 +146,11 @@ function ValueRowControl({
           input={row.field.input}
           density={FieldDensities.Regular}
           target={row.field.target}
-          onSetTokenValue={onSetTokenValue}
+          onEdit={onEdit}
         />
       );
     case "color":
-      return (
-        <ColorField
-          id={id}
-          color={row.color}
-          onSetTokenValue={onSetTokenValue}
-        />
-      );
+      return <ColorField id={id} color={row.color} onEdit={onEdit} />;
   }
 }
 
@@ -166,6 +162,9 @@ function ValueRowControl({
  * するコードを置かない。分岐するのは値の欄の形（rows / gradient）と行の形（field / color）
  * だけで、種別名では分岐しない。複合オブジェクトの種別（shadows / typography）はフィールドの
  * 数だけ行が並ぶ。
+ *
+ * 欄に打たれた綴りを読むのはここだけで（`TokenRawEdit.toTokenValue`）、読めた値だけを
+ * `onSetTokenValue` へ送る。
  *
  * @returns 値の入力欄（グラデーションならプレビュー・角度・stop の行）・名前の欄・参照元の
  *   一覧・削除のボタン。トークンを選んでいなければ、選ばれていないことの知らせ
@@ -190,6 +189,13 @@ function TokenEditorBody({
   }
 
   const { token, valueFields } = control.value;
+  const onEdit: SubmitTokenRawEdit = (edit, continuity) => {
+    const value = TokenRawEdit.toTokenValue(edit);
+    if (Option.isSome(value)) {
+      onSetTokenValue(value.value, continuity);
+    }
+    return value;
+  };
   /** どのトークンを編集しているか。名前は種別の中でしか一意でないので種別も混ぜる。 */
   const tokenKey = `${token.kind}/${token.name}`;
 
@@ -212,11 +218,7 @@ function TokenEditorBody({
               htmlFor={id}
               label={caption.label}
             >
-              <ValueRowControl
-                id={id}
-                row={row}
-                onSetTokenValue={onSetTokenValue}
-              />
+              <ValueRowControl id={id} row={row} onEdit={onEdit} />
             </LabeledRow>
           );
         })
@@ -225,6 +227,7 @@ function TokenEditorBody({
           gradient={valueFields.gradient}
           idPrefix={valueId}
           tokenKey={tokenKey}
+          onEdit={onEdit}
           onSetTokenValue={onSetTokenValue}
         />
       )}

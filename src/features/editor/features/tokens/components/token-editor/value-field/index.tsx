@@ -4,20 +4,31 @@ import {
   EditContinuities,
   type EditContinuity,
 } from "@/domains/session/edit-continuity";
-import {
-  TokenControl,
-  type TokenControlField,
-  type TokenControlInput,
-  type TokenFieldTarget,
+import type {
+  TokenControlField,
+  TokenControlInput,
+  TokenFieldTarget,
+  TokenRawEdit,
 } from "@/features/editor/features/tokens/domains/token-control";
 import type { ValueOf } from "@/types/ValueOf";
-import { Option } from "@/utils/Option";
+import type { Option } from "@/utils/Option";
 
 /** トークンの新しい値と、そのまとまり方を受け取る手続き。 */
 export type SetTokenValue = (
   value: TokenValue,
   continuity: EditContinuity,
 ) => void;
+
+/**
+ * 欄に打たれた綴りと、そのまとまり方を受け手へ渡す手続き。綴りを読むのは受け手で、読めた値だけを
+ * 書き戻す。
+ *
+ * @returns 読めた値。読めなかった（値を変えなかった）ときは `none`
+ */
+export type SubmitTokenRawEdit = (
+  edit: TokenRawEdit,
+  continuity: EditContinuity,
+) => Option<TokenValue>;
 
 /**
  * 欄の詰め具合。`Regular` は左に見出しを添えて 1 行に 1 欄ずつ置く欄、`Compact` は stop の行の
@@ -76,8 +87,8 @@ const RowLabelClass = "w-[52px] shrink-0 truncate text-[11px] text-gray-500";
  * 列が弾かれて打ち続けられない（`primary-` が弾かれると `-` の次を打てない）。
  *
  * 外の値が変わったときの取り直しは `key` で行う（`ValueField` が現在値を key にする。
- * 名前の欄は呼び出し側がトークンを key にする。hex の欄は `HexColorInput` が確定の回数も key に
- * 混ぜる）。
+ * 読めない色のテキスト欄は `ColorField` が色を key にする。名前の欄は呼び出し側がトークンを key に
+ * する。hex の欄は `HexColorInput` が確定の回数も key に混ぜる）。
  * 確定が通らなかった入力では外の値も key も変わらないので下書きが残るが、
  * `type="number"` の欄は数値として読めない間ブラウザが表示を空にするので、画面に文字列
  * として残るのは `type="text"` の欄だけ。
@@ -154,10 +165,11 @@ function UnitField({
  * トークンの 1 フィールドの入力欄。形は値の種別で決まる。
  *
  * 下書きを持つ欄は、現在値を key にして外の値（undo / redo・打った値の正規化・並べ直し）に
- * 追随する。確定は `TokenControl.valueFrom` で書き戻し先の新しい値に読み、1 回ごとに別のまとまりとして送る。
+ * 追随する。確定は書き戻し先の値として読む綴り（`TokenRawEdit` の `value`）にして、1 回ごとに別の
+ * まとまりとして渡す。
  *
- * 数値として読めない入力と、値域を外れた入力では値を変えない。名前欄と同じで、通らなかったことは
- * 画面に出さず打ち直しに任せる。仕様に無い中間状態のエラー表示を発明しないため。
+ * 読めずに値が変わらなかったことは、名前欄と同じで画面に出さず打ち直しに任せる。仕様に無い中間状態の
+ * エラー表示を発明しないため。
  *
  * @returns 比率なら % を、角度なら ° を添えた数値欄、数値なら数値欄、それ以外はテキスト欄
  */
@@ -166,18 +178,16 @@ export function ValueField({
   input,
   density,
   target,
-  onSetTokenValue,
+  onEdit,
 }: Readonly<{
   id: string;
   input: TokenControlInput;
   density: FieldDensity;
   target: TokenFieldTarget;
-  onSetTokenValue: SetTokenValue;
+  onEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   const onCommit = (raw: string) => {
-    Option.map(TokenControl.valueFrom(target, raw), (value) =>
-      onSetTokenValue(value, EditContinuities.Separate),
-    );
+    onEdit({ kind: "value", target, raw }, EditContinuities.Separate);
   };
   switch (input.kind) {
     case "number":
@@ -259,11 +269,11 @@ export function LabeledRow({
 export function FieldRow({
   id,
   field,
-  onSetTokenValue,
+  onEdit,
 }: Readonly<{
   id: string;
   field: TokenControlField;
-  onSetTokenValue: SetTokenValue;
+  onEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   return (
     <LabeledRow htmlFor={id} label={field.label}>
@@ -272,7 +282,7 @@ export function FieldRow({
         input={field.input}
         density={FieldDensities.Regular}
         target={field.target}
-        onSetTokenValue={onSetTokenValue}
+        onEdit={onEdit}
       />
     </LabeledRow>
   );

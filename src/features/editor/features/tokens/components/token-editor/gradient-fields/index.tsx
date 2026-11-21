@@ -8,6 +8,7 @@ import {
   FieldDensities,
   FieldRow,
   type SetTokenValue,
+  type SubmitTokenRawEdit,
   ValueField,
 } from "../value-field";
 
@@ -50,17 +51,21 @@ function GradientBar({
  *
  * @param idPrefix 欄の id の頭。欄の `name` を添えて label と結ぶ
  * @param tokenKey 編集しているトークン。行の key に混ぜ、別のトークンへ移ったら作り直す
+ * @param onEdit 角度・比率・色の欄に打たれた綴りの渡し先
+ * @param onSetTokenValue stop の +・− で作った値の渡し先
  * @returns 値の欄一式
  */
 export function GradientFields({
   gradient,
   idPrefix,
   tokenKey,
+  onEdit,
   onSetTokenValue,
 }: Readonly<{
   gradient: GradientControl;
   idPrefix: string;
   tokenKey: string;
+  onEdit: SubmitTokenRawEdit;
   onSetTokenValue: SetTokenValue;
 }>): ReactElement {
   const fieldIdOf = (field: Readonly<{ name: string }>) =>
@@ -79,7 +84,7 @@ export function GradientFields({
         key={`${tokenKey}/${gradient.angle.name}`}
         id={fieldIdOf(gradient.angle)}
         field={gradient.angle}
-        onSetTokenValue={onSetTokenValue}
+        onEdit={onEdit}
       />
       <div className="flex items-center justify-between">
         <span className="text-gray-600 text-xs">Stops</span>
@@ -107,7 +112,7 @@ export function GradientFields({
               input={row.ratio.input}
               density={FieldDensities.Compact}
               target={row.ratio.target}
-              onSetTokenValue={onSetTokenValue}
+              onEdit={onEdit}
             />
           </div>
           <div className="relative min-w-0 flex-1">
@@ -117,7 +122,7 @@ export function GradientFields({
             <ColorField
               id={fieldIdOf(row.color.caption)}
               color={row.color}
-              onSetTokenValue={onSetTokenValue}
+              onEdit={onEdit}
             />
           </div>
           {/* 2 件以下で消さずに押せない状態で並べるのは docs/06-ui.md「`Tokens` の `gradients`」 */}

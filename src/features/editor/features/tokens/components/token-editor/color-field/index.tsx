@@ -16,9 +16,7 @@ import { Option } from "@/utils/Option";
 import {
   DraftField,
   DraftFieldLooks,
-  FieldDensities,
-  type SetTokenValue,
-  ValueField,
+  type SubmitTokenRawEdit,
 } from "../value-field";
 
 /**
@@ -32,15 +30,15 @@ function ColorPickerField({
   id,
   value,
   target,
-  onSetTokenValue,
+  onEdit,
 }: Readonly<{
   id: string;
   value: Rgb;
   target: TokenColorTarget;
-  onSetTokenValue: SetTokenValue;
+  onEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   /*
-   * ピッカーは常に #rrggbb を返し `TokenControl.valueFrom` の `none` に届かないので、1 件目が
+   * ピッカーは常に #rrggbb を返し `value` の読み方の `none` に届かないので、1 件目が
    * 落ちて続きが先に届くことは無い。
    *
    * 始め直すのは開いたとき（click）と離れたとき（blur）。フォーカスを得たときにしないのは、
@@ -59,10 +57,9 @@ function ColorPickerField({
       onClick={continuitySequence.restart}
       onBlur={continuitySequence.restart}
       onChange={(event) => {
-        Option.map(
-          TokenControl.valueFrom(target, event.target.value),
-          (tokenValue) =>
-            onSetTokenValue(tokenValue, continuitySequence.next()),
+        onEdit(
+          { kind: "value", target, raw: event.target.value },
+          continuitySequence.next(),
         );
       }}
       className="size-3.5 shrink-0 cursor-pointer rounded-sm border-0 bg-transparent p-0 [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-sm [&::-webkit-color-swatch]:border-none"
@@ -80,11 +77,11 @@ function ColorPickerField({
 function HexColorInput({
   id,
   color,
-  onSetTokenValue,
+  onEdit,
 }: Readonly<{
   id: string;
   color: HexColorControl;
-  onSetTokenValue: SetTokenValue;
+  onEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   /*
    * 確定の回数を key に混ぜるのは、`ABC` のように通っても値が変わらない確定では key が動かず下書きが残るため。
@@ -92,18 +89,21 @@ function HexColorInput({
    */
   const [hexCommits, setHexCommits] = useState(0);
   const commitHex = (raw: string) => {
-    const value = TokenControl.valueFromHex(color.target, raw);
-    if (!Option.isSome(value)) {
+    const read = onEdit(
+      { kind: "hex", target: color.target, raw },
+      EditContinuities.Separate,
+    );
+    if (!Option.isSome(read)) {
       return;
     }
 
-    onSetTokenValue(value.value, EditContinuities.Separate);
     setHexCommits((count) => count + 1);
   };
 
   const commitAlpha = (raw: string) => {
-    Option.map(TokenControl.valueFromAlpha(color.target, raw), (value) =>
-      onSetTokenValue(value, EditContinuities.Separate),
+    onEdit(
+      { kind: "alpha", target: color.target, raw },
+      EditContinuities.Separate,
     );
   };
   const pickerId = `${id}-${color.picker.name}`;
@@ -126,7 +126,7 @@ function HexColorInput({
         id={pickerId}
         value={color.rgb}
         target={color.target}
-        onSetTokenValue={onSetTokenValue}
+        onEdit={onEdit}
       />
       <span aria-hidden="true" className="text-[#b3b3b3]">
         #
@@ -168,29 +168,29 @@ function HexColorInput({
 export function ColorField({
   id,
   color,
-  onSetTokenValue,
+  onEdit,
 }: Readonly<{
   id: string;
   color: TokenColorControl;
-  onSetTokenValue: SetTokenValue;
+  onEdit: SubmitTokenRawEdit;
 }>): ReactElement {
   switch (color.kind) {
     case "hex":
-      return (
-        <HexColorInput
-          id={id}
-          color={color}
-          onSetTokenValue={onSetTokenValue}
-        />
-      );
+      return <HexColorInput id={id} color={color} onEdit={onEdit} />;
     case "text":
       return (
-        <ValueField
+        <DraftField
+          key={color.value}
           id={id}
-          input={{ kind: "text", value: color.value }}
-          density={FieldDensities.Regular}
-          target={color.target}
-          onSetTokenValue={onSetTokenValue}
+          type="text"
+          value={color.value}
+          look={DraftFieldLooks.Regular}
+          onCommit={(raw) => {
+            onEdit(
+              { kind: "value", target: color.target, raw },
+              EditContinuities.Separate,
+            );
+          }}
         />
       );
   }

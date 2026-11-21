@@ -5,7 +5,7 @@ import {
   TwoStops,
 } from "@/features/editor/features/tokens/__tests__/gradient-documents";
 import { Option } from "@/utils/Option";
-import { TokenControl, TokenSection } from "../index";
+import { TokenControl, TokenRawEdit, TokenSection } from "../index";
 import { gradientOf, gradientSelectionOf, hexControlOf } from "./setup";
 
 test("グラデーションの行の見本は階調で、値は角度と stop の件数で出る", () => {
@@ -125,14 +125,26 @@ test("比率の欄に 0〜100 の外を打っても値を変えない", () => {
   const field = gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[0]
     .ratio;
 
-  expect(TokenControl.valueFrom(field.target, "150")).toEqual(Option.none);
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "150",
+    }),
+  ).toEqual(Option.none);
 });
 
 test("比率の欄に打った値で stop が比率の順に並び直る", () => {
   const field = gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[0]
     .ratio;
 
-  expect(TokenControl.valueFrom(field.target, "90")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "90",
+    }),
+  ).toEqual(
     Option.some({
       kind: "gradients",
       value: {
@@ -153,7 +165,13 @@ test("stop の不透明度はその stop の色だけに効く", () => {
     gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,
   );
 
-  expect(TokenControl.valueFromAlpha(field.target, "50")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "alpha",
+      target: field.target,
+      raw: "50",
+    }),
+  ).toEqual(
     Option.some({
       kind: "gradients",
       value: {
@@ -181,7 +199,13 @@ test("stop の色をピッカーで選び直しても元の不透明度は残る
     ).stops[0].color,
   );
 
-  expect(TokenControl.valueFrom(field.target, "#ff0000")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "#ff0000",
+    }),
+  ).toEqual(
     Option.some({
       kind: "gradients",
       value: {
@@ -208,7 +232,13 @@ test("stop の hex に `#` 無しで打った 6 桁でその stop の色だけ�
     ).stops[0].color,
   );
 
-  expect(TokenControl.valueFromHex(field.target, "FF0000")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "hex",
+      target: field.target,
+      raw: "FF0000",
+    }),
+  ).toEqual(
     Option.some({
       kind: "gradients",
       value: {
@@ -228,7 +258,13 @@ test("stop の hex に 6 桁・3 桁として読めない値を打っても値�
     gradientOf(gradientSelectionOf({ stops: TwoStops })).stops[0].color,
   );
 
-  expect(TokenControl.valueFromHex(field.target, "#ff00")).toEqual(Option.none);
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "hex",
+      target: field.target,
+      raw: "#ff00",
+    }),
+  ).toEqual(Option.none);
 });
 
 test("hex として読めない色の stop は `stop n の色` のテキスト欄 1 本になり、不透明度の欄が無い", () => {
@@ -263,15 +299,25 @@ test("hex として読めない色の stop は `stop n の色` のテキスト�
 test("角度の欄に数値として読めない文字列を打っても値を変えない", () => {
   const gradient = gradientOf(gradientSelectionOf({ stops: TwoStops }));
 
-  expect(TokenControl.valueFrom(gradient.angle.target, "abc")).toEqual(
-    Option.none,
-  );
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: gradient.angle.target,
+      raw: "abc",
+    }),
+  ).toEqual(Option.none);
 });
 
 test("角度の欄に打った値はそのまま角度になる", () => {
   const gradient = gradientOf(gradientSelectionOf({ stops: TwoStops }));
 
-  expect(TokenControl.valueFrom(gradient.angle.target, "450")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: gradient.angle.target,
+      raw: "450",
+    }),
+  ).toEqual(
     Option.some({
       kind: "gradients",
       value: { shape: "linear", angle: 450, stops: TwoStops },
@@ -301,7 +347,13 @@ test("2 件目の stop の色をピッカーで選ぶとその stop の色だけ
     gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,
   );
 
-  expect(TokenControl.valueFrom(field.target, "#ff0000")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "#ff0000",
+    }),
+  ).toEqual(
     Option.some({
       kind: "gradients",
       value: {
@@ -322,7 +374,13 @@ test("2 件目の stop の hex に `#` 無しで打った 6 桁でその stop �
     gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1].color,
   );
 
-  expect(TokenControl.valueFromHex(field.target, "00FF00")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "hex",
+      target: field.target,
+      raw: "00FF00",
+    }),
+  ).toEqual(
     Option.some({
       kind: "gradients",
       value: {
@@ -342,7 +400,13 @@ test("2 件目の stop の比率の欄に打った値はその stop の比率に
   const field = gradientOf(gradientSelectionOf({ stops: ThreeStops })).stops[1]
     .ratio;
 
-  expect(TokenControl.valueFrom(field.target, "25")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "25",
+    }),
+  ).toEqual(
     Option.some({
       kind: "gradients",
       value: {

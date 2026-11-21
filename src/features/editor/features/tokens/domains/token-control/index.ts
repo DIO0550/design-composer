@@ -67,8 +67,8 @@ export type TokenControlInput =
  *
  * `kind` は `TokenKind` と1対1ではない。`gradientsAngle` / `gradientsStopRatio` /
  * `gradientsStopColor` の 3 つは、1 つのグラデーションの角度・stop の比率・色を差し替えるだけ
- * なので、書き戻すのは `gradients` の値になる。不透明度は書き戻し先を持たず、箱の `target` から
- * `valueFromAlpha` で引く。
+ * なので、書き戻すのは `gradients` の値になる。不透明度は書き戻し先を持たず、箱の `target` を
+ * `TokenRawEdit` の `alpha` の読み方で読む。
  */
 export type TokenFieldTarget =
   | Readonly<{ kind: "colors"; color: ColorToken }>
@@ -242,7 +242,7 @@ const AlphaLabel = "不透明度";
 
 /**
  * 色の箱の hex の欄。見出しは UI 案の Color のエディタ（`hex`）と、stop の行の見出し
- * （`stop n の hex`）に合わせる。打てる綴りは `valueFromHex`。
+ * （`stop n の hex`）に合わせる。打てる綴りは `TokenRawEdit` の `hex` の読み方（`valueFromHex`）。
  *
  * 影の箱も `hex` にするのは、`色` にするとピッカーの読み上げ名 `色` と重なるため。
  */
@@ -800,7 +800,77 @@ function typographyValueFrom(
   );
 }
 
-/** 選択中のトークンから編集欄を組み立て、打たれた値をトークンの値へ読み替える。 */
+/**
+ * 入力欄に入った文字列を、そのトークンの新しい値にする。
+ *
+ * 色の位置（ピッカー・読めない色のテキスト欄）では `#` を補わない。
+ *
+ * @param target 書き戻し先の種別と、複合の種別ではどのフィールドか
+ * @param raw 入力欄に入っている文字列
+ * @returns 書き換え後のトークンの値。数値 / `#` 付きの 6 桁・3 桁の色として読めないとき、
+ *   および値域（docs/04-tokens.md「値の形式」・stop の比率は 0–100）を外れるときは `none`
+ */
+function valueFrom(target: TokenFieldTarget, raw: string): Option<TokenValue> {
+  switch (target.kind) {
+    case "colors":
+    case "gradientsStopColor":
+      return colorValueFrom(target, (color) => colorWithRgbFrom(color, raw));
+    /*
+     * 長さの 2 種別は値域も書き戻し方も同じなので枝を分けない。分けると、
+     * 一方だけ検証を通し忘れても型もテストも通ってしまう。
+     */
+    case "spacing":
+    case "radius":
+      return Option.flatMap(numberFromRaw(raw), (value) =>
+        TokenValue.createNumeric(target.kind, value),
+      );
+    case "shadows":
+      return shadowValueFrom(target, raw);
+    case "typography":
+      return typographyValueFrom(target, raw);
+    case "gradientsAngle":
+    case "gradientsStopRatio":
+      return Option.map(gradientFrom(target, raw), (value) => ({
+        kind: "gradients",
+        value,
+      }));
+  }
+}
+
+/**
+ * 箱の hex の欄へ打たれた文字列で、色の 6 桁を差し替える。不透明度は残す。
+ *
+ * `#` を省いてよいのは入力欄の約束事なので、`Rgb` ではなく入力欄を知っているここで補う。
+ *
+ * @param target 箱が書き戻す色
+ * @param raw 入力欄に入っている文字列
+ * @returns 書き換え後のトークンの値。`#` の有無を問わず 6 桁か 3 桁の hex として読めなければ
+ *   `none`（4 桁・8 桁も `none`）
+ */
+function valueFromHex(
+  target: TokenColorTarget,
+  raw: string,
+): Option<TokenValue> {
+  const spelled = raw.startsWith("#") ? raw : `#${raw}`;
+
+  return colorValueFrom(target, (color) => colorWithRgbFrom(color, spelled));
+}
+
+/**
+ * 箱の不透明度の欄へ打たれた文字列で、色の不透明度を差し替える。
+ *
+ * @param target 箱が書き戻す色
+ * @param raw 入力欄に入っている文字列（%）
+ * @returns 書き換え後のトークンの値。数値として読めないとき、0–100 の外のときは `none`
+ */
+function valueFromAlpha(
+  target: TokenColorTarget,
+  raw: string,
+): Option<TokenValue> {
+  return colorValueFrom(target, (color) => colorWithAlphaFrom(color, raw));
+}
+
+/** 選択中のトークンから編集欄を組み立てる。 */
 export const TokenControl = {
   /**
    * 選択中のトークンの編集欄（docs/06-ui.md「編集操作の一覧」の tokens 編集）。
@@ -810,71 +880,6 @@ export const TokenControl = {
    */
   forSelection(selection: TokenSelection): Option<TokenControl> {
     return Option.map(TokenSelection.token(selection), tokenControlOf);
-  },
-
-  /**
-   * 入力欄に入った文字列を、そのトークンの新しい値にする。
-   *
-   * 書き戻し先は行が持つ `target` から決める。色の位置（ピッカー・読めない色のテキスト欄）では
-   * `#` を補わない。
-   *
-   * @param target 書き戻し先の種別と、複合の種別ではどのフィールドか
-   * @param raw 入力欄に入っている文字列
-   * @returns 書き換え後のトークンの値。数値 / `#` 付きの 6 桁・3 桁の色として読めないとき、
-   *   および値域（docs/04-tokens.md「値の形式」・stop の比率は 0–100）を外れるときは `none`
-   */
-  valueFrom(target: TokenFieldTarget, raw: string): Option<TokenValue> {
-    switch (target.kind) {
-      case "colors":
-      case "gradientsStopColor":
-        return colorValueFrom(target, (color) => colorWithRgbFrom(color, raw));
-      /*
-       * 長さの 2 種別は値域も書き戻し方も同じなので枝を分けない。分けると、
-       * 一方だけ検証を通し忘れても型もテストも通ってしまう。
-       */
-      case "spacing":
-      case "radius":
-        return Option.flatMap(numberFromRaw(raw), (value) =>
-          TokenValue.createNumeric(target.kind, value),
-        );
-      case "shadows":
-        return shadowValueFrom(target, raw);
-      case "typography":
-        return typographyValueFrom(target, raw);
-      case "gradientsAngle":
-      case "gradientsStopRatio":
-        return Option.map(gradientFrom(target, raw), (value) => ({
-          kind: "gradients",
-          value,
-        }));
-    }
-  },
-
-  /**
-   * 箱の hex の欄へ打たれた文字列で、色の 6 桁を差し替える。不透明度は残す。
-   *
-   * `#` を省いてよいのは入力欄の約束事なので、`Rgb` ではなく入力欄を知っているここで補う。
-   *
-   * @param target 箱が書き戻す色
-   * @param raw 入力欄に入っている文字列
-   * @returns 書き換え後のトークンの値。`#` の有無を問わず 6 桁か 3 桁の hex として読めなければ
-   *   `none`（4 桁・8 桁も `none`）
-   */
-  valueFromHex(target: TokenColorTarget, raw: string): Option<TokenValue> {
-    const spelled = raw.startsWith("#") ? raw : `#${raw}`;
-
-    return colorValueFrom(target, (color) => colorWithRgbFrom(color, spelled));
-  },
-
-  /**
-   * 箱の不透明度の欄へ打たれた文字列で、色の不透明度を差し替える。
-   *
-   * @param target 箱が書き戻す色
-   * @param raw 入力欄に入っている文字列（%）
-   * @returns 書き換え後のトークンの値。数値として読めないとき、0–100 の外のときは `none`
-   */
-  valueFromAlpha(target: TokenColorTarget, raw: string): Option<TokenValue> {
-    return colorValueFrom(target, (color) => colorWithAlphaFrom(color, raw));
   },
 
   /**
@@ -900,5 +905,38 @@ export const TokenControl = {
    */
   hexDigitsOf(control: HexColorControl): string {
     return control.rgb.slice(1);
+  },
+} as const;
+
+/**
+ * 編集欄に打たれた 1 回ぶんの綴りと、それをどの書き戻し先へ・どう読むか。
+ *
+ * 読み方は欄の位置で決まる。`value` は書き戻し先の値として読む欄（数値・文言の欄・比率・角度・
+ * ピッカー・読めない色のテキスト欄）、`hex` は箱の 6 桁の欄、`alpha` は箱の不透明度の欄。
+ * `hex` と `alpha` は箱の中にしか無いので、書き戻し先を箱の色に絞る。
+ */
+export type TokenRawEdit =
+  | Readonly<{ kind: "value"; target: TokenFieldTarget; raw: string }>
+  | Readonly<{ kind: "hex"; target: TokenColorTarget; raw: string }>
+  | Readonly<{ kind: "alpha"; target: TokenColorTarget; raw: string }>;
+
+export const TokenRawEdit = {
+  /**
+   * 打たれた綴りを、その読み方でトークンの新しい値に読む。
+   *
+   * @param edit 書き戻し先・読み方・打たれた綴り
+   * @returns 書き換え後のトークンの値。`value` は数値 / `#` 付きの 6 桁・3 桁の色として読めない
+   *   とき・値域を外れるとき、`hex` は `#` の有無を問わず 6 桁か 3 桁の hex として読めないとき、
+   *   `alpha` は数値として読めないとき・0–100 の外のときに `none`
+   */
+  toTokenValue(edit: TokenRawEdit): Option<TokenValue> {
+    switch (edit.kind) {
+      case "value":
+        return valueFrom(edit.target, edit.raw);
+      case "hex":
+        return valueFromHex(edit.target, edit.raw);
+      case "alpha":
+        return valueFromAlpha(edit.target, edit.raw);
+    }
   },
 } as const;

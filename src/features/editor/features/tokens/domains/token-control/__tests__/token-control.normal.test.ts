@@ -4,7 +4,12 @@ import type { TokenKind } from "@/domains/dcmp/token";
 import { TokenSelection } from "@/domains/session/token-selection";
 import { Font } from "@/utils/Font";
 import { Option } from "@/utils/Option";
-import { TokenControl, type TokenControlRow, TokenSection } from "../index";
+import {
+  TokenControl,
+  type TokenControlRow,
+  TokenRawEdit,
+  TokenSection,
+} from "../index";
 import {
   colorControlsIn,
   fieldOf,
@@ -208,30 +213,52 @@ test("選択が無いときは編集欄が出ない", () => {
 test("長さの入力欄に打った文字列は編集中のトークンの種別の値になる", () => {
   const field = fieldOf("radius", "md", "値");
 
-  expect(TokenControl.valueFrom(field.target, "12")).toEqual(
-    Option.some({ kind: "radius", value: 12 }),
-  );
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "12",
+    }),
+  ).toEqual(Option.some({ kind: "radius", value: 12 }));
 });
 
 test("数値として読めない入力では値を変えない", () => {
   const field = fieldOf("spacing", "lg", "値");
 
-  expect(TokenControl.valueFrom(field.target, "")).toEqual(Option.none);
-  expect(TokenControl.valueFrom(field.target, "-")).toEqual(Option.none);
+  expect(
+    TokenRawEdit.toTokenValue({ kind: "value", target: field.target, raw: "" }),
+  ).toEqual(Option.none);
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "-",
+    }),
+  ).toEqual(Option.none);
 });
 
 test("カラーピッカーが返した hex はそのまま色の値になる", () => {
   const color = selectedHexControl("colors", "primary");
 
-  expect(TokenControl.valueFrom(color.target, "#00ff00")).toEqual(
-    Option.some({ kind: "colors", value: "#00ff00" }),
-  );
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: color.target,
+      raw: "#00ff00",
+    }),
+  ).toEqual(Option.some({ kind: "colors", value: "#00ff00" }));
 });
 
 test("影のぼかしに打った文字列はぼかしだけを変えた影の値になる", () => {
   const field = fieldOf("shadows", "sm", "ぼかし");
 
-  expect(TokenControl.valueFrom(field.target, "8")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "8",
+    }),
+  ).toEqual(
     Option.some({
       kind: "shadows",
       value: { x: 0, y: 1, blur: 8, color: "#0000001a" },
@@ -242,13 +269,21 @@ test("影のぼかしに打った文字列はぼかしだけを変えた影の�
 test("影の数値の欄に数値として読めない入力が来ても値を変えない", () => {
   const field = fieldOf("shadows", "sm", "横のずれ");
 
-  expect(TokenControl.valueFrom(field.target, "")).toEqual(Option.none);
+  expect(
+    TokenRawEdit.toTokenValue({ kind: "value", target: field.target, raw: "" }),
+  ).toEqual(Option.none);
 });
 
 test("書体のサイズに打った文字列はサイズだけを変えた書体の値になる", () => {
   const field = fieldOf("typography", "body", "サイズ");
 
-  expect(TokenControl.valueFrom(field.target, "24")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "24",
+    }),
+  ).toEqual(
     Option.some({
       kind: "typography",
       value: { fontSize: 24, lineHeight: 1.6, fontWeight: 400 },
@@ -259,7 +294,13 @@ test("書体のサイズに打った文字列はサイズだけを変えた書�
 test("書体のフォントに打った文字列は書体の値になる", () => {
   const field = fieldOf("typography", "body", "フォント");
 
-  expect(TokenControl.valueFrom(field.target, "Inter")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "Inter",
+    }),
+  ).toEqual(
     Option.some({
       kind: "typography",
       value: {
@@ -275,7 +316,9 @@ test("書体のフォントに打った文字列は書体の値になる", () =>
 test("書体のフォントを空欄にすると指定が外れる", () => {
   const field = fieldOf("typography", "body", "フォント");
 
-  expect(TokenControl.valueFrom(field.target, "")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({ kind: "value", target: field.target, raw: "" }),
+  ).toEqual(
     Option.some({
       kind: "typography",
       value: { fontSize: 16, lineHeight: 1.6, fontWeight: 400 },
@@ -286,16 +329,32 @@ test("書体のフォントを空欄にすると指定が外れる", () => {
 test("ピッカーの口では `#` の無い 6 桁も 8 桁も色を変えない", () => {
   const color = selectedHexControl("colors", "primary");
 
-  expect(TokenControl.valueFrom(color.target, "3b82f6")).toEqual(Option.none);
-  expect(TokenControl.valueFrom(color.target, "#00ff0080")).toEqual(
-    Option.none,
-  );
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: color.target,
+      raw: "3b82f6",
+    }),
+  ).toEqual(Option.none);
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: color.target,
+      raw: "#00ff0080",
+    }),
+  ).toEqual(Option.none);
 });
 
 test("影の色をピッカーで選び直しても元の alpha は残る", () => {
   const color = selectedHexControl("shadows", "sm");
 
-  expect(TokenControl.valueFrom(color.target, "#ff0000")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: color.target,
+      raw: "#ff0000",
+    }),
+  ).toEqual(
     Option.some({
       kind: "shadows",
       value: { x: 0, y: 1, blur: 3, color: "#ff00001a" },
@@ -306,7 +365,13 @@ test("影の色をピッカーで選び直しても元の alpha は残る", () =
 test("書体の太さの欄に値域の内側を打つと太さが変わる", () => {
   const field = fieldOf("typography", "body", "太さ");
 
-  expect(TokenControl.valueFrom(field.target, "700")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "700",
+    }),
+  ).toEqual(
     Option.some({
       kind: "typography",
       value: { fontSize: 16, lineHeight: 1.6, fontWeight: 700 },
@@ -317,25 +382,49 @@ test("書体の太さの欄に値域の内側を打つと太さが変わる", ()
 test("書体の太さの欄に値域の外を打っても値を変えない", () => {
   const field = fieldOf("typography", "body", "太さ");
 
-  expect(TokenControl.valueFrom(field.target, "1000")).toEqual(Option.none);
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "1000",
+    }),
+  ).toEqual(Option.none);
 });
 
 test("書体のサイズの欄に 0 を打っても値を変えない", () => {
   const field = fieldOf("typography", "body", "サイズ");
 
-  expect(TokenControl.valueFrom(field.target, "0")).toEqual(Option.none);
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "0",
+    }),
+  ).toEqual(Option.none);
 });
 
 test("影のぼかしの欄に負の数を打っても値を変えない", () => {
   const field = fieldOf("shadows", "sm", "ぼかし");
 
-  expect(TokenControl.valueFrom(field.target, "-1")).toEqual(Option.none);
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "-1",
+    }),
+  ).toEqual(Option.none);
 });
 
 test("影の横のずれの欄には負の数を打てる", () => {
   const field = fieldOf("shadows", "sm", "横のずれ");
 
-  expect(TokenControl.valueFrom(field.target, "-4")).toEqual(
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "-4",
+    }),
+  ).toEqual(
     Option.some({
       kind: "shadows",
       value: { x: -4, y: 1, blur: 3, color: "#0000001a" },
@@ -346,11 +435,23 @@ test("影の横のずれの欄には負の数を打てる", () => {
 test("余白の欄に負の数を打っても値を変えない", () => {
   const field = fieldOf("spacing", "lg", "値");
 
-  expect(TokenControl.valueFrom(field.target, "-1")).toEqual(Option.none);
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "-1",
+    }),
+  ).toEqual(Option.none);
 });
 
 test("角丸の欄に負の数を打っても値を変えない", () => {
   const field = fieldOf("radius", "md", "値");
 
-  expect(TokenControl.valueFrom(field.target, "-1")).toEqual(Option.none);
+  expect(
+    TokenRawEdit.toTokenValue({
+      kind: "value",
+      target: field.target,
+      raw: "-1",
+    }),
+  ).toEqual(Option.none);
 });
