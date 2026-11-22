@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1434,
+      "title": "[harness] PR #1433（実測の element-measure への移動）の記録を足す"
+    },
+    {
       "pr": 1433,
       "title": "♻️ #1415 要素の実測（boundsOf / layoutSizeOf）を canvas-dom から libs/element-measure へ移す"
     },
