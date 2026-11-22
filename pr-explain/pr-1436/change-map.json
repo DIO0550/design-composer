@@ -1,0 +1,3757 @@
+{
+  "version": 2,
+  "pr": 1436,
+  "headBranch": "claude/magical-cannon-dnz7ee",
+  "baseBranch": "main",
+  "mergeBase": "a0dec261517913f2ca015b870dee1847b81d3336",
+  "head": "d4b1c2721f51568823b9ae31fb8de70851e80bb8",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/angle/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/axis/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/artboard/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/axis-length/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/box-align/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/child-position/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/constraint/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/edit-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 118,
+          "deletions": 52,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/domains/dcmp/design-document/template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/token-referrer/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/v1/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/validation-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/document-names/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/format-version/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/layout/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/locking/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node-tree/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/placement/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/primitive-schema/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reference-context/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reposition-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resize-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/resolved-props/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/rotation/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/sibling-placements/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/sibling-positions/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/size/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/token/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/visibility/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.declared.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/component-binding.violation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component-binding/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/__tests__/component.ambiguous-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/__tests__/component.asset.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/__tests__/component.circular.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/__tests__/component.invalid-public-prop-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/__tests__/component.json.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/__tests__/component.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/__tests__/component.prototype-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/component/__tests__/component.public-prop-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/artboard-edit-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/copy-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.ancestors.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.append-position.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-child-rotation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard-reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.box-props.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.child-position.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.children.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.componentize-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.componentize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.copies-after.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detach-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detach.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.detachable.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.format-version.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.found-node-names.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 36,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/domains/dcmp/design-document/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 94,
+          "deletions": 1,
+          "changed": true,
+          "target": "src/domains/dcmp/design-document/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 54,
+          "deletions": 4,
+          "changed": true,
+          "target": "src/domains/dcmp/design-document/index.ts"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.migration.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.node-copies.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.outermost-nodes.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.remove-all-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.remove-all.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rename-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rename.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.replace-node.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.reposition-all.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.same-content.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.sibling-placements.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.sibling-positions.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.template.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-paint.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-validation-range.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.tree-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.tree.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.type.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.usable-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-binding.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-color.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-default.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-duplicate-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-fill.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-identifier.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-missing-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-override.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-paint.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-placement.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-prototype-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-public-prop-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.validate-unknown.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.visibility.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/text-node-setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/template/__tests__/template.components.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/document-names/__tests__/document-names.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.nested.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/expanded-node/__tests__/expanded-node.root-override.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/dcmp/reference-context/__tests__/reference-context.instance-violation.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-error/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-error/__tests__/document-error.validation-location.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.carried-siblings.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.current-artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.single-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-selection/__tests__/document-selection.source-name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/file-validity/__tests__/file-validity.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/__tests__/node-template.name.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/node-template/__tests__/node-template.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/__tests__/opened-document.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.edit-from.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/prop-control/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/__tests__/token-selection.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/token-selection/__tests__/token-selection.referrer.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/__tests__/token-refs.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "services",
+      "files": [
+        {
+          "path": "src/services/document-html/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/document-html/__tests__/document-html.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/document-html/__tests__/document-html.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/services/node-html/__tests__/node-html.edge.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.format-version.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.parse-error.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.parse.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.roundtrip.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.serialize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.template.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/__tests__/document-json.type.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Interop.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Json.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/RecordEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/StringEx.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/NonEmptyArray.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/__stories__/sample-editor-state.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-left-pane/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/artboard-fixtures.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/editor-state-reads.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/hook-in-editor.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/primary-color-token.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/__tests__/sample-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-provider/__tests__/editor-provider.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-history/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/edit-menu.target.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard-reposition.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.clipboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.context-menu-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.instance-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-clipboard.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-group.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reload.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.remove-edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.artboard.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.group.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.instance-lock.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.rename.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-top-bar/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/assets",
+      "files": [
+        {
+          "path": "src/features/editor/features/assets/__stories__/sample-assets-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/assets-panel/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/component-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/create-component/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/domains/componentization/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/assets-panel/__tests__/assets-panel.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/assets-panel/__tests__/assets-panel.search.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/component-list/__tests__/component-list.source.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/create-component/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/assets-panel/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/assets/components/component-list/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/__stories__/sample-canvas-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-turned-frame.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/selection-distance-tree.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.frozen.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.text-edit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/dragged-node/__tests__/dragged-node.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-sync",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/inspector",
+      "files": [
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__stories__/panel-controls.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.frozen.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.heading.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/inspector/components/property-panel/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/sidebar",
+      "files": [
+        {
+          "path": "src/features/editor/features/sidebar/__stories__/sample-sidebar-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.editing.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.type-display.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.disclosure.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.reorder.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.type-display.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/layers-panel/__tests__/layers-panel.filter.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/__stories__/sample-token-document.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.reveal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.title.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-list/__tests__/token-list.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/__tests__/render.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "docs",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+        "name": "layout: free の親の中で部品のルートの幅が fill のインスタンスを兄弟と包むと、Box は free だけを持ち fill を持たない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+        "name": "兄弟のうち部品のルートの幅が fill のインスタンスがあれば、Box の幅も fill になり、下限・上限は写さない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "name": "layout: free の親の下で幅が fill のプリミティブを包むと、Box の幅も fill になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "name": "layout: free の親の下で部品のルートの幅が fill のインスタンスを包んだ Box は、大きさの prop を持たない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "name": "layout: row と書いた親の下で部品のルートの幅が fill のインスタンスを包むと、Box の幅も fill になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "name": "公開 prop で部品のルートの幅を fill に上書きしたインスタンスを包むと、Box の幅も fill になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "name": "参照先の部品が無いインスタンスを包むと、包めて、Box は大きさの prop を持たない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "name": "部品のルートの幅が fill のインスタンスを包むと、Box の幅も fill になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "name": "部品のルートの高さが下限・上限の付いた fill のインスタンスを包むと、Box も同じ高さの下限・上限を持つ"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+        "name": "layout: row と書いた artboard の直下で部品のルートが Text のインスタンスを包むと、Box の高さが fill になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+        "name": "揃えが stretch の親の下で部品のルートが Box のインスタンスを包んだ Box は、大きさの prop を持たない"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+        "name": "揃えが stretch の親の下で部品のルートが Text のインスタンスと Box をまとめて包むと、Box の幅が fill になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+        "name": "揃えが stretch の親の下で部品のルートが Text のインスタンスを包むと、Box の幅が fill になる"
+      },
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+        "name": "揃えが stretch の親の下で部品のルートが Text のインスタンスを包んでから外すと、元のドキュメントに戻る"
+      }
+    ],
+    "removed": [
+      {
+        "file": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+        "name": "揃えが stretch の親の下で部品インスタンスを包んだ Box は、大きさの prop を持たない"
+      }
+    ],
+    "files": [
+      "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+      "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+      "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-22T02:35:18Z",
+      "subject": "🧪 [Tests]: #988 インスタンスを包むときに部品のルートの大きさを引き継ぐ仕様を固定",
+      "body": "- group-size に、部品のルートの fill を引き継ぐテスト 3 件と、free の親・参照先なしの対照テスト 2 件を追加\n- group-siblings-placement に、複数を包むときの fill の引き継ぎ 1 件と、free の親の対照テスト 1 件を追加\n- group-stretch の「部品インスタンスを包んだ Box は大きさの prop を持たない」を、ルートが Text のインスタンスなら幅が fill になる仕様へ書き換え、高さ・まとめて包む・ルートが Box の対照・往復の 4 件を追加\n\n背景:\n#527 / #986 の規則は包むノード自身の props と型だけを見るため、部品インスタンスはどちらにも掛からない。部品のルートが fill や Text のインスタンスを包むと、Box が hug になって縮む（docs/06-ui.md に #988 として記載）。\n\n採用理由:\nflow:feature の第 1 工程として、実装より先に落ちるテストをコミットする。RED は 7 件で、失敗の 1 行目はすべて AssertionError: expected {} to deeply equal … になる。対照 5 件は今の実装でも通るが、それぞれ誤った実装を落とすために置く（free の親でも写す、参照先なしを失敗にする、インスタンスなら常に引き伸ばす、インスタンス自体に fill を書き込む）。\n\n代替案:\n- インスタンス用のテストを新しいカテゴリのファイルにまとめる: 既存のファイルは規則ごと（size / siblings-placement / stretch）に分かれているので、それに合わせて却下\n- 結合テスト（opened-document-editor）を足す: groupIntoBox のシグネチャは変えず、配線が切れる経路も増えないため足さない\n\n影響とトレードオフ:\n次の工程のコミットまで、test:run はこの 7 件で落ちる。\n\n参考:\n- 計画: https://github.com/DIO0550/design-composer/issues/988#issuecomment-7072898666\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PxNvbZMGWMoUKnaio",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 36,
+          "deletions": 1,
+          "patch": "@@ -6,7 +6,12 @@ import {\n import type { Node } from \"@/domains/dcmp/node\";\n import { Option } from \"@/utils/Option\";\n import { Result } from \"@/utils/Result\";\n-import { group, propsOf, setupPanelDocument } from \"./group-setup\";\n+import {\n+  group,\n+  propsOf,\n+  setupArtboardDocument,\n+  setupPanelDocument,\n+} from \"./group-setup\";\n \n /*\n  * 同じ親の兄弟をまとめて包むときに、Box が親と兄弟から引き継ぐ指定（docs/06-ui.md\n@@ -247,3 +252,33 @@ test(\"部品インスタンスと絶対配置の兄弟が混ざっていると\n     DesignDocument.groupIntoBox(document, [\"first\", \"second\"], \"box\"),\n   ).toStrictEqual(Result.err({ kind: \"mixed-placement\" }));\n });\n+\n+test(\"兄弟のうち部品のルートの幅が fill のインスタンスがあれば、Box の幅も fill になり、下限・上限は写さない\", () => {\n+  const document = setupArtboardDocument({\n+    components: {\n+      card: {\n+        type: \"Box\",\n+        props: { widthMode: \"fill\", minWidth: 120, maxWidth: 320 },\n+      },\n+    },\n+    children: [\n+      { name: \"first\", ref: \"card\" },\n+      { name: \"second\", type: \"Box\" },\n+    ],\n+  });\n+\n+  expect(propsOf(groupPair(document), \"box\")).toEqual({ widthMode: \"fill\" });\n+});\n+\n+test(\"layout: free の親の中で部品のルートの幅が fill のインスタンスを兄弟と包むと、Box は free だけを持ち fill を持たない\", () => {\n+  const document = setupArtboardDocument({\n+    artboardProps: { layout: \"free\" },\n+    components: { card: { type: \"Box\", props: { widthMode: \"fill\" } } },\n+    children: [\n+      { name: \"first\", ref: \"card\" },\n+      { name: \"second\", type: \"Box\" },\n+    ],\n+  });\n+\n+  expect(propsOf(groupPair(document), \"box\")).toEqual({ layout: \"free\" });\n+});",
+          "patchLines": 48,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 69,
+          "deletions": 1,
+          "patch": "@@ -2,7 +2,7 @@ import { expect, test } from \"vitest\";\n import type { Props } from \"@/domains/dcmp/node\";\n import { Result } from \"@/utils/Result\";\n import { DesignDocument } from \"../index\";\n-import { propsOf } from \"./group-setup\";\n+import { group, propsOf, setupArtboardDocument } from \"./group-setup\";\n \n /*\n  * 包むときに、ノードの `fill` を Box へ引き継ぐ（docs/06-ui.md「編集操作の一覧」の\n@@ -89,3 +89,71 @@ test(\"下限・上限の付いた高さが fill のノードを包むと、Box \n     maxHeight: 160,\n   });\n });\n+\n+test(\"部品のルートの幅が fill のインスタンスを包むと、Box の幅も fill になる\", () => {\n+  const document = setupArtboardDocument({\n+    components: { card: { type: \"Box\", props: { widthMode: \"fill\" } } },\n+    children: [{ name: \"hero\", ref: \"card\" }],\n+  });\n+\n+  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({\n+    widthMode: \"fill\",\n+  });\n+});\n+\n+test(\"部品のルートの高さが下限・上限の付いた fill のインスタンスを包むと、Box も同じ高さの下限・上限を持つ\", () => {\n+  const document = setupArtboardDocument({\n+    components: {\n+      card: {\n+        type: \"Box\",\n+        props: { heightMode: \"fill\", minHeight: 40, maxHeight: 160 },\n+      },\n+    },\n+    children: [{ name: \"hero\", ref: \"card\" }],\n+  });\n+\n+  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({\n+    heightMode: \"fill\",\n+    minHeight: 40,\n+    maxHeight: 160,\n+  });\n+});\n+\n+test(\"公開 prop で部品のルートの幅を fill に上書きしたインスタンスを包むと、Box の幅も fill になる\", () => {\n+  const document = setupArtboardDocument({\n+    components: {\n+      card: {\n+        type: \"Box\",\n+        props: { widthMode: \"hug\" },\n+        publicProps: { width: { node: \"card\", prop: \"widthMode\" } },\n+      },\n+    },\n+    children: [{ name: \"hero\", ref: \"card\", overrides: { width: \"fill\" } }],\n+  });\n+\n+  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({\n+    widthMode: \"fill\",\n+  });\n+});\n+\n+test(\"layout: free の親の下で部品のルートの幅が fill のインスタンスを包んだ Box は、大きさの prop を持たない\", () => {\n+  const document = setupArtboardDocument({\n+    artboardProps: { layout: \"free\" },\n+    components: { card: { type: \"Box\", props: { widthMode: \"fill\" } } },\n+    children: [{ name: \"hero\", ref: \"card\" }],\n+  });\n+\n+  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({});\n+});\n+\n+test(\"参照先の部品が無いインスタンスを包むと、包めて、Box は大きさの prop を持たない\", () => {\n+  const document = setupArtboardDocument({\n+    children: [{ name: \"hero\", ref: \"missing\" }],\n+  });\n+\n+  const grouped = DesignDocument.groupIntoBox(document, [\"hero\"], \"box\");\n+\n+  expect(Result.map(grouped, (done) => propsOf(done, \"box\"))).toEqual(\n+    Result.ok({}),\n+  );\n+});",
+          "patchLines": 81,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 54,
+          "deletions": 4,
+          "patch": "@@ -106,13 +106,50 @@ test(\"揃えが stretch の親の下で Ellipse を包んだ Box は、大きさ\n   expect(propsOf(grouped, \"box\")).toEqual({});\n });\n \n-test(\"揃えが stretch の親の下で部品インスタンスを包んだ Box は、大きさの prop を持たない\", () => {\n+test(\"揃えが stretch の親の下で部品のルートが Text のインスタンスを包むと、Box の幅が fill になる\", () => {\n   const document = setupArtboardDocument({\n-    components: { Caption: { type: \"Text\" } },\n-    children: [{ name: \"caption\", ref: \"Caption\" }],\n+    components: { caption: { type: \"Text\" } },\n+    children: [{ name: \"label\", ref: \"caption\" }],\n   });\n \n-  expect(propsOf(group(document, [\"caption\"]), \"box\")).toEqual({});\n+  expect(propsOf(group(document, [\"label\"]), \"box\")).toEqual({\n+    widthMode: \"fill\",\n+  });\n+});\n+\n+test(\"揃えが stretch の親の下で部品のルートが Box のインスタンスを包んだ Box は、大きさの prop を持たない\", () => {\n+  const document = setupArtboardDocument({\n+    components: { card: { type: \"Box\" } },\n+    children: [{ name: \"hero\", ref: \"card\" }],\n+  });\n+\n+  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({});\n+});\n+\n+test(\"layout: row と書いた artboard の直下で部品のルートが Text のインスタンスを包むと、Box の高さが fill になる\", () => {\n+  const document = setupArtboardDocument({\n+    artboardProps: { layout: \"row\" },\n+    components: { caption: { type: \"Text\" } },\n+    children: [{ name: \"label\", ref: \"caption\" }],\n+  });\n+\n+  expect(propsOf(group(document, [\"label\"]), \"box\")).toEqual({\n+    heightMode: \"fill\",\n+  });\n+});\n+\n+test(\"揃えが stretch の親の下で部品のルートが Text のインスタンスと Box をまとめて包むと、Box の幅が fill になる\", () => {\n+  const document = setupArtboardDocument({\n+    components: { caption: { type: \"Text\" } },\n+    children: [\n+      { name: \"label\", ref: \"caption\" },\n+      { name: \"card\", type: \"Box\" },\n+    ],\n+  });\n+\n+  expect(propsOf(group(document, [\"label\", \"card\"]), \"box\")).toEqual({\n+    widthMode: \"fill\",\n+  });\n });\n \n test(\"column の親の下で Text と Box をまとめて包むと、Box の幅が fill になる\", () => {\n@@ -177,3 +214,16 @@ test(\"揃えが stretch の親の下の Text を包んでから外すと、元\n \n   expect(ungrouped.document).toEqual(document);\n });\n+\n+test(\"揃えが stretch の親の下で部品のルートが Text のインスタンスを包んでから外すと、元のドキュメントに戻る\", () => {\n+  const document = setupArtboardDocument({\n+    components: { caption: { type: \"Text\" } },\n+    children: [{ name: \"label\", ref: \"caption\" }],\n+  });\n+\n+  const ungrouped = Result.unwrap(\n+    DesignDocument.ungroupBox(group(document, [\"label\"]), \"box\"),\n+  );\n+\n+  expect(ungrouped.document).toEqual(document);\n+});",
+          "patchLines": 72,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "b23d8620ad1fa300740905786962a9c28c7caf2c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-22T02:43:32Z",
+      "subject": "✨ [New Feature]: #988 インスタンスを包むときに部品のルートの fill と Text の引き伸ばしを Box へ引き継ぐ",
+      "body": "- design-document に private 型 GroupMember（包むノードとそのルート）と、rootNodeOf（プリミティブならそのノード、インスタンスなら上書きを当てた部品のルート）を追加し、rootPropsOf を rootNodeOf から導くようにした\n- fillSourcePropsOf を追加した。Box が fill を写す元になる props を返す。インスタンスについては、親が子を並べるときだけ部品のルートの props を返す\n- groupedBox / groupedSiblingsBox / collectParentAlignStretchFillModePropEdits を GroupMember で受け取るようにし、fill と stretch の判定を部品のルートで行うようにした\n- Component.toNode の戻り値の型を PrimitiveNode へ狭めた\n\n背景:\n#527 の fill の規則と #986 の stretch の規則は、包むノード自身の props と型だけを見る。部品インスタンスは自分で大きさの props を持たないので、どちらの規則にも掛からず、包むと Box が hug になってインスタンスが縮んでいた。\n\n採用理由:\n部品のルートを引く処理は rootPropsOf に既にあった。これを rootNodeOf にまとめ、同じ処理を 2 箇所に持たないようにした。ノードとそのルートは常に対で渡るので、GroupMember にまとめて引数を 3 つ以内に保った。\n親が layout: free のときは、インスタンスのルートの fill を写さない。インスタンスは collectNodeErrors の検査対象外なので、free の親の下にあるルートの fill は正しいドキュメントのまま描かれる。これを Box へ写すと、Box が「free の親の子の fill」（docs/03「サイズ指定の原則」）になり、正しいドキュメントが不正になるため。\n帰属先は design-document の private にした。ノードがどう描かれるときのルートかは、ノードと部品一式の対で決まり、その両方を整合性境界として持つのが DesignDocument であるため。\n\n代替案:\n- 部品のルートを表す新しい型 DrawnRoot を作る: 部品のルートは必ずプリミティブで、Component.toNode がまさにそれを組む。既存の PrimitiveNode で足りるので却下した。Drawn という語は canvas 側の DrawnBounds で別の意味に使われている\n- ExpandedNode.fromNode で展開してルートを読む: 子孫をすべて展開するため、奥の参照が欠けていたり循環していたりすると、ルートの取得まで失敗する\n- groupedBox に document を 4 つ目の引数として渡す: 引数は 3 つまでという規約に反する\n- ComponentSet の公開 API にする: 同じ規則が rootPropsOf として既に design-document にある。移すと既存の消費者ごと再配置することになり、このゴールには要らない\n- 参照先の部品が無いインスタンスを groupIntoBox の失敗にする: エラーの直和を広げることになる。引き継ぐものが無いとして、今と同じ hug にした\n- free の親の下にあるプリミティブにも除外を掛ける: 今の動作が変わる。包む前からエラーになっており、件数も変わらないので、スコープ外にした\n\n影響とトレードオフ:\n公開 API の groupIntoBox のシグネチャは変えていない。Component.toNode の戻り値の型を狭めたが、呼び出し元は 1 件で、Node を受ける側なのでそのまま通る。free の親の下では、インスタンスの見た目が包む前後で一致しない場合が残りうる。ただしドキュメントの正しさを優先した。\n\n参考:\n- 計画: https://github.com/DIO0550/design-composer/issues/988#issuecomment-7072898666\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PxNvbZMGWMoUKnaio",
+      "files": [
+        {
+          "path": "src/domains/dcmp/component/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -235,7 +235,7 @@ export const Component = {\n    * @param name その部品の名前（`components` のキー）。ルートノードの名前になる\n    * @returns `name` を持ち、部品の `type` / `props` / `children` をそのまま持つプリミティブノード\n    */\n-  toNode(component: Component, name: string): Node {\n+  toNode(component: Component, name: string): PrimitiveNode {\n     return {\n       name,\n       type: component.type,",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 101,
+          "deletions": 34,
+          "patch": "@@ -132,8 +132,8 @@ export type NamedRotation = Readonly<{\n  * 例外は追従（`followPropEdits` / `followedChildren` / `withFollowedChildren` /\n  * `collectAxisResizes` / `fixedLengthsOfNode` / `fixedLengthsOfArtboard`）とグループ化 /\n  * 解除（`groupedBox` / `groupedSiblingsBox` / `collectParentAlignStretchFillModePropEdits` /\n- * `freedChildren`）で、ここだけは `Placement` / `Constraint` / `Size` / `ResolvedProps` /\n- * `Layout` / `BoxAlign` / `Offset` を組み合わせて編集を作る。子側のドメイン（`Node`）へ\n+ * `fillSourcePropsOf` / `freedChildren`）で、ここだけは `Placement` / `Constraint` / `Size` /\n+ * `ResolvedProps` / `Layout` / `BoxAlign` / `Offset` を組み合わせて編集を作る。子側のドメイン（`Node`）へ\n  * 置けないのは、`Placement` / `Size` / `ResolvedProps` が `Node` から型や `PropEdit` を\n  * import しており、逆向きの import が循環になるため。\n  */\n@@ -274,29 +274,63 @@ function applyNodePropEdits(node: Node, edits: readonly PropEdit[]): Node {\n   );\n }\n \n+/** グループ化で包むノードと、それが描かれるときのルート。 */\n+type GroupMember = Readonly<{\n+  /** 包むノード。 */\n+  node: Node;\n+  /** 包むノードが描かれるときのルート（`rootNodeOf`）。参照先の部品が無いインスタンスは `none`。 */\n+  root: Option<PrimitiveNode>;\n+}>;\n+\n+/**\n+ * 包むノードの `fill` を Box へ写すときの写し元の props。\n+ *\n+ * インスタンスは `collectNodeErrors` の対象外なので `free` の親の下のルートの `fill` は正しいまま\n+ * 描かれるが、Box へ写すと `free` の親の子の `fill`（docs/03「サイズ指定の原則」）になる。\n+ * プリミティブはその `fill` が書いた時点で同じエラーなので、親に依らず写す。\n+ *\n+ * @param member 包むノードとそのルート\n+ * @param parentProps 包むノードの親に書かれている props（デフォルト解決済みでないもの）\n+ * @returns プリミティブなら書かれている props。インスタンスなら、親が子を並べるときは部品の\n+ *   ルートの props、親が `free` か参照先の部品が無ければ空\n+ */\n+function fillSourcePropsOf(member: GroupMember, parentProps: Props): Props {\n+  if (Node.isPrimitive(member.node)) {\n+    return Node.writtenPropsOf(member.node);\n+  }\n+  const arranges = Option.isSome(\n+    Layout.direction(Layout.fromProps(parentProps)),\n+  );\n+  if (!arranges) {\n+    return {};\n+  }\n+  return Option.unwrapOr(\n+    Option.map(member.root, (root) => root.props ?? {}),\n+    {},\n+  );\n+}\n+\n /**\n  * 親の揃えの `stretch` に交差軸へ引き伸ばされているノードを包むときに、その軸を Box も\n  * `fill` にする編集（docs/06-ui.md「編集操作の一覧」のグループ化）。\n  *\n- * 引き伸ばされているのは、その軸の長さのモードの prop を持たない型（いまは Text）。Box が\n- * 既定の `hug` のままだと、包んだノードが中身の大きさに縮む。\n- *\n- * 部品インスタンスは見ない。インスタンスの大きさは部品定義のルートが持ち、それを引く判定は\n- * #988 で扱う。\n+ * 引き伸ばされているのは、ルートがその軸の長さのモードの prop を持たない型（いまは Text）の\n+ * ノード。部品インスタンスは部品のルートの型で見る。Box が既定の `hug` のままだと、包んだ\n+ * ノードが中身の大きさに縮む。\n  *\n- * @param members 包むノード\n+ * @param members 包むノードとそのルート\n  * @param parentProps 包むノードの親に書かれている props（デフォルト解決済みでないもの）\n- * @returns 親が子を並べて揃えが `stretch` で、その交差軸の長さのモードの prop を持たない\n- *   プリミティブが包むノードにあれば、交差軸のモードを `fill` にする編集 1 件。それ以外は空\n+ * @returns 親が子を並べて揃えが `stretch` で、ルートがその交差軸の長さのモードの prop を\n+ *   持たないノードが包むノードにあれば、交差軸のモードを `fill` にする編集 1 件。それ以外は空\n  */\n function collectParentAlignStretchFillModePropEdits(\n-  members: readonly Node[],\n+  members: readonly GroupMember[],\n   parentProps: Props,\n ): readonly PropEdit[] {\n-  const types = members.flatMap((member) => {\n+  const types = members.flatMap(({ root }) => {\n     const isSchemaPrimitive =\n-      Node.isPrimitive(member) && PrimitiveSchema.isPrimitiveType(member.type);\n-    return isSchemaPrimitive ? [member.type] : [];\n+      Option.isSome(root) && PrimitiveSchema.isPrimitiveType(root.value.type);\n+    return isSchemaPrimitive ? [root.value.type] : [];\n   });\n \n   return Option.unwrapOr(\n@@ -314,7 +348,8 @@ function collectParentAlignStretchFillModePropEdits(\n  * 包んでも見た目が変わらないよう、Box がノードの外側の指定を引き継ぐ。絶対配置のノードなら\n  * 配置の 5 prop を Box へ移してノードをフローに戻す。`fill` の軸は、配置に依らず Box も\n  * `fill` にする。ノードの `fill` は残す（新しい Box は既定で子を並べるので、Box の中でも\n- * そのまま書ける。消すと外したときに戻らない）。\n+ * そのまま書ける。消すと外したときに戻らない）。部品インスタンスは部品のルートの `fill` を\n+ * 見る。親が `free` なら写さない（`fillSourcePropsOf`）。\n  *\n  * フローのノードの配置は移さない。読み捨てられている座標が Box へ移ると、フローの Box を\n  * 外しても子へ戻らず、⌘G → ⌘⇧G で元のノードに戻らなくなる。\n@@ -322,12 +357,17 @@ function collectParentAlignStretchFillModePropEdits(\n  * 親の並べ方（`layout` / `gap` / `align`）は写さない。子が 1 つなら字面は動かない。親の揃えの\n  * `stretch` に引き伸ばされていた軸は `collectParentAlignStretchFillModePropEdits`。\n  *\n- * @param node 包むノード\n+ * @param member 包むノードとそのルート\n  * @param parentProps 包むノードの親に書かれている props（デフォルト解決済みでないもの）\n  * @param boxName 新しく作る Box に付ける名前\n  * @returns 包んだ Box。引き継ぐ指定が無ければ props を持たない\n  */\n-function groupedBox(node: Node, parentProps: Props, boxName: string): Node {\n+function groupedBox(\n+  member: GroupMember,\n+  parentProps: Props,\n+  boxName: string,\n+): Node {\n+  const { node } = member;\n   const props = Node.writtenPropsOf(node);\n   const isAbsolute = Option.isSome(absolutePlacementOf(node));\n   const placementEdits = isAbsolute\n@@ -345,11 +385,11 @@ function groupedBox(node: Node, parentProps: Props, boxName: string): Node {\n \n   const alignStretchFillEdits = isAbsolute\n     ? []\n-    : collectParentAlignStretchFillModePropEdits([node], parentProps);\n+    : collectParentAlignStretchFillModePropEdits([member], parentProps);\n \n   return applyNodePropEdits(box, [\n     ...placementEdits,\n-    ...Size.collectFillPropEdits(props),\n+    ...Size.collectFillPropEdits(fillSourcePropsOf(member, parentProps)),\n     ...alignStretchFillEdits,\n   ]);\n }\n@@ -358,25 +398,26 @@ function groupedBox(node: Node, parentProps: Props, boxName: string): Node {\n  * 同じ親の兄弟を 2 つ以上まとめて包む Box（docs/06-ui.md「複数選択」のグループ化）。\n  *\n  * 全員フローなら、親に書かれた並べ方（`layout` / `gap` / `align`）と、どれかが `fill` の軸の\n- * モードを Box が持ち、兄弟はそのまま子になる（親の揃えの `stretch` に引き伸ばされていた軸は\n+ * モード（部品インスタンスは部品のルートで見る。親が `free` ならインスタンスの分は写さない）\n+ * を Box が持ち、兄弟はそのまま子になる（親の揃えの `stretch` に引き伸ばされていた軸は\n  * `collectParentAlignStretchFillModePropEdits`）。全員絶対配置なら、Box は兄弟の各軸の最小の\n  * 座標に絶対配置で置かれ、全員一致の追従だけを持ち、兄弟は Box の座標を引いた位置になる。\n  *\n- * @param members 包む兄弟。元の並び順\n+ * @param members 包む兄弟とそのルート。元の並び順\n  * @param parentProps 兄弟の親に書かれている props（デフォルト解決済みでないもの）\n  * @param boxName 新しく作る Box に付ける名前\n  * @returns 包んだ Box。絶対配置とフローの兄弟が混ざっていれば `mixed-placement`\n  *   （部品インスタンスはフローとして数える）\n  */\n function groupedSiblingsBox(\n-  members: NonEmptyArray<Node>,\n+  members: NonEmptyArray<GroupMember>,\n   parentProps: Props,\n   boxName: string,\n ): Result<Node, DesignDocumentEditError> {\n-  const propsList = ArrayEx.mapNonEmpty(members, Node.writtenPropsOf);\n+  const nodes = ArrayEx.mapNonEmpty(members, ({ node }) => node);\n \n   const placedMembers = ArrayEx.toNonEmpty(\n-    members.flatMap((member) => {\n+    nodes.flatMap((member) => {\n       const placement = absolutePlacementOf(member);\n       return Option.isSome(placement)\n         ? [{ member, placement: placement.value }]\n@@ -389,7 +430,9 @@ function groupedSiblingsBox(\n       ...Layout.collectWrittenPropEdits(parentProps),\n       ...BoxAlign.collectWrittenPropEdits(parentProps),\n     ];\n-    const fillEdits = Size.collectFillModePropEdits(propsList);\n+    const fillEdits = Size.collectFillModePropEdits(\n+      members.map((member) => fillSourcePropsOf(member, parentProps)),\n+    );\n     const alignStretchFillEdits = collectParentAlignStretchFillModePropEdits(\n       members,\n       parentProps,\n@@ -398,7 +441,7 @@ function groupedSiblingsBox(\n     const flowBox: Node = {\n       name: boxName,\n       type: PrimitiveTypes.Box,\n-      children: members,\n+      children: nodes,\n     };\n \n     return Result.ok(\n@@ -410,7 +453,7 @@ function groupedSiblingsBox(\n     );\n   }\n \n-  if (placedMembers.value.length !== members.length) {\n+  if (placedMembers.value.length !== nodes.length) {\n     return Result.err({ kind: \"mixed-placement\" });\n   }\n \n@@ -429,7 +472,9 @@ function groupedSiblingsBox(\n     Placement.absoluteModePropEdit(),\n     ...Placement.toPropEdits({ mode: \"absolute\", ...boxOffset }),\n   ];\n-  const constraintEdits = Constraint.collectSharedPropEdits(propsList);\n+  const constraintEdits = Constraint.collectSharedPropEdits(\n+    ArrayEx.mapNonEmpty(nodes, Node.writtenPropsOf),\n+  );\n \n   const absoluteBox: Node = {\n     name: boxName,\n@@ -1201,14 +1246,32 @@ function collectSelfAndAncestorRotations(\n  * @returns そのノードの props。参照先の部品が無いインスタンスは `none`\n  */\n function rootPropsOf(document: DesignDocument, node: Node): Option<Props> {\n+  return Option.map(rootNodeOf(document, node), (root) => root.props ?? {});\n+}\n+\n+/**\n+ * ノードが描かれるときのルート。プリミティブは自身、部品インスタンスは上書きを当てた部品の根\n+ * （参照ノード直下のインスタンス自身の値は含まない）。\n+ *\n+ * @param document 参照先の部品を引くドキュメント\n+ * @param node ルートを読むノード\n+ * @returns プリミティブならそのノード。インスタンスなら、上書きを当ててインスタンスの名前を\n+ *   付けた部品の根。参照先の部品が無いインスタンスは `none`\n+ */\n+function rootNodeOf(\n+  document: DesignDocument,\n+  node: Node,\n+): Option<PrimitiveNode> {\n   if (Node.isPrimitive(node)) {\n-    return Option.some(node.props ?? {});\n+    return Option.some(node);\n   }\n   return Option.map(\n     ComponentSet.get(document.components, node.ref),\n     (component) =>\n-      Component.applyOverrides(component, node.ref, node.overrides ?? {})\n-        .props ?? {},\n+      Component.toNode(\n+        Component.applyOverrides(component, node.ref, node.overrides ?? {}),\n+        node.name,\n+      ),\n   );\n }\n \n@@ -2662,7 +2725,7 @@ export const DesignDocument = {\n    * 元の並び順で子にする。1 つなら元のノードが居た位置そのままで、引き継ぐ指定は\n    * `groupedBox`。同じ親の兄弟が 2 つ以上なら `groupedSiblingsBox`。それ以外の props は\n    * 持たせない（スキーマ既定の `hug` が包んだ中身に合う。親の揃えの `stretch` に引き伸ばされて\n-   * いた軸だけは `fill`）。\n+   * いた軸だけは `fill`）。部品インスタンスは参照先の部品のルート（上書きを当てたもの）で見る。\n    *\n    * @param document 包む先のドキュメント\n    * @param names 包むノードの名前。重複は 1 つとして扱う\n@@ -2693,11 +2756,15 @@ export const DesignDocument = {\n       return members;\n     }\n \n-    const [sole, ...rest] = members.value;\n+    const groupMembers = ArrayEx.mapNonEmpty(members.value, (node) => ({\n+      node,\n+      root: rootNodeOf(document, node),\n+    }));\n+    const [sole, ...rest] = groupMembers;\n     const box =\n       rest.length === 0\n         ? Result.ok(groupedBox(sole, parent.value.props, boxName))\n-        : groupedSiblingsBox(members.value, parent.value.props, boxName);\n+        : groupedSiblingsBox(groupMembers, parent.value.props, boxName);\n     if (!Result.isOk(box)) {\n       return box;\n     }",
+          "patchLines": 266,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "9124e3b5428bb7490a2e67cb82996a847635110b",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-22T02:43:33Z",
+      "subject": "📝 [Documentation]: #988 グループ化で部品インスタンスを部品のルートで見ることを 06-ui に反映",
+      "body": "- 複数選択のグループ化（139 行目）と、編集操作の一覧のグループ化（343 行目）に、部品インスタンスは参照先の部品のルートで見ること、親が free のときは写さないことを追記\n- 「包んでいる間に見た目が変わるもの」から #988 の 2 件と、それを限定していた 1 文を削除（#989 の記述は残した）\n- Text の stretch の記述と「row の親で Text を包むと」の対象に、部品のルートが Text のインスタンスを含めた\n\n背景:\n06-ui は、インスタンスが縮むことを #988 で直す既知の差として書いていた。前のコミットで直したので、仕様の記述をそれに合わせる。\n\n採用理由:\nfree の親での例外は、実装の Why と同じく 03-schema「サイズ指定の原則」を拠り所として本文に書いた。読み手が、写さない理由を仕様書の中で辿れるようにするため。\n\n代替案:\n- 「ただし 2 つのインスタンスは…」の文を言い換えて残す: この文は #988 の 2 件を限定するためだけのもので、2 件が消えると指す先が無くなるので削除した\n\n影響とトレードオフ:\nrow の親で部品のルートが Text のインスタンスを包むと高さが中身の高さになる、という記述は、プリミティブの Text と同じ仕組みから導いたもので、描画では確かめていない。\n\n参考:\n- 計画: https://github.com/DIO0550/design-composer/issues/988#issuecomment-7072898666\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PxNvbZMGWMoUKnaio",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -136,9 +136,9 @@ Figma 型の3ペイン。\n - **複数選択中のコピーは、いちばん外側のものを選択の並び順（今ある入口はどれもツリー上の並びで選ぶ）にすべてクリップボードへ入れる**。1 つだけ選んでいるときのペーストで、写した順に貼り先（選んでいるものの子の末尾。ロック中の Box なら 03-schema「ロック」）へ並ぶ。複数選択中はペーストできない（貼り先が 1 つに決まらない）。artboard が混ざっているときは何もしない\n - **複数選択中のグループ化は、選んだものを新しい Box 1 つにまとめる**。行えるのは、選んだものがすべて同じ親の兄弟で、artboard が混ざらず、全員がフローか全員が絶対配置のときだけ（満たさなければ何もしない）。キーボード（下記「編集操作の一覧」のグループ化と同じ割り当て）と、ツリーの行のコンテキストメニューから行える（キャンバスのノードの右クリックで行えない理由は削除と同じ）\n   - Box は**選んだもののうちいちばん前面にいたものの位置**に入り、選んだものは**元の並び順のまま** Box の子になる。Box が選ばれ、1 回の編集として扱うので **1 回の取り消しで戻る**\n-  - **全員フローなら**、Box は親に書かれた `layout` / `gap` / `align` を持つ。選んだもののどれかが `fill` の軸は Box も `fill` にする（下限・上限は写さない）。選んだもののどれかが親の揃えの `stretch` で交差軸に引き伸ばされていれば、その軸も Box を `fill` にする（どれが引き伸ばされているかは 1 つだけ包むときと同じ。下記「編集操作の一覧」のグループ化）。Box は親の `layout` / `align` を写すので、中のものは包む前と同じく引き伸ばされる\n+  - **全員フローなら**、Box は親に書かれた `layout` / `gap` / `align` を持つ。選んだもののどれかが `fill` の軸は Box も `fill` にする（下限・上限は写さない）。部品インスタンスは参照先の部品のルート（上書きを当てたもの）で見る。親が `layout: free` のときは、インスタンスのルートの `fill` は写さない。選んだもののどれかが親の揃えの `stretch` で交差軸に引き伸ばされていれば、その軸も Box を `fill` にする（どれが引き伸ばされているかは 1 つだけ包むときと同じ。下記「編集操作の一覧」のグループ化）。Box は親の `layout` / `align` を写すので、中のものは包む前と同じく引き伸ばされる\n   - **全員絶対配置なら**、Box は選んだものの各軸の最小の座標に絶対配置で置かれ、選んだものは Box からの相対座標になる。追従は、全員に同じ値が書かれた軸だけ Box も持つ\n-  - **包んでいる間に見た目が変わるもの**: 1 つだけ包むとき（下記「編集操作の一覧」のグループ化）と同じく、親に引き伸ばされていた、部品のルートが Text のインスタンスは縮み（#988）、部品のルートが `fill` のインスタンスは Box が `fill` にならずに縮み（#988）、長さが `stretch` / `scale` で追従するノードは包んでいる間に親をリサイズしても長さが追従しない（#989）。ただし 2 つのインスタンスは、同じ選択にその軸の Box を `fill` にするもの（その軸が `fill` のもの、交差軸なら親の揃えの `stretch` で引き伸ばされていた Text も）があれば、その軸では縮まない（Box がその軸で伸び、インスタンスも Box の中で伸びる）。加えて、間に選んでいない兄弟を挟んで離れていたものは Box の中で隣り合う。親の `justify` / `wrap` で離れていたものは詰まる。主軸の `fill` が包んだものと外の兄弟の両方にあると、空きの配分が変わる。`fill` の下限・上限は Box に写らない。全員絶対配置で追従が揃っていない軸は、包んでいる間は Box が既定の `min` で追従する（選んだものの `max` などは親のリサイズに効かない）。絶対配置のものだけを包んだ Box は 0×0 になる\n+  - **包んでいる間に見た目が変わるもの**: 1 つだけ包むとき（下記「編集操作の一覧」のグループ化）と同じく、長さが `stretch` / `scale` で追従するノードは包んでいる間に親をリサイズしても長さが追従しない（#989）。加えて、間に選んでいない兄弟を挟んで離れていたものは Box の中で隣り合う。親の `justify` / `wrap` で離れていたものは詰まる。主軸の `fill` が包んだものと外の兄弟の両方にあると、空きの配分が変わる。`fill` の下限・上限は Box に写らない。全員絶対配置で追従が揃っていない軸は、包んでいる間は Box が既定の `min` で追従する（選んだものの `max` などは親のリサイズに効かない）。絶対配置のものだけを包んだ Box は 0×0 になる\n - **インスペクタ**: 帯に選択数を出し、本文には編集欄を出さない（選択の解除だけを残す）\n - **キャンバス**: 選んだものすべてに選択の枠を出す（非表示のノードは描かれないので枠も出ない。下記「リサイズハンドル」）。リサイズハンドルは 1 つだけ選んでいるときに出す\n - **ツリービュー**: 映すのは 1 枚の artboard の中身なので、選択が artboard をまたぐときは**今見ている artboard のぶんだけ**が選択表示になる。今見ている artboard は選択の先頭が載っている 1 枚。絞り込んでいる間は、そのうち一致して残った行だけが選択表示になる（上記「絞り込み」）\n@@ -340,7 +340,7 @@ Figma 寄りの直接操作を採用する。\n | 複製 | 選んでいるノードをサブツリーごと複製し、**同じ親の中の直後**へ入れる（⌘D / Ctrl+D）。名前はコピー & ペーストと同じ自動リネームで付け替え、複製が選ばれる（続けて押したときに作った順で並ぶようにするため）。クリップボードは経由しない。artboard は複製できない。複数選んでいるときは上記「複数選択」 |\n | コピー & ペースト | サブツリー単位。**自動リネームで名前の一意性を保つ**（01-file-format）。複数選んでいるときは上記「複数選択」 |\n | 名前を変更 | 選んでいるノード / artboard の `name` を打ち替える（⌘R / Ctrl+R）。入口と確定の規則は下記「名前の変更」 |\n-| グループ化 / グループ解除 | 選んでいるノードを新しい Box の中へ入れる（⌘G / Ctrl+G）／ 選んでいる Box を外して、その子を Box が居た位置へ戻す（Shift+⌘G / Ctrl+Shift+G）。名前は衝突しないよう採番する。**包んでも見た目が変わらないよう、Box はノードの外側の指定を引き継ぐ**。絶対配置のノードなら、配置（`placement` / `x` / `y` / `constraintX` / `constraintY`）を Box へ移してノードをフローに戻す。配置に依らず、ノードが `fill` の軸は Box も `fill` にする（下限・上限も写す）。フローのノードが親の揃えの `stretch` で交差軸に引き伸ばされているなら（Text は長さの prop を持たないので、こうなる）、その軸も Box を `fill` にする。それ以外の props は持たず、どちらにも当たらない軸は既定の `hug` になる。**外すときに座標を返すのは、Box が絶対配置のときだけ**。絶対配置の子には Box の座標を足す（追従は子のものを残す）。フローの子（インスタンスも数える）が 1 つだけで、それがプリミティブなら、その子が Box の配置を持ち、Box の原点に置かれる（Box の padding や揃えのぶんはずれる）。次のときは座標を返さない: フローの子が 2 つ以上のとき、唯一のフローの子がインスタンスのとき、Box がフローのとき。Box の回転は子へ配らない。**包んでいる間に見た目が変わるもの**: row の親で Text を包むと、Box の中の Text の高さは中身の高さになり、選択枠の高さが変わる（字面は変わらない。外すと戻る）。親に引き伸ばされていた、部品のルートが Text のインスタンスは中身の大きさに縮み（#988）、部品のルートが `fill` のインスタンスは Box が `fill` にならずに縮む（#988。どちらも外すと戻る）。長さが `stretch` / `scale` で追従するノードは、包んでいる間に親をリサイズしても長さが追従しない（#989。外しても伸びなかったぶんは戻らない）。包むと新しい Box が、外すと戻った子が選ばれる（押し戻しになるようにするため）。Box 以外（artboard / Text / Ellipse / 部品インスタンス）は外せない。複数選んでいるときは上記「複数選択」 |\n+| グループ化 / グループ解除 | 選んでいるノードを新しい Box の中へ入れる（⌘G / Ctrl+G）／ 選んでいる Box を外して、その子を Box が居た位置へ戻す（Shift+⌘G / Ctrl+Shift+G）。名前は衝突しないよう採番する。**包んでも見た目が変わらないよう、Box はノードの外側の指定を引き継ぐ**。絶対配置のノードなら、配置（`placement` / `x` / `y` / `constraintX` / `constraintY`）を Box へ移してノードをフローに戻す。配置に依らず、ノードが `fill` の軸は Box も `fill` にする（下限・上限も写す）。部品インスタンスは参照先の部品のルート（上書きを当てたもの）の `fill` を見る。ただし親が `layout: free` のときは写さない（インスタンスの `fill` は検証の対象外なので、写すと Box が `free` の親の子の `fill` になる。03-schema「サイズ指定の原則」）。フローのノードが親の揃えの `stretch` で交差軸に引き伸ばされているなら（Text と、部品のルートが Text のインスタンスは長さの prop を持たないので、こうなる）、その軸も Box を `fill` にする。それ以外の props は持たず、どちらにも当たらない軸は既定の `hug` になる。**外すときに座標を返すのは、Box が絶対配置のときだけ**。絶対配置の子には Box の座標を足す（追従は子のものを残す）。フローの子（インスタンスも数える）が 1 つだけで、それがプリミティブなら、その子が Box の配置を持ち、Box の原点に置かれる（Box の padding や揃えのぶんはずれる）。次のときは座標を返さない: フローの子が 2 つ以上のとき、唯一のフローの子がインスタンスのとき、Box がフローのとき。Box の回転は子へ配らない。**包んでいる間に見た目が変わるもの**: row の親で Text（部品のルートが Text のインスタンスも）を包むと、Box の中の Text の高さは中身の高さになり、選択枠の高さが変わる（字面は変わらない。外すと戻る）。長さが `stretch` / `scale` で追従するノードは、包んでいる間に親をリサイズしても長さが追従しない（#989。外しても伸びなかったぶんは戻らない）。包むと新しい Box が、外すと戻った子が選ばれる（押し戻しになるようにするため）。Box 以外（artboard / Text / Ellipse / 部品インスタンス）は外せない。複数選んでいるときは上記「複数選択」 |\n | undo / redo | メモリ内管理。適用は通常の編集として自動保存される（05-architecture）。ドキュメントの中身が変わらない編集（値を変えずに欄を離れた確定、掴んだ位置へ戻して離したドラッグなど）は undo 1 回ぶんに数えない（戻すときに飛ばす）。進む先（redo）も捨てない。ただし 1 回の操作の途中で中身が一度でも変わったら、最後に元の中身へ戻っても進む先は捨てる（リサイズを動かしてから掴んだ位置へ戻して離した、プロパティパネルの数値・文言の欄に打ってから消して離れた、ピッカーで別の色を経て元の色へ戻した、など）。離したときにだけ書く操作（ノード・artboard の移動）と、離れたときにだけ確定する欄（tokens の hex・不透明度の欄など）は途中で中身が変わらないので、元へ戻せば進む先は残る |\n | 選択解除 | Esc。外れるのはノードの選択だけで、トークンの選択は残る |\n ",
+          "patchLines": 21,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "afa1c6b6528550835d41a4566896de89f6ed78a3",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-22T02:53:35Z",
+      "subject": "♻️ [Refactoring]: #988 レビュー指摘に合わせてルートの読み方・命名・doc を揃え、free の親での縮みを 06-ui に残す",
+      "body": "- fillSourcePropsOf を、種別を問わず member.root から Node.propsOf で読む形に揃えた。インスタンスで親が子を並べないときだけ空を返す\n- rootPropsOf も Node.propsOf を通すようにし、doc は rootNodeOf を参照する 1 行にした\n- groupedSiblingsBox / groupIntoBox で、Node を指す束縛を node / nodes に、GroupMember を指す束縛を member / members にそろえた。arranges は parentArrangesChildren に改名した\n- fillSourcePropsOf の doc の理由を「検証はインスタンスの中身を見ないのでエラーにならない」という書き方に改め、参照先の部品が無いときに空を返すことを @returns に書いた\n- groupIntoBox の doc と冒頭の例外リストの文を、実際の働きに合わせた\n- 06-ui の 141 行目と 343 行目の「見た目が変わるもの」に、free の親の下でルートが fill のインスタンスは縮むことを残した。139 行目は 343 行目を参照する形にした\n\n背景:\nフェーズ 6 の観点別レビューで次の指摘を受けた。\n- ui・harness: 親が free のときにインスタンスが縮むこと（実測で 400px → 50px）が、06-ui の「見た目が変わるもの」から消えていた\n- structure・duplication: プリミティブの props を node から読むか root から読むかが、関数ごとに割れていた\n- naming: member が Node と GroupMember の両方を指していた\n- comment: doc の記述が実物と食い違っていた\n\n採用理由:\nfree の親の下で写さない判断自体は変えない。写すと Box が free の親の子の fill になり、検証エラーのあるドキュメントを書くことになるため（rules/consistency.md「部分的に壊れた状態をファイルへ書かない」）。そのぶん見た目が変わるので、仕様の例外一覧に残す。\nルートの読み方は、型を直和に分けるのではなく、読む側を root にそろえる方にした。GroupMember を作る箇所は groupIntoBox の 1 つだけで、読む側をそろえれば割れは消えるため。\n\n代替案:\n- 「子を並べるか」の判定を Layout に名前付きで置く（structure の指摘）: 同じ判定は既に 3 箇所にある。Layout の公開 API を変えて既存の呼び出しを差し替えるのは、このゴールの範囲を越えるので採らなかった\n- GroupMember をノードの種別で直和にする: 生成箇所が 1 つしかないので、読む側をそろえる方が小さく済む\n\n影響とトレードオフ:\n振る舞いは変えていない（第 1 工程のテストを含め、全テストが通る）。\n\n参考:\n- 採否: https://github.com/DIO0550/design-composer/issues/988#issuecomment-7073120693\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PxNvbZMGWMoUKnaio",
+      "files": [
+        {
+          "path": "docs/06-ui.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -136,9 +136,9 @@ Figma 型の3ペイン。\n - **複数選択中のコピーは、いちばん外側のものを選択の並び順（今ある入口はどれもツリー上の並びで選ぶ）にすべてクリップボードへ入れる**。1 つだけ選んでいるときのペーストで、写した順に貼り先（選んでいるものの子の末尾。ロック中の Box なら 03-schema「ロック」）へ並ぶ。複数選択中はペーストできない（貼り先が 1 つに決まらない）。artboard が混ざっているときは何もしない\n - **複数選択中のグループ化は、選んだものを新しい Box 1 つにまとめる**。行えるのは、選んだものがすべて同じ親の兄弟で、artboard が混ざらず、全員がフローか全員が絶対配置のときだけ（満たさなければ何もしない）。キーボード（下記「編集操作の一覧」のグループ化と同じ割り当て）と、ツリーの行のコンテキストメニューから行える（キャンバスのノードの右クリックで行えない理由は削除と同じ）\n   - Box は**選んだもののうちいちばん前面にいたものの位置**に入り、選んだものは**元の並び順のまま** Box の子になる。Box が選ばれ、1 回の編集として扱うので **1 回の取り消しで戻る**\n-  - **全員フローなら**、Box は親に書かれた `layout` / `gap` / `align` を持つ。選んだもののどれかが `fill` の軸は Box も `fill` にする（下限・上限は写さない）。部品インスタンスは参照先の部品のルート（上書きを当てたもの）で見る。親が `layout: free` のときは、インスタンスのルートの `fill` は写さない。選んだもののどれかが親の揃えの `stretch` で交差軸に引き伸ばされていれば、その軸も Box を `fill` にする（どれが引き伸ばされているかは 1 つだけ包むときと同じ。下記「編集操作の一覧」のグループ化）。Box は親の `layout` / `align` を写すので、中のものは包む前と同じく引き伸ばされる\n+  - **全員フローなら**、Box は親に書かれた `layout` / `gap` / `align` を持つ。選んだもののどれかが `fill` の軸は Box も `fill` にする（下限・上限は写さない。部品インスタンスの見方は 1 つだけ包むときと同じ。下記「編集操作の一覧」のグループ化）。選んだもののどれかが親の揃えの `stretch` で交差軸に引き伸ばされていれば、その軸も Box を `fill` にする（どれが引き伸ばされているかは 1 つだけ包むときと同じ。下記「編集操作の一覧」のグループ化）。Box は親の `layout` / `align` を写すので、中のものは包む前と同じく引き伸ばされる\n   - **全員絶対配置なら**、Box は選んだものの各軸の最小の座標に絶対配置で置かれ、選んだものは Box からの相対座標になる。追従は、全員に同じ値が書かれた軸だけ Box も持つ\n-  - **包んでいる間に見た目が変わるもの**: 1 つだけ包むとき（下記「編集操作の一覧」のグループ化）と同じく、長さが `stretch` / `scale` で追従するノードは包んでいる間に親をリサイズしても長さが追従しない（#989）。加えて、間に選んでいない兄弟を挟んで離れていたものは Box の中で隣り合う。親の `justify` / `wrap` で離れていたものは詰まる。主軸の `fill` が包んだものと外の兄弟の両方にあると、空きの配分が変わる。`fill` の下限・上限は Box に写らない。全員絶対配置で追従が揃っていない軸は、包んでいる間は Box が既定の `min` で追従する（選んだものの `max` などは親のリサイズに効かない）。絶対配置のものだけを包んだ Box は 0×0 になる\n+  - **包んでいる間に見た目が変わるもの**: 1 つだけ包むとき（下記「編集操作の一覧」のグループ化）と同じく、親が `layout: free` のとき部品のルートが `fill` のインスタンスは中身の大きさに縮み、長さが `stretch` / `scale` で追従するノードは包んでいる間に親をリサイズしても長さが追従しない（#989）。加えて、間に選んでいない兄弟を挟んで離れていたものは Box の中で隣り合う。親の `justify` / `wrap` で離れていたものは詰まる。主軸の `fill` が包んだものと外の兄弟の両方にあると、空きの配分が変わる。`fill` の下限・上限は Box に写らない。全員絶対配置で追従が揃っていない軸は、包んでいる間は Box が既定の `min` で追従する（選んだものの `max` などは親のリサイズに効かない）。絶対配置のものだけを包んだ Box は 0×0 になる\n - **インスペクタ**: 帯に選択数を出し、本文には編集欄を出さない（選択の解除だけを残す）\n - **キャンバス**: 選んだものすべてに選択の枠を出す（非表示のノードは描かれないので枠も出ない。下記「リサイズハンドル」）。リサイズハンドルは 1 つだけ選んでいるときに出す\n - **ツリービュー**: 映すのは 1 枚の artboard の中身なので、選択が artboard をまたぐときは**今見ている artboard のぶんだけ**が選択表示になる。今見ている artboard は選択の先頭が載っている 1 枚。絞り込んでいる間は、そのうち一致して残った行だけが選択表示になる（上記「絞り込み」）\n@@ -340,7 +340,7 @@ Figma 寄りの直接操作を採用する。\n | 複製 | 選んでいるノードをサブツリーごと複製し、**同じ親の中の直後**へ入れる（⌘D / Ctrl+D）。名前はコピー & ペーストと同じ自動リネームで付け替え、複製が選ばれる（続けて押したときに作った順で並ぶようにするため）。クリップボードは経由しない。artboard は複製できない。複数選んでいるときは上記「複数選択」 |\n | コピー & ペースト | サブツリー単位。**自動リネームで名前の一意性を保つ**（01-file-format）。複数選んでいるときは上記「複数選択」 |\n | 名前を変更 | 選んでいるノード / artboard の `name` を打ち替える（⌘R / Ctrl+R）。入口と確定の規則は下記「名前の変更」 |\n-| グループ化 / グループ解除 | 選んでいるノードを新しい Box の中へ入れる（⌘G / Ctrl+G）／ 選んでいる Box を外して、その子を Box が居た位置へ戻す（Shift+⌘G / Ctrl+Shift+G）。名前は衝突しないよう採番する。**包んでも見た目が変わらないよう、Box はノードの外側の指定を引き継ぐ**。絶対配置のノードなら、配置（`placement` / `x` / `y` / `constraintX` / `constraintY`）を Box へ移してノードをフローに戻す。配置に依らず、ノードが `fill` の軸は Box も `fill` にする（下限・上限も写す）。部品インスタンスは参照先の部品のルート（上書きを当てたもの）の `fill` を見る。ただし親が `layout: free` のときは写さない（インスタンスの `fill` は検証の対象外なので、写すと Box が `free` の親の子の `fill` になる。03-schema「サイズ指定の原則」）。フローのノードが親の揃えの `stretch` で交差軸に引き伸ばされているなら（Text と、部品のルートが Text のインスタンスは長さの prop を持たないので、こうなる）、その軸も Box を `fill` にする。それ以外の props は持たず、どちらにも当たらない軸は既定の `hug` になる。**外すときに座標を返すのは、Box が絶対配置のときだけ**。絶対配置の子には Box の座標を足す（追従は子のものを残す）。フローの子（インスタンスも数える）が 1 つだけで、それがプリミティブなら、その子が Box の配置を持ち、Box の原点に置かれる（Box の padding や揃えのぶんはずれる）。次のときは座標を返さない: フローの子が 2 つ以上のとき、唯一のフローの子がインスタンスのとき、Box がフローのとき。Box の回転は子へ配らない。**包んでいる間に見た目が変わるもの**: row の親で Text（部品のルートが Text のインスタンスも）を包むと、Box の中の Text の高さは中身の高さになり、選択枠の高さが変わる（字面は変わらない。外すと戻る）。長さが `stretch` / `scale` で追従するノードは、包んでいる間に親をリサイズしても長さが追従しない（#989。外しても伸びなかったぶんは戻らない）。包むと新しい Box が、外すと戻った子が選ばれる（押し戻しになるようにするため）。Box 以外（artboard / Text / Ellipse / 部品インスタンス）は外せない。複数選んでいるときは上記「複数選択」 |\n+| グループ化 / グループ解除 | 選んでいるノードを新しい Box の中へ入れる（⌘G / Ctrl+G）／ 選んでいる Box を外して、その子を Box が居た位置へ戻す（Shift+⌘G / Ctrl+Shift+G）。名前は衝突しないよう採番する。**包んでも見た目が変わらないよう、Box はノードの外側の指定を引き継ぐ**。絶対配置のノードなら、配置（`placement` / `x` / `y` / `constraintX` / `constraintY`）を Box へ移してノードをフローに戻す。配置に依らず、ノードが `fill` の軸は Box も `fill` にする（下限・上限も写す）。部品インスタンスは参照先の部品のルート（上書きを当てたもの）の `fill` を見る。ただし親が `layout: free` のときは写さない（検証は書いている props で判定し、インスタンスの中身の `fill` は見ないのでエラーにならないが、写すと Box 自身が `free` の親の子の `fill` として検証エラーになる。03-schema「サイズ指定の原則」「バリデーション仕様」）。フローのノードが親の揃えの `stretch` で交差軸に引き伸ばされているなら（Text と、部品のルートが Text のインスタンスは長さの prop を持たないので、こうなる）、その軸も Box を `fill` にする。それ以外の props は持たず、どちらにも当たらない軸は既定の `hug` になる。**外すときに座標を返すのは、Box が絶対配置のときだけ**。絶対配置の子には Box の座標を足す（追従は子のものを残す）。フローの子（インスタンスも数える）が 1 つだけで、それがプリミティブなら、その子が Box の配置を持ち、Box の原点に置かれる（Box の padding や揃えのぶんはずれる）。次のときは座標を返さない: フローの子が 2 つ以上のとき、唯一のフローの子がインスタンスのとき、Box がフローのとき。Box の回転は子へ配らない。**包んでいる間に見た目が変わるもの**: row の親で Text（部品のルートが Text のインスタンスも）を包むと、Box の中の Text の高さは中身の高さになり、選択枠の高さが変わる（字面は変わらない。外すと戻る）。親が `layout: free` のとき、部品のルートが `fill` のインスタンスは中身の大きさに縮む（外すと戻る）。長さが `stretch` / `scale` で追従するノードは、包んでいる間に親をリサイズしても長さが追従しない（#989。外しても伸びなかったぶんは戻らない）。包むと新しい Box が、外すと戻った子が選ばれる（押し戻しになるようにするため）。Box 以外（artboard / Text / Ellipse / 部品インスタンス）は外せない。複数選んでいるときは上記「複数選択」 |\n | undo / redo | メモリ内管理。適用は通常の編集として自動保存される（05-architecture）。ドキュメントの中身が変わらない編集（値を変えずに欄を離れた確定、掴んだ位置へ戻して離したドラッグなど）は undo 1 回ぶんに数えない（戻すときに飛ばす）。進む先（redo）も捨てない。ただし 1 回の操作の途中で中身が一度でも変わったら、最後に元の中身へ戻っても進む先は捨てる（リサイズを動かしてから掴んだ位置へ戻して離した、プロパティパネルの数値・文言の欄に打ってから消して離れた、ピッカーで別の色を経て元の色へ戻した、など）。離したときにだけ書く操作（ノード・artboard の移動）と、離れたときにだけ確定する欄（tokens の hex・不透明度の欄など）は途中で中身が変わらないので、元へ戻せば進む先は残る |\n | 選択解除 | Esc。外れるのはノードの選択だけで、トークンの選択は残る |\n ",
+          "patchLines": 21,
+          "truncated": false
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 41,
+          "deletions": 42,
+          "patch": "@@ -132,10 +132,11 @@ export type NamedRotation = Readonly<{\n  * 例外は追従（`followPropEdits` / `followedChildren` / `withFollowedChildren` /\n  * `collectAxisResizes` / `fixedLengthsOfNode` / `fixedLengthsOfArtboard`）とグループ化 /\n  * 解除（`groupedBox` / `groupedSiblingsBox` / `collectParentAlignStretchFillModePropEdits` /\n- * `fillSourcePropsOf` / `freedChildren`）で、ここだけは `Placement` / `Constraint` / `Size` /\n- * `ResolvedProps` / `Layout` / `BoxAlign` / `Offset` を組み合わせて編集を作る。子側のドメイン（`Node`）へ\n- * 置けないのは、`Placement` / `Size` / `ResolvedProps` が `Node` から型や `PropEdit` を\n- * import しており、逆向きの import が循環になるため。\n+ * `fillSourcePropsOf` / `freedChildren`）で、ここだけは `Placement` / `Constraint` /\n+ * `Size` / `ResolvedProps` / `Layout` / `BoxAlign` / `Offset` を組み合わせて編集を作る、\n+ * または写し元を選ぶ。子側のドメイン（`Node`）へ置けないのは、`Placement` / `Size` /\n+ * `ResolvedProps` が `Node` から型や `PropEdit` を import しており、逆向きの import が\n+ * 循環になるため。\n  */\n \n /**\n@@ -285,29 +286,27 @@ type GroupMember = Readonly<{\n /**\n  * 包むノードの `fill` を Box へ写すときの写し元の props。\n  *\n- * インスタンスは `collectNodeErrors` の対象外なので `free` の親の下のルートの `fill` は正しいまま\n- * 描かれるが、Box へ写すと `free` の親の子の `fill`（docs/03「サイズ指定の原則」）になる。\n+ * 検証はインスタンスの中身（部品のルートの `fill`）を見ないのでエラーにならないが、Box へ写すと\n+ * Box 自身が `free` の親の子の `fill` として検証エラーになる（docs/03「サイズ指定の原則」）。\n  * プリミティブはその `fill` が書いた時点で同じエラーなので、親に依らず写す。\n  *\n  * @param member 包むノードとそのルート\n  * @param parentProps 包むノードの親に書かれている props（デフォルト解決済みでないもの）\n- * @returns プリミティブなら書かれている props。インスタンスなら、親が子を並べるときは部品の\n- *   ルートの props、親が `free` か参照先の部品が無ければ空\n+ * @returns 包むノードのルート（`GroupMember.root`）の props。インスタンスで親が `free` のときと、\n+ *   参照先の部品が無いインスタンスは空（このノードの分では Box は既定の `hug` のまま）\n  */\n function fillSourcePropsOf(member: GroupMember, parentProps: Props): Props {\n-  if (Node.isPrimitive(member.node)) {\n-    return Node.writtenPropsOf(member.node);\n-  }\n-  const arranges = Option.isSome(\n+  const parentArrangesChildren = Option.isSome(\n     Layout.direction(Layout.fromProps(parentProps)),\n   );\n-  if (!arranges) {\n+  const isInstanceInFreeParent =\n+    !Node.isPrimitive(member.node) && !parentArrangesChildren;\n+\n+  if (isInstanceInFreeParent) {\n     return {};\n   }\n-  return Option.unwrapOr(\n-    Option.map(member.root, (root) => root.props ?? {}),\n-    {},\n-  );\n+\n+  return Option.unwrapOr(Option.map(member.root, Node.propsOf), {});\n }\n \n /**\n@@ -398,10 +397,10 @@ function groupedBox(\n  * 同じ親の兄弟を 2 つ以上まとめて包む Box（docs/06-ui.md「複数選択」のグループ化）。\n  *\n  * 全員フローなら、親に書かれた並べ方（`layout` / `gap` / `align`）と、どれかが `fill` の軸の\n- * モード（部品インスタンスは部品のルートで見る。親が `free` ならインスタンスの分は写さない）\n- * を Box が持ち、兄弟はそのまま子になる（親の揃えの `stretch` に引き伸ばされていた軸は\n- * `collectParentAlignStretchFillModePropEdits`）。全員絶対配置なら、Box は兄弟の各軸の最小の\n- * 座標に絶対配置で置かれ、全員一致の追従だけを持ち、兄弟は Box の座標を引いた位置になる。\n+ * モード（写し元は `fillSourcePropsOf`）を Box が持ち、兄弟はそのまま子になる（親の揃えの\n+ * `stretch` に引き伸ばされていた軸は `collectParentAlignStretchFillModePropEdits`）。全員\n+ * 絶対配置なら、Box は兄弟の各軸の最小の座標に絶対配置で置かれ、全員一致の追従だけを持ち、\n+ * 兄弟は Box の座標を引いた位置になる。\n  *\n  * @param members 包む兄弟とそのルート。元の並び順\n  * @param parentProps 兄弟の親に書かれている props（デフォルト解決済みでないもの）\n@@ -416,16 +415,16 @@ function groupedSiblingsBox(\n ): Result<Node, DesignDocumentEditError> {\n   const nodes = ArrayEx.mapNonEmpty(members, ({ node }) => node);\n \n-  const placedMembers = ArrayEx.toNonEmpty(\n-    nodes.flatMap((member) => {\n-      const placement = absolutePlacementOf(member);\n+  const placedNodes = ArrayEx.toNonEmpty(\n+    nodes.flatMap((node) => {\n+      const placement = absolutePlacementOf(node);\n       return Option.isSome(placement)\n-        ? [{ member, placement: placement.value }]\n+        ? [{ node, placement: placement.value }]\n         : [];\n     }),\n   );\n \n-  if (!Option.isSome(placedMembers)) {\n+  if (!Option.isSome(placedNodes)) {\n     const layoutEdits = [\n       ...Layout.collectWrittenPropEdits(parentProps),\n       ...BoxAlign.collectWrittenPropEdits(parentProps),\n@@ -453,17 +452,17 @@ function groupedSiblingsBox(\n     );\n   }\n \n-  if (placedMembers.value.length !== nodes.length) {\n+  if (placedNodes.value.length !== nodes.length) {\n     return Result.err({ kind: \"mixed-placement\" });\n   }\n \n   const boxOffset = Offset.topLeftOf(\n-    ArrayEx.mapNonEmpty(placedMembers.value, ({ placement }) => placement),\n+    ArrayEx.mapNonEmpty(placedNodes.value, ({ placement }) => placement),\n   );\n   const towardBox = Offset.scale(boxOffset, -1);\n-  const children = placedMembers.value.map(({ member, placement }) =>\n+  const children = placedNodes.value.map(({ node, placement }) =>\n     applyNodePropEdits(\n-      member,\n+      node,\n       Placement.toPropEdits(Placement.moveBy(placement, towardBox)),\n     ),\n   );\n@@ -1238,15 +1237,14 @@ function collectSelfAndAncestorRotations(\n }\n \n /**\n- * ノードの描き方を決める props。プリミティブは自身の props、部品インスタンスは上書きを当てた\n- * 部品の根の値（参照ノード直下のインスタンス自身の値は含まない）。\n+ * ノードの描き方を決める props（`rootNodeOf` のルートの props）。\n  *\n  * @param document 参照先の部品を引くドキュメント\n  * @param node props を読むノード\n  * @returns そのノードの props。参照先の部品が無いインスタンスは `none`\n  */\n function rootPropsOf(document: DesignDocument, node: Node): Option<Props> {\n-  return Option.map(rootNodeOf(document, node), (root) => root.props ?? {});\n+  return Option.map(rootNodeOf(document, node), Node.propsOf);\n }\n \n /**\n@@ -2725,7 +2723,8 @@ export const DesignDocument = {\n    * 元の並び順で子にする。1 つなら元のノードが居た位置そのままで、引き継ぐ指定は\n    * `groupedBox`。同じ親の兄弟が 2 つ以上なら `groupedSiblingsBox`。それ以外の props は\n    * 持たせない（スキーマ既定の `hug` が包んだ中身に合う。親の揃えの `stretch` に引き伸ばされて\n-   * いた軸だけは `fill`）。部品インスタンスは参照先の部品のルート（上書きを当てたもの）で見る。\n+   * いた軸だけは `fill`）。`fill` と `stretch` の判定は、部品インスタンスなら参照先の部品の\n+   * ルート（上書きを当てたもの）で行う。\n    *\n    * @param document 包む先のドキュメント\n    * @param names 包むノードの名前。重複は 1 つとして扱う\n@@ -2751,20 +2750,20 @@ export const DesignDocument = {\n       return parent;\n     }\n \n-    const members = childrenAt(parent.value.children, indices);\n-    if (!Result.isOk(members)) {\n-      return members;\n+    const nodes = childrenAt(parent.value.children, indices);\n+    if (!Result.isOk(nodes)) {\n+      return nodes;\n     }\n \n-    const groupMembers = ArrayEx.mapNonEmpty(members.value, (node) => ({\n+    const members = ArrayEx.mapNonEmpty(nodes.value, (node) => ({\n       node,\n       root: rootNodeOf(document, node),\n     }));\n-    const [sole, ...rest] = groupMembers;\n+    const [sole, ...rest] = members;\n     const box =\n       rest.length === 0\n         ? Result.ok(groupedBox(sole, parent.value.props, boxName))\n-        : groupedSiblingsBox(groupMembers, parent.value.props, boxName);\n+        : groupedSiblingsBox(members, parent.value.props, boxName);\n     if (!Result.isOk(box)) {\n       return box;\n     }\n@@ -2777,8 +2776,8 @@ export const DesignDocument = {\n     const at = SiblingPositions.lastAfterRemoving(siblings.value);\n \n     return updateChildrenOfParent(document, parentName, (tree) => {\n-      const remaining = members.value.reduce(\n-        (current, member) => NodeTree.spliceByName(current, member.name, []),\n+      const remaining = nodes.value.reduce(\n+        (current, node) => NodeTree.spliceByName(current, node.name, []),\n         tree,\n       );\n ",
+          "patchLines": 182,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d4b1c2721f51568823b9ae31fb8de70851e80bb8",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-22T03:26:51Z",
+      "subject": "🧪 [Tests]: #988 並べる親を明示した場合と free の親の下のプリミティブの fill の写しを固定",
+      "body": "- layout: row と書いた親の下で、部品のルートが fill のインスタンスを包むと Box も fill になるテストを追加\n- layout: free の親の下で、fill のプリミティブを包むと Box も fill になる（親に依らず写す）テストを追加\n\n背景:\ntest-reviewer が実装を壊して確かめたところ、次の 2 つの判断を守るテストがなかった。\n- 写す側のインスタンスのテストは、どれも親の layout が既定値だった。そのため「親が子を並べるか」の判定を parentProps.layout === undefined に壊しても、全件が通った\n- fillSourcePropsOf の doc に書いた「プリミティブは親に依らず写す」は、プリミティブにも free の除外を掛けても通った\n\n採用理由:\n既定値と違う答えになる入力（layout を明示した親）を選び、判定式そのものを壊したときに落ちるようにした。プリミティブの現状維持は、計画で却下した案（プリミティブにも除外を掛ける）へ黙って寄るのを防ぐために固定した。\n\n代替案:\n- プリミティブの扱いはテストで固定せず、doc に「守るテストはない」と書く: 却下した案へ寄せる変更が検知できないままになるので採らなかった\n\n影響とトレードオフ:\n実装は変えていない。追加した 2 件は今の実装で通り、指摘されたミューテーションではそれぞれ 1 件だけが落ちることを実測した。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PxNvbZMGWMoUKnaio",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 25,
+          "deletions": 0,
+          "patch": "@@ -157,3 +157,28 @@ test(\"参照先の部品が無いインスタンスを包むと、包めて、Bo\n     Result.ok({}),\n   );\n });\n+\n+test(\"layout: row と書いた親の下で部品のルートの幅が fill のインスタンスを包むと、Box の幅も fill になる\", () => {\n+  const document = setupArtboardDocument({\n+    artboardProps: { layout: \"row\" },\n+    components: { card: { type: \"Box\", props: { widthMode: \"fill\" } } },\n+    children: [{ name: \"hero\", ref: \"card\" }],\n+  });\n+\n+  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({\n+    widthMode: \"fill\",\n+  });\n+});\n+\n+test(\"layout: free の親の下で幅が fill のプリミティブを包むと、Box の幅も fill になる\", () => {\n+  const document = setupArtboardDocument({\n+    artboardProps: { layout: \"free\" },\n+    children: [\n+      { name: \"card\", type: \"Box\", props: { widthMode: \"fill\" }, children: [] },\n+    ],\n+  });\n+\n+  expect(propsOf(group(document, [\"card\"]), \"box\")).toEqual({\n+    widthMode: \"fill\",\n+  });\n+});",
+          "patchLines": 29,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": "docs/06-ui.md",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/__tests__/token-refs.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.declared.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.edge.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.instance-target.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.normal.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/component-binding.violation.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/__tests__/setup.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component-binding/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/__tests__/component.ambiguous-name.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/__tests__/component.asset.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/__tests__/component.circular.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/__tests__/component.invalid-public-prop-name.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/__tests__/component.json.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/__tests__/component.normal.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/__tests__/component.prototype-name.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/__tests__/component.public-prop-edge.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/index.ts",
+      "to": "src/domains/dcmp/node-tree/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/index.ts",
+      "to": "src/utils/RecordEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/component/index.ts",
+      "to": "src/utils/StringEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/artboard-edit-setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/copy-setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.ambiguous-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.ancestors.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.append-position.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-child-rotation.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-edit.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard-reposition.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.box-props.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.child-position.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.children.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.componentize-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.componentize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.constraint.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.copies-after.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detach-edge.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detach-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detach.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detach.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detachable.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.detachable.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.fixed-length.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.format-version.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.found-node-names.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-placement.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+      "to": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+      "to": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+      "to": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.group.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.insert-position.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.lock.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.migration.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.name-uniqueness.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.node-copies.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.outermost-nodes.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.placement.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.prop-edit.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.remove-all-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.remove-all.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.rename-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.rename.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.replace-node.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.reposition-all.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.reposition.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.resize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.rotation.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.same-content.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.sibling-placements.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.sibling-positions.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.template.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-paint.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer-validation-range.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.token-referrer.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.tree-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.tree.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.type.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.usable-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-binding.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-color.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-default.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-domain.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-duplicate-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-error-shape.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-fill.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-identifier.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-missing-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-order.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-override.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-paint.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-placement.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-prototype-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-public-prop-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-ref.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-size-limits.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.validate-unknown.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/design-document.visibility.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/group-setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/__tests__/text-node-setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/artboard/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/axis-length/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/box-align/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/child-placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/child-position/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/component-binding/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/constraint/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/edit-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/template/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/v1/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/document-names/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/expanded-node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/format-version/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/layout/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/locking/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/node-tree/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/node/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/placement/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/primitive-schema/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/reference-context/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/reposition-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/resize-edit/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/resolved-props/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/rotation/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/sibling-placements/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/sibling-positions/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/token/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/visibility/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/unit/angle/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/unit/axis/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/types/NonEmptyArray.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Interop.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Json.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/template/__tests__/template.components.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/template/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/token-referrer/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/v1/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/design-document/validation-error/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/document-names/__tests__/document-names.normal.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/document-names/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.edge.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.nested.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.normal.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/__tests__/expanded-node.root-override.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/expanded-node/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/reference-context/__tests__/reference-context.instance-violation.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/dcmp/reference-context/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-error/__tests__/document-error.validation-location.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-error/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-reload/__tests__/document-reload.invalid.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-reload/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.canvas-click.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.canvas-dig.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.carried-siblings.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.current-artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.lock.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.single-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/__tests__/document-selection.source-name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/document-selection/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/file-validity/__tests__/file-validity.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/node-template/__tests__/node-template.name.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/node-template/__tests__/node-template.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/node-template/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-document/__tests__/opened-document.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/opened-document/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.edit-from.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.instance.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/prop-control.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/prop-control/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/token-selection/__tests__/token-selection.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/token-selection/__tests__/token-selection.referrer.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/domains/session/token-selection/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__stories__/sample-editor-state.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/artboard-fixtures.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/editor-state-reads.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/hook-in-editor.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/primary-color-token.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/__tests__/sample-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-left-pane/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-provider/__tests__/editor-provider.edge.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-provider/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-top-bar/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.artboard-reposition.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.asset-drag.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-dig.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-siblings.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.lock.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.reposition.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.token-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-history/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-history/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.node.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/edit-menu.target.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/edit-menu/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard-reposition.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.artboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.clipboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.componentize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.context-menu-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.detach.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.document-errors.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.frozen.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.group.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.history.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-at.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.insert.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.instance-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.lock.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.move.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-clipboard.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-group.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-remove.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-reorder.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.multi-selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit-continuity.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.prop-edit.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reload.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.remove-edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.remove.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.reorder.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize-continuity.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.resize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.selection.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token-continuity.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/editor-state.token.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/domains/editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/__stories__/sample-assets-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/assets-panel/__tests__/assets-panel.normal.test.tsx",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/assets-panel/__tests__/assets-panel.search.test.tsx",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/assets-panel/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/assets-panel/index.tsx",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/component-list/__tests__/component-list.source.test.tsx",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/component-list/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/component-list/index.tsx",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/components/create-component/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/domains/componentization/__tests__/componentization.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/assets/domains/componentization/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__stories__/sample-canvas-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-turned-frame.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/selection-distance-tree.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.frozen.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.multi-selection.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.text-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.token-dash.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame-list/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/reposition-preview-style/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/distance-pair/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/dragged-node/__tests__/dragged-node.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/dragged-node/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/drop-parent/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-drop/drop-parent/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.flow-snap-targets.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.handles.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.rotation.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/__tests__/node-resize.snap-targets.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/node-resize/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/__tests__/text-edit.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/domains/text-edit/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-text-edit/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/use-document-reload.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__stories__/panel-controls.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.frozen.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.heading.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.instance.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.multi-selection.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/property-panel.shorthand.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/inspector/components/property-panel/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/__stories__/sample-sidebar-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.editing.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.filter.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/artboard-list.type-display.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/artboard-list/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.disclosure.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.filter.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.reorder.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/document-tree.type-display.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/document-tree/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/layers-panel/__tests__/layers-panel.filter.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/__stories__/sample-token-document.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/__tests__/gradient-documents.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/setup.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.edge.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-dashed-nodes/__tests__/token-dashed-nodes.reveal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.hex.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/__tests__/token-editor.title.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-editor/index.stories.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-list/__tests__/token-list.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/__tests__/render.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.edge.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/__tests__/token-used-by.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/components/token-used-by/index.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/__tests__/token-control.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/tokens/domains/token-control/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-artboard-actions/__tests__/use-artboard-actions.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.history.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-actions/__tests__/use-edit-actions.tree-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-edit-shortcuts/__tests__/use-edit-shortcuts.normal.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/setup.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.actions.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.artboard.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.componentize.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.detach.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.group.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.instance-lock.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/__tests__/use-editor-state.rename.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-editor-state/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.prop-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-node-actions/__tests__/use-node-actions.tree-edit.test.tsx",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.format-version.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.parse-error.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.parse.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.roundtrip.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.serialize.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.template.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/__tests__/document-json.type.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/document-json/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/__tests__/document-html.edge.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/__tests__/document-html.normal.test.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/document-html/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/services/node-html/__tests__/node-html.edge.test.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "status": "kept"
+    }
+  ]
+}
