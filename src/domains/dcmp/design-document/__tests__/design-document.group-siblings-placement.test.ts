@@ -6,7 +6,12 @@ import {
 import type { Node } from "@/domains/dcmp/node";
 import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
-import { group, propsOf, setupPanelDocument } from "./group-setup";
+import {
+  group,
+  propsOf,
+  setupArtboardDocument,
+  setupPanelDocument,
+} from "./group-setup";
 
 /*
  * 同じ親の兄弟をまとめて包むときに、Box が親と兄弟から引き継ぐ指定（docs/06-ui.md
@@ -246,4 +251,34 @@ test("部品インスタンスと絶対配置の兄弟が混ざっていると�
   expect(
     DesignDocument.groupIntoBox(document, ["first", "second"], "box"),
   ).toStrictEqual(Result.err({ kind: "mixed-placement" }));
+});
+
+test("兄弟のうち部品のルートの幅が fill のインスタンスがあれば、Box の幅も fill になり、下限・上限は写さない", () => {
+  const document = setupArtboardDocument({
+    components: {
+      card: {
+        type: "Box",
+        props: { widthMode: "fill", minWidth: 120, maxWidth: 320 },
+      },
+    },
+    children: [
+      { name: "first", ref: "card" },
+      { name: "second", type: "Box" },
+    ],
+  });
+
+  expect(propsOf(groupPair(document), "box")).toEqual({ widthMode: "fill" });
+});
+
+test("layout: free の親の中で部品のルートの幅が fill のインスタンスを兄弟と包むと、Box は free だけを持ち fill を持たない", () => {
+  const document = setupArtboardDocument({
+    artboardProps: { layout: "free" },
+    components: { card: { type: "Box", props: { widthMode: "fill" } } },
+    children: [
+      { name: "first", ref: "card" },
+      { name: "second", type: "Box" },
+    ],
+  });
+
+  expect(propsOf(groupPair(document), "box")).toEqual({ layout: "free" });
 });
