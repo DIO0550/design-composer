@@ -58,7 +58,7 @@
 
 ## 着手した Issue は、その回で閉じる
 
-**着手したら自分をアサインし、PR 本文の `Closes #<番号>` で閉じる。** 手動では閉じない（例外は PR を出さない `flow:investigation` のみ）。閉じる Issue を持たない PR は `.github/workflows/pr-closing-issue.yml` が落とす（例外は `harness-record` の記録 PR）。
+**着手した Issue は、PR 本文の `Closes #<番号>` で閉じる。** 手動では閉じない（例外は PR を出さない `flow:investigation` のみ）。閉じる Issue を持たない PR は `.github/workflows/pr-closing-issue.yml` が落とす（例外は `harness-record` の記録 PR）。
 
 - 続きが必要な作業は**新しい Issue を立てて元の Issue からリンクする**（種類は `implementation-flow` フェーズ 1「種類の確定」の手順 4）。閉じた Issue は再オープンしない（判断の変更は閉じたままコメントで残す → `implementation-flow` フェーズ 8）
 - PR を出さずに止まった Issue と、子へ分割した親 Issue は open のままでよい（閉じる起点がないため）
@@ -87,7 +87,7 @@
 
 ## Issue に紐づいて起動したら、セッションの URL を Issue に残す
 
-Issue に紐づく作業を始めたら、**着手した時点で**その Issue へセッションの URL（`https://claude.ai/code/session_<id>`）をコメントし、判断待ちで止まるときも選択肢と根拠に併記する。
+Issue に紐づく作業を始めたら、**着手した時点で**その Issue へセッションの URL（`https://claude.ai/code/session_<id>`）をコメントし、判断待ちで止まるときも選択肢と根拠に併記する。着手の印はこのコメントが担うので、**自分で進める Issue には assign しない**（assign は、それを起点に起動するルーティンへ任せる合図になる → `implementation-flow` フェーズ 1）。
 
 **経緯はそのセッションの中にしか残らない。** Issue だけを見る人や後から引き継ぐセッションが辿れるよう、停止時ではなく着手時に残す（通知は流れるが Issue は残る）。フック化できない理由は [`harness/case-law/process.md`](harness/case-law/process.md) を参照。
 
