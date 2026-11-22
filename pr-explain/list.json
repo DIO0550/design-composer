@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1436,
+      "title": "✨ グループ化で部品インスタンスを包むとき、部品のルートの fill と Text の引き伸ばしを Box へ引き継ぐ"
+    },
+    {
       "pr": 1435,
       "title": "📝 [Doc]: PR #1418 の記録を harness/records に残す"
     },
