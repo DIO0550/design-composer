@@ -1,0 +1,1297 @@
+{
+  "version": 1,
+  "pr": 1440,
+  "sha": "09c264dcdece9f438c6565252b36fb9d8ed4a6cc",
+  "issue": 1439,
+  "overview": {
+    "title": "自分で進める Issue には assign しない(assign はルーティンへ任せる合図)",
+    "lead": "着手の印をセッション URL のコメントだけにし、assign は「assign を起点に起動するルーティンへ任せる合図」として扱うよう、規範・手順・フックの案内文を揃えた。自分で着手した Issue で、ルーティンが同じ Issue を並行して進め出す経路を元から断つ。",
+    "before": [
+      {
+        "text": "`AGENTS.md` が「着手したら自分をアサインし」と求めていたので、自分で進める Issue にも作成と同時に assignee を付けていた",
+        "message": "self-assign"
+      },
+      {
+        "text": "その assign を起点にルーティンが起動し、同じ Issue に 2 つ目のセッションが着手した(#1425 は着手コメントが 13 秒差、#1437 は 4 秒差で、どちらも両方が計画まで進めた)",
+        "message": "routine-comment"
+      },
+      {
+        "text": "`session-url-notice.sh` の案内は「自分以外の assignee」がいないかを確かめさせていたが、どのセッションも同じアカウントで書くため見分けられなかった",
+        "message": "notice"
+      }
+    ],
+    "after": [
+      {
+        "text": "着手の印はセッション URL のコメントだけ。自分で進める Issue には、作成の呼び出しでも後からでも assignee を付けない",
+        "message": "url-comment"
+      },
+      {
+        "text": "assign は「ルーティンへ任せる合図」になり、自分で進める Issue ではルーティンが起動しない",
+        "message": "assigned-event"
+      },
+      {
+        "text": "案内は、他セッションの URL コメントに加えて「(assign から起動したのでなければ)assignee が付いていないか」を確かめさせ、着手時に assignee を付けないよう添える",
+        "message": "notice"
+      },
+      {
+        "text": "assign から起動したルーティンは、自分を起動した assignee を理由に止まらない",
+        "message": "routine-check"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "行を足さない書き換え",
+        "text": "`AGENTS.md` は 61 行と 90 行の中だけで書き換え、常時ロードは 757 / 757 行のまま。字数は 113 字増えている(ラチェットは行数で測る)",
+        "go": {
+          "kind": "file",
+          "path": "AGENTS.md"
+        }
+      },
+      {
+        "title": "assign から起動したかの自己判定",
+        "text": "ルーティンが「自分は assign から起動した」と分かるかは、プロンプトがリポジトリの外にあるため確かめていない(未検証として Issue に残した)",
+        "go": {
+          "kind": "stepChange",
+          "flow": "delegate",
+          "stepChange": 4
+        }
+      },
+      {
+        "title": "着手の印が残らないセッション",
+        "text": "URL を持たないローカルの CLI セッションでは、着手の印が何も残らない。変更前の「URL をコメントする」も満たせなかった点は同じで、この PR では未決のまま",
+        "go": {
+          "kind": "message",
+          "id": "url-comment"
+        }
+      },
+      {
+        "title": "案内文を守る検査がない",
+        "text": "文言を消しても JSON を壊しても pre-push と CI は落ちない(`test-reviewer` の実測)。どちらもこの PR では判定表を置かないと判断した",
+        "go": {
+          "kind": "module",
+          "path": ".claude/hooks/session-url-notice.sh"
+        }
+      },
+      {
+        "title": "消えた自己 assign",
+        "text": "自分で進める Issue に着手する流れから、assign とそれに続くルーティンの起動・着手がまとめて消える",
+        "go": {
+          "kind": "stepChange",
+          "flow": "start-own",
+          "stepChange": 4
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "start-mark",
+      "label": "着手の印",
+      "role": "Issue に誰かが着手したことをセッション URL のコメントだけで示し、assign をルーティンへ任せる合図に分ける",
+      "review": [
+        "`AGENTS.md` 61 行から外した「自分をアサイン」が、他の規範・スキル(`.claude/skills` と `.claude/agents`)に残っていないか",
+        "90 行に足した文が、節の主題(セッション URL を残す)と食い違っていないか",
+        "`implementation-flow` フェーズ 1 の子の箇条が、フェーズ 2 で分けた Issue にも及ぶことが読み取れるか"
+      ]
+    },
+    {
+      "id": "start-check",
+      "label": "着手前の確認",
+      "role": "セッション開始時のフックが、着手前に Issue の URL コメントと assignee を確かめるよう案内する",
+      "review": [
+        "「assign から起動したのでなければ」の条件で、assign から起動したルーティンが自分の assignee で止まらないか",
+        "フックの Why が「着手の印」と「assignee の有無を見る理由」を食い違いなく説明しているか",
+        "`message=` に二重引用符・バックスラッシュ・生の改行が入っていないか(JSON を jq なしで組み立てているため)"
+      ]
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "AI セッションが従う規範・手順と、それを開始時に渡すフック"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "AGENTS.md",
+      "name": "常時ロードの規範",
+      "role": "毎セッション読まれる実装規約の入口",
+      "feature": "start-mark",
+      "change": "61 行から「自分をアサインし」を外し、90 行に「着手の印はこのコメントが担うので、自分で進める Issue には assign しない」を足した",
+      "icon": "store"
+    },
+    {
+      "path": ".claude/skills/implementation-flow/SKILL.md",
+      "name": "実装の手順",
+      "role": "ゴールの確定から PR までの手順",
+      "feature": "start-mark",
+      "change": "フェーズ 1 の「Issue がなければ先に作る」に、作成時も後からも assignee を付けない子の箇条を足した"
+    },
+    {
+      "path": ".claude/hooks/session-url-notice.sh",
+      "name": "セッション URL の提示",
+      "role": "セッション開始時に、URL と着手前に確かめることを AI の文脈へ渡す",
+      "feature": "start-check",
+      "change": "案内の確認対象を「自分以外の assignee」から「(assign から起動したのでなければ)assignee が付いていないか」に変え、「assignee は付けない」を足した。Why を 2 行足した",
+      "icon": "scan"
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "フックの一覧",
+      "role": "フックごとの役割と不発時の扱いの表",
+      "feature": "start-check",
+      "change": "上のフックの行を案内文に合わせた",
+      "graph": false
+    }
+  ],
+  "actors": [
+    {
+      "id": "person",
+      "label": "人",
+      "role": "セッションに Issue を進めるよう頼む。ルーティンへ任せたいときは assign する",
+      "icon": "person"
+    },
+    {
+      "id": "session",
+      "label": "対話セッション",
+      "role": "人と会話しながら Issue を自分で進めるセッション",
+      "icon": "widget"
+    },
+    {
+      "id": "routine",
+      "label": "assign を起点に起動するルーティン",
+      "role": "Issue の assign をきっかけにセッションを始め、その Issue を進める",
+      "icon": "scan"
+    },
+    {
+      "id": "github",
+      "label": "GitHub の Issue",
+      "role": "コメント・assignee・イベントを持ち、assign をルーティンへ知らせる",
+      "icon": "store"
+    }
+  ],
+  "messages": [
+    {
+      "id": "ask",
+      "from": "person",
+      "to": "session",
+      "kind": "cmd",
+      "name": "Issue を進めるよう頼む",
+      "code": "会話での依頼",
+      "via": "call"
+    },
+    {
+      "id": "notice",
+      "from": ".claude/hooks/session-url-notice.sh",
+      "to": "session",
+      "kind": "evt",
+      "name": "着手前の確認を案内する",
+      "code": "session-url-notice.sh → additionalContext",
+      "via": "exec",
+      "payload": "セッション URL と、着手前に確かめること",
+      "status": "changed"
+    },
+    {
+      "id": "create-issue",
+      "from": "session",
+      "to": "github",
+      "kind": "cmd",
+      "name": "Issue を作る",
+      "code": "POST /repos/{owner}/{repo}/issues",
+      "via": "http",
+      "payload": "題・本文・`flow:*` ラベル"
+    },
+    {
+      "id": "self-assign",
+      "from": "session",
+      "to": "github",
+      "kind": "cmd",
+      "name": "自分を assignee にする",
+      "code": "assignees に自分を指定(作成の呼び出しでも後からでも)",
+      "via": "http",
+      "status": "removed"
+    },
+    {
+      "id": "check-issue",
+      "from": "session",
+      "to": "github",
+      "kind": "qry",
+      "name": "既存コメントと assignee を確かめる",
+      "code": "gh api repos/{owner}/{repo}/issues/<番号>/comments ほか",
+      "via": "http",
+      "returns": "他セッションの URL コメントと assignee の有無",
+      "status": "changed"
+    },
+    {
+      "id": "url-comment",
+      "from": "session",
+      "to": "github",
+      "kind": "cmd",
+      "name": "セッション URL をコメントする",
+      "code": "POST /repos/{owner}/{repo}/issues/<番号>/comments",
+      "via": "http",
+      "payload": "`https://claude.ai/code/session_<id>`"
+    },
+    {
+      "id": "delegate-assign",
+      "from": "person",
+      "to": "github",
+      "kind": "cmd",
+      "name": "ルーティンへ任せるために assign する",
+      "code": "Issue に assignee を付ける",
+      "via": "http"
+    },
+    {
+      "id": "assigned-event",
+      "from": "github",
+      "to": "routine",
+      "kind": "evt",
+      "name": "assign を知らせてルーティンを起動する",
+      "code": "assigned イベント(webhook)",
+      "via": "http"
+    },
+    {
+      "id": "routine-notice",
+      "from": ".claude/hooks/session-url-notice.sh",
+      "to": "routine",
+      "kind": "evt",
+      "name": "ルーティンにも着手前の確認を案内する",
+      "code": "session-url-notice.sh → additionalContext",
+      "via": "exec",
+      "payload": "セッション URL と、着手前に確かめること",
+      "status": "changed"
+    },
+    {
+      "id": "routine-check",
+      "from": "routine",
+      "to": "github",
+      "kind": "qry",
+      "name": "ルーティンが既存コメントと assignee を確かめる",
+      "code": "gh api repos/{owner}/{repo}/issues/<番号>/comments ほか",
+      "via": "http",
+      "returns": "他セッションの URL コメントと assignee の有無",
+      "status": "changed"
+    },
+    {
+      "id": "routine-comment",
+      "from": "routine",
+      "to": "github",
+      "kind": "cmd",
+      "name": "ルーティンが着手コメントを書く",
+      "code": "POST /repos/{owner}/{repo}/issues/<番号>/comments",
+      "via": "http",
+      "payload": "ルーティンのセッション URL"
+    }
+  ],
+  "flows": [
+    {
+      "id": "start-own",
+      "label": "自分で進める Issue に着手する",
+      "gist": "assign しなくなったので、ルーティンの起動と 2 つ目の着手がまとめて消えた",
+      "text": "対話セッションが人に頼まれて Issue を作り、自分で進める。#1425 と #1437 はこの流れで並行が起きた。",
+      "beforeSteps": [
+        "ask",
+        "notice",
+        "create-issue",
+        "self-assign",
+        "check-issue",
+        "url-comment",
+        "assigned-event",
+        "routine-comment"
+      ],
+      "steps": [
+        "ask",
+        "notice",
+        "create-issue",
+        "check-issue",
+        "url-comment"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "「自分以外の assignee」がいないか確かめるよう案内していた",
+          "afterText": "「(assign から起動したのでなければ)assignee が付いていないか」を確かめ、着手時に assignee を付けないよう案内する",
+          "change": "同じアカウントで書く assignee では誰が着手したかを見分けられないので、有無だけを見る"
+        },
+        {
+          "beforeStep": 3,
+          "afterStep": 3
+        },
+        {
+          "status": "removed",
+          "beforeStep": 4,
+          "beforeText": "`AGENTS.md` の「着手したら自分をアサインし」に従い、作成と同時に assignee を付けていた",
+          "change": "自分で進める Issue には、作成の呼び出しでも後からでも assignee を付けない"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 5,
+          "afterStep": 4,
+          "beforeText": "自分以外の assignee を探していたが、自分で付けた assignee と見分けがつかなかった",
+          "afterText": "assignee が付いていれば、ルーティンへ任された Issue として着手を止める",
+          "change": "assignee を着手の印として読まなくなった"
+        },
+        {
+          "beforeStep": 6,
+          "afterStep": 5,
+          "afterText": "このコメントだけが着手の印になる"
+        },
+        {
+          "status": "removed",
+          "beforeStep": 7,
+          "beforeText": "assign を起点にルーティンが起動していた(#1425 では assign の 20 秒後にルーティンの着手コメントが付いた)",
+          "change": "assign しないので、ルーティンは起動しない",
+          "beforeCost": "heavy"
+        },
+        {
+          "status": "removed",
+          "beforeStep": 8,
+          "beforeText": "#1425 は 13 秒差、#1437 は 4 秒差で着手コメントが並び、両方が計画まで進めた",
+          "change": "2 つ目のセッションが生まれない",
+          "beforeCost": "heavy"
+        }
+      ],
+      "measure": {
+        "what": "1 つの Issue を進めるセッション",
+        "before": "2 つ(#1425・#1437)",
+        "after": "1 つ(#1439 は assignee なしで作成し、timeline に assign もルーティンの起動もない)"
+      }
+    },
+    {
+      "id": "delegate",
+      "label": "ルーティンへ任せる",
+      "gist": "assign が任せる合図だけになり、起動したルーティンは自分を起動した assignee で止まらない",
+      "text": "人が Issue に assign し、それを起点にルーティンが起動して進める。",
+      "beforeSteps": [
+        "delegate-assign",
+        "assigned-event",
+        "routine-notice",
+        "routine-check",
+        "routine-comment"
+      ],
+      "steps": [
+        "delegate-assign",
+        "assigned-event",
+        "routine-notice",
+        "routine-check",
+        "routine-comment"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "assign は着手の印とルーティンの起動合図の 2 つの意味を持っていた",
+          "afterText": "assign はルーティンへ任せる合図だけを意味する"
+        },
+        {
+          "beforeStep": 2,
+          "afterStep": 2
+        },
+        {
+          "status": "changed",
+          "beforeStep": 3,
+          "afterStep": 3,
+          "beforeText": "「自分以外の assignee」がいないか確かめるよう案内していた",
+          "afterText": "自分が assign から起動したなら assignee は止まる理由にしないよう案内する",
+          "change": "案内に「(自分が assign から起動したのでなければ)」の条件が付いた"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 4,
+          "afterStep": 4,
+          "beforeText": "assignee が自分か他者かで判断させていたが、同じアカウントなので見分けられなかった",
+          "afterText": "他セッションの URL コメントだけで止まるかを決める(#1438 ではここで止まった)",
+          "change": "assignee の有無を自分の起動の合図として読む"
+        },
+        {
+          "beforeStep": 5,
+          "afterStep": 5
+        }
+      ]
+    }
+  ],
+  "calls": {
+    "gist": "この PR は規範・手順の文書とフックの案内文だけを変え、関数やコマンドの呼び出しは変えていない",
+    "boxes": [],
+    "edges": []
+  },
+  "commitStories": [
+    {
+      "sha": "1b4625589102084a46ed0a4f90d695bb008402a7",
+      "phase": "core",
+      "role": "自分で進める Issue には assign しないと規範・手順・フックの案内に書く",
+      "why": "`AGENTS.md` 61 行の「着手したら自分をアサインし」が、assign を起点に起動するルーティンを呼び、ハーネス自身が期待する「1 Issue 1 セッション」を壊していた。assignee が「着手の印」と「ルーティンの起動合図」の 2 つの意味を持っていた二重化を、印を URL コメントへ一本化して解く。",
+      "flows": [
+        "start-own",
+        "delegate"
+      ],
+      "review": [
+        "61 行から外したのは「自分をアサインし」だけで、閉じ方の規範はそのまま残っているか",
+        "90 行に足した文が 1 行の中に収まり、常時ロードの行数が 757 のままか",
+        "フックの案内文に二重引用符・バックスラッシュ・生の改行が入っておらず、JSON として読めるか",
+        "README の 25 行が案内文の確認対象と同じことを言っているか"
+      ],
+      "before": [
+        {
+          "text": "着手したら自分を assignee にする",
+          "message": "self-assign"
+        },
+        {
+          "text": "案内は「自分以外の assignee」がいないかを確かめさせる",
+          "message": "notice"
+        }
+      ],
+      "after": [
+        {
+          "text": "着手の印は URL コメントだけ。自分で進める Issue には assign しない",
+          "message": "url-comment"
+        },
+        {
+          "text": "案内は「(assign から起動したのでなければ)assignee が付いていないか」を確かめさせる",
+          "message": "notice"
+        }
+      ],
+      "notes": [
+        {
+          "path": "AGENTS.md",
+          "start": 61,
+          "end": 61,
+          "text": "この節の主題は閉じ方なので、「自分をアサインし」を外して閉じ方だけを残した"
+        },
+        {
+          "path": "AGENTS.md",
+          "start": 90,
+          "end": 90,
+          "text": "「着手の印」はこの節の主題で、フックと README もこの節名を参照している。同じ行の末尾に足したので行数は変わらない"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 65,
+          "end": 65,
+          "text": "作成時の assign だけでなく、後からの assign とフェーズ 2 で分けた Issue も対象にした"
+        },
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "start": 67,
+          "end": 68,
+          "text": "assignee を着手の印として読まない理由。次のコミットで言葉と事例の書き方を直した"
+        },
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "start": 69,
+          "end": 69,
+          "text": "「自分以外の assignee」の確認をやめ、「(assign から起動したのでなければ)assignee が付いていないか」と「assignee は付けない」を足した"
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 25,
+          "end": 25,
+          "text": "フックの一覧の説明を、案内文の確認対象に合わせた"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "AGENTS.md",
+          "start": 61,
+          "end": 61,
+          "feature": "start-mark",
+          "text": "閉じ方の規範から自己 assign を外した"
+        },
+        {
+          "path": "AGENTS.md",
+          "start": 90,
+          "end": 90,
+          "feature": "start-mark",
+          "text": "着手の印を URL コメントに一本化し、assign しないと書いた"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 65,
+          "end": 65,
+          "feature": "start-mark",
+          "text": "Issue を作るときと分けたときに assignee を付けない手順を足した"
+        },
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "start": 67,
+          "end": 69,
+          "feature": "start-check",
+          "text": "案内の確認対象を assignee の有無に変え、assign しないよう添えた"
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 25,
+          "end": 25,
+          "feature": "start-check",
+          "text": "一覧の説明を案内文に合わせた"
+        }
+      ]
+    },
+    {
+      "sha": "09c264dcdece9f438c6565252b36fb9d8ed4a6cc",
+      "phase": "revise",
+      "role": "フックの Why を「着手の印」に揃え、assignee の有無を見る理由を書く",
+      "why": "実装の検証(naming 1・comment 1・comment 2)で、Why が「着手者の印」と `AGENTS.md` の「着手の印」とで言葉が揺れていること、「assignee が誰かでは見分けられない」と書きながら有無で止める理由がないこと、同じアカウントで書くことを一般の事実のように書いていることを指摘された。",
+      "flows": [
+        "start-own",
+        "delegate"
+      ],
+      "review": [
+        "Why の 2 行が、案内文の「assignee が付いていないか」と同じことを説明しているか",
+        "#1425 の事例が、一般の事実ではなく起きたこととして書かれているか"
+      ],
+      "before": [
+        {
+          "text": "Why は「着手者の印」と書き、assignee の有無を見る理由がなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "Why は「着手の印」に揃い、有無だけをルーティンへ任せた合図として見ると書く",
+          "message": "notice"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "start": 67,
+          "end": 67,
+          "text": "同じアカウントで書いたことを #1425 の事例として書いた"
+        },
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "start": 68,
+          "end": 68,
+          "text": "assignee の有無を見る理由(ルーティンへ任せた合図)を足した"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "start": 67,
+          "end": 68,
+          "feature": "start-check",
+          "text": "Why の言葉を揃え、有無を見る理由を書いた"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "notice-cases",
+      "label": "セッション URL の提示の判定表(置いていない)",
+      "file": ".claude/hooks/lib/session-url-notice-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "notice-json",
+      "suite": "notice-cases",
+      "name": "セッション URL があるとき、フックの出力は JSON として読め additionalContext に案内が入る",
+      "techniques": [
+        "regression"
+      ],
+      "why": "案内文に二重引用符などが紛れると JSON が壊れ、案内がセッションに渡らない。`test-reviewer` が `message=` に `\"` を入れて壊しても、pre-push も CI も落ちなかった。README は不発でも「情報が 1 つ欠けるだけでガードは破れない」としており、穴も差分より前からあるため、この PR では置かないと判断した",
+      "given": "`CLAUDE_CODE_REMOTE_SESSION_ID=cse_abc123`",
+      "when": "標準入力に `{}` を渡してフックを走らせる",
+      "then": "`jq -e -r .hookSpecificOutput.additionalContext` が終了コード 0 で案内を返す(この PR では手で確かめた)",
+      "todo": true,
+      "targets": [
+        ".claude/hooks/session-url-notice.sh"
+      ],
+      "covers": [
+        "notice",
+        "routine-notice"
+      ]
+    },
+    {
+      "id": "notice-wording",
+      "suite": "notice-cases",
+      "name": "案内は assign から起動したのでなければ assignee を確かめ、着手時に assignee を付けないよう求める",
+      "techniques": [
+        "regression"
+      ],
+      "why": "`test-reviewer` が `message=` から「assignee は付けない」を消して旧文に戻しても、pre-push(34 件)も CI だけで走る判定表も通った。文言の字面を固定する判定表は振る舞いのテストにならないため、計画の段階で置かないと決めた",
+      "given": "セッション URL のあるセッション",
+      "when": "フックの案内(`additionalContext`)を `grep -c` で数える",
+      "then": "「assignee は付けない」1・「assign から起動したのでなければ」1・「自分以外の assignee」0(修正前は 0・0・1。この PR では手で比べた)",
+      "todo": true,
+      "values": {
+        "columns": [
+          "数える文",
+          "修正前",
+          "修正後"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "assignee は付けない",
+              "0",
+              "1"
+            ]
+          },
+          {
+            "cells": [
+              "assign から起動したのでなければ",
+              "0",
+              "1"
+            ]
+          },
+          {
+            "cells": [
+              "自分以外の assignee",
+              "1",
+              "0"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        ".claude/hooks/session-url-notice.sh"
+      ],
+      "covers": [
+        "notice",
+        "routine-notice"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "自分で着手した Issue を、もう 1 つのセッションが並行して進め出さなくなった",
+    "lead": "このリポジトリで作業するセッションと人から見て変わったのは、着手したことの示し方と、着手する前に確かめることです。",
+    "changed": {
+      "before": [
+        {
+          "text": "自分で進める Issue にも、作るときか着手したときに自分を担当者(assignee)として付けていた",
+          "message": "self-assign"
+        },
+        {
+          "text": "担当者が付くと、それを合図に起動するルーティンが同じ Issue に着手し、2 つのセッションが並行して計画まで進めることがあった",
+          "message": "routine-comment"
+        },
+        {
+          "text": "着手前の案内は「自分以外の担当者がいないか」を確かめさせていたが、どのセッションも同じアカウントで書くため見分けられなかった",
+          "message": "notice"
+        }
+      ],
+      "after": [
+        {
+          "text": "自分で進める Issue には担当者を付けない。着手したことはセッションの URL を書いたコメントだけで示す",
+          "message": "url-comment"
+        },
+        {
+          "text": "担当者を付けることは「ルーティンへ任せる」合図になり、自分で進める Issue ではルーティンが起動しない",
+          "message": "assigned-event"
+        },
+        {
+          "text": "着手前の案内は、他のセッションの URL コメントがないかに加えて、担当者を付けられて起動したのでなければ担当者が付いていないかを確かめさせ、着手時に担当者を付けないよう添える",
+          "message": "notice"
+        }
+      ],
+      "text": "担当者が付いていることは、誰かが着手した印ではなく、ルーティンへ任せた印として読めるようになります。",
+      "specs": [
+        {
+          "path": "AGENTS.md",
+          "locator": "「着手した Issue は、その回で閉じる」の太字の文",
+          "text": "「着手したら自分をアサインし」を外し、閉じ方だけを残した",
+          "shas": [
+            "1b4625589102084a46ed0a4f90d695bb008402a7"
+          ]
+        },
+        {
+          "path": "AGENTS.md",
+          "locator": "「Issue に紐づいて起動したら、セッションの URL を Issue に残す」の本文",
+          "text": "着手の印は URL のコメントが担うので、自分で進める Issue には担当者を付けないと足した",
+          "shas": [
+            "1b4625589102084a46ed0a4f90d695bb008402a7"
+          ]
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "locator": "フェーズ 1「対応する Issue がなければ先に作る」の子の箇条",
+          "text": "作るときも後からも担当者を付けない。分けた Issue のうち続けて進めるものも同じ、と足した",
+          "shas": [
+            "1b4625589102084a46ed0a4f90d695bb008402a7"
+          ]
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "locator": "フックの表の「セッション URL の提示」の行",
+          "text": "開始時の案内が確かめさせるものを、新しい案内文に合わせた",
+          "shas": [
+            "1b4625589102084a46ed0a4f90d695bb008402a7"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1425,
+          "text": "作成と同時に担当者を付けたところ、ルーティンも着手し、着手コメントが 13 秒差で並んで両方が計画まで進めた"
+        },
+        {
+          "issue": 1437,
+          "text": "着手コメントが 4 秒差で重なり、両方が計画を投稿した"
+        },
+        {
+          "issue": 1438,
+          "text": "ルーティンが先の URL コメントを見て、実装に入らず止まった(確認が働いた例)"
+        }
+      ],
+      "primers": [
+        "assign-routine",
+        "session-start-hook",
+        "start-mark"
+      ]
+    },
+    "tables": [
+      {
+        "label": "着手前に Issue を確かめたときの結果",
+        "gist": "止まるかを決めるのは、Issue に何が付いているかと、セッションが何をきっかけに起動したかの 2 つ。",
+        "text": "上の段は変わらず止まることを、中の段は担当者の読み方が変わったことを示しています。",
+        "rowHeads": [
+          {
+            "id": "url",
+            "label": "他のセッションの URL コメントがある"
+          },
+          {
+            "id": "assignee",
+            "label": "URL コメントはなく、担当者だけが付いている"
+          },
+          {
+            "id": "none",
+            "label": "どちらもない"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "session",
+            "label": "人に頼まれて起動したセッション"
+          },
+          {
+            "id": "routine",
+            "label": "担当者が付いたのをきっかけに起動したルーティン"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "url",
+            "columnHead": "session",
+            "result": "着手を止め、並行になっている旨と選択肢を Issue に書く"
+          },
+          {
+            "rowHead": "url",
+            "columnHead": "routine",
+            "result": "着手を止め、並行になっている旨と選択肢を Issue に書く",
+            "note": "#1438 ではここで止まった"
+          },
+          {
+            "rowHead": "assignee",
+            "columnHead": "session",
+            "result": "ルーティンへ任された Issue として着手を止める",
+            "was": "担当者が自分と同じアカウントなので、他者の着手と見分けられなかった",
+            "tests": [
+              "notice-wording"
+            ]
+          },
+          {
+            "rowHead": "assignee",
+            "columnHead": "routine",
+            "result": "自分を起動した担当者なので、止まらずに着手する",
+            "was": "「自分以外の担当者か」で判断させていたが、同じアカウントなので見分けられなかった",
+            "tests": [
+              "notice-wording"
+            ]
+          },
+          {
+            "rowHead": "none",
+            "columnHead": "session",
+            "result": "着手し、URL をコメントする。担当者は付けない",
+            "was": "着手し、URL をコメントして、自分を担当者に付ける",
+            "tests": [
+              "notice-wording"
+            ]
+          },
+          {
+            "rowHead": "none",
+            "columnHead": "routine",
+            "result": "起動しない(きっかけの担当者がいない)",
+            "situation": "担当者が付いていないので、ルーティンを起動するきっかけそのものがない"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "ルーティンへ任せたいとき",
+        "before": [
+          {
+            "text": "担当者を付けることは、着手した印とルーティンを起動する合図の 2 つを兼ねていた"
+          }
+        ],
+        "after": [
+          {
+            "text": "担当者を付けることは、ルーティンへ任せる合図だけを意味する",
+            "message": "delegate-assign"
+          }
+        ],
+        "text": "セッションが自分の判断でルーティンへ任せるために担当者を付けてよいかは、規範に書いていません(変更前と同じく書かれていない状態のままです)。",
+        "tests": [
+          "notice-wording"
+        ],
+        "primers": [
+          "assign-routine"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "着手した時点でセッションの URL を Issue にコメントすることは変わらない"
+      },
+      {
+        "text": "同じ Issue を閉じる PR が 2 本開くと、重複として報告されることは変わらない"
+      },
+      {
+        "text": "すでに担当者が付いたまま開いている Issue の担当者は外していない(起動のきっかけは発火済みで、外しても何も防げないため)"
+      },
+      {
+        "text": "開始時の案内が壊れた形で出ても、手元の検査も CI も落ちない(この変更では守る範囲に入れていない)",
+        "tests": [
+          "notice-json"
+        ]
+      },
+      {
+        "text": "案内の文言を消しても、手元の検査も CI も落ちない(文言を固定する検査は置かないと判断した)",
+        "tests": [
+          "notice-wording"
+        ]
+      },
+      {
+        "text": "毎回読まれる規約の行数は 757 行のまま"
+      },
+      {
+        "text": "URL を持たない手元のコマンドラインのセッションでは、着手の印が残らないことも変わらない"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "AGENTS.md",
+        "locator": "「着手した Issue は、その回で閉じる」の箇条(続きの Issue と open のまま残す Issue)",
+        "text": "閉じ方と、続きの作業・止まった Issue の扱いは変えていない"
+      },
+      {
+        "path": ".claude/hooks/README.md",
+        "locator": "不発時の扱いの表の「セッション URL の提示」の行",
+        "text": "不発でも情報が 1 つ欠けるだけでガードは破れない、という扱いは変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "session-start-hook",
+      "category": "Claude Code · フック",
+      "label": "`SessionStart` フックと `additionalContext`",
+      "gist": "セッションが始まるときに決まったスクリプトを走らせ、その出力の文章を AI の[[文脈|context]]へ足すための仕組み。Claude Code の[[フック|hook]]のうち、開始時に 1 回だけ発火する種類で、規約を「読まれたときだけ効く文書」から「必ず渡る案内」へ上げるのに使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`.claude/settings.json` の `SessionStart` に登録したコマンドが、セッション開始時に走る。コマンドが標準出力に [[JSON|json]] を書き、その `hookSpecificOutput.additionalContext` に入れた文字列が、そのまま AI へ渡る文脈に加わる。このリポジトリでは `session-url-notice.sh` がこの形で、セッション URL と着手前に確かめることを渡している。"
+        },
+        {
+          "kind": "declaration",
+          "code": "{ \"hookSpecificOutput\": { \"hookEventName\": \"SessionStart\", \"additionalContext\": \"<AI へ渡す文>\" } }"
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "hookEventName",
+              "type": "string",
+              "text": "どの種類のフックの出力かを示す名前。開始時のフックでは `SessionStart` と書く"
+            },
+            {
+              "name": "additionalContext",
+              "type": "string",
+              "text": "AI の[[文脈|context]]へ足す文。[[JSON|json]] の文字列なので、二重引用符や改行はエスケープして入れる",
+              "note": "改行は \\n"
+            }
+          ]
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/session-url-notice.sh",
+            "start": 69,
+            "end": 78,
+            "emphasis": [
+              {
+                "start": 75,
+                "end": 75
+              }
+            ],
+            "text": "message=\"このセッションの URL は ${session_url}。${target}着手する前に、その Issue の既存コメントと assignees を見て、他のセッションの URL コメントが無いか、また(自分が assign から起動したのでなければ)assignee が付いていないか確認すること(assign はそれを起点に起動するルーティンへ任せる合図)。あれば着手を止め、並行実装になっている旨と選択肢を Issue にコメントする。無ければ、着手した時点でその Issue へこの URL をコメントし、assignee は付けないこと(AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」)。\\\\n同じ URL のコメントが既にあれば足さない。判断待ちで止まるときは、選択肢と根拠を書いたコメントに改めて併記する。\"\n\ncat <<JSON\n{\n  \"hookSpecificOutput\": {\n    \"hookEventName\": \"SessionStart\",\n    \"additionalContext\": \"${message}\"\n  }\n}\nJSON"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "開始時のフックが失敗しても、セッションは止まらず何も知らせない([[フェイルオープン|fail-open]])。案内が渡らなかったことに誰も気づけないので、このフックは jq などの外部コマンドに頼らず、[[ヒアドキュメント|heredoc]]で JSON を組み立てている。"
+        },
+        {
+          "kind": "memo",
+          "text": "フックが渡すのは案内の文だけで、Issue を読んだりコメントしたりはしない。確かめる作業そのものは、案内を読んだ AI が自分で GitHub に問い合わせて行う。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "lineRange": {
+            "start": 69,
+            "end": 78
+          },
+          "text": "`message` に案内文を組み、`additionalContext` として出力する",
+          "shas": [
+            "1b4625589102084a46ed0a4f90d695bb008402a7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "pre-start-check"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "assign-routine",
+      "category": "GitHub · Issue",
+      "label": "assign と、assign を起点に起動するルーティン",
+      "gist": "GitHub の Issue には担当者([[assignee|assignee]])を付けられ、付けると `assigned` という[[イベント|event]]が起きる。Issue を起点に起動するルーティンは、このイベントを [[webhook|webhook]] で受け取ってセッションを始め、その Issue を進める。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "担当者を付ける経路は、Issue を作る呼び出しの `assignees`、後からの追加、画面での操作など複数ある。どの経路でも同じ `assigned` [[イベント|event]]になるので、ルーティンの側からは「誰がどんなつもりで付けたか」は区別できない。"
+        },
+        {
+          "kind": "caution",
+          "text": "このリポジトリのセッションはどれも同じ GitHub アカウントで書く。#1425 では両方のセッションの [[assignee|assignee]] もコメントの書き手も同じアカウントで、担当者の名前からはどのセッションが着手したかを見分けられなかった。"
+        },
+        {
+          "kind": "memo",
+          "text": "ルーティンの起動条件とプロンプトはリポジトリの外にあり、このリポジトリの変更では直せない。そのため、ルーティンを呼ばないよう assign 自体をやめる側で手当てした。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "AGENTS.md",
+          "lineRange": {
+            "start": 90,
+            "end": 90
+          },
+          "text": "assign を「それを起点に起動するルーティンへ任せる合図」と書いた",
+          "shas": [
+            "1b4625589102084a46ed0a4f90d695bb008402a7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "start-mark"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "start-mark",
+      "category": "harness · 規範",
+      "label": "着手の印",
+      "gist": "Issue に誰かが着手したことを示す印。この PR で、セッション URL のコメントだけに一本化し、[[assignee|assignee]] は印から外した。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "変更前は assignee が「着手の印」と「ルーティンの起動合図」の 2 つの意味を持っていた。自分で着手した印のつもりで付けた assignee が、そのままルーティンを起動していた。"
+        },
+        {
+          "kind": "rule",
+          "text": "自分で進める Issue には、作成の呼び出しでも後からでも assign しない。着手した時点で URL をコメントすれば印は足りる。"
+        },
+        {
+          "kind": "spec",
+          "text": "`AGENTS.md`「Issue に紐づいて起動したら、セッションの URL を Issue に残す」と、`implementation-flow` フェーズ 1。"
+        },
+        {
+          "kind": "history",
+          "text": "以前は `AGENTS.md`「着手した Issue は、その回で閉じる」が「着手したら自分をアサインし」と求めていた。#1425・#1437 で、この assign を起点にルーティンが並行して着手した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "AGENTS.md",
+          "lineRange": {
+            "start": 90,
+            "end": 90
+          },
+          "text": "着手の印は URL コメントが担い、自分で進める Issue には assign しない",
+          "shas": [
+            "1b4625589102084a46ed0a4f90d695bb008402a7"
+          ]
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "lineRange": {
+            "start": 65,
+            "end": 65
+          },
+          "text": "Issue を作るとき・分けたときに assignee を付けない",
+          "shas": [
+            "1b4625589102084a46ed0a4f90d695bb008402a7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "assign-routine",
+        "pre-start-check"
+      ],
+      "flows": [
+        "start-own"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "pre-start-check",
+      "category": "harness · フック",
+      "label": "着手前の確認",
+      "gist": "開始時の[[フック|hook]]が案内する、着手前に Issue の既存コメントと assignee を見る手順。他のセッションの URL コメントか、(assign から起動したのでなければ)assignee があれば着手を止める。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "確認そのものは GitHub への問い合わせが要るので、フックではなく案内を読んだ AI が行う。フックは外部コマンドに頼らないよう、案内の文を渡すだけにしている。"
+        },
+        {
+          "kind": "rule",
+          "text": "assignee は誰かを識別するためには読まない。有無だけを、assign を起点に起動するルーティンへ任せた合図として見る。"
+        },
+        {
+          "kind": "caution",
+          "text": "確認は着手前の 1 回きり。着手コメントが数秒差で重なると、どちらも相手のコメントを見ないまま素通りする(#1437 は 4 秒差)。assign をやめることが、この経路を元から断つ手当てになる。"
+        },
+        {
+          "kind": "history",
+          "text": "以前の案内は「自分以外の assignee」がいないかを確かめさせていた。同じアカウントで書くため、この確認は働かなかった。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "lineRange": {
+            "start": 67,
+            "end": 69
+          },
+          "text": "Why の 2 行と、確認対象を書き換えた案内文",
+          "shas": [
+            "1b4625589102084a46ed0a4f90d695bb008402a7",
+            "09c264dcdece9f438c6565252b36fb9d8ed4a6cc"
+          ]
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "lineRange": {
+            "start": 25,
+            "end": 25
+          },
+          "text": "フックの一覧の説明",
+          "shas": [
+            "1b4625589102084a46ed0a4f90d695bb008402a7"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "session-start-hook",
+        "start-mark"
+      ],
+      "tests": [
+        "notice-json",
+        "notice-wording"
+      ],
+      "flows": [
+        "start-own",
+        "delegate"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "hook",
+      "label": "フック",
+      "text": "Claude Code が決まった時点(セッション開始・ツール実行の前後など)で自動的に走らせるスクリプト。`.claude/settings.json` に登録する。"
+    },
+    {
+      "id": "context",
+      "label": "文脈",
+      "text": "AI がその会話で読んでいる情報の全体。フックの出力を足すと、AI は最初からそれを読んだ状態で動く。"
+    },
+    {
+      "id": "json",
+      "label": "JSON",
+      "text": "データを文字で書き表す形式。`{…}` のオブジェクト・`[…]` の配列・文字列などを組み合わせて書く。"
+    },
+    {
+      "id": "fail-open",
+      "label": "フェイルオープン",
+      "text": "仕組みが失敗したとき、止めずにそのまま通す振る舞い。失敗に気づきにくい。"
+    },
+    {
+      "id": "heredoc",
+      "label": "ヒアドキュメント",
+      "text": "シェルで `cat <<JSON` から `JSON` の行までを、そのまま標準入力として渡す書き方。中の `${…}` は値に置き換わる。"
+    },
+    {
+      "id": "assignee",
+      "label": "assignee",
+      "text": "GitHub の Issue の担当者。Issue を作るときにも後からでも付けられる。"
+    },
+    {
+      "id": "event",
+      "label": "イベント",
+      "text": "GitHub で起きた出来事(Issue の作成・担当者の付与・コメントなど)の記録。Issue の timeline で見られる。"
+    },
+    {
+      "id": "webhook",
+      "label": "webhook",
+      "text": "出来事が起きたときに、GitHub が登録先へ HTTP で知らせる仕組み。受け取った側はそれをきっかけに処理を始められる。"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "mark",
+      "kind": "choice",
+      "title": "着手の印",
+      "prompt": "変更後、自分で進める Issue に着手したことを示すものはどれですか。",
+      "options": [
+        "自分を assignee に付ける",
+        "セッション URL を Issue にコメントする",
+        "`flow:*` ラベルを付ける",
+        "PR 本文に `Closes #<番号>` を書く"
+      ],
+      "answer": 2,
+      "why": "着手の印はセッション URL のコメントだけになった。assignee は印から外れ、「assign を起点に起動するルーティンへ任せる合図」になった。ラベルは作業の種類、`Closes` は閉じ方の決まり。",
+      "go": [
+        {
+          "kind": "message",
+          "id": "url-comment"
+        }
+      ]
+    },
+    {
+      "id": "create-assign",
+      "kind": "yesno",
+      "title": "作成時の assign",
+      "prompt": "変更後も、自分で進める Issue なら、作成の呼び出しで自分を assignee に指定してよい。",
+      "holds": false,
+      "why": "作成の呼び出しでも後からでも、自分で進める Issue には assignee を付けない(`implementation-flow` フェーズ 1)。どの経路で付けても同じ assigned イベントになり、ルーティンが起動する。",
+      "go": [
+        {
+          "kind": "stepChange",
+          "flow": "start-own",
+          "stepChange": 4
+        }
+      ]
+    },
+    {
+      "id": "same-account",
+      "kind": "choice",
+      "title": "見分けられなかった理由",
+      "prompt": "変更前の案内が求めた「自分以外の assignee がいないか」の確認が、並行を止められなかった理由はどれですか。",
+      "options": [
+        "どのセッションも同じアカウントで書くので、assignee から誰が着手したか分からない",
+        "フックが GitHub に問い合わせられない",
+        "assignee は Issue を作った後にしか付けられない",
+        "ルーティンでは開始時のフックが走らない"
+      ],
+      "answer": 1,
+      "why": "#1425 では両方のセッションの assignee もコメントの書き手も同じアカウントだった。「自分以外」を名前で判定する確認は、そもそも成り立たなかった。",
+      "go": [
+        {
+          "kind": "message",
+          "id": "check-issue"
+        },
+        {
+          "kind": "stepChange",
+          "flow": "start-own",
+          "stepChange": 5
+        }
+      ]
+    },
+    {
+      "id": "order-1425",
+      "kind": "order",
+      "title": "並行が起きた順",
+      "prompt": "#1425 で並行が起きたときの出来事を、起きた順に並べてください。",
+      "items": [
+        "対話セッションが Issue を作り、同時に assignee を付ける",
+        "対話セッションが URL をコメントする",
+        "ルーティンが着手コメントを書く",
+        "両方のセッションが計画を投稿する"
+      ],
+      "why": "14:55:36 に作成と assign、14:55:43 に対話セッションの URL コメント、14:55:56 にルーティンの着手コメント、15:03 と 15:06 に両方の計画が並んだ。",
+      "go": [
+        {
+          "kind": "flow",
+          "id": "start-own"
+        }
+      ]
+    },
+    {
+      "id": "routine-own-assignee",
+      "kind": "yesno",
+      "title": "ルーティンと自分の assignee",
+      "prompt": "変更後、assign から起動したルーティンは、Issue に assignee が付いていることを理由に着手を止める。",
+      "holds": false,
+      "why": "案内は「(自分が assign から起動したのでなければ)assignee が付いていないか」を確かめさせる。assign から起動したルーティンにとって assignee は自分を起動した合図なので、止まる理由は他のセッションの URL コメントだけ。",
+      "go": [
+        {
+          "kind": "stepChange",
+          "flow": "delegate",
+          "stepChange": 4
+        }
+      ]
+    },
+    {
+      "id": "guard",
+      "kind": "yesno",
+      "title": "案内文を守る検査",
+      "prompt": "フックの案内文から「assignee は付けない」を消すと、pre-push か CI が落ちる。",
+      "holds": false,
+      "why": "`test-reviewer` の実測では、文言を消しても JSON を壊しても pre-push と CI は通った。文言の字面を固定する判定表は計画で見送り、JSON の形もこの PR では守る範囲に入れていない。",
+      "go": [
+        {
+          "kind": "module",
+          "path": ".claude/hooks/session-url-notice.sh"
+        }
+      ]
+    },
+    {
+      "id": "ratchet",
+      "kind": "choice",
+      "title": "常時ロードの行数",
+      "prompt": "`AGENTS.md` に規範を足したのに、常時ロードの行数が 757 のままなのはなぜですか。",
+      "options": [
+        "既存の 61 行と 90 行の中で書き換え、行を足さなかったから",
+        "上限を 758 に上げたから",
+        "`rules/` から 1 行削ったから",
+        "`AGENTS.md` は行数の数え方の対象外だから"
+      ],
+      "answer": 1,
+      "why": "61 行は文の一部を外し、90 行は同じ行の末尾に 1 文を足した。上限は縮めたときに下げるだけで上げないので、行を足すなら同じ量を削る必要があった。",
+      "go": [
+        {
+          "kind": "file",
+          "path": "AGENTS.md"
+        }
+      ]
+    }
+  ]
+}
