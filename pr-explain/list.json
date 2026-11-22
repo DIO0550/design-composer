@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1442,
+      "title": "📝 PR #1436 の振り返りを harness/records に記録"
+    },
+    {
       "pr": 1440,
       "title": "自分で進める Issue には assign しない（assign はルーティンへ任せる合図）"
     },
