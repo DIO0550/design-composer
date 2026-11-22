@@ -157,3 +157,28 @@ test("参照先の部品が無いインスタンスを包むと、包めて、Bo
     Result.ok({}),
   );
 });
+
+test("layout: row と書いた親の下で部品のルートの幅が fill のインスタンスを包むと、Box の幅も fill になる", () => {
+  const document = setupArtboardDocument({
+    artboardProps: { layout: "row" },
+    components: { card: { type: "Box", props: { widthMode: "fill" } } },
+    children: [{ name: "hero", ref: "card" }],
+  });
+
+  expect(propsOf(group(document, ["hero"]), "box")).toEqual({
+    widthMode: "fill",
+  });
+});
+
+test("layout: free の親の下で幅が fill のプリミティブを包むと、Box の幅も fill になる", () => {
+  const document = setupArtboardDocument({
+    artboardProps: { layout: "free" },
+    children: [
+      { name: "card", type: "Box", props: { widthMode: "fill" }, children: [] },
+    ],
+  });
+
+  expect(propsOf(group(document, ["card"]), "box")).toEqual({
+    widthMode: "fill",
+  });
+});
