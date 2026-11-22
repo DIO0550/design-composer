@@ -35,13 +35,6 @@ trap 'rm -rf "$work"' EXIT
 source "$lib_dir/cases-report.sh"
 source "$lib_dir/cases-fixtures.sh"
 
-# フックへ渡す JSON を書く。
-#
-# $1 フックへ渡すコマンド
-push_payload() {
-  jq -n --arg c "$1" '{tool_input: {command: $c}}'
-}
-
 # 1 ケースを判定して報告し、置いたものを消す(後ろのケースへ残さない)。
 #
 # $1 期待
@@ -56,7 +49,7 @@ check() {
   mkdir -p "$work/src"
   [ "$fixture" = "duplicate" ] && place_duplicate_helpers "$work/src"
   prefix="$(broken_command_path_prefix python3 "$python3_state" "$work")"
-  output="$(push_payload "$command" | CLAUDE_PROJECT_DIR="$work" PATH="${prefix}${PATH}" bash "$hook")"
+  output="$(bash_call_input "$command" | CLAUDE_PROJECT_DIR="$work" PATH="${prefix}${PATH}" bash "$hook")"
   decision="pass"
   if printf '%s' "$output" | jq -e '.hookSpecificOutput.permissionDecision == "deny"' >/dev/null 2>&1; then
     decision="deny"
@@ -89,7 +82,7 @@ check_violations() {
   local expected="$1" label="$2" command="$3" stub="$4" python3_state="${5:-ok}"
   local output reason decision prefix
   prefix="$(broken_command_path_prefix python3 "$python3_state" "$work")"
-  output="$(push_payload "$command" | CLAUDE_PROJECT_DIR="$work" PATH="${prefix}${PATH}" \
+  output="$(bash_call_input "$command" | CLAUDE_PROJECT_DIR="$work" PATH="${prefix}${PATH}" \
     bash -c 'set -euo pipefail; source "$1"; deny_on_violations "$2" "判定表" "直してください"' _ \
     "$lib_dir/pre-push-detector.sh" "$work/stubs/$stub.py" 2>/dev/null)"
   reason="$(printf '%s' "$output" | jq -r '.hookSpecificOutput.permissionDecisionReason // empty' 2>/dev/null)"
