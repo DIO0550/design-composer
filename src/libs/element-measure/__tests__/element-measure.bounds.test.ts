@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { stubBounds } from "@/libs/__tests__/element-measure";
-import { CanvasDom } from "../index";
+import { ElementMeasure } from "../index";
 
 /**
  * 実測がその矩形を返す要素を作る。
@@ -14,7 +14,7 @@ function stubbedElement(): Element {
 }
 
 test("描かれている要素の矩形を client 座標の位置と大きさで返す", () => {
-  const bounds = CanvasDom.boundsOf(stubbedElement());
+  const bounds = ElementMeasure.boundsOf(stubbedElement());
 
   expect(bounds).toEqual({ left: 10, top: 20, width: 30, height: 40 });
 });

@@ -11,7 +11,7 @@ import { Option } from "@/utils/Option";
  * キャンバスの中身はコンパイル結果の HTML を流し込んでおり React の管理下に無いため、
  * ref では掴めず名前の属性を選択子にして引くしかない。引き方はどこでも同じなので、
  * 名前で要素を引く選択子の綴りと、DOM を触るところをここへ閉じ込める（要素の実測は
- * `boundsOf` と `layoutSizeOf`、長さを当てて測るのは `layoutSizeFor`、名前で引いて測るのは
+ * `ElementMeasure`、長さを当てて測るのは `layoutSizeFor`、名前で引いて測るのは
  * `DrawnBounds`、規則の差し込みは `NameStyleRule`、重ねた器（overlay）の下を点で引くのは
  * `elementBeneath`）。
  *
@@ -45,48 +45,6 @@ export const CanvasDom = {
   },
 
   /**
-   * 描かれている要素の矩形。位置も大きさもレイアウトはブラウザが行うので実測で取る。
-   *
-   * 戻り値の型は名前を付けずに書く。描かれた矩形の型はキャンバスの feature が持っており、
-   * `libs/` からは import できないため。
-   *
-   * @param element 測る要素（名前ではなく、`elementOf` などで引いた後の要素）
-   * @returns その要素の今の client 座標の矩形
-   */
-  boundsOf(
-    element: Element,
-  ): Readonly<{ left: number; top: number; width: number; height: number }> {
-    const rect = element.getBoundingClientRect();
-    return {
-      left: rect.left,
-      top: rect.top,
-      width: rect.width,
-      height: rect.height,
-    };
-  },
-
-  /**
-   * 変形（`transform`）を効かせる前の、レイアウトが決めた大きさ。回っている要素の実測
-   * （`boundsOf`）は軸に平行な外接矩形になるので、回る前の大きさはこちらで測る。
-   *
-   * 戻り値の型を名前を付けずに書く理由は `boundsOf` と同じ。
-   *
-   * @param element 測る要素
-   * @returns border を含む幅と高さ（整数へ丸められている）。レイアウトの大きさを持たない
-   *   要素（HTML の要素でないもの）は `none`
-   */
-  layoutSizeOf(
-    element: Element,
-  ): Option<Readonly<{ width: number; height: number }>> {
-    return element instanceof HTMLElement
-      ? Option.some({
-          width: element.offsetWidth,
-          height: element.offsetHeight,
-        })
-      : Option.none;
-  },
-
-  /**
    * その長さを当てて描いたときの、変形を効かせる前のレイアウトの大きさ。当てた長さは測り終えたら
    * 外し、`style` 属性を測る前の文字列へ戻す。
    *
@@ -94,7 +52,7 @@ export const CanvasDom = {
    * 行うので、当てた長さのまま描かれることは無い。`offsetWidth` / `offsetHeight` で読まないのは、
    * 整数へ丸められて 2 回測った差が 1px ずれうるため。
    *
-   * 戻り値の型を名前を付けずに書く理由は `boundsOf` と同じ。
+   * 戻り値の型を名前を付けずに書く理由は `ElementMeasure.boundsOf` と同じ。
    *
    * @param element 測る要素
    * @param lengths 当てる長さ。並びに無い軸は今の描かれ方のまま

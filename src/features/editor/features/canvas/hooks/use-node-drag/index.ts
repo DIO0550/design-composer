@@ -42,6 +42,7 @@ import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPoi
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
 import { CanvasDom } from "@/libs/canvas-dom";
 import { AltKey, CommandKey } from "@/libs/dom-event";
+import { ElementMeasure } from "@/libs/element-measure";
 import type { NonEmptyArray } from "@/types/NonEmptyArray";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { ElementEx } from "@/utils/ElementEx";
@@ -121,8 +122,8 @@ function measureZone(parent: InsertionParent): Option<DropZone> {
   return Option.map(CanvasDom.elementOf(parent.name), (element) =>
     DropZone.create(
       parent,
-      CanvasDom.boundsOf(element),
-      namedChildrenOf(element).map(CanvasDom.boundsOf),
+      ElementMeasure.boundsOf(element),
+      namedChildrenOf(element).map(ElementMeasure.boundsOf),
     ),
   );
 }
@@ -238,7 +239,7 @@ function measureReposition(
   if (!measurable) {
     return Option.none;
   }
-  const droppedBounds = CanvasDom.boundsOf(droppedElement.value);
+  const droppedBounds = ElementMeasure.boundsOf(droppedElement.value);
   const carriedNames = new Set<string | null>(
     grabbed.members.map((member) => member.name),
   );
@@ -246,7 +247,7 @@ function measureReposition(
     carriedNames.has(child.getAttribute(ElementNameAttribute));
   const siblings = namedChildrenOf(droppedElement.value)
     .filter((child) => !isCarried(child))
-    .map(CanvasDom.boundsOf);
+    .map(ElementMeasure.boundsOf);
   return Option.some({
     dropParent: {
       name: dropped.name,
