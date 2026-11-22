@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1435,
+      "title": "📝 [Doc]: PR #1418 の記録を harness/records に残す"
+    },
+    {
       "pr": 1434,
       "title": "[harness] PR #1433（実測の element-measure への移動）の記録を足す"
     },
