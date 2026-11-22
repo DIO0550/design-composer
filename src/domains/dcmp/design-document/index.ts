@@ -132,10 +132,11 @@ export type NamedRotation = Readonly<{
  * 例外は追従（`followPropEdits` / `followedChildren` / `withFollowedChildren` /
  * `collectAxisResizes` / `fixedLengthsOfNode` / `fixedLengthsOfArtboard`）とグループ化 /
  * 解除（`groupedBox` / `groupedSiblingsBox` / `collectParentAlignStretchFillModePropEdits` /
- * `fillSourcePropsOf` / `freedChildren`）で、ここだけは `Placement` / `Constraint` / `Size` /
- * `ResolvedProps` / `Layout` / `BoxAlign` / `Offset` を組み合わせて編集を作る。子側のドメイン（`Node`）へ
- * 置けないのは、`Placement` / `Size` / `ResolvedProps` が `Node` から型や `PropEdit` を
- * import しており、逆向きの import が循環になるため。
+ * `fillSourcePropsOf` / `freedChildren`）で、ここだけは `Placement` / `Constraint` /
+ * `Size` / `ResolvedProps` / `Layout` / `BoxAlign` / `Offset` を組み合わせて編集を作る、
+ * または写し元を選ぶ。子側のドメイン（`Node`）へ置けないのは、`Placement` / `Size` /
+ * `ResolvedProps` が `Node` から型や `PropEdit` を import しており、逆向きの import が
+ * 循環になるため。
  */
 
 /**
@@ -285,29 +286,27 @@ type GroupMember = Readonly<{
 /**
  * 包むノードの `fill` を Box へ写すときの写し元の props。
  *
- * インスタンスは `collectNodeErrors` の対象外なので `free` の親の下のルートの `fill` は正しいまま
- * 描かれるが、Box へ写すと `free` の親の子の `fill`（docs/03「サイズ指定の原則」）になる。
+ * 検証はインスタンスの中身（部品のルートの `fill`）を見ないのでエラーにならないが、Box へ写すと
+ * Box 自身が `free` の親の子の `fill` として検証エラーになる（docs/03「サイズ指定の原則」）。
  * プリミティブはその `fill` が書いた時点で同じエラーなので、親に依らず写す。
  *
  * @param member 包むノードとそのルート
  * @param parentProps 包むノードの親に書かれている props（デフォルト解決済みでないもの）
- * @returns プリミティブなら書かれている props。インスタンスなら、親が子を並べるときは部品の
- *   ルートの props、親が `free` か参照先の部品が無ければ空
+ * @returns 包むノードのルート（`GroupMember.root`）の props。インスタンスで親が `free` のときと、
+ *   参照先の部品が無いインスタンスは空（このノードの分では Box は既定の `hug` のまま）
  */
 function fillSourcePropsOf(member: GroupMember, parentProps: Props): Props {
-  if (Node.isPrimitive(member.node)) {
-    return Node.writtenPropsOf(member.node);
-  }
-  const arranges = Option.isSome(
+  const parentArrangesChildren = Option.isSome(
     Layout.direction(Layout.fromProps(parentProps)),
   );
-  if (!arranges) {
+  const isInstanceInFreeParent =
+    !Node.isPrimitive(member.node) && !parentArrangesChildren;
+
+  if (isInstanceInFreeParent) {
     return {};
   }
-  return Option.unwrapOr(
-    Option.map(member.root, (root) => root.props ?? {}),
-    {},
-  );
+
+  return Option.unwrapOr(Option.map(member.root, Node.propsOf), {});
 }
 
 /**
@@ -398,10 +397,10 @@ function groupedBox(
  * 同じ親の兄弟を 2 つ以上まとめて包む Box（docs/06-ui.md「複数選択」のグループ化）。
  *
  * 全員フローなら、親に書かれた並べ方（`layout` / `gap` / `align`）と、どれかが `fill` の軸の
- * モード（部品インスタンスは部品のルートで見る。親が `free` ならインスタンスの分は写さない）
- * を Box が持ち、兄弟はそのまま子になる（親の揃えの `stretch` に引き伸ばされていた軸は
- * `collectParentAlignStretchFillModePropEdits`）。全員絶対配置なら、Box は兄弟の各軸の最小の
- * 座標に絶対配置で置かれ、全員一致の追従だけを持ち、兄弟は Box の座標を引いた位置になる。
+ * モード（写し元は `fillSourcePropsOf`）を Box が持ち、兄弟はそのまま子になる（親の揃えの
+ * `stretch` に引き伸ばされていた軸は `collectParentAlignStretchFillModePropEdits`）。全員
+ * 絶対配置なら、Box は兄弟の各軸の最小の座標に絶対配置で置かれ、全員一致の追従だけを持ち、
+ * 兄弟は Box の座標を引いた位置になる。
  *
  * @param members 包む兄弟とそのルート。元の並び順
  * @param parentProps 兄弟の親に書かれている props（デフォルト解決済みでないもの）
@@ -416,16 +415,16 @@ function groupedSiblingsBox(
 ): Result<Node, DesignDocumentEditError> {
   const nodes = ArrayEx.mapNonEmpty(members, ({ node }) => node);
 
-  const placedMembers = ArrayEx.toNonEmpty(
-    nodes.flatMap((member) => {
-      const placement = absolutePlacementOf(member);
+  const placedNodes = ArrayEx.toNonEmpty(
+    nodes.flatMap((node) => {
+      const placement = absolutePlacementOf(node);
       return Option.isSome(placement)
-        ? [{ member, placement: placement.value }]
+        ? [{ node, placement: placement.value }]
         : [];
     }),
   );
 
-  if (!Option.isSome(placedMembers)) {
+  if (!Option.isSome(placedNodes)) {
     const layoutEdits = [
       ...Layout.collectWrittenPropEdits(parentProps),
       ...BoxAlign.collectWrittenPropEdits(parentProps),
@@ -453,17 +452,17 @@ function groupedSiblingsBox(
     );
   }
 
-  if (placedMembers.value.length !== nodes.length) {
+  if (placedNodes.value.length !== nodes.length) {
     return Result.err({ kind: "mixed-placement" });
   }
 
   const boxOffset = Offset.topLeftOf(
-    ArrayEx.mapNonEmpty(placedMembers.value, ({ placement }) => placement),
+    ArrayEx.mapNonEmpty(placedNodes.value, ({ placement }) => placement),
   );
   const towardBox = Offset.scale(boxOffset, -1);
-  const children = placedMembers.value.map(({ member, placement }) =>
+  const children = placedNodes.value.map(({ node, placement }) =>
     applyNodePropEdits(
-      member,
+      node,
       Placement.toPropEdits(Placement.moveBy(placement, towardBox)),
     ),
   );
@@ -1238,15 +1237,14 @@ function collectSelfAndAncestorRotations(
 }
 
 /**
- * ノードの描き方を決める props。プリミティブは自身の props、部品インスタンスは上書きを当てた
- * 部品の根の値（参照ノード直下のインスタンス自身の値は含まない）。
+ * ノードの描き方を決める props（`rootNodeOf` のルートの props）。
  *
  * @param document 参照先の部品を引くドキュメント
  * @param node props を読むノード
  * @returns そのノードの props。参照先の部品が無いインスタンスは `none`
  */
 function rootPropsOf(document: DesignDocument, node: Node): Option<Props> {
-  return Option.map(rootNodeOf(document, node), (root) => root.props ?? {});
+  return Option.map(rootNodeOf(document, node), Node.propsOf);
 }
 
 /**
@@ -2725,7 +2723,8 @@ export const DesignDocument = {
    * 元の並び順で子にする。1 つなら元のノードが居た位置そのままで、引き継ぐ指定は
    * `groupedBox`。同じ親の兄弟が 2 つ以上なら `groupedSiblingsBox`。それ以外の props は
    * 持たせない（スキーマ既定の `hug` が包んだ中身に合う。親の揃えの `stretch` に引き伸ばされて
-   * いた軸だけは `fill`）。部品インスタンスは参照先の部品のルート（上書きを当てたもの）で見る。
+   * いた軸だけは `fill`）。`fill` と `stretch` の判定は、部品インスタンスなら参照先の部品の
+   * ルート（上書きを当てたもの）で行う。
    *
    * @param document 包む先のドキュメント
    * @param names 包むノードの名前。重複は 1 つとして扱う
@@ -2751,20 +2750,20 @@ export const DesignDocument = {
       return parent;
     }
 
-    const members = childrenAt(parent.value.children, indices);
-    if (!Result.isOk(members)) {
-      return members;
+    const nodes = childrenAt(parent.value.children, indices);
+    if (!Result.isOk(nodes)) {
+      return nodes;
     }
 
-    const groupMembers = ArrayEx.mapNonEmpty(members.value, (node) => ({
+    const members = ArrayEx.mapNonEmpty(nodes.value, (node) => ({
       node,
       root: rootNodeOf(document, node),
     }));
-    const [sole, ...rest] = groupMembers;
+    const [sole, ...rest] = members;
     const box =
       rest.length === 0
         ? Result.ok(groupedBox(sole, parent.value.props, boxName))
-        : groupedSiblingsBox(groupMembers, parent.value.props, boxName);
+        : groupedSiblingsBox(members, parent.value.props, boxName);
     if (!Result.isOk(box)) {
       return box;
     }
@@ -2777,8 +2776,8 @@ export const DesignDocument = {
     const at = SiblingPositions.lastAfterRemoving(siblings.value);
 
     return updateChildrenOfParent(document, parentName, (tree) => {
-      const remaining = members.value.reduce(
-        (current, member) => NodeTree.spliceByName(current, member.name, []),
+      const remaining = nodes.value.reduce(
+        (current, node) => NodeTree.spliceByName(current, node.name, []),
         tree,
       );
 
