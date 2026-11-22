@@ -935,6 +935,16 @@
     "name": "参照が1件"
   },
   {
+    "id": "features-editor-features-tokens-tokeneditor--broken-color-selected",
+    "title": "features/editor/features/tokens/TokenEditor",
+    "name": "hex として読めない色トークンを選択中"
+  },
+  {
+    "id": "features-editor-features-tokens-tokeneditor--broken-stop-selected",
+    "title": "features/editor/features/tokens/TokenEditor",
+    "name": "1 件目の stop の色が hex として読めないグラデーションを選択中"
+  },
+  {
     "id": "features-editor-features-tokens-tokeneditor--color-selected",
     "title": "features/editor/features/tokens/TokenEditor",
     "name": "色トークンを選択中"
