@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1440,
+      "title": "自分で進める Issue には assign しない（assign はルーティンへ任せる合図）"
+    },
+    {
       "pr": 1436,
       "title": "✨ グループ化で部品インスタンスを包むとき、部品のルートの fill と Text の引き伸ばしを Box へ引き継ぐ"
     },
