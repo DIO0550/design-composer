@@ -1,0 +1,2204 @@
+{
+  "version": 1,
+  "pr": 1436,
+  "sha": "d4b1c2721f51568823b9ae31fb8de70851e80bb8",
+  "issue": 988,
+  "overview": {
+    "title": "部品インスタンスを包むとき、部品のルートの大きさを Box へ引き継ぐ",
+    "lead": "グループ化（⌘G）で部品インスタンスを包むとき、参照先の部品のルート（上書きを当てたもの）の `fill` と、ルートが Text のときの親の `stretch` による引き伸ばしを Box へ引き継ぐ。これまでは Box が `hug` になり、インスタンスが中身の大きさに縮んでいた。",
+    "before": [
+      {
+        "text": "部品のルートが `fill` のインスタンスを包むと、Box は大きさの prop を持たず `hug` になり、インスタンスが縮んでいた",
+        "message": "fill-edits"
+      },
+      {
+        "text": "揃えが `stretch` の親に引き伸ばされていた、部品のルートが Text のインスタンスを包むと、Box が `hug` になり縮んでいた",
+        "message": "stretch-edits"
+      },
+      {
+        "text": "複数をまとめて包むときも、インスタンスは `fill` の軸の判定に数えられなかった",
+        "message": "fill-mode-edits"
+      },
+      {
+        "text": "参照先の部品が無いインスタンスは包めて、Box は大きさの prop を持たなかった"
+      }
+    ],
+    "after": [
+      {
+        "text": "部品のルートが `fill` の軸は Box も `fill` にする。1 つだけ包むときは下限・上限も写し、まとめて包むときは写さない",
+        "message": "fill-edits"
+      },
+      {
+        "text": "公開 prop の上書きで部品のルートを `fill` にしていれば、上書き後の値で判定する",
+        "message": "apply-overrides"
+      },
+      {
+        "text": "部品のルートが Text のインスタンスは、親の揃えの `stretch` で引き伸ばされている交差軸を Box も `fill` にする",
+        "message": "stretch-edits"
+      },
+      {
+        "text": "親が `layout: free` のときは、インスタンスのルートの `fill` を写さない（写すと Box が検証エラーになる）。包んでいる間インスタンスは縮み、06-ui の「見た目が変わるもの」に残した",
+        "message": "direction"
+      },
+      {
+        "text": "参照先の部品が無いインスタンスは、失敗にせずこれまでどおり包め、Box は `hug` のまま"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "free の親の下で縮む挙動を仕様として受け入れた点",
+        "text": "親が `layout: free` のとき、インスタンスのルートの `fill` は写さない。写すと Box 自身が「free の親の子の fill」になり、正しいドキュメントを検証エラーのある状態で保存してしまうため。代わりに包んでいる間インスタンスは縮む（実測 400px → 50px）。この割り切りを `docs/06-ui.md` の「見た目が変わるもの」に残したが、見た目より正しさを取る判断でよいか見てほしい",
+        "go": {
+          "kind": "callBox",
+          "id": "fill-source"
+        }
+      },
+      {
+        "title": "包むノードとルートの組を直和にしなかった点",
+        "text": "`GroupMember` は `node` と `root: Option<PrimitiveNode>` を持つだけで、プリミティブかインスタンスかで型を分けていない。プリミティブもインスタンスも `root` から `Node.propsOf` で読むよう揃え、種別で分かれるのは `fillSourcePropsOf` の free の除外 1 箇所だけにした。生成箇所が `groupIntoBox` の 1 つなのでこれで足りると判断したが、直和の方が読みやすいかを見てほしい",
+        "go": {
+          "kind": "callBox",
+          "id": "group-into-box"
+        }
+      },
+      {
+        "title": "仕様の例外一覧の書き換え",
+        "text": "#988 として残していた 2 件の「縮む」記述を消し、free の親での縮みに置き換えた。139 / 141 / 343 行目の 3 箇所が食い違っていないか",
+        "go": {
+          "kind": "file",
+          "path": "docs/06-ui.md"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "inherit-fill",
+      "label": "部品のルートの fill の引き継ぎ",
+      "role": "包むノードが部品インスタンスなら、部品のルートの `fill` を Box へ写す（free の親では写さない）",
+      "review": [
+        "1 つだけ包むときは下限・上限も写し、まとめて包むときは写さない区別が、既存のプリミティブの規則と同じ形で保たれているか",
+        "free の親の除外がインスタンスだけに掛かり、プリミティブの挙動を変えていないか"
+      ]
+    },
+    {
+      "id": "inherit-stretch",
+      "label": "Text の引き伸ばしの引き継ぎ",
+      "role": "部品のルートが Text のインスタンスも、親の揃えの `stretch` で引き伸ばされているものとして Box の交差軸を `fill` にする",
+      "review": [
+        "ルートが Box のインスタンス（長さのモードを持つ型）では引き伸ばしの編集が出ないか"
+      ]
+    },
+    {
+      "id": "root-lookup",
+      "label": "部品のルートの読み出し",
+      "role": "ノードが描かれるときのルート（プリミティブなら自身、インスタンスなら上書きを当てた部品の根）を 1 箇所で引く",
+      "review": [
+        "既存の `rootPropsOf` の消費者（可視性・回転など）の振る舞いが変わっていないか"
+      ]
+    },
+    {
+      "id": "spec",
+      "label": "仕様の記述",
+      "role": "`docs/06-ui.md` のグループ化の記述を、部品のルートで見る規則と free の親での例外に合わせる"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "domains / dcmp",
+      "role": "グループ化の規則（Box が何を引き継ぐか）と、部品のルートを引く処理がある"
+    },
+    {
+      "layer": "docs",
+      "role": "グループ化の振る舞いと「包んでいる間に見た目が変わるもの」の一覧を持つ仕様"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "src/domains/dcmp/design-document/index.ts",
+      "name": "デザインドキュメント",
+      "role": "`.dcmp` 1 つ分の整合性境界。グループ化の入口 `groupIntoBox` と、Box が引き継ぐ指定を決める private な関数群を持つ",
+      "feature": "inherit-fill",
+      "change": "private な `GroupMember` / `rootNodeOf` / `fillSourcePropsOf` を足し、グループ化の関数を `GroupMember` で受け取るようにした"
+    },
+    {
+      "path": "src/domains/dcmp/component/index.ts",
+      "name": "部品定義",
+      "role": "部品の定義と、上書きの適用・ルートのノード化を持つ",
+      "feature": "root-lookup",
+      "change": "`Component.toNode` の戻り値の型を `Node` から `PrimitiveNode` に狭めた"
+    },
+    {
+      "path": "src/domains/dcmp/size/index.ts",
+      "name": "サイズ",
+      "role": "長さのモードと下限・上限から、Box へ写す編集を集める（このブランチでは未変更）"
+    },
+    {
+      "path": "src/domains/dcmp/layout/index.ts",
+      "name": "配置モード",
+      "role": "親が子を並べるか（`row` / `column`）並べないか（`free`）を答える（このブランチでは未変更）"
+    },
+    {
+      "path": "docs/06-ui.md",
+      "name": "UI 仕様",
+      "role": "グループ化と「包んでいる間に見た目が変わるもの」の記述",
+      "feature": "spec",
+      "change": "部品インスタンスは部品のルートで見ること、free の親では写さず縮むことを書いた",
+      "graph": false
+    },
+    {
+      "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+      "name": "グループ化の大きさのテスト",
+      "role": "1 つ包むときの `fill` の引き継ぎを確かめる",
+      "feature": "inherit-fill",
+      "change": "インスタンスとプリミティブのテスト 7 件を足した",
+      "graph": false
+    },
+    {
+      "path": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+      "name": "まとめて包むときのテスト",
+      "role": "兄弟をまとめて包むときの引き継ぎを確かめる",
+      "feature": "inherit-fill",
+      "change": "インスタンスのテスト 2 件を足した",
+      "graph": false
+    },
+    {
+      "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+      "name": "グループ化の引き伸ばしのテスト",
+      "role": "親の `stretch` で引き伸ばされた軸の引き継ぎを確かめる",
+      "feature": "inherit-stretch",
+      "change": "インスタンスは大きさを持たないとしていた 1 件を書き換え、4 件を足した",
+      "graph": false
+    }
+  ],
+  "actors": [
+    {
+      "id": "editor-user",
+      "label": "編集する人",
+      "role": "ノードを選び、⌘G またはツリーのコンテキストメニューでグループ化する",
+      "icon": "person"
+    }
+  ],
+  "messages": [
+    {
+      "id": "group",
+      "from": "editor-user",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "kind": "cmd",
+      "name": "グループ化する",
+      "code": "DesignDocument.groupIntoBox(document, names, boxName)",
+      "via": "call",
+      "payload": "包むノードの名前と Box の名前",
+      "returns": "Box で包んだ新しいドキュメント（`Result`）"
+    },
+    {
+      "id": "apply-overrides",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "kind": "qry",
+      "name": "上書きを当てた部品を得る",
+      "code": "Component.applyOverrides(component, node.ref, node.overrides ?? {})",
+      "via": "call",
+      "payload": "参照先の部品とインスタンスの上書き",
+      "returns": "上書きを当てた部品",
+      "status": "added"
+    },
+    {
+      "id": "to-node",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/component/index.ts",
+      "kind": "qry",
+      "name": "部品のルートをノードにする",
+      "code": "Component.toNode(component, node.name)",
+      "via": "call",
+      "payload": "上書き済みの部品とインスタンスの名前",
+      "returns": "`PrimitiveNode`（部品のルート）",
+      "status": "added"
+    },
+    {
+      "id": "direction",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/layout/index.ts",
+      "kind": "qry",
+      "name": "親が子を並べるかを見る",
+      "code": "Layout.direction(Layout.fromProps(parentProps))",
+      "via": "call",
+      "payload": "親に書かれた props",
+      "returns": "`row` / `column` なら `some`、`free` なら `none`",
+      "status": "added"
+    },
+    {
+      "id": "fill-edits",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "1 つ包むときの fill の編集を集める",
+      "code": "Size.collectFillPropEdits(fillSourcePropsOf(member, parentProps))",
+      "via": "call",
+      "payload": "写し元の props（インスタンスなら部品のルートの props）",
+      "returns": "`fill` の軸のモードと下限・上限の編集",
+      "status": "changed"
+    },
+    {
+      "id": "fill-mode-edits",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "まとめて包むときの fill のモードの編集を集める",
+      "code": "Size.collectFillModePropEdits(members.map((member) => fillSourcePropsOf(member, parentProps)))",
+      "via": "call",
+      "payload": "兄弟ごとの写し元の props",
+      "returns": "どれかが `fill` の軸のモードの編集（下限・上限なし）",
+      "status": "changed"
+    },
+    {
+      "id": "stretch-edits",
+      "from": "src/domains/dcmp/design-document/index.ts",
+      "to": "src/domains/dcmp/size/index.ts",
+      "kind": "qry",
+      "name": "引き伸ばされた軸の編集を集める",
+      "code": "Size.collectAlignStretchFillModePropEdits(types, axis)",
+      "via": "call",
+      "payload": "包むノードのルートの型と、親の `stretch` の交差軸",
+      "returns": "長さのモードを持たない型があれば、その軸を `fill` にする編集 1 件",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "group-one",
+      "label": "1 つを包む",
+      "gist": "Box の大きさを決める前に、包むノードのルートを引くようになった。fill と stretch の判定はルートで行う",
+      "text": "ノードを 1 つ選んで ⌘G を押すと、`groupIntoBox` が `groupedBox` で Box を作り、元の位置へ入れる。",
+      "steps": [
+        "group",
+        "apply-overrides",
+        "to-node",
+        "direction",
+        "fill-edits",
+        "stretch-edits"
+      ],
+      "beforeSteps": [
+        "group",
+        "fill-edits",
+        "stretch-edits"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1,
+          "afterText": "入口は変わらない"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "インスタンスなら参照先の部品に上書きを当てる",
+          "change": "`rootNodeOf` で包むノードのルートを引くようにした"
+        },
+        {
+          "status": "added",
+          "afterStep": 3,
+          "afterText": "上書きを当てた部品を、インスタンスの名前を付けたルートのノードにする",
+          "change": "ルートを props ではなく `PrimitiveNode` として持つため"
+        },
+        {
+          "status": "added",
+          "afterStep": 4,
+          "afterText": "親が子を並べるかを見る。インスタンスで親が `free` なら写し元を空にする",
+          "change": "`fillSourcePropsOf` の free の除外"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 5,
+          "beforeText": "包むノード自身に書かれた props から `fill` を集めていた",
+          "afterText": "ルートの props から `fill` を集める（下限・上限も写す）",
+          "change": "写し元を `fillSourcePropsOf` で選ぶ"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 3,
+          "afterStep": 6,
+          "beforeText": "プリミティブの型だけを数えていた（インスタンスは数えない）",
+          "afterText": "ルートの型を数える（ルートが Text のインスタンスも数える）",
+          "change": "判定の対象をノードからルートへ移した"
+        }
+      ],
+      "measure": {
+        "what": "Box の大きさを決めるときに見る props",
+        "before": "包むノード自身に書かれた props",
+        "after": "包むノードのルート（インスタンスなら上書きを当てた部品の根）の props"
+      }
+    },
+    {
+      "id": "group-many",
+      "label": "兄弟をまとめて包む",
+      "gist": "兄弟ごとにルートを引き、どれかのルートが fill の軸を Box も fill にする",
+      "text": "同じ親の兄弟を 2 つ以上選んで ⌘G を押すと、`groupIntoBox` が `groupedSiblingsBox` で Box を作る。全員フローのときの流れ。",
+      "steps": [
+        "group",
+        "apply-overrides",
+        "to-node",
+        "direction",
+        "fill-mode-edits",
+        "stretch-edits"
+      ],
+      "beforeSteps": [
+        "group",
+        "fill-mode-edits",
+        "stretch-edits"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "兄弟のうちインスタンスについて、参照先の部品に上書きを当てる",
+          "change": "兄弟ごとに `rootNodeOf` を呼ぶ"
+        },
+        {
+          "status": "added",
+          "afterStep": 3,
+          "afterText": "ルートのノードにする",
+          "change": "1 つを包むときと同じ"
+        },
+        {
+          "status": "added",
+          "afterStep": 4,
+          "afterText": "親が `free` ならインスタンスの分の写し元を空にする",
+          "change": "`fillSourcePropsOf` を兄弟ごとに呼ぶ"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 5,
+          "beforeText": "兄弟自身に書かれた props の並びを渡していた",
+          "afterText": "兄弟ごとの写し元の props の並びを渡す（下限・上限は写さない）",
+          "change": "`propsList` を `fillSourcePropsOf` の並びに置き換えた"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 3,
+          "afterStep": 6,
+          "beforeText": "プリミティブの兄弟の型だけを数えていた",
+          "afterText": "兄弟のルートの型を数える",
+          "change": "1 つを包むときと同じ関数を `GroupMember` で呼ぶ"
+        }
+      ],
+      "measure": {
+        "what": "fill の軸の判定に数える兄弟",
+        "before": "プリミティブの兄弟だけ",
+        "after": "プリミティブと、参照先がありフローの親の下にあるインスタンス"
+      }
+    }
+  ],
+  "calls": {
+    "gist": "包むノードを `GroupMember`（ノードとルートの組）に詰め替え、Box の大きさをルートから決めるようにした",
+    "text": "変更前は `groupIntoBox` が包むノードをそのまま `groupedBox` / `groupedSiblingsBox` へ渡し、Box はノード自身の props と型だけを見ていた。変更後は `groupIntoBox` が `rootNodeOf` でルートを引いて `GroupMember` に詰め、`fillSourcePropsOf` が写し元を選ぶ。既存の `rootPropsOf` は `rootNodeOf` から導く形に変え、部品を引く処理を 1 箇所にした。",
+    "review": [
+      "`rootPropsOf` を `rootNodeOf` から導くようにしたことで、既存の消費者（可視性・回転など）の読む値が変わっていないか",
+      "絶対配置の兄弟の経路（`placedNodes` 以下）は改名だけで、判定に `root` を使っていないか"
+    ],
+    "boxes": [
+      {
+        "id": "group-into-box",
+        "name": "DesignDocument.groupIntoBox",
+        "role": "グループ化の公開の入口",
+        "module": "src/domains/dcmp/design-document/index.ts",
+        "status": "changed",
+        "was": "包むノードをそのまま次へ渡していた",
+        "now": "包むノードごとに `rootNodeOf` でルートを引き、`GroupMember` にして渡す（シグネチャは不変）"
+      },
+      {
+        "id": "root-node-of",
+        "name": "rootNodeOf",
+        "role": "ノードが描かれるときのルートを引く",
+        "module": "src/domains/dcmp/design-document/index.ts",
+        "status": "added",
+        "now": "プリミティブなら自身、インスタンスなら上書きを当てた部品の根。参照先が無ければ `none`"
+      },
+      {
+        "id": "root-props-of",
+        "name": "rootPropsOf",
+        "role": "ノードの描き方を決める props を読む（既存）",
+        "module": "src/domains/dcmp/design-document/index.ts",
+        "status": "changed",
+        "was": "自分で部品を引き、上書きを当てて props を返していた",
+        "now": "`rootNodeOf` のルートを `Node.propsOf` で読む"
+      },
+      {
+        "id": "fill-source",
+        "name": "fillSourcePropsOf",
+        "role": "Box へ `fill` を写す元の props を選ぶ",
+        "module": "src/domains/dcmp/design-document/index.ts",
+        "status": "added",
+        "now": "ルートの props を返す。インスタンスで親が `free` のときと参照先が無いときは空"
+      },
+      {
+        "id": "grouped-box",
+        "name": "groupedBox",
+        "role": "1 つを包む Box を作る",
+        "module": "src/domains/dcmp/design-document/index.ts",
+        "status": "changed",
+        "was": "`Node` を受け取り、その props の `fill` を写していた",
+        "now": "`GroupMember` を受け取り、写し元を `fillSourcePropsOf` で選ぶ"
+      },
+      {
+        "id": "grouped-siblings-box",
+        "name": "groupedSiblingsBox",
+        "role": "兄弟をまとめて包む Box を作る",
+        "module": "src/domains/dcmp/design-document/index.ts",
+        "status": "changed",
+        "was": "`NonEmptyArray<Node>` を受け取り、兄弟の props の並びで判定していた",
+        "now": "`NonEmptyArray<GroupMember>` を受け取り、`fill` の判定は写し元、配置と追従はノード自身で行う"
+      },
+      {
+        "id": "stretch-edits",
+        "name": "collectParentAlignStretchFillModePropEdits",
+        "role": "親の `stretch` で引き伸ばされた軸を Box も `fill` にする",
+        "module": "src/domains/dcmp/design-document/index.ts",
+        "status": "changed",
+        "was": "プリミティブのノードの型だけを数えていた",
+        "now": "`GroupMember.root` の型を数える（ルートが Text のインスタンスも数える）"
+      },
+      {
+        "id": "to-node",
+        "name": "Component.toNode",
+        "role": "部品をルートのノードにする",
+        "module": "src/domains/dcmp/component/index.ts",
+        "status": "changed",
+        "was": "戻り値の型が `Node`",
+        "now": "戻り値の型が `PrimitiveNode`（中身は同じ）"
+      },
+      {
+        "id": "apply-overrides",
+        "name": "Component.applyOverrides",
+        "role": "部品に公開 prop の上書きを当てる",
+        "module": "src/domains/dcmp/component/index.ts",
+        "now": "上書きを当てた部品を返す"
+      },
+      {
+        "id": "collect-fill",
+        "name": "Size.collectFillPropEdits",
+        "role": "1 つの props の `fill` の軸を編集にする",
+        "module": "src/domains/dcmp/size/index.ts",
+        "now": "モードと下限・上限の編集を返す"
+      },
+      {
+        "id": "collect-fill-mode",
+        "name": "Size.collectFillModePropEdits",
+        "role": "props の並びのどれかが `fill` の軸を編集にする",
+        "module": "src/domains/dcmp/size/index.ts",
+        "now": "モードだけの編集を返す（下限・上限なし）"
+      },
+      {
+        "id": "layout-direction",
+        "name": "Layout.direction",
+        "role": "配置モードが子を並べるかを答える",
+        "module": "src/domains/dcmp/layout/index.ts",
+        "now": "`free` なら `none`、それ以外は向きを `some` で返す"
+      }
+    ],
+    "edges": [
+      {
+        "id": "group-root",
+        "from": "group-into-box",
+        "to": "root-node-of",
+        "code": "rootNodeOf(document, node)",
+        "status": "added",
+        "now": "包むノードごとにルートを引いて `GroupMember` にする"
+      },
+      {
+        "id": "group-box",
+        "from": "group-into-box",
+        "to": "grouped-box",
+        "code": "groupedBox(sole, parent.value.props, boxName)",
+        "status": "changed",
+        "was": "`sole` は `Node`",
+        "now": "`sole` は `GroupMember`"
+      },
+      {
+        "id": "group-siblings",
+        "from": "group-into-box",
+        "to": "grouped-siblings-box",
+        "code": "groupedSiblingsBox(members, parent.value.props, boxName)",
+        "status": "changed",
+        "was": "`members` は `NonEmptyArray<Node>`",
+        "now": "`members` は `NonEmptyArray<GroupMember>`"
+      },
+      {
+        "id": "root-apply",
+        "from": "root-node-of",
+        "to": "apply-overrides",
+        "code": "Component.applyOverrides(component, node.ref, node.overrides ?? {})",
+        "status": "added",
+        "now": "ルートを引くときに上書きを当てる"
+      },
+      {
+        "id": "root-to-node",
+        "from": "root-node-of",
+        "to": "to-node",
+        "code": "Component.toNode(…, node.name)",
+        "status": "added",
+        "now": "上書き済みの部品をインスタンスの名前のノードにする"
+      },
+      {
+        "id": "props-root",
+        "from": "root-props-of",
+        "to": "root-node-of",
+        "code": "Option.map(rootNodeOf(document, node), Node.propsOf)",
+        "status": "added",
+        "now": "ルートの props を読む"
+      },
+      {
+        "id": "props-apply",
+        "from": "root-props-of",
+        "to": "apply-overrides",
+        "code": "Component.applyOverrides(component, node.ref, node.overrides ?? {}).props ?? {}",
+        "status": "removed",
+        "was": "自分で上書きを当てて props を取り出していた"
+      },
+      {
+        "id": "box-source",
+        "from": "grouped-box",
+        "to": "fill-source",
+        "code": "fillSourcePropsOf(member, parentProps)",
+        "status": "added",
+        "now": "写し元を選ぶ"
+      },
+      {
+        "id": "box-fill",
+        "from": "grouped-box",
+        "to": "collect-fill",
+        "code": "Size.collectFillPropEdits(fillSourcePropsOf(member, parentProps))",
+        "status": "changed",
+        "was": "`Size.collectFillPropEdits(props)`（ノード自身の props）",
+        "now": "写し元の props を渡す"
+      },
+      {
+        "id": "box-stretch",
+        "from": "grouped-box",
+        "to": "stretch-edits",
+        "code": "collectParentAlignStretchFillModePropEdits([member], parentProps)",
+        "status": "changed",
+        "was": "`[node]` を渡していた",
+        "now": "`[member]` を渡す"
+      },
+      {
+        "id": "siblings-source",
+        "from": "grouped-siblings-box",
+        "to": "fill-source",
+        "code": "members.map((member) => fillSourcePropsOf(member, parentProps))",
+        "status": "added",
+        "now": "兄弟ごとに写し元を選ぶ"
+      },
+      {
+        "id": "siblings-fill",
+        "from": "grouped-siblings-box",
+        "to": "collect-fill-mode",
+        "code": "Size.collectFillModePropEdits(…)",
+        "status": "changed",
+        "was": "兄弟自身の props の並び（`propsList`）を渡していた",
+        "now": "兄弟ごとの写し元の並びを渡す"
+      },
+      {
+        "id": "siblings-stretch",
+        "from": "grouped-siblings-box",
+        "to": "stretch-edits",
+        "code": "collectParentAlignStretchFillModePropEdits(members, parentProps)",
+        "status": "changed",
+        "was": "`Node` の並びを渡していた",
+        "now": "`GroupMember` の並びを渡す"
+      },
+      {
+        "id": "source-direction",
+        "from": "fill-source",
+        "to": "layout-direction",
+        "code": "Layout.direction(Layout.fromProps(parentProps))",
+        "status": "added",
+        "now": "親が子を並べないならインスタンスの分を写さない"
+      }
+    ]
+  },
+  "commitStories": [
+    {
+      "sha": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "phase": "prep",
+      "role": "インスタンスを包むときの仕様をテストで先に固定する（RED 7 件）",
+      "why": "`flow:feature` の第 1 工程として、実装より先に落ちるテストを置いた。RED の 7 件は「部品のルートが fill / Text なら Box が引き継ぐ」側で、失敗は `expected {} to deeply equal …`。ほかの対照 5 件（free の親・参照先なし・ルートが Box・往復など）は今の実装でも通るが、誤った実装（free でも写す、参照先なしを失敗にする、インスタンスなら常に引き伸ばす、インスタンス自体に fill を書く）を落とすために置いた。",
+      "flows": [
+        "group-one",
+        "group-many"
+      ],
+      "review": [
+        "既存の「部品インスタンスを包んだ Box は大きさの prop を持たない」を、ルートが Text なら幅が fill になる仕様へ書き換えたことが、Issue のゴールと一致しているか",
+        "対照テストが、それぞれどの誤った実装を落とすために置かれているか読み取れるか"
+      ],
+      "before": [
+        {
+          "text": "インスタンスを包んだ Box は大きさの prop を持たない、をテストが固定していた"
+        }
+      ],
+      "after": [
+        {
+          "text": "部品のルートの fill と Text の引き伸ばしを Box が引き継ぐ、をテストが要求する"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "start": 93,
+          "end": 137,
+          "text": "RED の 3 件。ルートの fill・下限上限・公開 prop の上書き"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "start": 139,
+          "end": 159,
+          "text": "対照 2 件。free の親では写さない・参照先が無くても包める"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+          "start": 109,
+          "end": 118,
+          "text": "既存テストの書き換え。期待を空から幅の fill に変えた"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+          "start": 273,
+          "end": 284,
+          "text": "free の親では Box は親の layout だけを持つ（fill を持たない）"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "start": 93,
+          "end": 159,
+          "feature": "inherit-fill",
+          "text": "1 つ包むときのルートの fill の仕様"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+          "start": 256,
+          "end": 284,
+          "feature": "inherit-fill",
+          "text": "まとめて包むときのルートの fill の仕様"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+          "start": 109,
+          "end": 153,
+          "feature": "inherit-stretch",
+          "text": "ルートが Text のインスタンスの引き伸ばし"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+          "start": 218,
+          "end": 229,
+          "feature": "inherit-stretch",
+          "text": "包んで外すと元に戻る往復"
+        }
+      ]
+    },
+    {
+      "sha": "b23d8620ad1fa300740905786962a9c28c7caf2c",
+      "phase": "core",
+      "role": "包むノードのルートを引き、fill と stretch の判定をルートで行う",
+      "why": "#527 の fill の規則と #986 の stretch の規則は、包むノード自身の props と型だけを見ていた。インスタンスは自分で大きさの props を持たないので、どちらにも掛からなかった。部品のルートを引く処理は既に `rootPropsOf` にあったので `rootNodeOf` に括り出して共有し、ノードとルートは常に対で渡るので `GroupMember` にまとめて引数を 3 つ以内に保った。新しい型 `DrawnRoot`、`ExpandedNode.fromNode` での展開、`document` を 4 引数目に渡す、`ComponentSet` の公開 API にする、の案は却下した。",
+      "flows": [
+        "group-one",
+        "group-many"
+      ],
+      "review": [
+        "インスタンスで親が free のときだけ写し元を空にしており、プリミティブの挙動を変えていないか",
+        "参照先の部品が無いインスタンスを失敗にせず、これまでどおりの hug にしているか",
+        "Component.toNode の戻り値を PrimitiveNode に狭めても、既存の呼び出し元がそのまま通るか"
+      ],
+      "before": [
+        {
+          "text": "Box はノード自身の props と型だけを見ていた",
+          "message": "fill-edits"
+        }
+      ],
+      "after": [
+        {
+          "text": "Box はノードのルートの props と型を見る",
+          "message": "to-node"
+        },
+        {
+          "text": "インスタンスで親が free なら写さない",
+          "message": "direction"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 278,
+          "end": 283,
+          "text": "包むノードとそのルートの組。private で、生成は `groupIntoBox` の 1 箇所だけ"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 297,
+          "end": 312,
+          "text": "この時点ではプリミティブを `writtenPropsOf` で、インスタンスを `root` で読んでいた。読み方の割れは次の指摘反映で揃える"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1261,
+          "end": 1276,
+          "text": "`rootPropsOf` にあった部品を引く処理を、ノードを返す形で括り出した"
+        },
+        {
+          "path": "src/domains/dcmp/component/index.ts",
+          "start": 238,
+          "end": 238,
+          "text": "部品のルートは必ずプリミティブなので、戻り値の型を狭めた"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 278,
+          "end": 312,
+          "feature": "inherit-fill",
+          "text": "`GroupMember` と写し元の選択（free の除外）"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 326,
+          "end": 340,
+          "feature": "inherit-stretch",
+          "text": "引き伸ばしの判定をルートの型で行う"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 365,
+          "end": 395,
+          "feature": "inherit-fill",
+          "text": "1 つを包む Box の写し元を差し替え"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 412,
+          "end": 440,
+          "feature": "inherit-fill",
+          "text": "まとめて包む Box の写し元を差し替え"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1240,
+          "end": 1276,
+          "feature": "root-lookup",
+          "text": "`rootNodeOf` を足し、`rootPropsOf` をそこから導く"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 2755,
+          "end": 2766,
+          "feature": "root-lookup",
+          "text": "`groupIntoBox` で `GroupMember` に詰め替える"
+        },
+        {
+          "path": "src/domains/dcmp/component/index.ts",
+          "start": 238,
+          "end": 238,
+          "feature": "root-lookup",
+          "text": "ルートの型を `PrimitiveNode` に"
+        }
+      ]
+    },
+    {
+      "sha": "9124e3b5428bb7490a2e67cb82996a847635110b",
+      "phase": "core",
+      "role": "06-ui のグループ化の記述を、部品のルートで見る規則に合わせる",
+      "why": "06-ui はインスタンスが縮むことを #988 で直す既知の差として書いていた。直したので記述を合わせ、free の親で写さない理由を 03-schema「サイズ指定の原則」を拠り所として本文に書いた。",
+      "review": [
+        "「ただし 2 つのインスタンスは…」の文を削除したことで、残った例外一覧の意味が変わっていないか"
+      ],
+      "before": [
+        {
+          "text": "06-ui の例外一覧に、インスタンスが縮む 2 件（#988）が載っていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "06-ui に、インスタンスは部品のルートで見ること、free の親では写さないことが載る"
+        }
+      ],
+      "notes": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 343,
+          "end": 343,
+          "text": "編集操作の一覧のグループ化の行。部品インスタンスはルートの fill を見る、free の親では写さない、を足した"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "docs/06-ui.md",
+          "start": 139,
+          "end": 141,
+          "feature": "spec",
+          "text": "複数選択のグループ化の記述"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 343,
+          "end": 343,
+          "feature": "spec",
+          "text": "編集操作の一覧のグループ化の記述"
+        }
+      ]
+    },
+    {
+      "sha": "afa1c6b6528550835d41a4566896de89f6ed78a3",
+      "phase": "revise",
+      "role": "レビュー指摘に合わせ、ルートの読み方・命名・doc を揃え、free の親での縮みを 06-ui に残す",
+      "why": "観点別レビューで 4 種の指摘を受けた。プリミティブの props を node から読むか root から読むかが関数ごとに割れていた（structure・duplication）、`member` が `Node` と `GroupMember` の両方を指していた（naming）、doc が実物と食い違っていた（comment）、free の親で縮むことが 06-ui の例外一覧から消えていた（ui・harness。実測 400px → 50px）。ルートの読み方は型を直和に分けず、読む側を `root` に揃えた。「子を並べるか」の判定を `Layout` に名前付きで置く案は、既存の 3 箇所の差し替えを伴いゴールの範囲を越えるので採らなかった。",
+      "review": [
+        "fillSourcePropsOf がプリミティブもインスタンスも root から読む形になっても、プリミティブの結果が変わっていないか",
+        "node / nodes と member / members の使い分けが groupIntoBox と groupedSiblingsBox で一貫しているか",
+        "06-ui の 139 / 141 / 343 行目が互いに食い違っていないか"
+      ],
+      "before": [
+        {
+          "text": "free の親の下でインスタンスが縮むことが仕様の例外一覧に無かった"
+        }
+      ],
+      "after": [
+        {
+          "text": "free の親の下でルートが fill のインスタンスは縮む、と仕様の例外一覧に載る"
+        }
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 298,
+          "end": 310,
+          "text": "種別で分かれるのは free の除外だけになり、残りは `member.root` を `Node.propsOf` で読む"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 2758,
+          "end": 2761,
+          "text": "`Node` を指す束縛を `nodes`、`GroupMember` を指す束縛を `members` に揃えた"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 141,
+          "end": 141,
+          "text": "複数選択の「見た目が変わるもの」に、free の親での縮みを残した"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 286,
+          "end": 310,
+          "feature": "inherit-fill",
+          "text": "写し元の読み方を root に揃え、doc を直した"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 397,
+          "end": 470,
+          "feature": "inherit-fill",
+          "text": "まとめて包む関数の doc と束縛名の整理"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 1237,
+          "end": 1248,
+          "feature": "root-lookup",
+          "text": "`rootPropsOf` を `Node.propsOf` で読む形にした"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "start": 2723,
+          "end": 2783,
+          "feature": "root-lookup",
+          "text": "`groupIntoBox` の doc と束縛名"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 139,
+          "end": 141,
+          "feature": "spec",
+          "text": "複数選択の例外一覧に free の親での縮みを残した"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "start": 343,
+          "end": 343,
+          "feature": "spec",
+          "text": "1 つ包むときの例外一覧に free の親での縮みを残した"
+        }
+      ]
+    },
+    {
+      "sha": "d4b1c2721f51568823b9ae31fb8de70851e80bb8",
+      "phase": "hard",
+      "role": "layout を明示した親と、free の親の下のプリミティブのテストを足す",
+      "why": "test-reviewer が実装を壊して確かめたところ、2 つの判断を守るテストがなかった。インスタンスのテストはどれも親の layout が既定値だったので、「親が子を並べるか」を `parentProps.layout === undefined` に壊しても全件通った。また「プリミティブは親に依らず写す」は、プリミティブにも free の除外を掛けても通った。既定値と違う答えになる入力を選び、それぞれのミューテーションで 1 件だけ落ちることを実測した。",
+      "review": [
+        "追加した 2 件が、指摘されたミューテーションをそれぞれ 1 件ずつ落とす形になっているか"
+      ],
+      "notes": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "start": 161,
+          "end": 171,
+          "text": "親に layout: row を明示。判定を「layout が未記入か」に壊すとここが落ちる"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "start": 173,
+          "end": 184,
+          "text": "free の親の下のプリミティブは写す。却下した案（プリミティブにも除外）へ黙って寄るのを防ぐ"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+          "start": 161,
+          "end": 184,
+          "feature": "inherit-fill",
+          "text": "親の判定と、プリミティブの現状維持を固定"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "size",
+      "label": "1 つ包むときの大きさ",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts"
+    },
+    {
+      "id": "siblings",
+      "label": "兄弟をまとめて包むとき",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts"
+    },
+    {
+      "id": "stretch",
+      "label": "親の揃えによる引き伸ばし",
+      "file": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts"
+    }
+  ],
+  "tests": [
+    {
+      "id": "size-root-fill",
+      "suite": "size",
+      "name": "部品のルートの幅が fill のインスタンスを包むと、Box の幅も fill になる",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "この PR の中心の仕様。写し元を node 自身の props に戻すミューテーションで、これを含むインスタンスのテスト 3 件が落ちることを実測した",
+      "given": "ルートが `widthMode: \"fill\"` の Box の部品 `card` と、それを参照するインスタンス `hero`（親は既定の artboard）",
+      "when": "`hero` を包む",
+      "then": "Box の props が `{ widthMode: \"fill\" }` になる",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "start": 93,
+        "end": 102,
+        "text": "test(\"部品のルートの幅が fill のインスタンスを包むと、Box の幅も fill になる\", () => {\n  const document = setupArtboardDocument({\n    components: { card: { type: \"Box\", props: { widthMode: \"fill\" } } },\n    children: [{ name: \"hero\", ref: \"card\" }],\n  });\n\n  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({\n    widthMode: \"fill\",\n  });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "group",
+        "to-node",
+        "fill-edits"
+      ]
+    },
+    {
+      "id": "size-root-limits",
+      "suite": "size",
+      "name": "部品のルートの高さが下限・上限の付いた fill のインスタンスを包むと、Box も同じ高さの下限・上限を持つ",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "1 つだけ包むときは下限・上限も写す、を守る。単独でも下限・上限を落とすミューテーションで 3 件落ちる",
+      "given": "ルートが `heightMode: \"fill\"`・`minHeight: 40`・`maxHeight: 160` の部品のインスタンス",
+      "when": "そのインスタンスを 1 つだけ包む",
+      "then": "Box が `heightMode: \"fill\"` と同じ下限・上限を持つ",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "start": 104,
+        "end": 120,
+        "text": "test(\"部品のルートの高さが下限・上限の付いた fill のインスタンスを包むと、Box も同じ高さの下限・上限を持つ\", () => {\n  const document = setupArtboardDocument({\n    components: {\n      card: {\n        type: \"Box\",\n        props: { heightMode: \"fill\", minHeight: 40, maxHeight: 160 },\n      },\n    },\n    children: [{ name: \"hero\", ref: \"card\" }],\n  });\n\n  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({\n    heightMode: \"fill\",\n    minHeight: 40,\n    maxHeight: 160,\n  });\n});"
+      },
+      "values": {
+        "columns": [
+          "包む数",
+          "下限・上限"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "1 つ",
+              "写す"
+            ]
+          },
+          {
+            "cells": [
+              "2 つ以上",
+              "写さない（別テスト）"
+            ],
+            "boundary": true
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "fill-edits"
+      ]
+    },
+    {
+      "id": "size-override",
+      "suite": "size",
+      "name": "公開 prop で部品のルートの幅を fill に上書きしたインスタンスを包むと、Box の幅も fill になる",
+      "techniques": [
+        "equivalence",
+        "state"
+      ],
+      "why": "部品の既定値ではなく、上書きを当てた後のルートで見ることを守る。`applyOverrides` を外すミューテーションでこのテストが落ちる",
+      "given": "ルートが `widthMode: \"hug\"` で、公開 prop `width` が `widthMode` に繋がった部品と、`overrides: { width: \"fill\" }` のインスタンス",
+      "when": "そのインスタンスを包む",
+      "then": "Box の幅が `fill` になる（部品の既定値 `hug` ではない）",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "start": 122,
+        "end": 137,
+        "text": "test(\"公開 prop で部品のルートの幅を fill に上書きしたインスタンスを包むと、Box の幅も fill になる\", () => {\n  const document = setupArtboardDocument({\n    components: {\n      card: {\n        type: \"Box\",\n        props: { widthMode: \"hug\" },\n        publicProps: { width: { node: \"card\", prop: \"widthMode\" } },\n      },\n    },\n    children: [{ name: \"hero\", ref: \"card\", overrides: { width: \"fill\" } }],\n  });\n\n  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({\n    widthMode: \"fill\",\n  });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/dcmp/component/index.ts"
+      ],
+      "covers": [
+        "apply-overrides",
+        "fill-edits"
+      ]
+    },
+    {
+      "id": "size-free-instance",
+      "suite": "size",
+      "name": "layout: free の親の下で部品のルートの幅が fill のインスタンスを包んだ Box は、大きさの prop を持たない",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "写すと Box が free の親の子の fill として検証エラーになるのを防ぐ。free のガードを無効にするミューテーションで free の 2 件が落ちる",
+      "given": "`layout: \"free\"` の artboard の直下に、ルートが `fill` の部品のインスタンス",
+      "when": "そのインスタンスを包む",
+      "then": "Box の props が空になる",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "start": 139,
+        "end": 147,
+        "text": "test(\"layout: free の親の下で部品のルートの幅が fill のインスタンスを包んだ Box は、大きさの prop を持たない\", () => {\n  const document = setupArtboardDocument({\n    artboardProps: { layout: \"free\" },\n    components: { card: { type: \"Box\", props: { widthMode: \"fill\" } } },\n    children: [{ name: \"hero\", ref: \"card\" }],\n  });\n\n  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({});\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/dcmp/layout/index.ts"
+      ],
+      "covers": [
+        "direction"
+      ]
+    },
+    {
+      "id": "size-missing-ref",
+      "suite": "size",
+      "name": "参照先の部品が無いインスタンスを包むと、包めて、Box は大きさの prop を持たない",
+      "techniques": [
+        "error",
+        "boundary"
+      ],
+      "why": "参照先が無いことをグループ化の失敗にしない判断を守る。ルートが `none` のとき `err` を返すミューテーションで落ちる",
+      "given": "存在しない部品 `missing` を参照するインスタンス",
+      "when": "そのインスタンスを包む",
+      "then": "`Result.ok` で、Box の props は空",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "start": 149,
+        "end": 159,
+        "text": "test(\"参照先の部品が無いインスタンスを包むと、包めて、Box は大きさの prop を持たない\", () => {\n  const document = setupArtboardDocument({\n    children: [{ name: \"hero\", ref: \"missing\" }],\n  });\n\n  const grouped = DesignDocument.groupIntoBox(document, [\"hero\"], \"box\");\n\n  expect(Result.map(grouped, (done) => propsOf(done, \"box\"))).toEqual(\n    Result.ok({}),\n  );\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "group"
+      ]
+    },
+    {
+      "id": "size-row-parent",
+      "suite": "size",
+      "name": "layout: row と書いた親の下で部品のルートの幅が fill のインスタンスを包むと、Box の幅も fill になる",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "「親が子を並べるか」の判定を、既定値と違う入力で守る。判定を `parentProps.layout === undefined` に壊すと、追加前は全件通ったが、追加後はこのテストが落ちる",
+      "given": "`layout: \"row\"` と明示した artboard の直下に、ルートが `fill` の部品のインスタンス",
+      "when": "そのインスタンスを包む",
+      "then": "Box の幅が `fill` になる",
+      "commit": "d4b1c2721f51568823b9ae31fb8de70851e80bb8",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "start": 161,
+        "end": 171,
+        "text": "test(\"layout: row と書いた親の下で部品のルートの幅が fill のインスタンスを包むと、Box の幅も fill になる\", () => {\n  const document = setupArtboardDocument({\n    artboardProps: { layout: \"row\" },\n    components: { card: { type: \"Box\", props: { widthMode: \"fill\" } } },\n    children: [{ name: \"hero\", ref: \"card\" }],\n  });\n\n  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({\n    widthMode: \"fill\",\n  });\n});"
+      },
+      "values": {
+        "columns": [
+          "親の layout",
+          "Box の幅"
+        ],
+        "rows": [
+          {
+            "cells": [
+              "書いていない（既定は column）",
+              "fill"
+            ]
+          },
+          {
+            "cells": [
+              "row と明示",
+              "fill"
+            ],
+            "boundary": true
+          },
+          {
+            "cells": [
+              "free",
+              "なし"
+            ]
+          }
+        ]
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/dcmp/layout/index.ts"
+      ],
+      "covers": [
+        "direction",
+        "fill-edits"
+      ]
+    },
+    {
+      "id": "size-free-primitive",
+      "suite": "size",
+      "name": "layout: free の親の下で幅が fill のプリミティブを包むと、Box の幅も fill になる",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "free の除外はインスタンスだけに掛け、プリミティブの今の動作を変えない判断を守る。プリミティブにもガードを掛けるミューテーションで、追加後はこのテストが落ちる",
+      "given": "`layout: \"free\"` の artboard の直下に、`widthMode: \"fill\"` の Box（プリミティブ）",
+      "when": "その Box を包む",
+      "then": "包んだ Box の幅も `fill` になる（包む前から同じ検証エラーで、件数は変わらない）",
+      "commit": "d4b1c2721f51568823b9ae31fb8de70851e80bb8",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-size.test.ts",
+        "start": 173,
+        "end": 184,
+        "text": "test(\"layout: free の親の下で幅が fill のプリミティブを包むと、Box の幅も fill になる\", () => {\n  const document = setupArtboardDocument({\n    artboardProps: { layout: \"free\" },\n    children: [\n      { name: \"card\", type: \"Box\", props: { widthMode: \"fill\" }, children: [] },\n    ],\n  });\n\n  expect(propsOf(group(document, [\"card\"]), \"box\")).toEqual({\n    widthMode: \"fill\",\n  });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "fill-edits"
+      ]
+    },
+    {
+      "id": "siblings-root-fill",
+      "suite": "siblings",
+      "name": "兄弟のうち部品のルートの幅が fill のインスタンスがあれば、Box の幅も fill になり、下限・上限は写さない",
+      "techniques": [
+        "equivalence",
+        "boundary"
+      ],
+      "why": "まとめて包む経路でもルートの fill を数え、下限・上限は写さないことを守る。写し元を `writtenPropsOf` に戻すと 1 件、下限・上限を写すと 2 件落ちる",
+      "given": "ルートが `fill`・`minWidth: 120`・`maxWidth: 320` の部品のインスタンス `first` と、Box の `second`",
+      "when": "2 つをまとめて包む",
+      "then": "Box の props が `{ widthMode: \"fill\" }` だけになる",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+        "start": 256,
+        "end": 271,
+        "text": "test(\"兄弟のうち部品のルートの幅が fill のインスタンスがあれば、Box の幅も fill になり、下限・上限は写さない\", () => {\n  const document = setupArtboardDocument({\n    components: {\n      card: {\n        type: \"Box\",\n        props: { widthMode: \"fill\", minWidth: 120, maxWidth: 320 },\n      },\n    },\n    children: [\n      { name: \"first\", ref: \"card\" },\n      { name: \"second\", type: \"Box\" },\n    ],\n  });\n\n  expect(propsOf(groupPair(document), \"box\")).toEqual({ widthMode: \"fill\" });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts",
+        "src/domains/dcmp/size/index.ts"
+      ],
+      "covers": [
+        "fill-mode-edits"
+      ]
+    },
+    {
+      "id": "siblings-free",
+      "suite": "siblings",
+      "name": "layout: free の親の中で部品のルートの幅が fill のインスタンスを兄弟と包むと、Box は free だけを持ち fill を持たない",
+      "techniques": [
+        "boundary",
+        "error"
+      ],
+      "why": "まとめて包む経路でも free の除外が掛かることを守る。free のガードを無効にすると落ちる",
+      "given": "`layout: \"free\"` の artboard に、ルートが `fill` のインスタンスと Box",
+      "when": "2 つをまとめて包む",
+      "then": "Box の props が `{ layout: \"free\" }` だけになる",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-siblings-placement.test.ts",
+        "start": 273,
+        "end": 284,
+        "text": "test(\"layout: free の親の中で部品のルートの幅が fill のインスタンスを兄弟と包むと、Box は free だけを持ち fill を持たない\", () => {\n  const document = setupArtboardDocument({\n    artboardProps: { layout: \"free\" },\n    components: { card: { type: \"Box\", props: { widthMode: \"fill\" } } },\n    children: [\n      { name: \"first\", ref: \"card\" },\n      { name: \"second\", type: \"Box\" },\n    ],\n  });\n\n  expect(propsOf(groupPair(document), \"box\")).toEqual({ layout: \"free\" });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "direction",
+        "fill-mode-edits"
+      ]
+    },
+    {
+      "id": "stretch-text-width",
+      "suite": "stretch",
+      "name": "揃えが stretch の親の下で部品のルートが Text のインスタンスを包むと、Box の幅が fill になる",
+      "techniques": [
+        "equivalence",
+        "regression"
+      ],
+      "why": "ルートが Text のインスタンスも引き伸ばされているものとして扱う。プリミティブ判定をルートでなくノードで行うミューテーションで、stretch の 3 件が落ちる。既存の「インスタンスは大きさを持たない」テストを書き換えたもの",
+      "given": "既定の artboard（column・揃え stretch）の直下に、ルートが Text の部品のインスタンス",
+      "when": "そのインスタンスを包む",
+      "then": "Box の幅が `fill` になる",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+        "start": 109,
+        "end": 118,
+        "text": "test(\"揃えが stretch の親の下で部品のルートが Text のインスタンスを包むと、Box の幅が fill になる\", () => {\n  const document = setupArtboardDocument({\n    components: { caption: { type: \"Text\" } },\n    children: [{ name: \"label\", ref: \"caption\" }],\n  });\n\n  expect(propsOf(group(document, [\"label\"]), \"box\")).toEqual({\n    widthMode: \"fill\",\n  });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "to-node",
+        "stretch-edits"
+      ]
+    },
+    {
+      "id": "stretch-box-root",
+      "suite": "stretch",
+      "name": "揃えが stretch の親の下で部品のルートが Box のインスタンスを包んだ Box は、大きさの prop を持たない",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "「インスタンスなら常に引き伸ばす」誤りを落とす対照。ルートが長さのモードを持つ型なら引き伸ばしの編集は出ない",
+      "given": "ルートが Box（大きさ未記入）の部品のインスタンス",
+      "when": "揃えが stretch の親の下で包む",
+      "then": "Box の props が空になる",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+        "start": 120,
+        "end": 127,
+        "text": "test(\"揃えが stretch の親の下で部品のルートが Box のインスタンスを包んだ Box は、大きさの prop を持たない\", () => {\n  const document = setupArtboardDocument({\n    components: { card: { type: \"Box\" } },\n    children: [{ name: \"hero\", ref: \"card\" }],\n  });\n\n  expect(propsOf(group(document, [\"hero\"]), \"box\")).toEqual({});\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "stretch-edits"
+      ]
+    },
+    {
+      "id": "stretch-text-row",
+      "suite": "stretch",
+      "name": "layout: row と書いた artboard の直下で部品のルートが Text のインスタンスを包むと、Box の高さが fill になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "引き伸ばしの軸が親の並べ方の交差軸で決まることを、インスタンスでも守る",
+      "given": "`layout: \"row\"` の artboard の直下に、ルートが Text の部品のインスタンス",
+      "when": "そのインスタンスを包む",
+      "then": "Box の高さが `fill` になる",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+        "start": 129,
+        "end": 139,
+        "text": "test(\"layout: row と書いた artboard の直下で部品のルートが Text のインスタンスを包むと、Box の高さが fill になる\", () => {\n  const document = setupArtboardDocument({\n    artboardProps: { layout: \"row\" },\n    components: { caption: { type: \"Text\" } },\n    children: [{ name: \"label\", ref: \"caption\" }],\n  });\n\n  expect(propsOf(group(document, [\"label\"]), \"box\")).toEqual({\n    heightMode: \"fill\",\n  });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "stretch-edits"
+      ]
+    },
+    {
+      "id": "stretch-text-with-box",
+      "suite": "stretch",
+      "name": "揃えが stretch の親の下で部品のルートが Text のインスタンスと Box をまとめて包むと、Box の幅が fill になる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "まとめて包む経路でもルートの型で引き伸ばしを判定することを守る",
+      "given": "ルートが Text のインスタンス `label` と Box の `card` が兄弟",
+      "when": "2 つをまとめて包む",
+      "then": "Box の props が `{ widthMode: \"fill\" }` になる",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+        "start": 141,
+        "end": 153,
+        "text": "test(\"揃えが stretch の親の下で部品のルートが Text のインスタンスと Box をまとめて包むと、Box の幅が fill になる\", () => {\n  const document = setupArtboardDocument({\n    components: { caption: { type: \"Text\" } },\n    children: [\n      { name: \"label\", ref: \"caption\" },\n      { name: \"card\", type: \"Box\" },\n    ],\n  });\n\n  expect(propsOf(group(document, [\"label\", \"card\"]), \"box\")).toEqual({\n    widthMode: \"fill\",\n  });\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "stretch-edits"
+      ]
+    },
+    {
+      "id": "stretch-roundtrip",
+      "suite": "stretch",
+      "name": "揃えが stretch の親の下で部品のルートが Text のインスタンスを包んでから外すと、元のドキュメントに戻る",
+      "techniques": [
+        "idempotence",
+        "state"
+      ],
+      "why": "「インスタンス自体に fill を書き込む」誤りを落とす。書き込むと外したときに元へ戻らない",
+      "given": "揃えが stretch の親の下の、ルートが Text のインスタンス",
+      "when": "包んでから外す",
+      "then": "ドキュメントが包む前と等しい",
+      "commit": "1654f9ce7a055942ebf4f1be9bde81b185730ac1",
+      "excerpt": {
+        "path": "src/domains/dcmp/design-document/__tests__/design-document.group-stretch.test.ts",
+        "start": 218,
+        "end": 229,
+        "text": "test(\"揃えが stretch の親の下で部品のルートが Text のインスタンスを包んでから外すと、元のドキュメントに戻る\", () => {\n  const document = setupArtboardDocument({\n    components: { caption: { type: \"Text\" } },\n    children: [{ name: \"label\", ref: \"caption\" }],\n  });\n\n  const ungrouped = Result.unwrap(\n    DesignDocument.ungroupBox(group(document, [\"label\"]), \"box\"),\n  );\n\n  expect(ungrouped.document).toEqual(document);\n});"
+      },
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "group"
+      ]
+    },
+    {
+      "id": "free-text-instance",
+      "suite": "stretch",
+      "name": "layout: free の親の下で部品のルートが Text のインスタンスを包んだ Box は、大きさの prop を持たない",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "free の親は揃えの stretch で引き伸ばさないので編集が出ないはずだが、インスタンスでは確かめていない（プリミティブの Text では既存テストがある）",
+      "given": "`layout: \"free\"` の親の下に、ルートが Text の部品のインスタンス",
+      "when": "そのインスタンスを包む",
+      "then": "Box の props が空になる",
+      "todo": true,
+      "targets": [
+        "src/domains/dcmp/design-document/index.ts"
+      ],
+      "covers": [
+        "stretch-edits"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "部品インスタンスを包んでも、縮まなくなった",
+    "lead": "グループ化で部品インスタンスを Box に包んだとき、部品の中身が幅いっぱい（fill）や親の揃えで引き伸ばされていた場合に、Box が同じ大きさを引き継ぐようになりました。ただし並べない親（free）の下では引き継ぎません。",
+    "changed": {
+      "before": [
+        {
+          "text": "部品の中身が幅いっぱいのインスタンスを包むと、Box が中身の大きさになり、インスタンスが縮んだ"
+        },
+        {
+          "text": "親の揃えで引き伸ばされていた、中身が文字の部品インスタンスを包むと、縮んだ"
+        }
+      ],
+      "after": [
+        {
+          "text": "部品の中身が幅いっぱいなら、Box も幅いっぱいになり、インスタンスは包む前と同じ大きさに見える",
+          "message": "fill-edits"
+        },
+        {
+          "text": "公開プロパティで幅いっぱいに変えたインスタンスも、変えた後の値で引き継ぐ",
+          "message": "apply-overrides"
+        },
+        {
+          "text": "中身が文字の部品インスタンスは、親の揃えで引き伸ばされていた向きを Box も引き伸ばす",
+          "message": "stretch-edits"
+        },
+        {
+          "text": "並べない親（free）の下では引き継がず、包んでいる間インスタンスは縮む。外すと戻る",
+          "message": "direction"
+        }
+      ],
+      "text": "並べない親の下で引き継がないのは、引き継ぐと Box そのものがエラーのあるドキュメントになってしまうためです。",
+      "specs": [
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「編集操作の一覧」のグループ化 / グループ解除の行",
+          "text": "部品インスタンスは参照先の部品のルート（上書きを当てたもの）の fill を見ること、親が free のときは写さないこと、ルートが Text のインスタンスも引き伸ばしの対象になることを書いた",
+          "shas": [
+            "9124e3b5428bb7490a2e67cb82996a847635110b",
+            "afa1c6b6528550835d41a4566896de89f6ed78a3"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「複数選択」のグループ化の「全員フローなら」の項",
+          "text": "部品インスタンスの見方は 1 つだけ包むときと同じ、を足した",
+          "shas": [
+            "9124e3b5428bb7490a2e67cb82996a847635110b"
+          ]
+        },
+        {
+          "path": "docs/06-ui.md",
+          "locator": "「複数選択」のグループ化の「包んでいる間に見た目が変わるもの」の項",
+          "text": "#988 として残していた 2 件の縮みを消し、親が free のとき部品のルートが fill のインスタンスは縮む、に置き換えた",
+          "shas": [
+            "9124e3b5428bb7490a2e67cb82996a847635110b",
+            "afa1c6b6528550835d41a4566896de89f6ed78a3"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 988,
+          "text": "この PR のゴール。インスタンスを包むと縮む既知の差"
+        },
+        {
+          "issue": 527,
+          "text": "包むときに fill を Box へ写す規則を入れた Issue。この PR はその対象をインスタンスへ広げた"
+        },
+        {
+          "issue": 986,
+          "text": "親の揃えで引き伸ばされた軸を Box も fill にする規則を入れた Issue"
+        },
+        {
+          "issue": 989,
+          "text": "長さの追従が包んでいる間に効かない件。例外一覧に残したまま"
+        }
+      ],
+      "primers": [
+        "group-member",
+        "free-fill"
+      ]
+    },
+    "tables": [
+      {
+        "label": "部品インスタンスを 1 つ包んだときの Box の大きさ",
+        "gist": "結果を決めるのは、部品の中身（ルート）の種類と、親が子をどう並べるかの 2 つ。",
+        "text": "親の揃えはどの列も既定の引き伸ばし（stretch）です。",
+        "rowHeads": [
+          {
+            "id": "fill-root",
+            "label": "中身が幅いっぱいの部品"
+          },
+          {
+            "id": "text-root",
+            "label": "中身が文字の部品"
+          },
+          {
+            "id": "box-root",
+            "label": "中身が大きさ未指定の箱の部品"
+          },
+          {
+            "id": "missing",
+            "label": "参照先の部品が無い",
+            "note": "部品が消された・名前が違う"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "column",
+            "label": "縦に並べる親"
+          },
+          {
+            "id": "row",
+            "label": "横に並べる親"
+          },
+          {
+            "id": "free",
+            "label": "並べない親（free）"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "fill-root",
+            "columnHead": "column",
+            "result": "Box も幅いっぱいになり、見た目が変わらない",
+            "was": "Box が中身の大きさになり、インスタンスが縮む",
+            "tests": [
+              "size-root-fill",
+              "size-root-limits",
+              "size-override"
+            ]
+          },
+          {
+            "rowHead": "fill-root",
+            "columnHead": "row",
+            "result": "Box も幅いっぱいになり、見た目が変わらない",
+            "was": "Box が中身の大きさになり、インスタンスが縮む",
+            "tests": [
+              "size-row-parent"
+            ]
+          },
+          {
+            "rowHead": "fill-root",
+            "columnHead": "free",
+            "result": "Box は中身の大きさのままで、包んでいる間インスタンスが縮む",
+            "note": "引き継ぐと Box がエラーになるため",
+            "tests": [
+              "size-free-instance"
+            ]
+          },
+          {
+            "rowHead": "text-root",
+            "columnHead": "column",
+            "result": "Box が横に引き伸ばされ、見た目が変わらない",
+            "was": "Box が中身の大きさになり、インスタンスが縮む",
+            "tests": [
+              "stretch-text-width"
+            ]
+          },
+          {
+            "rowHead": "text-root",
+            "columnHead": "row",
+            "result": "Box が縦に引き伸ばされる（文字の高さは中身の高さになる）",
+            "was": "Box が中身の大きさになり、インスタンスが縮む",
+            "tests": [
+              "stretch-text-row"
+            ]
+          },
+          {
+            "rowHead": "text-root",
+            "columnHead": "free",
+            "result": "Box は中身の大きさのまま",
+            "tests": [
+              "free-text-instance"
+            ]
+          },
+          {
+            "rowHead": "box-root",
+            "columnHead": "column",
+            "result": "Box は中身の大きさのまま（もともと縮まない）",
+            "tests": [
+              "stretch-box-root"
+            ]
+          },
+          {
+            "rowHead": "box-root",
+            "columnHead": "row",
+            "result": "Box は中身の大きさのまま"
+          },
+          {
+            "rowHead": "box-root",
+            "columnHead": "free",
+            "result": "Box は中身の大きさのまま"
+          },
+          {
+            "rowHead": "missing",
+            "columnHead": "column",
+            "result": "包めて、Box は中身の大きさのまま",
+            "tests": [
+              "size-missing-ref"
+            ]
+          },
+          {
+            "rowHead": "missing",
+            "columnHead": "row",
+            "result": "包めて、Box は中身の大きさのまま"
+          },
+          {
+            "rowHead": "missing",
+            "columnHead": "free",
+            "result": "包めて、Box は中身の大きさのまま"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "部品インスタンスをほかのものとまとめて包むとき",
+        "before": [
+          {
+            "text": "部品インスタンスは、Box を幅いっぱいにするかの判定に数えられなかった"
+          }
+        ],
+        "after": [
+          {
+            "text": "どれかの部品の中身が幅いっぱいなら、Box も幅いっぱいになる。最小・最大の幅は引き継がない",
+            "message": "fill-mode-edits"
+          },
+          {
+            "text": "中身が文字の部品インスタンスが引き伸ばされていれば、その向きを Box も引き伸ばす",
+            "message": "stretch-edits"
+          },
+          {
+            "text": "並べない親（free）の下では、部品インスタンスの分は引き継がない",
+            "message": "direction"
+          }
+        ],
+        "tests": [
+          "siblings-root-fill",
+          "siblings-free",
+          "stretch-text-with-box"
+        ],
+        "primers": [
+          "group-member"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "並べない親（free）の下で幅いっぱいの普通の箱を包むと、これまでどおり Box も幅いっぱいになる",
+        "tests": [
+          "size-free-primitive"
+        ]
+      },
+      {
+        "text": "部品インスタンスを包んでから外すと、元のドキュメントに戻る",
+        "tests": [
+          "stretch-roundtrip"
+        ]
+      },
+      {
+        "text": "参照先の部品が無いインスタンスも、これまでどおり包める",
+        "tests": [
+          "size-missing-ref"
+        ]
+      },
+      {
+        "text": "包む操作のキーボード割り当てと、1 回の取り消しで戻ることは変わらない"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": "docs/03-schema.md",
+        "locator": "「サイズ指定の原則」の fill は row / column の親の子にだけ書ける、の項",
+        "text": "並べない親の子の fill を検証エラーにする規則は変えていない。free の親で引き継がない判断の拠り所"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "narrow-return",
+      "category": "TypeScript · 型",
+      "label": "戻り値の型の注釈",
+      "gist": "関数が何を返すかを宣言の[[型注釈|type-annotation]]で約束する仕組み。より狭い型を約束すると、呼び出し側はその狭い型の性質を前提に使える。",
+      "passages": [
+        {
+          "kind": "declaration",
+          "code": "toNode(component: Component, name: string): PrimitiveNode"
+        },
+        {
+          "kind": "text",
+          "text": "`)` の後ろの `: PrimitiveNode` が戻り値の型。本体が返す値がこの型に合わなければコンパイルエラーになる。`PrimitiveNode` は `Node` の一部（[[直和型|union]]の片方）なので、狭めても `Node` を受け取る既存の呼び出し側にはそのまま渡せる（[[構造的部分型|structural]]）。"
+        },
+        {
+          "kind": "caution",
+          "text": "戻り値の型を狭める変更は呼び出し側を壊さないが、広げる変更は壊しうる。引数の型はその逆で、狭めると呼び出し側が壊れうる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/component/index.ts",
+          "lineRange": {
+            "start": 238,
+            "end": 238
+          },
+          "text": "`Component.toNode` の戻り値を `Node` から `PrimitiveNode` に狭めた",
+          "shas": [
+            "b23d8620ad1fa300740905786962a9c28c7caf2c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "group-member"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "readonly-object",
+      "category": "TypeScript · 型",
+      "label": "`Readonly<{…}>`",
+      "gist": "オブジェクトの型のすべてのプロパティを読み取り専用にする組み込みの[[ジェネリック型|generic]]。作った後に書き換えるコードをコンパイルエラーにする。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`Readonly<T>` は `T` の各プロパティに `readonly` を付けた型を作る。`member.node = …` のような再代入は型検査で弾かれる。実行時に凍結するわけではなく、守るのは型検査の段階だけ。"
+        },
+        {
+          "kind": "memo",
+          "text": "このリポジトリではドメインの型をすべて `Readonly` にする規約がある（`rules/coding.md`）。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 279,
+            "end": 284
+          },
+          "text": "`GroupMember` を `Readonly<{ node; root }>` で定義している",
+          "shas": [
+            "b23d8620ad1fa300740905786962a9c28c7caf2c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "group-member"
+      ]
+    },
+    {
+      "kind": "language",
+      "id": "destructuring-param",
+      "category": "TypeScript · 構文",
+      "label": "引数の分割代入 `({ root }) =>`",
+      "gist": "[[アロー関数|arrow-function]]の引数に `{ … }` を書くと、受け取ったオブジェクトから同名のプロパティを取り出して変数にできる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`members.flatMap(({ root }) => …)` は、`members` の各要素（`GroupMember`）から `root` だけを取り出して使う。`(member) => member.root` と書くのと同じ意味で、使わないプロパティ（`node`）を名前に出さずに済む。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 329,
+            "end": 329
+          },
+          "text": "引き伸ばしの判定でルートだけを取り出す"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 416,
+            "end": 416
+          },
+          "text": "まとめて包むときにノードだけの並びを作る"
+        }
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "option",
+      "category": "utils · 不在の表現",
+      "label": "`Option`",
+      "gist": "値があるかもしれないし無いかもしれない、を `some` / `none` で表す型。このリポジトリでは `undefined` を不在の表現に使わず、これを使う。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`Option.map(o, f)` は `some` のときだけ `f` を当て、`none` はそのまま返す。`Option.unwrapOr(o, d)` は `none` なら既定値 `d` を返す。`fillSourcePropsOf` は「ルートがあればその props、無ければ空」をこの 2 つで書いている。"
+        },
+        {
+          "kind": "rule",
+          "text": "在／不在の判定は `Option.isSome` を通す（`rules/coding.md`「エラーと不在の表現」）。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 309,
+            "end": 309
+          },
+          "text": "参照先の部品が無いインスタンス（`root` が `none`）は空の props になる"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1259,
+            "end": 1274
+          },
+          "text": "`rootNodeOf` は参照先が無ければ `none` を返す"
+        }
+      ],
+      "seeAlso": [
+        "component-root"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "component-root",
+      "category": "dcmp · 部品",
+      "label": "部品のルートと上書き",
+      "gist": "部品インスタンスは自分では大きさの props を持たず、参照先の部品のルート（根のノード）がそれを持つ。インスタンスは公開 prop の上書きでルートの値を変えられる。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`rootNodeOf` は、プリミティブならそのノード自身を、インスタンスなら参照先の部品に `Component.applyOverrides` で上書きを当て、`Component.toNode` でインスタンスの名前を付けたノードにして返す。既存の `rootPropsOf`（可視性や回転が使う）はこのルートの props を読む形になった。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/dcmp/design-document/index.ts",
+            "start": 1259,
+            "end": 1274,
+            "emphasis": [
+              {
+                "start": 1269,
+                "end": 1272
+              }
+            ],
+            "text": "function rootNodeOf(\n  document: DesignDocument,\n  node: Node,\n): Option<PrimitiveNode> {\n  if (Node.isPrimitive(node)) {\n    return Option.some(node);\n  }\n  return Option.map(\n    ComponentSet.get(document.components, node.ref),\n    (component) =>\n      Component.toNode(\n        Component.applyOverrides(component, node.ref, node.overrides ?? {}),\n        node.name,\n      ),\n  );\n}"
+          }
+        },
+        {
+          "kind": "history",
+          "text": "以前は `rootPropsOf` が自分で部品を引いて props だけを返していた。ルートの型（Text かどうか）も要るようになったので、ノードを返す `rootNodeOf` に括り出した。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1246,
+            "end": 1248
+          },
+          "text": "`rootPropsOf` は `rootNodeOf` から導く"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 1259,
+            "end": 1274
+          },
+          "text": "`rootNodeOf` の本体",
+          "shas": [
+            "b23d8620ad1fa300740905786962a9c28c7caf2c"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "option",
+        "narrow-return",
+        "group-member"
+      ],
+      "tests": [
+        "size-override",
+        "size-missing-ref",
+        "stretch-text-width"
+      ],
+      "flows": [
+        "group-one"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "group-member",
+      "category": "dcmp · グループ化",
+      "label": "`GroupMember` と写し元",
+      "gist": "包むノードと、それが描かれるときのルートを組にした private な型。Box が引き継ぐものは、この組の `root` から決める。",
+      "status": "added",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`groupIntoBox` が包むノードごとに `rootNodeOf` を呼んで組を作り、`groupedBox` / `groupedSiblingsBox` / `collectParentAlignStretchFillModePropEdits` へ渡す。`fill` の写し元は `fillSourcePropsOf` が選び、種別で分かれるのは「インスタンスで親が free なら空」の 1 箇所だけ。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": "src/domains/dcmp/design-document/index.ts",
+            "start": 298,
+            "end": 310,
+            "emphasis": [
+              {
+                "start": 302,
+                "end": 307
+              }
+            ],
+            "text": "function fillSourcePropsOf(member: GroupMember, parentProps: Props): Props {\n  const parentArrangesChildren = Option.isSome(\n    Layout.direction(Layout.fromProps(parentProps)),\n  );\n  const isInstanceInFreeParent =\n    !Node.isPrimitive(member.node) && !parentArrangesChildren;\n\n  if (isInstanceInFreeParent) {\n    return {};\n  }\n\n  return Option.unwrapOr(Option.map(member.root, Node.propsOf), {});\n}"
+          }
+        },
+        {
+          "kind": "rule",
+          "text": "引数は 3 つまで。ノードとルートは常に対で渡るので、`document` を 4 つ目の引数にせず組の型にまとめた（`rules/coding.md`「関数のシグネチャ」）。"
+        },
+        {
+          "kind": "caution",
+          "text": "絶対配置の判定と追従はノード自身（`node`）で見る。ルートで見るのは `fill` と引き伸ばしだけ。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 279,
+            "end": 284
+          },
+          "text": "`GroupMember` の定義"
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 298,
+            "end": 310
+          },
+          "text": "`fillSourcePropsOf`",
+          "shas": [
+            "b23d8620ad1fa300740905786962a9c28c7caf2c",
+            "afa1c6b6528550835d41a4566896de89f6ed78a3"
+          ]
+        },
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 2758,
+            "end": 2761
+          },
+          "text": "`groupIntoBox` で組に詰め替える"
+        }
+      ],
+      "seeAlso": [
+        "readonly-object",
+        "destructuring-param",
+        "component-root",
+        "free-fill"
+      ],
+      "tests": [
+        "size-root-fill",
+        "siblings-root-fill",
+        "stretch-text-width"
+      ],
+      "flows": [
+        "group-one",
+        "group-many"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "free-fill",
+      "category": "dcmp · 検証",
+      "label": "free の親の子の fill",
+      "gist": "`fill` は子を並べる親（`row` / `column`）の子にだけ書ける。`free` の親の子に書くと検証エラーになる。検証は書いてある props で判定し、インスタンスの中身は見ない。",
+      "passages": [
+        {
+          "kind": "spec",
+          "text": "`docs/03-schema.md`「サイズ指定の原則」: `widthMode` / `heightMode` の `fill` は `layout` が `row` / `column` の親の子にだけ書ける。"
+        },
+        {
+          "kind": "text",
+          "text": "free の親の下のインスタンスは、中身のルートが `fill` でもエラーにならない。そこで Box へ `fill` を写すと、Box 自身が「free の親の子の fill」になり、正しかったドキュメントがエラーのあるものになる。だから写さない。プリミティブは書いた時点で同じエラーなので、写しても件数は変わらず、今の動作のまま写す。"
+        },
+        {
+          "kind": "caution",
+          "text": "代わりに、包んでいる間インスタンスは中身の大きさに縮む。`docs/06-ui.md` の「包んでいる間に見た目が変わるもの」に載せた。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "lineRange": {
+            "start": 286,
+            "end": 297
+          },
+          "text": "`fillSourcePropsOf` の doc に理由を書いている"
+        },
+        {
+          "path": "docs/06-ui.md",
+          "lineRange": {
+            "start": 343,
+            "end": 343
+          },
+          "text": "仕様の例外一覧に残した",
+          "shas": [
+            "afa1c6b6528550835d41a4566896de89f6ed78a3"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "group-member"
+      ],
+      "tests": [
+        "size-free-instance",
+        "siblings-free",
+        "size-free-primitive"
+      ],
+      "flows": [
+        "group-one"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "type-annotation",
+      "label": "型注釈",
+      "text": "変数・引数・戻り値の後ろに `: 型` と書いて、その値の型を明示すること。合わない値を書くとコンパイルエラーになる。"
+    },
+    {
+      "id": "union",
+      "label": "直和型",
+      "text": "`A | B` のように、いくつかの型のどれか 1 つを表す型。`Node` はプリミティブのノードと部品インスタンスの直和。"
+    },
+    {
+      "id": "structural",
+      "label": "構造的部分型",
+      "text": "TypeScript は型の名前ではなく形で互換性を判定する。必要なプロパティを持っていれば、より広い型の場所に渡せる。"
+    },
+    {
+      "id": "generic",
+      "label": "ジェネリック型",
+      "text": "`Readonly<T>` の `T` のように、型を引数として受け取って新しい型を作る型。"
+    },
+    {
+      "id": "arrow-function",
+      "label": "アロー関数",
+      "text": "`(x) => x + 1` の形で書く関数。配列の `map` や `flatMap` に渡す短い関数によく使う。"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "fill-source",
+      "kind": "choice",
+      "title": "写し元の props",
+      "prompt": "揃えが既定の column の親の下で部品インスタンスを 1 つ包むとき、Box へ fill を写すかどうかは何の props で決まりますか。",
+      "options": [
+        "インスタンス自身に書かれた props",
+        "参照先の部品のルートに上書きを当てた props",
+        "上書きを当てる前の部品のルートの props",
+        "親に書かれた props"
+      ],
+      "answer": 2,
+      "why": "`rootNodeOf` が `Component.applyOverrides` で上書きを当ててからルートのノードにし、`fillSourcePropsOf` はその props を返す。公開 prop で fill にしたインスタンスのテストが、上書き前の値ではないことを守っている。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "fill-source"
+        },
+        {
+          "kind": "callEdge",
+          "id": "root-apply"
+        }
+      ]
+    },
+    {
+      "id": "free-instance",
+      "kind": "yesno",
+      "title": "free の親の下のインスタンス",
+      "prompt": "layout: free の親の下で、部品のルートが fill のインスタンスを包むと、Box も fill になる。",
+      "holds": false,
+      "why": "写すと Box 自身が free の親の子の fill として検証エラーになるので写さない。代わりに包んでいる間インスタンスは縮み、06-ui に例外として残した。",
+      "go": [
+        {
+          "kind": "callEdge",
+          "id": "source-direction"
+        },
+        {
+          "kind": "stepChange",
+          "flow": "group-one",
+          "stepChange": 4
+        }
+      ]
+    },
+    {
+      "id": "free-primitive",
+      "kind": "yesno",
+      "title": "free の親の下のプリミティブ",
+      "prompt": "layout: free の親の下で、幅が fill のプリミティブの Box を包むと、包んだ Box も幅が fill になる。",
+      "holds": true,
+      "why": "free の除外はインスタンスだけに掛ける。プリミティブは包む前から同じ検証エラーで件数も変わらないので、今の動作のまま写す。test-reviewer の指摘で、この判断を守るテストを最後のコミットで足した。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "fill-source"
+        }
+      ]
+    },
+    {
+      "id": "missing-ref",
+      "kind": "choice",
+      "title": "参照先の部品が無いインスタンス",
+      "prompt": "参照先の部品が無いインスタンスを包むと、どうなりますか。",
+      "options": [
+        "グループ化が失敗する",
+        "包めて、Box は大きさの prop を持たない",
+        "包めて、Box は幅も高さも fill になる",
+        "インスタンスがドキュメントから消える"
+      ],
+      "answer": 2,
+      "why": "`rootNodeOf` は `none` を返し、`fillSourcePropsOf` は空の props を返す。エラーの直和を広げないため失敗にはせず、これまでと同じ hug にした。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "root-node-of"
+        }
+      ]
+    },
+    {
+      "id": "stretch-text-root",
+      "kind": "choice",
+      "title": "ルートが Text のインスタンスの引き伸ばし",
+      "prompt": "揃えが既定の stretch の column の親の下で、部品のルートが Text のインスタンスを包むと、Box の props はどうなりますか。",
+      "options": [
+        "何も持たない",
+        "幅が fill",
+        "高さが fill",
+        "幅と高さがどちらも fill"
+      ],
+      "answer": 2,
+      "why": "column の親の交差軸は横（幅）。Text は長さのモードの prop を持たないので親に引き伸ばされており、ルートの型でそれを判定して Box の幅を fill にする。",
+      "go": [
+        {
+          "kind": "callBox",
+          "id": "stretch-edits"
+        },
+        {
+          "kind": "message",
+          "id": "stretch-edits"
+        }
+      ]
+    },
+    {
+      "id": "group-order",
+      "kind": "order",
+      "title": "1 つを包むときの処理の順",
+      "prompt": "部品インスタンスを 1 つ包むときの処理を、起きる順に並べてください。",
+      "items": [
+        "包むノードと親を引く",
+        "参照先の部品に上書きを当て、ルートのノードにする",
+        "親が子を並べるかを見て、写し元の props を選ぶ",
+        "写し元の fill と引き伸ばしの編集を Box に当てる",
+        "元の位置に Box を入れる"
+      ],
+      "why": "`groupIntoBox` が `rootNodeOf` で `GroupMember` を作り、`groupedBox` の中で `fillSourcePropsOf` が写し元を選んでから編集を当てる。最後に `updateChildrenOfParent` で Box を元の位置へ入れる。",
+      "go": [
+        {
+          "kind": "flow",
+          "id": "group-one"
+        }
+      ]
+    }
+  ]
+}
