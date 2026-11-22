@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import type { Props } from "@/domains/dcmp/node";
 import { Result } from "@/utils/Result";
 import { DesignDocument } from "../index";
-import { propsOf } from "./group-setup";
+import { group, propsOf, setupArtboardDocument } from "./group-setup";
 
 /*
  * 包むときに、ノードの `fill` を Box へ引き継ぐ（docs/06-ui.md「編集操作の一覧」の
@@ -87,5 +87,98 @@ test("下限・上限の付いた高さが fill のノードを包むと、Box �
     heightMode: "fill",
     minHeight: 40,
     maxHeight: 160,
+  });
+});
+
+test("部品のルートの幅が fill のインスタンスを包むと、Box の幅も fill になる", () => {
+  const document = setupArtboardDocument({
+    components: { card: { type: "Box", props: { widthMode: "fill" } } },
+    children: [{ name: "hero", ref: "card" }],
+  });
+
+  expect(propsOf(group(document, ["hero"]), "box")).toEqual({
+    widthMode: "fill",
+  });
+});
+
+test("部品のルートの高さが下限・上限の付いた fill のインスタンスを包むと、Box も同じ高さの下限・上限を持つ", () => {
+  const document = setupArtboardDocument({
+    components: {
+      card: {
+        type: "Box",
+        props: { heightMode: "fill", minHeight: 40, maxHeight: 160 },
+      },
+    },
+    children: [{ name: "hero", ref: "card" }],
+  });
+
+  expect(propsOf(group(document, ["hero"]), "box")).toEqual({
+    heightMode: "fill",
+    minHeight: 40,
+    maxHeight: 160,
+  });
+});
+
+test("公開 prop で部品のルートの幅を fill に上書きしたインスタンスを包むと、Box の幅も fill になる", () => {
+  const document = setupArtboardDocument({
+    components: {
+      card: {
+        type: "Box",
+        props: { widthMode: "hug" },
+        publicProps: { width: { node: "card", prop: "widthMode" } },
+      },
+    },
+    children: [{ name: "hero", ref: "card", overrides: { width: "fill" } }],
+  });
+
+  expect(propsOf(group(document, ["hero"]), "box")).toEqual({
+    widthMode: "fill",
+  });
+});
+
+test("layout: free の親の下で部品のルートの幅が fill のインスタンスを包んだ Box は、大きさの prop を持たない", () => {
+  const document = setupArtboardDocument({
+    artboardProps: { layout: "free" },
+    components: { card: { type: "Box", props: { widthMode: "fill" } } },
+    children: [{ name: "hero", ref: "card" }],
+  });
+
+  expect(propsOf(group(document, ["hero"]), "box")).toEqual({});
+});
+
+test("参照先の部品が無いインスタンスを包むと、包めて、Box は大きさの prop を持たない", () => {
+  const document = setupArtboardDocument({
+    children: [{ name: "hero", ref: "missing" }],
+  });
+
+  const grouped = DesignDocument.groupIntoBox(document, ["hero"], "box");
+
+  expect(Result.map(grouped, (done) => propsOf(done, "box"))).toEqual(
+    Result.ok({}),
+  );
+});
+
+test("layout: row と書いた親の下で部品のルートの幅が fill のインスタンスを包むと、Box の幅も fill になる", () => {
+  const document = setupArtboardDocument({
+    artboardProps: { layout: "row" },
+    components: { card: { type: "Box", props: { widthMode: "fill" } } },
+    children: [{ name: "hero", ref: "card" }],
+  });
+
+  expect(propsOf(group(document, ["hero"]), "box")).toEqual({
+    widthMode: "fill",
+  });
+});
+
+test("layout: free の親の下で幅が fill のプリミティブを包むと、Box の幅も fill になる", () => {
+  const document = setupArtboardDocument({
+    artboardProps: { layout: "free" },
+    children: [
+      { name: "card", type: "Box", props: { widthMode: "fill" }, children: [] },
+    ],
+  });
+
+  expect(propsOf(group(document, ["card"]), "box")).toEqual({
+    widthMode: "fill",
   });
 });

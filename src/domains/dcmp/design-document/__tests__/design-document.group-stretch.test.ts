@@ -106,13 +106,50 @@ test("揃えが stretch の親の下で Ellipse を包んだ Box は、大きさ
   expect(propsOf(grouped, "box")).toEqual({});
 });
 
-test("揃えが stretch の親の下で部品インスタンスを包んだ Box は、大きさの prop を持たない", () => {
+test("揃えが stretch の親の下で部品のルートが Text のインスタンスを包むと、Box の幅が fill になる", () => {
   const document = setupArtboardDocument({
-    components: { Caption: { type: "Text" } },
-    children: [{ name: "caption", ref: "Caption" }],
+    components: { caption: { type: "Text" } },
+    children: [{ name: "label", ref: "caption" }],
   });
 
-  expect(propsOf(group(document, ["caption"]), "box")).toEqual({});
+  expect(propsOf(group(document, ["label"]), "box")).toEqual({
+    widthMode: "fill",
+  });
+});
+
+test("揃えが stretch の親の下で部品のルートが Box のインスタンスを包んだ Box は、大きさの prop を持たない", () => {
+  const document = setupArtboardDocument({
+    components: { card: { type: "Box" } },
+    children: [{ name: "hero", ref: "card" }],
+  });
+
+  expect(propsOf(group(document, ["hero"]), "box")).toEqual({});
+});
+
+test("layout: row と書いた artboard の直下で部品のルートが Text のインスタンスを包むと、Box の高さが fill になる", () => {
+  const document = setupArtboardDocument({
+    artboardProps: { layout: "row" },
+    components: { caption: { type: "Text" } },
+    children: [{ name: "label", ref: "caption" }],
+  });
+
+  expect(propsOf(group(document, ["label"]), "box")).toEqual({
+    heightMode: "fill",
+  });
+});
+
+test("揃えが stretch の親の下で部品のルートが Text のインスタンスと Box をまとめて包むと、Box の幅が fill になる", () => {
+  const document = setupArtboardDocument({
+    components: { caption: { type: "Text" } },
+    children: [
+      { name: "label", ref: "caption" },
+      { name: "card", type: "Box" },
+    ],
+  });
+
+  expect(propsOf(group(document, ["label", "card"]), "box")).toEqual({
+    widthMode: "fill",
+  });
 });
 
 test("column の親の下で Text と Box をまとめて包むと、Box の幅が fill になる", () => {
@@ -173,6 +210,19 @@ test("揃えが stretch の親の下の Text を包んでから外すと、元�
 
   const ungrouped = Result.unwrap(
     DesignDocument.ungroupBox(group(document, ["title"]), "box"),
+  );
+
+  expect(ungrouped.document).toEqual(document);
+});
+
+test("揃えが stretch の親の下で部品のルートが Text のインスタンスを包んでから外すと、元のドキュメントに戻る", () => {
+  const document = setupArtboardDocument({
+    components: { caption: { type: "Text" } },
+    children: [{ name: "label", ref: "caption" }],
+  });
+
+  const ungrouped = Result.unwrap(
+    DesignDocument.ungroupBox(group(document, ["label"]), "box"),
   );
 
   expect(ungrouped.document).toEqual(document);

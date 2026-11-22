@@ -235,7 +235,7 @@ export const Component = {
    * @param name その部品の名前（`components` のキー）。ルートノードの名前になる
    * @returns `name` を持ち、部品の `type` / `props` / `children` をそのまま持つプリミティブノード
    */
-  toNode(component: Component, name: string): Node {
+  toNode(component: Component, name: string): PrimitiveNode {
     return {
       name,
       type: component.type,
