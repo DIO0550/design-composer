@@ -1,0 +1,224 @@
+{
+  "version": 2,
+  "pr": 1440,
+  "headBranch": "claude/practical-curie-jhny3j",
+  "baseBranch": "main",
+  "mergeBase": "9ba10ec35152cd8158c74aaac15efe9fd2d6a86b",
+  "head": "09c264dcdece9f438c6565252b36fb9d8ed4a6cc",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/post-merge-review.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue.sh",
+          "changed": false
+        },
+        {
+          "path": "AGENTS.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "1b4625589102084a46ed0a4f90d695bb008402a7",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-22T09:11:41Z",
+      "subject": "自分で進める Issue には assign しない（assign はルーティンへ任せる合図）",
+      "body": "AGENTS.md の「着手したら自分をアサインし」に従って対話セッションが\nIssue に assign すると、assign を起点に起動するルーティンが同じ Issue を\n並行して進めていた（#1425 / #1437）。着手の印はセッション URL の\nコメントが担うので、自分で進める Issue には assign しないと規範に書き、\nimplementation-flow フェーズ 1 とフック session-url-notice.sh の文を\n合わせて直す。常時ロードの行数は増やしていない（757 / 757）。\n\nRefs #1439\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -22,7 +22,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `pre-push-test-helper-duplication.sh` | `PreToolUse`（Bash） | **push 前のテストヘルパーの重複検査**（`rules/testing.md`「テスト用ヘルパーの置き場所」）。`src/` の `__tests__/` を横断し、本体が一字一句同じヘルパーが 2 つ以上あれば push をブロックする |\n | `post-merge-review.sh` | `PostToolUse`（Bash/MCP） | **マージ後の振り返りの提示**。PR のマージを検知し、Issue への追記・続きの Issue・評価の記録を促す |\n | `hook-canary.sh` | `PreToolUse`（Bash） | **カナリア**。`echo hook-canary` を必ず deny する（連ねたコマンドの中にあっても切り出して判定する）。通ってしまったときの読み方は後述（**通った = 不発、ではない**） |\n-| `session-url-notice.sh` | `SessionStart` | **セッション URL の提示**（`AGENTS.md`「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡し、ブランチが `claude/issue-<N>-...` なら対象番号も添える。コメント前に他セッションの URL コメントや自分以外の assignee がないか確認するよう促す（`parallel-issue-work`） |\n+| `session-url-notice.sh` | `SessionStart` | **セッション URL の提示**（`AGENTS.md`「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。URL を組み立てて渡し、ブランチが `claude/issue-<N>-...` なら対象番号も添える。コメント前に他セッションの URL コメントがないか、assign から起動したのでないのに assignee が付いていないかを確認するよう促す（`parallel-issue-work`） |\n | `record-firings.sh` | `SessionStart` + `PostToolUse`（Skill/Task/Agent） | **スキル・サブエージェントの発火ログ**。tmp のセッション別ログへ追記し、`harness-record` の記録作成と `block-parent-session-edit.sh` の flow 判定に使う。SessionStart の見出し行で「起動しなかった」と「フック不発」を切り分ける |\n | `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse`（Task/Agent） | **作業ツリーを書き換えるサブエージェントの実行中フラグ**。`plan-reviewer` / `test-reviewer` / `implementer` の開始・終了をセッション別・種類別のマーカーで数え、`block-git-during-verification-agent.sh` が読む。この 3 つの起動のうち **`run_in_background: true` を明示したものは拒否する**（塞いでいない形はフック冒頭を参照） |\n | `block-git-during-verification-agent.sh` | `PreToolUse`（Bash） | **作業ツリーを書き換えるサブエージェント実行中の git 操作を拒否**。マーカーがある間は `git add` / `commit` / `push` を deny し、ミューテーション実測や実装途中の書き換えがコミットへ混入する事故を防ぐ。古いマーカーは無視する（種類ごとの有効期間と理由はフック本文。拒否文にマーカーのディレクトリを出す） |",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "patch": "@@ -64,7 +64,9 @@ fi\n # `pr-692.md`・`pr-718.md`・`pr-743.md` 指摘1、分類 `parallel-issue-work`)。確認そのものは\n # GitHub への問い合わせが要るためこのスクリプトの外(AI 自身の gh 呼び出し)に置く。\n # このスクリプトが外部コマンドに依存しない理由は変わらない(直上の Why)\n-message=\"このセッションの URL は ${session_url}。${target}着手する前に、その Issue の既存コメントと assignees を見て、他のセッションの URL コメントや自分以外の assignee が無いか確認すること。あれば着手を止め、並行実装になっている旨と選択肢を Issue にコメントする。無ければ、着手した時点でその Issue へこの URL をコメントすること(AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」)。\\\\n同じ URL のコメントが既にあれば足さない。判断待ちで止まるときは、選択肢と根拠を書いたコメントに改めて併記する。\"\n+# assignee は着手者の印として読まない。assign は、それを起点に起動するルーティンへ任せる合図(AGENTS.md の同じ節)であり、\n+# どのセッションも同じアカウントで書く(#1425)ので、assignee が誰かでは見分けられない\n+message=\"このセッションの URL は ${session_url}。${target}着手する前に、その Issue の既存コメントと assignees を見て、他のセッションの URL コメントが無いか、また(自分が assign から起動したのでなければ)assignee が付いていないか確認すること(assign はそれを起点に起動するルーティンへ任せる合図)。あれば着手を止め、並行実装になっている旨と選択肢を Issue にコメントする。無ければ、着手した時点でその Issue へこの URL をコメントし、assignee は付けないこと(AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」)。\\\\n同じ URL のコメントが既にあれば足さない。判断待ちで止まるときは、選択肢と根拠を書いたコメントに改めて併記する。\"\n \n cat <<JSON\n {",
+          "patchLines": 11,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -62,6 +62,7 @@ description: \"design-composer の実装を ゴールの確定 → タスクの\n - ゴールが決まらない場合は、決まらない理由（仕様の欠落／選択肢の割れ）を先に潰す。曖昧なまま計画に進むと、計画の検証が照合先を持てなくなる\n - **自分で潰せず回答を待つなら、そこで止める。** 選択肢と根拠を Issue に書き、**作業中のセッション URL を併記する**（`AGENTS.md`）。推測で埋めて計画へ進まない\n - 対応する Issue がなければ**先に作る**。Issue なしで実装を始めない（判断の置き場所がなくなるため）\n+  - 自分で進める Issue は、作成の呼び出しでも後からでも assignee を付けない（理由は `AGENTS.md`「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。フェーズ 2 で分けた Issue のうち、このセッションで続けて進めるものも同じ\n - 仕様の拠り所は `docs/`、UI の拠り所は `docs/Design Composer.html`（`rules/ui-verification.md`）\n \n ### 種類の確定",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "AGENTS.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -58,7 +58,7 @@\n \n ## 着手した Issue は、その回で閉じる\n \n-**着手したら自分をアサインし、PR 本文の `Closes #<番号>` で閉じる。** 手動では閉じない（例外は PR を出さない `flow:investigation` のみ）。閉じる Issue を持たない PR は `.github/workflows/pr-closing-issue.yml` が落とす（例外は `harness-record` の記録 PR）。\n+**着手した Issue は、PR 本文の `Closes #<番号>` で閉じる。** 手動では閉じない（例外は PR を出さない `flow:investigation` のみ）。閉じる Issue を持たない PR は `.github/workflows/pr-closing-issue.yml` が落とす（例外は `harness-record` の記録 PR）。\n \n - 続きが必要な作業は**新しい Issue を立てて元の Issue からリンクする**（種類は `implementation-flow` フェーズ 1「種類の確定」の手順 4）。閉じた Issue は再オープンしない（判断の変更は閉じたままコメントで残す → `implementation-flow` フェーズ 8）\n - PR を出さずに止まった Issue と、子へ分割した親 Issue は open のままでよい（閉じる起点がないため）\n@@ -87,7 +87,7 @@\n \n ## Issue に紐づいて起動したら、セッションの URL を Issue に残す\n \n-Issue に紐づく作業を始めたら、**着手した時点で**その Issue へセッションの URL（`https://claude.ai/code/session_<id>`）をコメントし、判断待ちで止まるときも選択肢と根拠に併記する。\n+Issue に紐づく作業を始めたら、**着手した時点で**その Issue へセッションの URL（`https://claude.ai/code/session_<id>`）をコメントし、判断待ちで止まるときも選択肢と根拠に併記する。着手の印はこのコメントが担うので、**自分で進める Issue には assign しない**（assign は、それを起点に起動するルーティンへ任せる合図になる → `implementation-flow` フェーズ 1）。\n \n **経緯はそのセッションの中にしか残らない。** Issue だけを見る人や後から引き継ぐセッションが辿れるよう、停止時ではなく着手時に残す（通知は流れるが Issue は残る）。フック化できない理由は [`harness/case-law/process.md`](harness/case-law/process.md) を参照。\n ",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "09c264dcdece9f438c6565252b36fb9d8ed4a6cc",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-22T09:19:59Z",
+      "subject": "フックの Why を「着手の印」に揃え、assignee の有無を見る理由を書く",
+      "body": "フェーズ 6 の指摘（naming 1 / comment 1・2）への対応。「着手者の印」を\nAGENTS.md と同じ「着手の印」に揃え、assignee は誰かの識別には使わず\n有無だけをルーティンへ任せた合図として見ることを書く。同じアカウントで\n書かれていたことは #1425 の事例として書く。\n\nRefs #1439\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -64,8 +64,8 @@ fi\n # `pr-692.md`・`pr-718.md`・`pr-743.md` 指摘1、分類 `parallel-issue-work`)。確認そのものは\n # GitHub への問い合わせが要るためこのスクリプトの外(AI 自身の gh 呼び出し)に置く。\n # このスクリプトが外部コマンドに依存しない理由は変わらない(直上の Why)\n-# assignee は着手者の印として読まない。assign は、それを起点に起動するルーティンへ任せる合図(AGENTS.md の同じ節)であり、\n-# どのセッションも同じアカウントで書く(#1425)ので、assignee が誰かでは見分けられない\n+# assignee は着手の印として読まない(#1425 では全セッションが同じアカウントで書き、誰が着手したかを見分けられなかった)。\n+# 有無だけを、assign を起点に起動するルーティンへ任せた合図として見る(AGENTS.md の同じ節)\n message=\"このセッションの URL は ${session_url}。${target}着手する前に、その Issue の既存コメントと assignees を見て、他のセッションの URL コメントが無いか、また(自分が assign から起動したのでなければ)assignee が付いていないか確認すること(assign はそれを起点に起動するルーティンへ任せる合図)。あれば着手を止め、並行実装になっている旨と選択肢を Issue にコメントする。無ければ、着手した時点でその Issue へこの URL をコメントし、assignee は付けないこと(AGENTS.md「Issue に紐づいて起動したら、セッションの URL を Issue に残す」)。\\\\n同じ URL のコメントが既にあれば足さない。判断待ちで止まるときは、選択肢と根拠を書いたコメントに改めて併記する。\"\n \n cat <<JSON",
+          "patchLines": 11,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": ".claude/skills/implementation-flow/SKILL.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/session-url-notice.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map.py",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-closing-issue.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    }
+  ]
+}
