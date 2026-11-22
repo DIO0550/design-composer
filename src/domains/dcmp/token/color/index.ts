@@ -31,17 +31,19 @@ export type Rgb = `#${string}`;
 
 export const Rgb = {
   /**
-   * 6桁の hex として読める文字列だけを RGB にする。
+   * 6 桁、または各桁を重ねて 6 桁になる 3 桁の hex として読める文字列だけを RGB にする。
    *
    * 「生成された = 6桁の小文字 hex である」を成立させるための唯一の入口。
    *
    * @param value RGB として読みたい色の綴り
-   * @returns 小文字へ倒した RGB。`AnyCaseRgbPattern` に合わなければ `none`
+   * @returns 小文字へ倒した 6 桁の RGB。4 桁・8 桁は alpha を持つので `none`。`#` で始まる 6 桁・3 桁の
+   *   hex でなければ `none`
    */
   create(value: string): Option<Rgb> {
-    return AnyCaseRgbPattern.test(value)
+    const expanded = expandShortHex(value);
+    return AnyCaseRgbPattern.test(expanded)
       ? // 実行時に6桁 hex であることを確かめた戻り値なので、ここだけ as を許す
-        Option.some(value.toLowerCase() as Rgb)
+        Option.some(expanded.toLowerCase() as Rgb)
       : Option.none;
   },
 } as const;
@@ -139,8 +141,11 @@ export const ColorToken = {
    * `input[type=color]` は6桁しか扱えず、8桁を渡すとブラウザが `#000000` へ
    * 落として黙って黒い見本を出すため、載せる前にここで分ける。
    *
+   * 短縮形を読まないのは、文書に入る色は読み込みでも書き込みでも `normalize` で 6・8 桁へ広げて
+   * あり（docs/04-tokens.md「値の形式」）、3・4 桁がここへ届かないため。
+   *
    * @param color 6 桁の部分を取り出したい色
-   * @returns hex として読めた場合だけ `some`。読めない値は取り出しようがないので `none`
+   * @returns 6 桁か 8 桁の hex（大文字も可）のときだけ `some`。3・4 桁の短縮形は `none`
    */
   rgbOf(color: ColorToken): Option<Rgb> {
     return AnyCaseHexColorPattern.test(color)
