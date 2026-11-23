@@ -94,7 +94,7 @@ harness/            # 判例・git hooks・振り返りの記録
 .claude/            # サブエージェント・フック・スキル
 .storybook/         # Storybook 設定
 .devcontainer/      # Dev Container 設定
-.github/            # CI ワークフローとスクリプト
+.github/            # CI ワークフローとスクリプト・Issue テンプレート
 ```
 
 各フォルダの責務と、層をまたぐ依存の許される向きは [rules/architecture.md](rules/architecture.md) が規定する。
