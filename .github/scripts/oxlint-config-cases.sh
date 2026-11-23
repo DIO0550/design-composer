@@ -14,11 +14,11 @@
 # 走らせる。** 入れ子の設定はその下のファイルにだけ効くので、1 回の出力をパスの頭でケースへ振り分けられる。
 # ケースごとに起動すると、起動の時間がケースの数だけ積もる。
 #
-# 判定は、そのケースのファイルに `[Error/` の行があれば 1、無ければ 0 として、規則の名前の見出しと
-# `decide` で突き合わせる。`[Error/` の有無はファイル単位で見るので、**1 ファイルで 1 規則だけを確かめる
-# この表に限り、規則の診断が警告だけなら broken になる**(`error` を `warn` に下げる・`off` を外して警告が
-# 出る、の退行を落とす)。実物の設定ではこの枝に届かないので、表の前で 1 ケース分の判定(`case_verdict`)に
-# 固定の行を与える自己検査を回す。
+# 判定は、そのケースのファイルについての行を規則の名前の見出しと `decide` で突き合わせる。表は 1 ファイルで
+# 1 規則だけを確かめるので、**見出しに当たらない行(別の規則の診断)が 1 行でも混ざれば broken にする。**
+# 重大度は規則の行に `[Error/` があれば 1、無ければ 0 として渡すので、規則の診断が警告だけなら broken になる
+# (`error` を `warn` に下げる・`off` を外して警告が出る、の退行を落とす)。実物の設定ではどちらの broken の
+# 枝にも届かないので、表の前で 1 ケース分の判定(`case_verdict`)に固定の行を与える自己検査を回す。
 #
 # その前に、oxlint の出力全体を同じ `decide` に掛ける。broken なら出力から規則ごとの判定ができないので、
 # 終了コードと出力を 1 回だけ標準エラーへ出し、全ケースを broken にする。設定が壊れたとき(診断の行を
@@ -88,15 +88,23 @@ error_line='\[Error/'
 # $2 規則(unix 形式の出力で末尾の括弧に入る名前)
 # $3 そのケースのファイルについての出力の行
 case_verdict() {
-  local expected="$1" rule="$2" lines="$3" has_error=0
-  grep -qE "$error_line" <<<"$lines" && has_error=1
-  normalize_miss "$expected" "$(decide "$lines" "$has_error" "\\(${rule}\\)\\]\$")"
+  local expected="$1" rule="$2" lines="$3" has_error=0 other_rule_lines
+  local heading="\\(${rule}\\)\\]\$"
+  other_rule_lines="$(grep -vE "$heading" <<<"$lines")"
+  if [ -n "$other_rule_lines" ]; then
+    echo "broken"
+    return 0
+  fi
+  grep -qE "${error_line}.*${heading}" <<<"$lines" && has_error=1
+  normalize_miss "$expected" "$(decide "$lines" "$has_error" "$heading")"
 }
 
 self_test_head='c1/src/features/probe/__tests__/probe.normal.test.ts:2:1:'
 report broken "$(case_verdict deny no-hooks "$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]")" "自己検査: 規則の警告だけなら broken"
 report deny "$(case_verdict deny no-hooks "$self_test_head Do not use setup or teardown hooks. [Error/eslint-plugin-jest(no-hooks)]")" "自己検査: 規則の error なら deny"
 report broken "$(case_verdict deny no-hooks "$self_test_head Expected { after 'if' condition. [Error/eslint(curly)]")" "自己検査: 別の規則の error だけなら broken"
+report broken "$(case_verdict deny no-hooks "$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]
+$self_test_head Expected { after 'if' condition. [Error/eslint(curly)]")" "自己検査: 規則の警告と別の規則の error が混ざれば broken"
 report pass "$(case_verdict pass no-hooks "")" "自己検査: 行が無ければ pass"
 
 # 設定の `files` の glob の拡張子の波括弧を 1 本ずつ、中身を並べ替えて空白区切りの 1 行にする。
