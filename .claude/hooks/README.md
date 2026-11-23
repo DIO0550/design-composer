@@ -153,7 +153,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 | jq が無い環境 | `block-git-add-all.sh` と `block-commit-md-heading.sh` は jq でコマンドを取り出すので、jq が無いと素通りする（`block-protected-branch-edit.sh` は jq を使わない） |
 | awk / sed の異常終了 | `block-git-add-all.sh` と `block-commit-md-heading.sh` は、`lib/command-literals.sh` の awk / sed が異常終了しても素通りする（判定表を走らせれば deny の行が NG になる） |
 
-クラウドの実行環境では `.claude/` 自体が読まれないことがある（#1443）。`pull-request` スキルの `gh pr create` / `gh pr edit` はクラウドでは GraphQL の 403 で失敗するが、取り込み元のまま写した。出どころは #1437 のルーティンのセッションの停止コメント（Q4）と、2026-11-22 にクラウドのセッションで `gh api graphql` が `HTTP 403`（"GitHub GraphQL is not available from Claude Code sessions"）を返したことで、`gh pr create` 自体は走らせていない。`.claude/settings.json` で `false` にしたのは d-market-git の 2 つ（`git-workflow-plugin` / `workflow-automation-plugin`）だけで、共有のプロジェクト設定に書いている。利用者のローカル設定（`settings.local.json`）・`--settings`・managed で有効にすると、プラグインのフックも走る。
+クラウドの実行環境では `.claude/` 自体が読まれないことがある（#1443）。`pull-request` スキルの `gh pr create` はクラウドでは GraphQL の 403 で失敗するが、取り込み元のまま写した。出どころは #1437 のルーティンのセッションの停止コメント（Q4）と、2026-11-22 にクラウドのセッションで `gh api graphql` が `HTTP 403`（"GitHub GraphQL is not available from Claude Code sessions"）を返したことで、`gh pr create` 自体は走らせていない。`.claude/settings.json` で `false` にしたのは d-market-git の 2 つ（`git-workflow-plugin` / `workflow-automation-plugin`）だけで、共有のプロジェクト設定に書いている。利用者のローカル設定（`settings.local.json`）・`--settings`・managed で有効にすると、プラグインのフックも走る。
 
 ### 「代替不能」が実際に不発だったとき、手動で肩代わりする
 
