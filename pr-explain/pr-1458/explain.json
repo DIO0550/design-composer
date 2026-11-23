@@ -1,0 +1,1381 @@
+{
+  "version": 1,
+  "pr": 1458,
+  "sha": "21f0c8796041205389dce69f7c540a14d006f570",
+  "issue": 1438,
+  "overview": {
+    "title": "Epic・実装・バグ・調査の Issue テンプレートを足す",
+    "lead": "Issue を作る画面で 4 本のテンプレート（Epic・実装・バグ・調査）を選べるようになり、implementation-flow が Issue に求める欄（ゴール・分割の判断・再現手順・問い など）が並んだ状態で書き始められる。テンプレートは作業の種類（`flow:*`）のラベルを付けず、種類は今までどおり人が決める。",
+    "before": [
+      {
+        "text": "`.github/ISSUE_TEMPLATE/` が無く、Issue を開くと空の書式がそのまま開いて、欄の見出しも毎回手で書いていた",
+        "message": "open-new"
+      },
+      {
+        "text": "セッションが作る親 Issue は、`SKILL.md` 手順 4 (c) の「tracking の親など」として通さない行を書いて作っていた。手順 5 は「親が自分で選んだラベルは付けない」と、ラベル全般を指すように読めた",
+        "message": "read-skill"
+      },
+      {
+        "text": "手順ファイル（`bugfix.md` / `investigation.md` / `SKILL.md`）の項目には、写し先が無かった"
+      }
+    ],
+    "after": [
+      {
+        "text": "Issue を開くとテンプレートの一覧が出て、選んだテンプレートの欄が並ぶ",
+        "message": "open-new"
+      },
+      {
+        "text": "Epic を選ぶとタイトルに `[Epic] ` とラベル `epic` が、バグを選ぶとラベル `bug` が最初から入る。実装と調査はラベルを付けない",
+        "message": "read-epic"
+      },
+      {
+        "text": "必須の欄（★）が空のままでは送れない。どのテンプレートも `flow:*` は付けない",
+        "message": "submit"
+      },
+      {
+        "text": "セッションが Epic を作るときは、通さない行に加えて `epic` ラベルを作成の呼び出しに含める。手順 5 が付けないとするのは `flow:*` ラベルに限った",
+        "message": "create-epic"
+      },
+      {
+        "text": "手順ファイルの項目の横に、テンプレートにも写してあるので変えたら揃える、という 1 行がある",
+        "message": "sync-bug"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "分割の判断の必須",
+        "text": "「分割の判断」は 4 本すべてにあり、必須は Epic だけ。ほかの 3 本は着手してから分けるかを決めるため。欄の構成が `bugfix.md` / `investigation.md` のフェーズ 1 と合っているかを見てほしい",
+        "go": {
+          "kind": "feature",
+          "id": "templates"
+        }
+      },
+      {
+        "title": "写し元からの参照",
+        "text": "手順ファイルに足した `.github/ISSUE_TEMPLATE/…` への参照は、途中のフォルダ名が大文字なので名指ししたパスの検査が見ない（実測）。テンプレートを改名しても検査では落ちず、grep の目印にとどまる",
+        "go": {
+          "kind": "stepChange",
+          "flow": "sync-source",
+          "stepChange": 2
+        }
+      },
+      {
+        "title": "種類の確定の手順",
+        "text": "手順 4 (c) と手順 5 の書き換えが、同じ節の前後の文と食い違っていないか",
+        "go": {
+          "kind": "stepChange",
+          "flow": "epic-session",
+          "stepChange": 1
+        }
+      },
+      {
+        "title": "マージ後に確かめること",
+        "text": "作成画面に出るのは既定ブランチのテンプレートだけなので、本文の並び・ラベル・タイトルはマージ後に 4 件作って確かめる（#1438 に書く）",
+        "go": {
+          "kind": "flow",
+          "id": "epic-screen"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "templates",
+      "label": "Issue テンプレート",
+      "role": "Issue を作る画面で選べる 4 本のフォームと、それを README の構成説明に載せること",
+      "review": [
+        "4 本の欄と必須の選び方が、implementation-flow の種類ごとの手順（`bugfix.md` / `investigation.md` のフェーズ 1）と合っているか",
+        "どのテンプレートの `labels:` にも `flow:*` が無く、宣言の行が本文にも既定値にも無いか",
+        "YAML にパスもスキル名も書いていないか（`.yml` は名指ししたパスの検査の対象外なので、改名に追従できない）"
+      ]
+    },
+    {
+      "id": "flow-docs",
+      "label": "手順との対応",
+      "role": "implementation-flow の手順ファイルから写し先のテンプレートを示し、Epic の作り方を手順に書く",
+      "review": [
+        "手順 4 (c) と手順 5 の書き換えが、同じ節の前後の文と食い違っていないか",
+        "写し元に足した 1 行が、名指ししたパスの検査に拾われないことを承知のうえで残してよいか"
+      ]
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "Issue テンプレートと、それを使う implementation-flow の手順ファイル"
+    },
+    {
+      "layer": "その他",
+      "role": "リポジトリの構成を説明する README"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".github/ISSUE_TEMPLATE/epic.yml",
+      "name": "Epic のテンプレート",
+      "role": "最初から子に分けて進める親 Issue のフォーム。タイトル `[Epic] ` とラベル `epic` を入れる",
+      "feature": "templates",
+      "change": "新しく作った。必須はゴールと分割の判断",
+      "icon": "widget"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+      "name": "実装のテンプレート",
+      "role": "機能追加・リファクタリングのフォーム。ラベルは付けない",
+      "feature": "templates",
+      "change": "新しく作った。必須はゴールだけ",
+      "icon": "widget"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/bug.yml",
+      "name": "バグのテンプレート",
+      "role": "既存の振る舞いの誤りのフォーム。ラベル `bug` を入れる",
+      "feature": "templates",
+      "change": "新しく作った。必須はゴール・再現手順・期待する結果・実際の結果",
+      "icon": "widget"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/investigation.yml",
+      "name": "調査のテンプレート",
+      "role": "ソースを変えずに調べて答えを書く作業のフォーム。ラベルは付けない",
+      "feature": "templates",
+      "change": "新しく作った。必須はゴール・問い・終わりの条件",
+      "icon": "widget"
+    },
+    {
+      "path": ".claude/skills/implementation-flow/SKILL.md",
+      "name": "実装の手順",
+      "role": "implementation-flow の全フェーズ。フェーズ 1 でゴールと作業の種類を決める",
+      "feature": "flow-docs",
+      "change": "ゴールの節に写し先の 1 行を足し、手順 4 (c) の例を Epic にして `epic` ラベルを含めると書き、手順 5 を `flow:*` ラベルに絞った"
+    },
+    {
+      "path": ".claude/skills/implementation-flow/bugfix.md",
+      "name": "バグ修正の手順",
+      "role": "`flow:bugfix` で足す手順。フェーズ 1 で症状を 3 つに分けて書く",
+      "feature": "flow-docs",
+      "change": "3 つの項目が `bug.yml` にも写してあると 1 行足した"
+    },
+    {
+      "path": ".claude/skills/implementation-flow/investigation.md",
+      "name": "調査の手順",
+      "role": "`flow:investigation` で足す手順。フェーズ 1 で問いと終わりの条件を書く",
+      "feature": "flow-docs",
+      "change": "2 つの項目が `investigation.yml` にも写してあると 1 行足した"
+    },
+    {
+      "path": "README.md",
+      "name": "リポジトリの案内",
+      "role": "リポジトリの構成とフォルダの責務を説明する",
+      "feature": "templates",
+      "change": "`.github/` の説明に「Issue テンプレート」を足した",
+      "graph": false
+    }
+  ],
+  "actors": [
+    {
+      "id": "author",
+      "label": "Issue を作る人",
+      "role": "GitHub の画面から Issue を作る"
+    },
+    {
+      "id": "github",
+      "label": "GitHub の作成画面",
+      "role": "既定ブランチのテンプレートを一覧に出し、選ばれたフォームを組んで、送られた入力から Issue を作る",
+      "icon": "widget"
+    },
+    {
+      "id": "session",
+      "label": "セッション",
+      "role": "implementation-flow の手順に沿って Issue を作る Claude のセッション"
+    },
+    {
+      "id": "editor",
+      "label": "手順を直す人",
+      "role": "implementation-flow の手順ファイルを書き換える人やセッション"
+    }
+  ],
+  "messages": [
+    {
+      "id": "open-new",
+      "from": "author",
+      "to": "github",
+      "kind": "cmd",
+      "name": "新しい Issue を開く",
+      "code": "New issue",
+      "via": "http",
+      "returns": "テンプレートの一覧（4 本と空の Issue）",
+      "status": "changed"
+    },
+    {
+      "id": "read-epic",
+      "from": "github",
+      "to": ".github/ISSUE_TEMPLATE/epic.yml",
+      "kind": "qry",
+      "name": "Epic のフォームを読む",
+      "code": "epic.yml",
+      "via": "file",
+      "returns": "タイトル `[Epic] `・ラベル `epic`・欄の並び",
+      "status": "added"
+    },
+    {
+      "id": "read-implementation",
+      "from": "github",
+      "to": ".github/ISSUE_TEMPLATE/implementation.yml",
+      "kind": "qry",
+      "name": "実装のフォームを読む",
+      "code": "implementation.yml",
+      "via": "file",
+      "returns": "欄の並び（ラベルなし）",
+      "status": "added"
+    },
+    {
+      "id": "read-bug",
+      "from": "github",
+      "to": ".github/ISSUE_TEMPLATE/bug.yml",
+      "kind": "qry",
+      "name": "バグのフォームを読む",
+      "code": "bug.yml",
+      "via": "file",
+      "returns": "ラベル `bug`・欄の並び",
+      "status": "added"
+    },
+    {
+      "id": "read-investigation",
+      "from": "github",
+      "to": ".github/ISSUE_TEMPLATE/investigation.yml",
+      "kind": "qry",
+      "name": "調査のフォームを読む",
+      "code": "investigation.yml",
+      "via": "file",
+      "returns": "欄の並び（ラベルなし）",
+      "status": "added"
+    },
+    {
+      "id": "submit",
+      "from": "author",
+      "to": "github",
+      "kind": "cmd",
+      "name": "フォームを送る",
+      "code": "Submit new issue",
+      "via": "http",
+      "payload": "欄ごとの入力",
+      "returns": "欄が `### <欄のラベル>` の見出しで並んだ本文の Issue",
+      "status": "changed"
+    },
+    {
+      "id": "read-skill",
+      "from": "session",
+      "to": ".claude/skills/implementation-flow/SKILL.md",
+      "kind": "qry",
+      "name": "種類の確定の手順を読む",
+      "code": "フェーズ 1「種類の確定」手順 4 (c)・手順 5",
+      "via": "file",
+      "returns": "Epic は通さない行を書き、`epic` ラベルを含めて作る",
+      "status": "changed"
+    },
+    {
+      "id": "create-epic",
+      "from": "session",
+      "to": "github",
+      "kind": "cmd",
+      "name": "Epic を作る",
+      "code": "Issue の作成の呼び出し（本文に通さない行、labels に epic）",
+      "via": "http",
+      "payload": "本文と `epic` ラベル",
+      "status": "changed"
+    },
+    {
+      "id": "edit-bugfix",
+      "from": "editor",
+      "to": ".claude/skills/implementation-flow/bugfix.md",
+      "kind": "cmd",
+      "name": "症状の項目を書き換える",
+      "code": "bugfix.md「フェーズ 1: ゴールに症状を書く」",
+      "via": "file"
+    },
+    {
+      "id": "sync-bug",
+      "from": ".claude/skills/implementation-flow/bugfix.md",
+      "to": ".github/ISSUE_TEMPLATE/bug.yml",
+      "kind": "evt",
+      "name": "写し先に揃える",
+      "code": "この 3 つは `.github/ISSUE_TEMPLATE/bug.yml` の欄にも写してある。変えたら揃える。",
+      "via": "file",
+      "status": "added"
+    },
+    {
+      "id": "sync-investigation",
+      "from": ".claude/skills/implementation-flow/investigation.md",
+      "to": ".github/ISSUE_TEMPLATE/investigation.yml",
+      "kind": "evt",
+      "name": "調査の欄に揃える",
+      "code": "この 2 つは `.github/ISSUE_TEMPLATE/investigation.yml` の欄にも写してある。変えたら揃える。",
+      "via": "file",
+      "status": "added"
+    },
+    {
+      "id": "sync-goal-implementation",
+      "from": ".claude/skills/implementation-flow/SKILL.md",
+      "to": ".github/ISSUE_TEMPLATE/implementation.yml",
+      "kind": "evt",
+      "name": "実装のゴール欄に揃える",
+      "code": "ゴールの書き方は `.github/ISSUE_TEMPLATE/implementation.yml` と … のゴール欄にも写してある",
+      "via": "file",
+      "status": "added"
+    },
+    {
+      "id": "sync-goal-epic",
+      "from": ".claude/skills/implementation-flow/SKILL.md",
+      "to": ".github/ISSUE_TEMPLATE/epic.yml",
+      "kind": "evt",
+      "name": "Epic のゴール欄に揃える",
+      "code": "… と `.github/ISSUE_TEMPLATE/epic.yml` のゴール欄にも写してある",
+      "via": "file",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "epic-screen",
+      "label": "画面から Epic を作るとき",
+      "gist": "一覧から Epic を選ぶと、必須の欄・タイトル・ラベルが入ったフォームで書ける",
+      "text": "人がブラウザで Issue を作る流れ。セッションが作る場合は「セッションが Epic を作るとき」を見る。",
+      "steps": [
+        "open-new",
+        "read-epic",
+        "submit"
+      ],
+      "beforeSteps": [
+        "open-new",
+        "submit"
+      ],
+      "stepChanges": [
+        {
+          "status": "changed",
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "テンプレートが無く、空の書式がそのまま開いていた",
+          "afterText": "テンプレートの一覧から Epic を選ぶ",
+          "change": "4 本のテンプレートが並ぶ。`config.yml` を置いていないので空の Issue も選べる（GitHub の docs による。マージ後に確かめる）"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "`epic.yml` を読み、ゴール（必須）・分割の判断（必須）・背景・スコープ外の欄を並べる",
+          "change": "この PR で足したテンプレート。先頭の案内は `flow:*` を子の側で人が付けると伝える"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 3,
+          "beforeText": "本文を手で書いて送っていた",
+          "afterText": "必須の欄が空だと送れない。タイトルに `[Epic] `、ラベルに `epic` が入る",
+          "change": "フォームが必須の欄を検証し、タイトルとラベルを入れる（GitHub の docs による。マージ後に確かめる）"
+        }
+      ],
+      "measure": {
+        "what": "最初から入るラベル",
+        "before": "なし",
+        "after": "`epic`"
+      }
+    },
+    {
+      "id": "bug-screen",
+      "label": "画面からバグを報告するとき",
+      "gist": "バグを選ぶと、再現手順・期待する結果・実際の結果を必須の欄として書く",
+      "steps": [
+        "open-new",
+        "read-bug",
+        "submit"
+      ],
+      "beforeSteps": [
+        "open-new",
+        "submit"
+      ],
+      "stepChanges": [
+        {
+          "status": "changed",
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "テンプレートが無く、空の書式がそのまま開いていた",
+          "afterText": "テンプレートの一覧からバグを選ぶ",
+          "change": "4 本のテンプレートが並ぶ"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "`bug.yml` を読み、ゴール・再現手順・期待する結果・実際の結果（ここまで必須）・分割の判断・スコープ外を並べる",
+          "change": "必須の欄は `bugfix.md` フェーズ 1 の 3 項目とゴール"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 3,
+          "beforeText": "本文を手で書いて送っていた",
+          "afterText": "必須の 4 欄が空だと送れない。ラベル `bug` が入り、`flow:bugfix` は入らない",
+          "change": "作業の種類は人が付ける"
+        }
+      ],
+      "measure": {
+        "what": "必須の欄",
+        "before": "0",
+        "after": "4（ゴール・再現手順・期待する結果・実際の結果）"
+      }
+    },
+    {
+      "id": "epic-session",
+      "label": "セッションが Epic を作るとき",
+      "gist": "手順 4 (c) の例が Epic になり、作成の呼び出しに `epic` ラベルを含めるようになった",
+      "text": "対話中でも人がいない起動でも、implementation-flow に通さない Issue は本文に通さない行を書いて作る。行の書式は検出器の定数が持ち、欠けた作成はフックが止める（この仕組みは変えていない）。",
+      "steps": [
+        "read-skill",
+        "create-epic"
+      ],
+      "beforeSteps": [
+        "read-skill",
+        "create-epic"
+      ],
+      "stepChanges": [
+        {
+          "status": "changed",
+          "beforeStep": 1,
+          "afterStep": 1,
+          "beforeText": "(c) の例は「tracking の親など」。手順 5 は「親が自分で選んだラベルは付けない」で、ラベル全般を指すように読めた",
+          "afterText": "(c) の例は「Epic など」で、Epic なら `epic` ラベルも含めると書いてある。手順 5 は `flow:*` ラベルに絞った",
+          "change": "画面から作る Epic とセッションが作る Epic のラベルを揃えるため（実装の検証 C の採用）"
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "通さない行を書いて作る。付けるラベルの決まりは無かった",
+          "afterText": "通さない行を書き、ラベルに `epic` を含めて作る",
+          "change": "既存の `tracking` の親（#373・#46）は付け替えていない"
+        }
+      ]
+    },
+    {
+      "id": "sync-source",
+      "label": "手順の項目を書き換えるとき",
+      "gist": "写し元の手順ファイルに、テンプレートへの参照が 1 行ある",
+      "text": "テンプレートの欄は手順ファイルの項目の写し。YAML にはパスを書かない方針なので、参照は写し元の側にだけ置いた。",
+      "steps": [
+        "edit-bugfix",
+        "sync-bug"
+      ],
+      "beforeSteps": [
+        "edit-bugfix"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1,
+          "afterText": "`bugfix.md` のフェーズ 1 の 3 項目を書き換える"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "同じ節の 1 行が `bug.yml` も揃えるよう伝える",
+          "change": "21f0c87 で足した参照。名指ししたパスの検査はこの綴りをパスとして扱わないので、改名しても検査では落ちない（実測）"
+        }
+      ],
+      "measure": {
+        "what": "項目を変えたときに揃える場所",
+        "before": "手順ファイル 1 か所",
+        "after": "手順ファイルとテンプレートの 2 か所"
+      }
+    }
+  ],
+  "calls": {
+    "gist": "呼び出しの変化はない",
+    "text": "差分は Issue テンプレートの YAML 4 本と、手順の doc 3 本・README 1 行だけで、関数・フック・コマンドの呼び出しは増えも減りもしていない。",
+    "boxes": [],
+    "edges": []
+  },
+  "commitStories": [
+    {
+      "sha": "73352b77b33dafc7182dd9e50ff7d0971af6e800",
+      "phase": "core",
+      "role": "Issue テンプレート 4 本を置き、README と手順の語を Epic に揃える",
+      "why": "Issue の書式を毎回手で書いていた。d-market-git の `issues-workflow-plugin` に頼らず、design-composer の側にテンプレートを持つ（人の判断）。Markdown のテンプレートではなく Issue Forms にしたのは、必須の欄を検証でき、案内の文が本文に残らないため。Epic には人の判断で新しく作った `epic` ラベルを使い、`SKILL.md` の「tracking の親」を行数を変えずに「Epic」へ直した。",
+      "flows": [
+        "epic-screen",
+        "bug-screen",
+        "epic-session"
+      ],
+      "review": [
+        "どのテンプレートの labels にも flow:* が無く、先頭の案内が人が付けると伝えているか",
+        "宣言の行（提案の行・通さない行）が本文にも既定値にも無いか",
+        "Epic だけが分割の判断を必須にしている理由（ほかは着手後のフェーズ 2 で決める）に納得できるか"
+      ],
+      "before": [
+        {
+          "text": "`.github/ISSUE_TEMPLATE/` が無く、Issue の書式は手書き"
+        }
+      ],
+      "after": [
+        {
+          "text": "Epic・実装・バグ・調査の 4 本のフォームが選べる",
+          "message": "open-new"
+        },
+        {
+          "text": "Epic は `[Epic] ` と `epic`、バグは `bug` を自動で付ける",
+          "message": "read-epic"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "start": 3,
+          "end": 5,
+          "text": "タイトルの接頭辞を入れるのは Epic だけ。Epic であることをタイトルとラベルの 2 か所で表すが、どちらも機械では読んでいない（重複を解く案は採らなかった）"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "start": 7,
+          "end": 10,
+          "text": "markdown の欄は画面の案内で、送った本文には入らない（GitHub の docs による。マージ後に確かめる）"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "start": 18,
+          "end": 24,
+          "text": "分割の判断を必須にするのは Epic だけ。Epic は作る時点で子に分けると決めている"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/bug.yml",
+          "start": 17,
+          "end": 39,
+          "text": "再現手順・期待する結果・実際の結果は `bugfix.md` フェーズ 1 の 3 項目の写し。どれも必須"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+          "start": 1,
+          "end": 2,
+          "text": "ラベルを付けない。`enhancement` / `feature` / `refactor` のどれになるかは作業によって変わり、1 本では決められないため"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 85,
+          "end": 85,
+          "text": "「tracking の親」を「Epic」に直した。`tracking` を新しい親に使う道を残すと、`epic` を作った人の判断と食い違うため"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "start": 1,
+          "end": 33,
+          "feature": "templates",
+          "text": "Epic のフォームを足した"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+          "start": 1,
+          "end": 27,
+          "feature": "templates",
+          "text": "実装のフォームを足した"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/bug.yml",
+          "start": 1,
+          "end": 48,
+          "feature": "templates",
+          "text": "バグのフォームを足した"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/investigation.yml",
+          "start": 1,
+          "end": 45,
+          "feature": "templates",
+          "text": "調査のフォームを足した"
+        },
+        {
+          "path": "README.md",
+          "start": 97,
+          "end": 97,
+          "feature": "templates",
+          "text": "`.github/` の説明に Issue テンプレートを足した"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 85,
+          "end": 85,
+          "feature": "flow-docs",
+          "text": "手順 4 (c) の例を「Epic」に直した"
+        }
+      ]
+    },
+    {
+      "sha": "21f0c8796041205389dce69f7c540a14d006f570",
+      "phase": "revise",
+      "role": "実装の検証の指摘に合わせ、欄の説明と写し元からの参照を直す",
+      "why": "フェーズ 6 の検証で、テンプレートの欄が手順の写しなのに写し元から見えない・「分割の判断」の意味がテンプレートで逆向き・表示名の範囲がずれている、の 3 点が中・低で挙がった（採否は #1438 のコメント 7090317078）。YAML にはパスを書かない方針のまま、写し元の側に参照を置いた。",
+      "flows": [
+        "sync-source",
+        "epic-session"
+      ],
+      "review": [
+        "分割の判断の説明が 4 本とも「この Issue を子に分けるか」の意味に揃っているか",
+        "手順 5 を flow:* ラベルに絞った書き換えが、手順 4 (a) の人が答えた flow:* を含める文と食い違っていないか",
+        "写し元に足した参照が名指ししたパスの検査に拾われないことを、目印として受け入れてよいか"
+      ],
+      "before": [
+        {
+          "text": "分割の判断の説明が、Epic は「子へどう分けたか」、ほかは「親から分けた理由」と逆向きだった"
+        },
+        {
+          "text": "手順ファイルからテンプレートが見えなかった"
+        }
+      ],
+      "after": [
+        {
+          "text": "分割の判断は 4 本とも「この Issue を子に分けるか」。分けないときも理由を書く"
+        },
+        {
+          "text": "写し元の 3 ファイルに、写し先のテンプレートを示す 1 行がある",
+          "message": "sync-bug"
+        },
+        {
+          "text": "セッションが Epic を作るときは `epic` ラベルも含める",
+          "message": "create-epic"
+        }
+      ],
+      "notes": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 67,
+          "end": 67,
+          "text": "途中のフォルダ名 `ISSUE_TEMPLATE` が大文字で、名指ししたパスの検査（`FOLDER_SEGMENT`）に合わない。存在しない `.github/ISSUE_TEMPLATE/nope.yml` を渡しても未検出だった（実測）。grep の目印として残した"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 86,
+          "end": 86,
+          "text": "API で作る Epic も画面で作る Epic と同じラベルになる"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 87,
+          "end": 87,
+          "text": "付けないのは `flow:*` だけ。`epic` を付ける (c) と矛盾しないように絞った。検出器の拒否文（`issue-flow-kind-violations.py` 1082 行目）には「親が自分で選んだラベルは付けない」が残っている（`flow:*` の文脈なので直していない）"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+          "start": 2,
+          "end": 2,
+          "text": "表示名「実装」はこのリポジトリではバグ修正も含む総称なので、説明で境界を示した。ファイル名は変えない（`feature.yml` はリファクタリングと食い違う）"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "start": 1,
+          "end": 1,
+          "text": "「親 Issue」だけだと、フェーズ 2 で子に分けた `flow:*` 付きの親まで含んで読めるので範囲を狭めた。`epic` ラベルの説明もリポジトリ設定で揃えた"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "start": 1,
+          "end": 1,
+          "feature": "templates",
+          "text": "表示名を「最初から子に分けて進める親 Issue」にした"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+          "start": 2,
+          "end": 2,
+          "feature": "templates",
+          "text": "既存の振る舞いの誤りはバグを選ぶと説明に足した"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+          "start": 23,
+          "end": 23,
+          "feature": "templates",
+          "text": "分割の判断の説明を子に分けるかの意味に揃えた"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/bug.yml",
+          "start": 44,
+          "end": 44,
+          "feature": "templates",
+          "text": "分割の判断の説明を子に分けるかの意味に揃えた"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/investigation.yml",
+          "start": 41,
+          "end": 41,
+          "feature": "templates",
+          "text": "分割の判断の説明を子に分けるかの意味に揃えた"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 67,
+          "end": 67,
+          "feature": "flow-docs",
+          "text": "ゴールの書き方の写し先を示した"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "start": 86,
+          "end": 87,
+          "feature": "flow-docs",
+          "text": "Epic に `epic` ラベルを含め、手順 5 を `flow:*` に絞った"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/bugfix.md",
+          "start": 15,
+          "end": 15,
+          "feature": "flow-docs",
+          "text": "症状の 3 項目の写し先を示した"
+        },
+        {
+          "path": ".claude/skills/implementation-flow/investigation.md",
+          "start": 14,
+          "end": 14,
+          "feature": "flow-docs",
+          "text": "問いと終わりの条件の写し先を示した"
+        }
+      ]
+    }
+  ],
+  "impact": {
+    "title": "Issue を作るときに、テンプレートを選んで欄を埋める形で書き始められる",
+    "lead": "Issue を作る人から見て変わったのは、作成画面でテンプレートを選べることと、選んだテンプレートの欄・ラベル・タイトルが最初から入ることです。作業の種類のラベル（flow: で始まるもの）は、今までどおり人が付けます。確かめ方: テンプレートは自動テストで落とせないため、リポジトリの外の検査スクリプトで、スキーマへの適合・欄の重複・付くラベル・欄の表との一致・宣言の行が入らないことの 5 つを確かめ、16 通りの壊し方がそれぞれ狙った検査で落ちることも確かめました。作成画面での見え方はマージ後に確かめます。",
+    "changed": {
+      "before": [
+        {
+          "text": "新しい Issue を開くと空の書式がそのまま開き、ゴールや再現手順などの見出しを毎回手で書いていた",
+          "message": "open-new"
+        },
+        {
+          "text": "親 Issue を表すラベルは決まっておらず、これまでの親には tracking が付いていた"
+        }
+      ],
+      "after": [
+        {
+          "text": "新しい Issue を開くと、Epic・実装・バグ・調査の 4 本と空の Issue が一覧に並ぶ",
+          "message": "open-new"
+        },
+        {
+          "text": "選んだテンプレートの欄が並び、必須の欄を埋めないと送れない",
+          "message": "submit"
+        },
+        {
+          "text": "Epic を選ぶとタイトルの頭に [Epic] が入り、epic ラベルが付く。バグを選ぶと bug ラベルが付く。実装と調査は何も付かない",
+          "message": "read-epic"
+        },
+        {
+          "text": "どのテンプレートも作業の種類のラベルは付けず、先頭の案内がそれを伝える"
+        }
+      ],
+      "text": "テンプレートが入るのはマージ後の既定ブランチからなので、画面での見え方（欄の見出しの並び・案内が本文に入らないこと）はマージ後に 4 件作って確かめ、#1438 に書きます。",
+      "specs": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "locator": "フェーズ 1「種類の確定」の手順 4 (c)",
+          "text": "通さない Issue の例を「tracking の親」から「Epic」に変え、Epic なら作成時に epic ラベルも含めると書いた",
+          "shas": [
+            "73352b77b33dafc7182dd9e50ff7d0971af6e800",
+            "21f0c8796041205389dce69f7c540a14d006f570"
+          ]
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "locator": "フェーズ 1「種類の確定」の手順 5",
+          "text": "親が自分で選んで付けないラベルを、作業の種類のラベルに限った",
+          "shas": [
+            "21f0c8796041205389dce69f7c540a14d006f570"
+          ]
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "locator": "「フェーズ 1: ゴールの確定」の箇条書きの末尾",
+          "text": "ゴールの書き方が実装と Epic のテンプレートにも写してあり、変えたら揃えると足した",
+          "shas": [
+            "21f0c8796041205389dce69f7c540a14d006f570"
+          ]
+        },
+        {
+          "path": ".claude/skills/implementation-flow/bugfix.md",
+          "locator": "「フェーズ 1: ゴールに症状を書く」",
+          "text": "症状の 3 項目がバグのテンプレートにも写してあると足した",
+          "shas": [
+            "21f0c8796041205389dce69f7c540a14d006f570"
+          ]
+        },
+        {
+          "path": ".claude/skills/implementation-flow/investigation.md",
+          "locator": "「フェーズ 1: 問いと終わりの条件」",
+          "text": "問いと終わりの条件が調査のテンプレートにも写してあると足した",
+          "shas": [
+            "21f0c8796041205389dce69f7c540a14d006f570"
+          ]
+        },
+        {
+          "path": "README.md",
+          "locator": "フォルダ構成の .github/ の行",
+          "text": "説明に Issue テンプレートを足した",
+          "shas": [
+            "73352b77b33dafc7182dd9e50ff7d0971af6e800"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1437,
+          "text": "手順やフックの取り込み。触るファイルが重ならないので別の Issue にした"
+        },
+        {
+          "issue": 1457,
+          "text": "検討の途中で見つけた、種類の検出器の説明文の警告。スコープ外として起票した"
+        }
+      ],
+      "primers": [
+        "issue-forms",
+        "flow-kind-declaration"
+      ]
+    },
+    "tables": [
+      {
+        "label": "テンプレートごとに入るもの",
+        "gist": "4 本とも先頭に案内があり、作業の種類のラベルは付けない。違うのは付くラベルと必須の欄。",
+        "text": "必須の欄が空だと送れません。分割の判断は 4 本すべてにありますが、必須なのは Epic だけです。",
+        "rowHeads": [
+          {
+            "id": "epic",
+            "label": "Epic",
+            "note": "最初から子に分けて進める親"
+          },
+          {
+            "id": "implementation",
+            "label": "実装",
+            "note": "機能追加・リファクタリング"
+          },
+          {
+            "id": "bug",
+            "label": "バグ"
+          },
+          {
+            "id": "investigation",
+            "label": "調査"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "labels",
+            "label": "最初から入るラベルとタイトル"
+          },
+          {
+            "id": "required",
+            "label": "必須の欄"
+          },
+          {
+            "id": "split",
+            "label": "分割の判断"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "epic",
+            "columnHead": "labels",
+            "result": "epic ラベル、タイトルの頭に [Epic]"
+          },
+          {
+            "rowHead": "epic",
+            "columnHead": "required",
+            "result": "ゴール・分割の判断"
+          },
+          {
+            "rowHead": "epic",
+            "columnHead": "split",
+            "result": "必須。何を軸に子へ分けたかと、それぞれが独立してマージできる理由"
+          },
+          {
+            "rowHead": "implementation",
+            "columnHead": "labels",
+            "result": "何も入らない"
+          },
+          {
+            "rowHead": "implementation",
+            "columnHead": "required",
+            "result": "ゴール"
+          },
+          {
+            "rowHead": "implementation",
+            "columnHead": "split",
+            "result": "任意。分けるなら軸と理由、分けないならその理由。決まっていなければ空でよい"
+          },
+          {
+            "rowHead": "bug",
+            "columnHead": "labels",
+            "result": "bug ラベル"
+          },
+          {
+            "rowHead": "bug",
+            "columnHead": "required",
+            "result": "ゴール・再現手順・期待する結果・実際の結果"
+          },
+          {
+            "rowHead": "bug",
+            "columnHead": "split",
+            "result": "任意。実装と同じ説明"
+          },
+          {
+            "rowHead": "investigation",
+            "columnHead": "labels",
+            "result": "何も入らない"
+          },
+          {
+            "rowHead": "investigation",
+            "columnHead": "required",
+            "result": "ゴール・問い・終わりの条件"
+          },
+          {
+            "rowHead": "investigation",
+            "columnHead": "split",
+            "result": "任意。実装と同じ説明"
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "セッションが Epic を作るとき",
+        "before": [
+          {
+            "text": "通さない行を書いて作り、付けるラベルの決まりは無かった"
+          }
+        ],
+        "after": [
+          {
+            "text": "通さない行を書き、epic ラベルも付けて作る。画面から作った Epic と同じラベルになる",
+            "message": "create-epic"
+          }
+        ],
+        "text": "作業の種類のラベルは、今までどおりセッションが自分で選んで付けることはありません。",
+        "primers": [
+          "flow-kind-declaration"
+        ]
+      },
+      {
+        "label": "手順の項目を書き換えるとき",
+        "before": [
+          {
+            "text": "手順ファイルだけを直せばよかった"
+          }
+        ],
+        "after": [
+          {
+            "text": "手順ファイルの同じ節に、テンプレートにも写してあるので揃える、と書いてある",
+            "message": "sync-bug"
+          }
+        ],
+        "text": "この 1 行は目印です。テンプレートの名前を変えても、自動の検査では気づけません。",
+        "primers": [
+          "named-path-check"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "作業の種類のラベル（flow: で始まるもの）は、テンプレートを使っても使わなくても人が付ける"
+      },
+      {
+        "text": "テンプレートに合わない Issue（棚卸し・質問など）は、一覧の空の Issue から今までどおり書ける"
+      },
+      {
+        "text": "これまでの親 Issue（#373・#46）の tracking ラベルは付け替えていない"
+      },
+      {
+        "text": "セッションが種類のラベルも種類の行も無い Issue を作ろうとすると止められる仕組みは変わらない。画面から作る Issue はその対象外のまま"
+      }
+    ],
+    "keptSpecs": [
+      {
+        "path": ".claude/skills/implementation-flow/SKILL.md",
+        "locator": "フェーズ 1「種類の確定」の手順 4 (a) と (b)",
+        "text": "対話中は人に尋ねて答えのラベルを含め、人がいない起動では提案の行を書く手順は変えていない"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "kind": "language",
+      "id": "issue-forms",
+      "category": "github · yaml",
+      "label": "Issue Forms",
+      "gist": "[[Issue テンプレート|issue-template]]を、自由に書く文章ではなく欄の並んだフォームとして定義する GitHub の仕組み。`.github/ISSUE_TEMPLATE/` に置いた [[YAML|yaml]] ファイル 1 本が、作成画面で選べるフォーム 1 つになる。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "トップレベルの `name` と `description` は一覧に出る名前と説明、`title` と `labels` は作った Issue に最初から入るタイトルとラベル、`body` は画面に並べる欄の配列になる。`body` の各要素は `type` で種類が決まり、この PR では案内を出すだけの `markdown` と、複数行の入力欄 `textarea` の 2 種類を使っている。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/ISSUE_TEMPLATE/epic.yml",
+            "start": 1,
+            "end": 24,
+            "emphasis": [
+              {
+                "start": 3,
+                "end": 5
+              },
+              {
+                "start": 16,
+                "end": 17
+              }
+            ],
+            "text": "name: Epic（最初から子に分けて進める親 Issue）\ndescription: 独立してマージできる子 Issue に分けて進める作業をまとめる親 Issue\ntitle: \"[Epic] \"\nlabels:\n  - epic\nbody:\n  - type: markdown\n    attributes:\n      value: |\n        子 Issue は、この Issue の sub-issue として紐づけてください。この Issue では実装せず、実装は子 Issue で行います。子 Issue の作業の種類（`flow:*`）のラベルは、子の側で人が付けます（テンプレートでは付けません）。\n  - type: textarea\n    id: goal\n    attributes:\n      label: ゴール\n      description: 子 Issue がすべて閉じたとき、何ができるようになっているか。実装手段ではなく達成状態で書く\n    validations:\n      required: true\n  - type: textarea\n    id: split\n    attributes:\n      label: 分割の判断\n      description: 何を軸に子へ分けたか。それぞれが独立してマージできる理由\n    validations:\n      required: true"
+          }
+        },
+        {
+          "kind": "parameters",
+          "parameters": [
+            {
+              "name": "type",
+              "type": "markdown | textarea | …",
+              "text": "欄の種類。`markdown` は画面に文を出すだけで入力を受けない"
+            },
+            {
+              "name": "id",
+              "type": "string",
+              "text": "欄を見分ける名前。同じフォームの中で重複できない"
+            },
+            {
+              "name": "attributes.label",
+              "type": "string",
+              "text": "欄の見出し。送った Issue の本文では、この文字列が `### ` の見出しになる"
+            },
+            {
+              "name": "attributes.description",
+              "type": "string",
+              "text": "見出しの下に出る説明。本文には入らない",
+              "note": "省略可"
+            },
+            {
+              "name": "validations.required",
+              "type": "boolean",
+              "text": "`true` なら、その欄が空のままではフォームを送れない",
+              "note": "省略時は false"
+            }
+          ]
+        },
+        {
+          "kind": "caution",
+          "text": "作成画面に出るのは[[既定ブランチ|default-branch]]にあるテンプレートだけなので、PR のブランチに置いただけでは画面で試せない。`markdown` の欄が本文に入らないこと、見出しの形も含めて、マージ後に確かめる（GitHub の docs による）。"
+        },
+        {
+          "kind": "memo",
+          "text": "`.github/ISSUE_TEMPLATE/` に Markdown（`.md`）のテンプレートを置く方式もある。そちらは本文の下書きを差し込むだけで、必須の欄を検証できず、案内のコメントが本文に残る。この PR が Issue Forms を選んだ理由はここにある。"
+        },
+        {
+          "kind": "memo",
+          "text": "`config.yml` を置くと、空の Issue を一覧から消すなどの設定ができる。この PR は置いていないので、空の Issue も既定どおり選べる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "lineRange": {
+            "start": 1,
+            "end": 33
+          },
+          "text": "タイトルとラベルを入れ、ゴールと分割の判断を必須にしたフォーム",
+          "shas": [
+            "73352b77b33dafc7182dd9e50ff7d0971af6e800",
+            "21f0c8796041205389dce69f7c540a14d006f570"
+          ]
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/bug.yml",
+          "lineRange": {
+            "start": 17,
+            "end": 39
+          },
+          "text": "再現手順・期待する結果・実際の結果を必須にした欄",
+          "shas": [
+            "73352b77b33dafc7182dd9e50ff7d0971af6e800"
+          ]
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+          "lineRange": {
+            "start": 1,
+            "end": 7
+          },
+          "text": "`labels` も `title` も持たないフォーム"
+        }
+      ],
+      "seeAlso": [
+        "flow-kind-declaration"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "flow-kind-declaration",
+      "category": "harness · Issue",
+      "label": "作業の種類の宣言",
+      "gist": "implementation-flow は Issue の作業の種類を `flow:*` ラベルで読む。セッションが Issue を作るときは、ラベルか本文の宣言の行が無いと `block-issue-without-flow-kind.sh` が作成を止める。テンプレートはこの仕組みに触れず、ラベルも行も持ち込まない。",
+      "status": "changed",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "宣言の行は 2 つで、人がいない起動で書く提案の行と、implementation-flow に通さない Issue に書く通さない行。書式は `issue-flow-kind-violations.py` の `PROPOSAL_TEMPLATE` と `OPT_OUT_TEMPLATE` の 2 つの定数だけが持つ。"
+        },
+        {
+          "kind": "rule",
+          "text": "テンプレートは `flow:*` を付けず、宣言の行を本文にも既定値にも書かない。書式の写しを 2 か所目にしないため。"
+        },
+        {
+          "kind": "spec",
+          "text": "`SKILL.md` フェーズ 1 手順 4 (c) の例は「Epic など」になり、Epic なら作成の呼び出しのラベルに `epic` も含める。手順 5 で親が付けないのは `flow:*` ラベルに限る。"
+        },
+        {
+          "kind": "history",
+          "text": "以前の (c) の例は「tracking の親など」で、手順 5 は「親が自分で選んだラベル」とだけ書いていた。"
+        },
+        {
+          "kind": "caution",
+          "text": "画面からの作成はフックの対象外（`.claude/hooks/README.md` の「取りこぼす」の行）。画面から作った Epic には通さない行が入らないが、この PR はその差を許している。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "lineRange": {
+            "start": 83,
+            "end": 88
+          },
+          "text": "手順 4 (c) と手順 5",
+          "shas": [
+            "73352b77b33dafc7182dd9e50ff7d0971af6e800",
+            "21f0c8796041205389dce69f7c540a14d006f570"
+          ]
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/investigation.yml",
+          "lineRange": {
+            "start": 4,
+            "end": 7
+          },
+          "text": "4 本に共通する先頭の案内",
+          "shas": [
+            "73352b77b33dafc7182dd9e50ff7d0971af6e800"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "issue-forms",
+        "named-path-check"
+      ],
+      "flows": [
+        "epic-session"
+      ]
+    },
+    {
+      "kind": "codebase",
+      "id": "named-path-check",
+      "category": "harness · 検査",
+      "label": "名指ししたパスの検査",
+      "gist": "doc（`.md` の全文）とコード（`.ts` / `.tsx` のコメント）に書いたパスが実在するかを見る検査（`named-path-violations.py`）。この PR が手順ファイルに足したテンプレートへの参照は、この検査の対象にならない。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "綴りをパスとして扱うのは、途中のセグメントがすべて小文字のフォルダ名の形（`FOLDER_SEGMENT`）のときだけ。`ISSUE_TEMPLATE` は大文字なので、`.github/ISSUE_TEMPLATE/…` は名前として読まれ、実在を問われない。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".claude/hooks/lib/named-path-violations.py",
+            "start": 272,
+            "end": 281,
+            "emphasis": [
+              {
+                "start": 279,
+                "end": 279
+              }
+            ],
+            "text": "def spelled_as_path(segments: list[str]) -> bool:\n    \"\"\"その綴りが、名前ではなくパスとして書かれているかを答える。\n\n    @param segments 綴りをセグメントへ分けたもの\n    @returns 途中がすべてフォルダ名の形で、末尾がフォルダ名か拡張子付きのファイル名なら\n        `True`\n    \"\"\"\n    inner = all(FOLDER_SEGMENT.match(segment) for segment in segments[:-1])\n    leaf = segments[-1]\n    return inner and bool(FOLDER_SEGMENT.match(leaf) or FILE_SEGMENT.match(leaf))"
+          }
+        },
+        {
+          "kind": "caution",
+          "text": "存在しない `.github/ISSUE_TEMPLATE/nope.yml` を渡しても未検出、`.github/workflows/nope.yml` は検出される（このページを書く際にも実測）。テンプレートを改名しても検査では落ちない。"
+        },
+        {
+          "kind": "memo",
+          "text": "YAML（`.yml`）は走査の対象外なので、テンプレートの中にパスやスキル名を書くと改名に追従できない。この PR が YAML にパスを書かず、参照を写し元の Markdown の側に置いた理由。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "lineRange": {
+            "start": 67,
+            "end": 67
+          },
+          "text": "ゴールの書き方の写し先を示す 1 行",
+          "shas": [
+            "21f0c8796041205389dce69f7c540a14d006f570"
+          ]
+        },
+        {
+          "path": ".claude/skills/implementation-flow/bugfix.md",
+          "lineRange": {
+            "start": 15,
+            "end": 15
+          },
+          "text": "症状の 3 項目の写し先を示す 1 行",
+          "shas": [
+            "21f0c8796041205389dce69f7c540a14d006f570"
+          ]
+        },
+        {
+          "path": ".claude/skills/implementation-flow/investigation.md",
+          "lineRange": {
+            "start": 14,
+            "end": 14
+          },
+          "text": "問いと終わりの条件の写し先を示す 1 行",
+          "shas": [
+            "21f0c8796041205389dce69f7c540a14d006f570"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "flow-kind-declaration"
+      ],
+      "flows": [
+        "sync-source"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "issue-template",
+      "label": "Issue テンプレート",
+      "text": "GitHub で Issue を作るときに選べる書式の雛形。リポジトリの `.github/ISSUE_TEMPLATE/` に置く。"
+    },
+    {
+      "id": "yaml",
+      "label": "YAML",
+      "text": "字下げで入れ子を表す設定ファイルの書式。`キー: 値` を並べ、`- ` で始まる行が配列の要素になる。"
+    },
+    {
+      "id": "default-branch",
+      "label": "既定ブランチ",
+      "text": "リポジトリを開いたときに表示され、PR の取り込み先になるブランチ。このリポジトリでは `main`。"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "labels-on-create",
+      "kind": "choice",
+      "title": "最初から入るラベル",
+      "prompt": "テンプレートから画面で Issue を作ったとき、最初から入るラベルの組み合わせとして正しいのはどれですか。",
+      "options": [
+        "Epic は epic、バグは bug、実装と調査は何も入らない",
+        "Epic は epic、バグは bug と flow:bugfix、調査は flow:investigation",
+        "4 本とも、対応する flow:* ラベルが入る",
+        "Epic は tracking、バグは bug、実装は enhancement"
+      ],
+      "answer": 1,
+      "why": "テンプレートは作業の種類（`flow:*`）を付けない。分類ラベルを付けるのは Epic（`epic`）とバグ（`bug`）だけで、実装は `enhancement` / `feature` / `refactor` のどれになるかが作業で変わるため付けない。",
+      "go": [
+        {
+          "kind": "feature",
+          "id": "templates"
+        },
+        {
+          "kind": "stepChange",
+          "flow": "epic-screen",
+          "stepChange": 3
+        }
+      ]
+    },
+    {
+      "id": "split-required",
+      "kind": "choice",
+      "title": "分割の判断の必須",
+      "prompt": "「分割の判断」の欄を必須にしているテンプレートはどれですか。",
+      "options": [
+        "Epic だけ",
+        "4 本すべて",
+        "Epic とバグ",
+        "どれも任意"
+      ],
+      "answer": 1,
+      "why": "4 本すべてに欄はあるが、必須は Epic だけ。Epic は作る時点で子に分けると決めているのに対し、ほかの 3 本は着手後のフェーズ 2 で分けるかを決めるため。",
+      "go": [
+        {
+          "kind": "file",
+          "path": ".github/ISSUE_TEMPLATE/epic.yml"
+        }
+      ]
+    },
+    {
+      "id": "path-check-catches",
+      "kind": "yesno",
+      "title": "写し元からの参照",
+      "prompt": "テンプレートを改名すると、手順ファイルに足した `.github/ISSUE_TEMPLATE/…` への参照を、名指ししたパスの検査が古いパスとして報告する。",
+      "holds": false,
+      "why": "途中のフォルダ名 `ISSUE_TEMPLATE` が大文字で、検査はこの綴りをパスとして扱わない。参照は grep でたどる目印にとどまる。",
+      "go": [
+        {
+          "kind": "stepChange",
+          "flow": "sync-source",
+          "stepChange": 2
+        },
+        {
+          "kind": "module",
+          "path": ".claude/skills/implementation-flow/bugfix.md"
+        }
+      ]
+    },
+    {
+      "id": "session-epic-label",
+      "kind": "yesno",
+      "title": "セッションが作る Epic",
+      "prompt": "変更後、セッションが API で Epic を作るときは、本文に通さない行を書いたうえで `epic` ラベルも付ける。",
+      "holds": true,
+      "why": "`SKILL.md` 手順 4 (c) に足した。手順 5 が付けないとするのは `flow:*` ラベルに絞ったので、`epic` を付けることと矛盾しない。",
+      "go": [
+        {
+          "kind": "flow",
+          "id": "epic-session"
+        },
+        {
+          "kind": "message",
+          "id": "create-epic"
+        }
+      ]
+    },
+    {
+      "id": "epic-screen-order",
+      "kind": "order",
+      "title": "画面から Epic を作る順",
+      "prompt": "マージ後、人が画面から Epic を作るときの順に並べてください。",
+      "items": [
+        "新しい Issue を開き、テンプレートの一覧から Epic を選ぶ",
+        "Epic のフォームに、ゴールと分割の判断（必須）を書く",
+        "フォームを送り、タイトルの [Epic] と epic ラベルの入った Issue ができる",
+        "子 Issue を sub-issue として紐づけ、子の作業の種類は子の側で人が付ける"
+      ],
+      "why": "フォームが欄・タイトル・ラベルを用意し、必須の欄が埋まって初めて送れる。`flow:*` は Epic にも子にもテンプレートは付けない。",
+      "go": [
+        {
+          "kind": "flow",
+          "id": "epic-screen"
+        },
+        {
+          "kind": "layer",
+          "layer": "ハーネス"
+        }
+      ]
+    }
+  ]
+}
