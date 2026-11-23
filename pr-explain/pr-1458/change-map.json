@@ -1,0 +1,269 @@
+{
+  "version": 2,
+  "pr": 1458,
+  "headBranch": "claude/fervent-bohr-zs1bfi",
+  "baseBranch": "main",
+  "mergeBase": "7e3ae04baa7c0ae6ce83ee4cd9658911fa5edca6",
+  "head": "21f0c8796041205389dce69f7c540a14d006f570",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/post-merge-review.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/implementation-flow/bugfix.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/implementation-flow/investigation.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/bug.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 48,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 33,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 27,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/investigation.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 45,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": "README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "73352b77b33dafc7182dd9e50ff7d0971af6e800",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T02:49:49Z",
+      "subject": "✨ [New Feature]: #1438 Epic・実装・バグ・調査の Issue テンプレートを足す",
+      "body": "- .github/ISSUE_TEMPLATE/ に Issue Forms（YAML）を 4 本置く: epic.yml（epic ラベルと [Epic] タイトルを自動で付ける）、implementation.yml、bug.yml（bug ラベル）、investigation.yml\n- どのテンプレートもゴールを必須にし、implementation-flow が求める欄を持つ。バグは再現手順・期待する結果・実際の結果、調査は問いと終わりの条件\n- 分割の判断は 4 本すべてに置き、必須は Epic だけにする\n- flow:* のラベルは付けず、先頭の案内に人が付けると書く\n- README の .github/ の説明に Issue テンプレートを足す\n- implementation-flow の「tracking の親」を「Epic」に直す（行数は変えない）\n\n背景:\nIssue の書式を毎回手書きしていた。d-market-git の issues-workflow-plugin に頼らず、design-composer 側にテンプレートを持つ。\n\n採用理由:\nIssue Forms は必須の欄を検証でき、案内の文が本文に残らない。作業の種類は人が決めるので、テンプレートは flow:* を付けず、宣言の行も持ち込まない。Epic は人の判断で、新しく作った epic ラベルを使う。\n\n代替案:\n- Markdown テンプレートは、必須の欄を検証できず案内のコメントが本文に残るので採らなかった\n- 既存の tracking ラベルを Epic に使う案は、人の判断で epic を作ったので採らなかった。既存の親（#373・#46）は付け替えない\n- d-market-git のラベル体系（type:* など）と Task 用のテンプレートは、既存の分類ラベルや 1 Issue = 1 PR の単位と合わないので持ち込まなかった\n- CI でスキーマへの適合を検査する案は、変更の頻度に見合わないので採らなかった\n\n影響とトレードオフ:\nテンプレートは自動テストで落とせないので、作業ツリーの外の検査（スキーマ・欄・ラベル・宣言の行・壊し方 16 通り）で確かめた。作成画面とフォームの送信は、マージ後に人と一緒に確かめる。\n\n参考:\n計画は Issue #1438 のコメント 7090147082（v2）。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NZQHLFV2MuY769VeU",
+      "files": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -82,7 +82,7 @@ description: \"design-composer の実装を ゴールの確定 → タスクの\n 4. Issue を新規作成するときは、**作成の呼び出しの中で**種類を決める（作った後にラベルを付ける形は、作成の時点で止められる）。行の書式は `.claude/hooks/lib/issue-flow-kind-violations.py` の定数が持ち、欠けた作成は `block-issue-without-flow-kind.sh` が止める（止めた理由に書式が出る）\n    - (a) 対話中なら AskUserQuestion で尋ね、人が答えた `flow:*` を作成の呼び出しのラベルに含める\n    - (b) 人がいない起動なら、本文に提案の行を書く\n-   - (c) `implementation-flow` に通さない Issue（`harness-growth` の介入・棚卸し・tracking の親など）は、本文に通さない行を書く\n+   - (c) `implementation-flow` に通さない Issue（`harness-growth` の介入・棚卸し・Epic など）は、本文に通さない行を書く\n 5. **親が自分で選んだラベルは付けない・外さない。** 親は提案までとし、決めるのは人にする。選ぶ側と手順が軽くなって得をする側が同じだと軽い側へ倒れる（`implementation-flow` を通さず検証エージェントだけを呼んだ実例が `harness/case-law/process.md`「単発（まだ語彙にしていない）」の pr-473 にある）。「なければ `flow:feature`」のような既定値も同じ理由で置かない（ラベルのない Issue でバグ修正の再現テストが抜けるため）\n 6. 途中で種類が変わったら、ここへ戻って確定し直し、フェーズ 3 から計画し直す。古い種類のまま検証した計画は使わない。種類に合わない作業だと分かったときも、3 の手順で人に尋ねる\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/bug.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 48,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,48 @@\n+name: バグ\n+description: 既存の振る舞いの誤り。拠り所（仕様書の節や既存のテスト）と食い違う動き\n+labels:\n+  - bug\n+body:\n+  - type: markdown\n+    attributes:\n+      value: |\n+        作業の種類（`flow:*`）のラベルは人が付けます（テンプレートでは付けません）。\n+  - type: textarea\n+    id: goal\n+    attributes:\n+      label: ゴール\n+      description: 直ったとき、何ができるようになっているか\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: steps\n+    attributes:\n+      label: 再現手順\n+      description: どの入力・操作・状態から起きるか\n+      placeholder: |\n+        1.\n+        2.\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: expected\n+    attributes:\n+      label: 期待する結果\n+      description: 拠り所となる仕様書の節があれば添える\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: actual\n+    attributes:\n+      label: 実際の結果\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: split\n+    attributes:\n+      label: 分割の判断\n+      description: 親や元の Issue から分けたなら、その理由とリンク。分けるかどうかを着手してから決めるなら空のままでよい\n+  - type: textarea\n+    id: out-of-scope\n+    attributes:\n+      label: スコープ外",
+          "patchLines": 49,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 33,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,33 @@\n+name: Epic（親 Issue）\n+description: 独立してマージできる子 Issue に分けて進める作業をまとめる親 Issue\n+title: \"[Epic] \"\n+labels:\n+  - epic\n+body:\n+  - type: markdown\n+    attributes:\n+      value: |\n+        子 Issue は、この Issue の sub-issue として紐づけてください。この Issue では実装せず、実装は子 Issue で行います。子 Issue の作業の種類（`flow:*`）のラベルは、子の側で人が付けます（テンプレートでは付けません）。\n+  - type: textarea\n+    id: goal\n+    attributes:\n+      label: ゴール\n+      description: 子 Issue がすべて閉じたとき、何ができるようになっているか。実装手段ではなく達成状態で書く\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: split\n+    attributes:\n+      label: 分割の判断\n+      description: 何を軸に子へ分けたか。それぞれが独立してマージできる理由\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: background\n+    attributes:\n+      label: 背景\n+  - type: textarea\n+    id: out-of-scope\n+    attributes:\n+      label: スコープ外\n+      description: この Epic では扱わないもの",
+          "patchLines": 34,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 27,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,27 @@\n+name: 実装（機能追加・リファクタリング）\n+description: 機能の追加やリファクタリングなど、ソースに手を入れる作業\n+body:\n+  - type: markdown\n+    attributes:\n+      value: |\n+        作業の種類（`flow:*`）のラベルは人が付けます（テンプレートでは付けません）。\n+  - type: textarea\n+    id: goal\n+    attributes:\n+      label: ゴール\n+      description: 何ができるようになれば終わりか（1〜3 行）。実装手段ではなく達成状態で書く\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: background\n+    attributes:\n+      label: 背景\n+  - type: textarea\n+    id: split\n+    attributes:\n+      label: 分割の判断\n+      description: 親や元の Issue から分けたなら、その理由とリンク。分けるかどうかを着手してから決めるなら空のままでよい\n+  - type: textarea\n+    id: out-of-scope\n+    attributes:\n+      label: スコープ外",
+          "patchLines": 28,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/investigation.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 45,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,45 @@\n+name: 調査\n+description: ソースを変えずに調べて、答えを Issue に書いて閉じる作業\n+body:\n+  - type: markdown\n+    attributes:\n+      value: |\n+        作業の種類（`flow:*`）のラベルは人が付けます（テンプレートでは付けません）。\n+  - type: textarea\n+    id: goal\n+    attributes:\n+      label: ゴール\n+      description: 答えが出たとき、何ができるようになっているか\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: question\n+    attributes:\n+      label: 問い\n+      description: 何に答えれば終わりか\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: done-when\n+    attributes:\n+      label: 終わりの条件\n+      description: どこまで確かめたら答えとするか（再現した／呼び出し元を数えきった 等）\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: observed\n+    attributes:\n+      label: 観測したこと\n+  - type: textarea\n+    id: background\n+    attributes:\n+      label: 背景\n+  - type: textarea\n+    id: split\n+    attributes:\n+      label: 分割の判断\n+      description: 親や元の Issue から分けたなら、その理由とリンク。分けるかどうかを着手してから決めるなら空のままでよい\n+  - type: textarea\n+    id: out-of-scope\n+    attributes:\n+      label: スコープ外",
+          "patchLines": 46,
+          "truncated": false
+        },
+        {
+          "path": "README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -94,7 +94,7 @@ harness/            # 判例・git hooks・振り返りの記録\n .claude/            # サブエージェント・フック・スキル\n .storybook/         # Storybook 設定\n .devcontainer/      # Dev Container 設定\n-.github/            # CI ワークフローとスクリプト\n+.github/            # CI ワークフローとスクリプト・Issue テンプレート\n ```\n \n 各フォルダの責務と、層をまたぐ依存の許される向きは [rules/architecture.md](rules/architecture.md) が規定する。",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "21f0c8796041205389dce69f7c540a14d006f570",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T02:59:53Z",
+      "subject": "♻️ [Refactoring]: #1438 実装の検証の指摘に合わせて、テンプレートの説明と写し元への参照を直す",
+      "body": "- implementation-flow の SKILL.md・bugfix.md・investigation.md に、項目をテンプレートにも写してあることを 1 行ずつ足す\n- 「分割の判断」の説明を、4 本とも「この Issue を子に分けるか」の意味にそろえる。分けないときの理由も書く形にする\n- SKILL.md の手順 4 (c) に、Epic を作るときは epic ラベルも付けると足す。手順 5 が指すラベルを flow:* に限る\n- 実装のテンプレートの説明に「既存の振る舞いの誤りはバグを選ぶ」を足し、Epic の表示名を「最初から子に分けて進める親 Issue」にする\n\n背景:\nフェーズ 6 の検証（6 エージェント）で、次の 3 点が中・低として挙がった。採否は Issue #1438 のコメント 7090317078。\n- テンプレートの欄が手順ファイルの写しなのに、写し元から写し先が見えない\n- 「分割の判断」の意味が、テンプレートによって逆向きになっている\n- 表示名が指す範囲がずれている\n\n採用理由:\n写し元の側に参照を置き、手順を直す人がテンプレートに気づけるようにした。YAML の側にはパスを書かない方針のまま。\n\n代替案:\n- Epic のテンプレートに「通さない行」の案内を足す案は採らなかった。行の書式の出どころを検出器の定数だけにしておくため\n- タイトルの [Epic] とラベルの重複を解く案は採らなかった。どちらも機械では読んでいないため\n\n影響とトレードオフ:\n写し元に足したパスは、途中のフォルダ名 ISSUE_TEMPLATE が大文字なので、名指ししたパスの検査が対象にしていない（実測）。テンプレートを改名しても、この検査では落ちない。grep でたどる目印として残す。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NZQHLFV2MuY769VeU",
+      "files": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "patch": "@@ -64,6 +64,7 @@ description: \"design-composer の実装を ゴールの確定 → タスクの\n - 対応する Issue がなければ**先に作る**。Issue なしで実装を始めない（判断の置き場所がなくなるため）\n   - 自分で進める Issue は、作成の呼び出しでも後からでも assignee を付けない（理由は `AGENTS.md`「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。フェーズ 2 で分けた Issue のうち、このセッションで続けて進めるものも同じ\n - 仕様の拠り所は `docs/`、UI の拠り所は `docs/Design Composer.html`（`rules/ui-verification.md`）\n+- ゴールの書き方は `.github/ISSUE_TEMPLATE/implementation.yml` と `.github/ISSUE_TEMPLATE/epic.yml` のゴール欄にも写してある。変えたら揃える\n \n ### 種類の確定\n \n@@ -82,8 +83,8 @@ description: \"design-composer の実装を ゴールの確定 → タスクの\n 4. Issue を新規作成するときは、**作成の呼び出しの中で**種類を決める（作った後にラベルを付ける形は、作成の時点で止められる）。行の書式は `.claude/hooks/lib/issue-flow-kind-violations.py` の定数が持ち、欠けた作成は `block-issue-without-flow-kind.sh` が止める（止めた理由に書式が出る）\n    - (a) 対話中なら AskUserQuestion で尋ね、人が答えた `flow:*` を作成の呼び出しのラベルに含める\n    - (b) 人がいない起動なら、本文に提案の行を書く\n-   - (c) `implementation-flow` に通さない Issue（`harness-growth` の介入・棚卸し・Epic など）は、本文に通さない行を書く\n-5. **親が自分で選んだラベルは付けない・外さない。** 親は提案までとし、決めるのは人にする。選ぶ側と手順が軽くなって得をする側が同じだと軽い側へ倒れる（`implementation-flow` を通さず検証エージェントだけを呼んだ実例が `harness/case-law/process.md`「単発（まだ語彙にしていない）」の pr-473 にある）。「なければ `flow:feature`」のような既定値も同じ理由で置かない（ラベルのない Issue でバグ修正の再現テストが抜けるため）\n+   - (c) `implementation-flow` に通さない Issue（`harness-growth` の介入・棚卸し・Epic など）は、本文に通さない行を書く。Epic なら、作成の呼び出しのラベルに `epic` も含める\n+5. **親が自分で選んだ `flow:*` ラベルは付けない・外さない。** 親は提案までとし、決めるのは人にする。選ぶ側と手順が軽くなって得をする側が同じだと軽い側へ倒れる（`implementation-flow` を通さず検証エージェントだけを呼んだ実例が `harness/case-law/process.md`「単発（まだ語彙にしていない）」の pr-473 にある）。「なければ `flow:feature`」のような既定値も同じ理由で置かない（ラベルのない Issue でバグ修正の再現テストが抜けるため）\n 6. 途中で種類が変わったら、ここへ戻って確定し直し、フェーズ 3 から計画し直す。古い種類のまま検証した計画は使わない。種類に合わない作業だと分かったときも、3 の手順で人に尋ねる\n \n ## フェーズ 2: タスクの分割",
+          "patchLines": 19,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/bugfix.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -12,6 +12,8 @@\n - 期待する結果（拠り所となる `docs/` の節があれば添える）\n - 実際の結果\n \n+この 3 つは `.github/ISSUE_TEMPLATE/bug.yml` の欄にも写してある。変えたら揃える。\n+\n 再現手順が書けないならゴールが決まっていない（`SKILL.md` フェーズ 1 のとおり止める）。\n \n ## フェーズ 3: 計画の先頭に再現テスト",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/investigation.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -11,6 +11,8 @@\n - **問い** — 何に答えれば終わりか（「◯◯はなぜ△△になるか」「◯◯を使っている箇所はどこか」など）\n - **終わりの条件** — どこまで確かめたら答えとするか（再現した／呼び出し元を数えきった 等）\n \n+この 2 つは `.github/ISSUE_TEMPLATE/investigation.yml` の欄にも写してある。変えたら揃える。\n+\n ## フェーズ 3: 調査（`investigator`）\n \n **`investigator` に調べさせ、返ってきた結果を親が Issue に書く。** 親は自分で調べない（`SKILL.md`「役割の分担」と同じ理由で、親のコンテキストに調査過程を積まないため）。渡す内容:",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/bug.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -41,7 +41,7 @@ body:\n     id: split\n     attributes:\n       label: 分割の判断\n-      description: 親や元の Issue から分けたなら、その理由とリンク。分けるかどうかを着手してから決めるなら空のままでよい\n+      description: この Issue を子に分けるなら、その軸と理由。分けないなら、その理由。作る時点で決まっていなければ空でよく、決めたら書き足す\n   - type: textarea\n     id: out-of-scope\n     attributes:",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -1,4 +1,4 @@\n-name: Epic（親 Issue）\n+name: Epic（最初から子に分けて進める親 Issue）\n description: 独立してマージできる子 Issue に分けて進める作業をまとめる親 Issue\n title: \"[Epic] \"\n labels:",
+          "patchLines": 6,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -1,5 +1,5 @@\n name: 実装（機能追加・リファクタリング）\n-description: 機能の追加やリファクタリングなど、ソースに手を入れる作業\n+description: 機能の追加やリファクタリング。既存の振る舞いの誤りはバグを選ぶ\n body:\n   - type: markdown\n     attributes:\n@@ -20,7 +20,7 @@ body:\n     id: split\n     attributes:\n       label: 分割の判断\n-      description: 親や元の Issue から分けたなら、その理由とリンク。分けるかどうかを着手してから決めるなら空のままでよい\n+      description: この Issue を子に分けるなら、その軸と理由。分けないなら、その理由。作る時点で決まっていなければ空でよく、決めたら書き足す\n   - type: textarea\n     id: out-of-scope\n     attributes:",
+          "patchLines": 16,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/investigation.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -38,7 +38,7 @@ body:\n     id: split\n     attributes:\n       label: 分割の判断\n-      description: 親や元の Issue から分けたなら、その理由とリンク。分けるかどうかを着手してから決めるなら空のままでよい\n+      description: この Issue を子に分けるなら、その軸と理由。分けないなら、その理由。作る時点で決まっていなければ空でよく、決めたら書き足す\n   - type: textarea\n     id: out-of-scope\n     attributes:",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/verification-agent-cases.sh",
+      "to": "README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": ".claude/skills/implementation-flow/SKILL.md",
+      "status": "kept"
+    }
+  ]
+}
