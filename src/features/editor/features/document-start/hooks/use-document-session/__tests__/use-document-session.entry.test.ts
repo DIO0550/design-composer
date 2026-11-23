@@ -1,3 +1,4 @@
+import { cleanup } from "@testing-library/react";
 import { expect, test } from "vitest";
 import { artboardContent } from "@/domains/__tests__/sample-document";
 import { DocumentSession } from "@/features/editor/features/document-start/domains/document-session";
@@ -259,4 +260,17 @@ test("別の綴りで落としたファイルは、実体の綴りで開かれ�
   await observer.dropFiles([LinkPath]);
 
   expect(openedPaths(observer.session())).toStrictEqual([Path]);
+});
+
+test("画面を閉じた後にファイルを落としても、開いた記録は書き出されない", async () => {
+  const observer = renderDocumentSession(
+    { [Path]: artboardContent("home") },
+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },
+  );
+  await observer.settle();
+  cleanup();
+
+  await observer.dropFiles([Path]);
+
+  expect(observer.appState.storedContent()).toStrictEqual(Option.none);
 });
