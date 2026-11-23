@@ -24,6 +24,8 @@ pnpm_usable || skip_following_checks "pnpm / node_modules が無い"
 run_check "typecheck" pnpm run typecheck
 run_check "oxlint" pnpm run lint
 run_check "biome" pnpm exec biome check
+# .oxlintrc.json の判定表。node_modules の oxlint を呼ぶので、ここに置く。
+run_check "oxlint の設定の判定表" bash .github/scripts/oxlint-config-cases.sh
 resume_checks
 
 run_check "テスト規約" bash .claude/hooks/lib/test-rules-scan.sh src
