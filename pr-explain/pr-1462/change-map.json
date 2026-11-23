@@ -1,0 +1,2510 @@
+{
+  "version": 2,
+  "pr": 1462,
+  "headBranch": "claude/practical-curie-jhny3j",
+  "baseBranch": "main",
+  "mergeBase": "7e3ae04baa7c0ae6ce83ee4cd9658911fa5edca6",
+  "head": "4e03be1a98120ee0cdad153e61faf2f8cf6028bd",
+  "groups": [
+    {
+      "label": "domains / unit",
+      "files": [
+        {
+          "path": "src/domains/unit/elapsed/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/file-path/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/instant/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/unit/offset/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / dcmp",
+      "files": [
+        {
+          "path": "src/domains/dcmp/design-document/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / session",
+      "files": [
+        {
+          "path": "src/domains/session/document-access-failure/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-reload/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/document-save-state/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/file-validity/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/domains/session/opened-document/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "domains / __tests__",
+      "files": [
+        {
+          "path": "src/domains/__tests__/sample-document.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/app-menu/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-state-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/app-window/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/clock/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/fake/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-dialog/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/document-json/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/dom-event/alt-key/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/dom-event/command-key/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/dom-event/dom-listener/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 62,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/dom-event/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/dom-event/key-name/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/dom-event/pointer-button/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/element-measure/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/file-drop/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/tauri-ipc/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/dom-event/dom-listener/__tests__/dom-listener.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 60,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/libs/dom-event/dom-listener/index.ts"
+        }
+      ]
+    },
+    {
+      "label": "utils",
+      "files": [
+        {
+          "path": "src/utils/ArrayEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/ElementEx.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Option.ts",
+          "changed": false
+        },
+        {
+          "path": "src/utils/Result.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "types",
+      "files": [
+        {
+          "path": "src/types/IndexMove.ts",
+          "changed": false
+        },
+        {
+          "path": "src/types/ValueOf.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/editor-context-menu/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-screen/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-activate-tab-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-clear-selection-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-copy-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-delete-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-duplicate-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-fit-document-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-fit-selection-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-group-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-paste-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-redo-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-rename-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-reorder-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-reposition-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-undo-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/hooks/use-ungroup-shortcut/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/editor-context-menu/__tests__/editor-context-menu.type.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/artboard-label/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/text-inline-editor/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/canvas-toolbar/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 9,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 23,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 10,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-space-held/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.range-select.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/use-range-select.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/domains/document-session/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/domains/recent-files/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 9,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-start/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/features/editor/features/document-start/hooks/use-document-session/index.ts"
+        },
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-sync",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 6,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 8,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-elapsed/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 6,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/features/editor/features/document-sync/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-elapsed/__tests__/use-elapsed.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/__tests__/use-file-revert.normal.test.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/sidebar",
+      "files": [
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/left-pane-rail/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/row-name-field/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-list/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "components",
+      "files": [
+        {
+          "path": "src/components/context-menu/__stories__/menu-content.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/context-menu/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 10,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/components/__tests__/pointer-gesture.ts",
+          "changed": false
+        },
+        {
+          "path": "src/components/context-menu/__tests__/context-menu.dismiss.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/context-menu/__tests__/context-menu.edge.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/context-menu/__tests__/context-menu.keyboard.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/components/context-menu/index.tsx"
+        },
+        {
+          "path": "src/components/context-menu/__tests__/context-menu.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/context-menu/__tests__/context-menu.placement.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/context-menu/__tests__/setup.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/components/context-menu/index.stories.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "hooks",
+      "files": [
+        {
+          "path": "src/hooks/use-dom-listeners/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/hooks/use-key-shortcut/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 6,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/hooks/use-remeasure/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/hooks/use-reorder-drag/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/hooks/use-subscription/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/hooks/use-dom-listeners/__tests__/use-dom-listeners.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 97,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/hooks/use-dom-listeners/index.ts"
+        },
+        {
+          "path": "src/hooks/use-key-shortcut/__tests__/use-key-shortcut.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/hooks/use-key-shortcut/__tests__/use-key-shortcut.scope.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 82,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/hooks/use-remeasure/index.ts"
+        },
+        {
+          "path": "src/hooks/use-reorder-drag/__tests__/use-reorder-drag.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/hooks/use-subscription/__tests__/use-subscription.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 53,
+          "deletions": 0,
+          "changed": true,
+          "target": "src/hooks/use-subscription/index.ts"
+        }
+      ]
+    },
+    {
+      "label": "app",
+      "files": [
+        {
+          "path": "src/app/App.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/app/main.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/storybook-visual-regression.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": "AGENTS.md",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "rules/architecture.md",
+          "changed": false
+        },
+        {
+          "path": "rules/hooks.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": ".oxlintrc.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 29,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "vite.config.ts",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [
+      {
+        "file": "src/components/context-menu/__tests__/context-menu.keyboard.test.tsx",
+        "name": "↓ で行へ移したあとにメニューが描き直されても、フォーカスは行に残る"
+      },
+      {
+        "file": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.normal.test.tsx",
+        "name": "ctrl を押しながらホイールを回すと、ブラウザの既定動作（ページのズーム）を止める"
+      },
+      {
+        "file": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+        "name": "画面を閉じた後にファイルを落としても、開いた記録は書き出されない"
+      },
+      {
+        "file": "src/hooks/use-dom-listeners/__tests__/use-dom-listeners.normal.test.tsx",
+        "name": "同じ手続きのまま描き直しても、集め直さない"
+      },
+      {
+        "file": "src/hooks/use-dom-listeners/__tests__/use-dom-listeners.normal.test.tsx",
+        "name": "外れると、集めたリスナーはイベントを受け取らなくなる"
+      },
+      {
+        "file": "src/hooks/use-dom-listeners/__tests__/use-dom-listeners.normal.test.tsx",
+        "name": "手続きが変わると、前のリスナーは受け取らず新しいリスナーだけが受け取る"
+      },
+      {
+        "file": "src/hooks/use-dom-listeners/__tests__/use-dom-listeners.normal.test.tsx",
+        "name": "描画すると、集めたリスナーがイベントを受け取る"
+      },
+      {
+        "file": "src/hooks/use-dom-listeners/__tests__/use-dom-listeners.normal.test.tsx",
+        "name": "集めたリスナーが複数あっても、外れるとどれも受け取らなくなる"
+      },
+      {
+        "file": "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+        "name": "ウィンドウの大きさが変わると測り直す"
+      },
+      {
+        "file": "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+        "name": "外れたあとはウィンドウの大きさが変わっても測り直さない"
+      },
+      {
+        "file": "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+        "name": "描き直すたびに測り直す"
+      },
+      {
+        "file": "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+        "name": "描画すると測る"
+      },
+      {
+        "file": "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+        "name": "描画のあとに始める購読より先に測る"
+      },
+      {
+        "file": "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+        "name": "測る手続きが変わったあとにウィンドウの大きさが変わると、新しい手続きで測る"
+      },
+      {
+        "file": "src/hooks/use-subscription/__tests__/use-subscription.normal.test.tsx",
+        "name": "同じ手続きのまま描き直しても、購読を始め直さない"
+      },
+      {
+        "file": "src/hooks/use-subscription/__tests__/use-subscription.normal.test.tsx",
+        "name": "外れると購読を止める"
+      },
+      {
+        "file": "src/hooks/use-subscription/__tests__/use-subscription.normal.test.tsx",
+        "name": "手続きが変わると、前の購読を止めてから始め直す"
+      },
+      {
+        "file": "src/hooks/use-subscription/__tests__/use-subscription.normal.test.tsx",
+        "name": "描画すると購読を始める"
+      },
+      {
+        "file": "src/libs/dom-event/dom-listener/__tests__/dom-listener.normal.test.ts",
+        "name": "document に張ったリスナーはイベントを受け取り、外すと受け取らなくなる"
+      },
+      {
+        "file": "src/libs/dom-event/dom-listener/__tests__/dom-listener.normal.test.ts",
+        "name": "window に張ったリスナーはイベントを受け取り、外すと受け取らなくなる"
+      },
+      {
+        "file": "src/libs/dom-event/dom-listener/__tests__/dom-listener.normal.test.ts",
+        "name": "要素から外したリスナーは、イベントを受け取らなくなる"
+      },
+      {
+        "file": "src/libs/dom-event/dom-listener/__tests__/dom-listener.normal.test.ts",
+        "name": "要素に張ったリスナーは既定動作を止められる"
+      }
+    ],
+    "removed": [],
+    "files": [
+      "src/components/context-menu/__tests__/context-menu.keyboard.test.tsx",
+      "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.normal.test.tsx",
+      "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "src/hooks/use-dom-listeners/__tests__/use-dom-listeners.normal.test.tsx",
+      "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+      "src/hooks/use-subscription/__tests__/use-subscription.normal.test.tsx",
+      "src/libs/dom-event/dom-listener/__tests__/dom-listener.normal.test.ts"
+    ]
+  },
+  "commits": [
+    {
+      "sha": "0fe0fa747f6475bd6829812c85e40aa47c23a216",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T03:10:36Z",
+      "subject": "🧪 [Tests]: #1444 effect を移す前のフォーカス・ホイール・購読解除の振る舞いを固定",
+      "body": "- context-menu: ↓ で行へ移したあとにメニューが描き直されても、\n  フォーカスが行に残ることを確かめるテストを追加\n- use-canvas-view: ctrl + ホイールでブラウザの既定動作（ページの\n  ズーム）を止めることを確かめるテストを追加\n- use-document-session: 画面を閉じた後にファイルを落としても、\n  開いた記録が書き出されないことを確かめるテストを追加\n\n背景:\nIssue 1444 で useEffect を用途別のフック（src/hooks）へ移す。移す\n11 か所のうち、この 3 つの振る舞いは既存のテストが守っていな\nかった（フォーカスを当て直さないこと・passive でないリスナーで\n既定動作を止めること・購読の後始末）。\n\n採用理由:\nflow:refactor の第 1 工程として、移す前のコードで通るテストを先に\nコミットし、移した後も同じテストが通ることを比較の基準にする。\n3 件とも、元の実装を壊すと落ちることを試作で確かめた（フォーカスの\neffect の依存を外す / preventDefault を消す / 購読を外すループを\n消す）。\n\n代替案:\n既存テストの setup.ts を変えて unmount を返す形は採らない。書き換え\nない範囲を広げずに済むよう、T3 は @testing-library/react の\ncleanup() で外す。\n\n影響とトレードオフ:\n実装は変えていない。テストは 3 件増える（vitest 全体で 6117 件が緑）。\nhappy-dom は要素への wheel を既定で passive にしないため、T2 は\npassive: true に変えた壊し方は捕まえるが、options を省いた形は\n捕まえない。実ブラウザでの確認は第 2 工程の表示確認で行う。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1444\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": "src/components/context-menu/__tests__/context-menu.keyboard.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 0,
+          "patch": "@@ -199,3 +199,18 @@ test(\"押せる行が 1 つも無いメニューでは ↓ を押してもフォ\n \n   expect(focusedRow()).toBeNull();\n });\n+\n+test(\"↓ で行へ移したあとにメニューが描き直されても、フォーカスは行に残る\", async () => {\n+  const { rerender } = renderMenu({\n+    children: list(row(\"Copy\"), row(\"Paste\")),\n+  });\n+  await userEvent.keyboard(\"{ArrowDown}\");\n+\n+  rerender(\n+    <ContextMenu at={{ x: 0, y: 0 }} onClose={() => {}}>\n+      {list(row(\"Copy\"), row(\"Paste\"))}\n+    </ContextMenu>,\n+  );\n+\n+  expect(focusedRow()).toBe(\"Copy\");\n+});",
+          "patchLines": 19,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 0,
+          "patch": "@@ -158,3 +158,15 @@ test(\"リセットすると倍率と位置の両方が初期状態に戻る\", as\n \n   expect(transform()).toBe(\"translate(0px, 0px) scale(1)\");\n });\n+\n+test(\"ctrl を押しながらホイールを回すと、ブラウザの既定動作（ページのズーム）を止める\", () => {\n+  render(<CanvasViewHarness />);\n+  const prevented: boolean[] = [];\n+  const record = (event: Event) => prevented.push(event.defaultPrevented);\n+  globalThis.document.addEventListener(\"wheel\", record);\n+\n+  wheel(canvasSurface(), { x: 0, y: -100 }, \"ctrl\");\n+  globalThis.document.removeEventListener(\"wheel\", record);\n+\n+  expect(prevented).toEqual([true]);\n+});",
+          "patchLines": 16,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 0,
+          "patch": "@@ -1,3 +1,4 @@\n+import { cleanup } from \"@testing-library/react\";\n import { expect, test } from \"vitest\";\n import { artboardContent } from \"@/domains/__tests__/sample-document\";\n import { DocumentSession } from \"@/features/editor/features/document-start/domains/document-session\";\n@@ -260,3 +261,16 @@ test(\"別の綴りで落としたファイルは、実体の綴りで開かれ\n \n   expect(openedPaths(observer.session())).toStrictEqual([Path]);\n });\n+\n+test(\"画面を閉じた後にファイルを落としても、開いた記録は書き出されない\", async () => {\n+  const observer = renderDocumentSession(\n+    { [Path]: artboardContent(\"home\") },\n+    { open: DialogChoice.Canceled, save: DialogChoice.Canceled },\n+  );\n+  await observer.settle();\n+  cleanup();\n+\n+  await observer.dropFiles([Path]);\n+\n+  expect(observer.appState.storedContent()).toStrictEqual(Option.none);\n+});",
+          "patchLines": 22,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "382ec72fd10d901cca9c36683719019697ccd908",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T03:18:54Z",
+      "subject": "✨ [New Feature]: #1444 リスナーの張り方と外し方を対で持つ DomListener を libs/dom-event に追加",
+      "body": "- DomListener（attach / detach の対）と、生成関数 createOnDocument /\n  createOnWindow / createOnElement を追加\n- createOnElement は { passive: false } で張る\n- テスト L1〜L4（document・window・要素での受信と解除、既定動作の停止）\n\n背景:\nIssue 1444 で effect を用途別のフックへ閉じ込める。DOM のイベントを\n張るフック（useDomListeners）が使う張り方・外し方は React に依存しない\nので、ブラウザ API の境界である libs に置く。\n\n採用理由:\nrules/hooks.md の「ブラウザ API は libs のラッパー経由」を保ったまま、\naddEventListener を書く場所を libs の 1 ファイルに絞れる。張り方と\n外し方を対で返すので、外す対象・種類の取り違えは書けない。\n\n代替案:\n- DomListener.create 1 本（オーバーロード）: as なしで書けるが、\n  passive: false を対象ごとに分ける必要があり、オーバーロードへの\n  doc 検査と biome の挙動が未検証なので採らない\n- onDocument 等の名前: on* はこのリポジトリではコールバックの語で、\n  rules/naming.md の「値を組み立てるのは create」から外れる\n- hooks に置く: React に依存しない I/O が hooks に入り、libs 経由の\n  規約が偽になる\n\n影響とトレードオフ:\n既存コードの振る舞いは変えない（呼び出し側の移行は後のコミット）。\ncreateOnElement に options 引数は持たせない（引数が 4 つになる。\n呼び出しは wheel の 1 件）。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1444\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": "src/libs/dom-event/dom-listener/__tests__/dom-listener.normal.test.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 60,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,60 @@\n+import { expect, test } from \"vitest\";\n+import { DomListener } from \"../index\";\n+\n+test(\"document に張ったリスナーはイベントを受け取り、外すと受け取らなくなる\", () => {\n+  const received: string[] = [];\n+  const listener = DomListener.createOnDocument(\"keydown\", (event) => {\n+    received.push(event.key);\n+  });\n+\n+  listener.attach();\n+  globalThis.document.dispatchEvent(new KeyboardEvent(\"keydown\", { key: \"a\" }));\n+  listener.detach();\n+  globalThis.document.dispatchEvent(new KeyboardEvent(\"keydown\", { key: \"b\" }));\n+\n+  expect(received).toEqual([\"a\"]);\n+});\n+\n+test(\"window に張ったリスナーはイベントを受け取り、外すと受け取らなくなる\", () => {\n+  const received: string[] = [];\n+  const listener = DomListener.createOnWindow(\"blur\", () => {\n+    received.push(\"blur\");\n+  });\n+\n+  listener.attach();\n+  globalThis.window.dispatchEvent(new FocusEvent(\"blur\"));\n+  listener.detach();\n+  globalThis.window.dispatchEvent(new FocusEvent(\"blur\"));\n+\n+  expect(received).toEqual([\"blur\"]);\n+});\n+\n+test(\"要素に張ったリスナーは既定動作を止められる\", () => {\n+  const surface = globalThis.document.createElement(\"div\");\n+  const listener = DomListener.createOnElement(surface, \"wheel\", (event) =>\n+    event.preventDefault(),\n+  );\n+\n+  listener.attach();\n+  const notCanceled = surface.dispatchEvent(\n+    new WheelEvent(\"wheel\", { cancelable: true }),\n+  );\n+  listener.detach();\n+\n+  expect(notCanceled).toBe(false);\n+});\n+\n+test(\"要素から外したリスナーは、イベントを受け取らなくなる\", () => {\n+  const surface = globalThis.document.createElement(\"div\");\n+  const received: string[] = [];\n+  const listener = DomListener.createOnElement(surface, \"wheel\", () => {\n+    received.push(\"wheel\");\n+  });\n+\n+  listener.attach();\n+  surface.dispatchEvent(new WheelEvent(\"wheel\"));\n+  listener.detach();\n+  surface.dispatchEvent(new WheelEvent(\"wheel\"));\n+\n+  expect(received).toEqual([\"wheel\"]);\n+});",
+          "patchLines": 61,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/dom-event/dom-listener/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 65,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,65 @@\n+/**\n+ * 張る DOM のイベントリスナー 1 件。張り方と外し方を対で持ち、外すときに張ったときと同じ\n+ * 対象・種類・関数を渡し損ねないようにする。\n+ */\n+export type DomListener = Readonly<{\n+  attach: () => void;\n+  detach: () => void;\n+}>;\n+\n+export const DomListener = {\n+  /**\n+   * `document` に張るリスナーを作る。\n+   *\n+   * @param type 待ち受けるイベントの種類\n+   * @param listener イベントが届いたときに呼ぶもの\n+   * @returns `document` へ張り、同じ組で外すリスナー\n+   */\n+  createOnDocument<K extends keyof DocumentEventMap>(\n+    type: K,\n+    listener: (event: DocumentEventMap[K]) => void,\n+  ): DomListener {\n+    return {\n+      attach: () => globalThis.document.addEventListener(type, listener),\n+      detach: () => globalThis.document.removeEventListener(type, listener),\n+    };\n+  },\n+\n+  /**\n+   * `window` に張るリスナーを作る。\n+   *\n+   * @param type 待ち受けるイベントの種類\n+   * @param listener イベントが届いたときに呼ぶもの\n+   * @returns `window` へ張り、同じ組で外すリスナー\n+   */\n+  createOnWindow<K extends keyof WindowEventMap>(\n+    type: K,\n+    listener: (event: WindowEventMap[K]) => void,\n+  ): DomListener {\n+    return {\n+      attach: () => globalThis.window.addEventListener(type, listener),\n+      detach: () => globalThis.window.removeEventListener(type, listener),\n+    };\n+  },\n+\n+  /**\n+   * 要素に張るリスナーを作る。`passive` にせず張るので、`preventDefault` で既定動作を止め\n+   * られる（要素へ直接張るのは、React が passive で張る `onWheel` では止められないとき）。\n+   *\n+   * @param element 張る先の要素\n+   * @param type 待ち受けるイベントの種類\n+   * @param listener イベントが届いたときに呼ぶもの\n+   * @returns 要素へ張り、同じ組で外すリスナー\n+   */\n+  createOnElement<K extends keyof HTMLElementEventMap>(\n+    element: HTMLElement,\n+    type: K,\n+    listener: (event: HTMLElementEventMap[K]) => void,\n+  ): DomListener {\n+    return {\n+      attach: () =>\n+        element.addEventListener(type, listener, { passive: false }),\n+      detach: () => element.removeEventListener(type, listener),\n+    };\n+  },\n+} as const;",
+          "patchLines": 66,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/dom-event/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "patch": "@@ -1,11 +1,12 @@\n /**\n- * DOM イベントが運ぶ生の値（`PointerEvent.button` の番号・`KeyboardEvent.key` の綴り・\n- * 修飾キーのフラグ）に、アプリで使う名前を付ける境界。\n+ * DOM イベントの境界。イベントが運ぶ生の値（`PointerEvent.button` の番号・`KeyboardEvent.key`\n+ * の綴り・修飾キーのフラグ）にアプリで使う名前を付け、リスナーの張り方と外し方を対で持つ。\n  *\n  * 要素の性質を答える判定（`ElementEx`）は同じくイベントの `target` を受け取るが、ここへ\n  * 入れない。値の語彙を持たない組み込み型への汎用操作なので `utils/` の `<型名>Ex` に置く。\n  */\n export { AltKey } from \"./alt-key\";\n export { CommandKey } from \"./command-key\";\n+export { DomListener } from \"./dom-listener\";\n export { KeyName, KeyNames } from \"./key-name\";\n export { PointerButton, PointerButtons } from \"./pointer-button\";",
+          "patchLines": 15,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f90d9d0d509165cff7b00e3549f0d522b0038450",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T03:19:05Z",
+      "subject": "✨ [New Feature]: #1444 effect を担う用途別フック useDomListeners / useSubscription / useRemeasure を追加",
+      "body": "- useDomListeners(collect): 集めた DomListener を張り、手続きが変わる\n  か外れるときに外す（useEffect、依存は [collect]）\n- useSubscription(subscribe): 始めたら止め方を Option で返す購読を\n  張る（useEffect、依存は [subscribe]）。時計・タイマー・Tauri の通知・\n  非同期の結果を対象にする\n- useRemeasure(remeasure): コミットのたびと resize で、画面へ出す前に\n  測り直す（useLayoutEffect）\n- テスト D1〜D4 / S1〜S4 / R1〜R6\n\n背景:\nIssue 1444 で、アプリのコードから effect を直接書けなくする。人の\n判断で、1 ファイルに固めず、src/hooks の中に用途別のフックを置く。\n\n採用理由:\n用途ごとに「何と同期するか」が名前で分かり、移す 11 か所がどれかに\nそのまま載る。張り直す条件は渡した手続きの同一性にし、依存は呼び出し\n側の useCallback に置く（漏れは biome の useExhaustiveDependencies が\n捕まえる）。外し方は型で返させる（Option）。\n\n代替案:\n- 汎用の useSubscription 1 本に閉じ込める: 人の判断で採らない\n- タイマー専用・一度きりの非同期処理専用のフック: どちらも呼び出しが\n  1 か所で、既存の Clock.subscribeSeconds と同じく購読として載る\n- useXxx(fn, deps): 型の中で biome が依存配列を検査できず、抑制\n  コメントが要る（依存配列を欺く実装の禁止とぶつかる）\n- 汎用の useLayoutSubscription: layout effect の抜け道が残る\n- 時機を引数で切り替える 1 本: Rules of Hooks に反する\n\n影響とトレードオフ:\n呼び出し側が useCallback で包み忘れると、黙って毎回張り直す。\n渡す手続きの中身（外部システムが関与するか）は lint で見ない。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1444\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": "src/hooks/use-dom-listeners/__tests__/use-dom-listeners.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 71,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,71 @@\n+import { fireEvent, render } from \"@testing-library/react\";\n+import { useCallback } from \"react\";\n+import { expect, test } from \"vitest\";\n+import { DomListener } from \"@/libs/dom-event\";\n+import { useDomListeners } from \"../index\";\n+\n+/** document の keydown で受け取ったキーを `received` へ積む器。 */\n+function DocumentKeyHarness({\n+  received,\n+  label,\n+}: Readonly<{ received: string[]; label: string }>) {\n+  const collect = useCallback(\n+    () => [\n+      DomListener.createOnDocument(\"keydown\", (event) => {\n+        received.push(`${label}:${event.key}`);\n+      }),\n+    ],\n+    [received, label],\n+  );\n+  useDomListeners(collect);\n+  return <div />;\n+}\n+\n+test(\"描画すると、集めたリスナーがイベントを受け取る\", () => {\n+  const received: string[] = [];\n+  render(<DocumentKeyHarness received={received} label=\"a\" />);\n+\n+  fireEvent.keyDown(document, { key: \"x\" });\n+\n+  expect(received).toEqual([\"a:x\"]);\n+});\n+\n+test(\"外れると、集めたリスナーはイベントを受け取らなくなる\", () => {\n+  const received: string[] = [];\n+  const { unmount } = render(\n+    <DocumentKeyHarness received={received} label=\"a\" />,\n+  );\n+  unmount();\n+\n+  fireEvent.keyDown(document, { key: \"x\" });\n+\n+  expect(received).toEqual([]);\n+});\n+\n+test(\"手続きが変わると、前のリスナーは受け取らず新しいリスナーだけが受け取る\", () => {\n+  const received: string[] = [];\n+  const { rerender } = render(\n+    <DocumentKeyHarness received={received} label=\"a\" />,\n+  );\n+  rerender(<DocumentKeyHarness received={received} label=\"b\" />);\n+\n+  fireEvent.keyDown(document, { key: \"x\" });\n+\n+  expect(received).toEqual([\"b:x\"]);\n+});\n+\n+test(\"同じ手続きのまま描き直しても、集め直さない\", () => {\n+  const collected: number[] = [];\n+  function Harness({ tick }: Readonly<{ tick: number }>) {\n+    const collect = useCallback(() => {\n+      collected.push(1);\n+      return [];\n+    }, []);\n+    useDomListeners(collect);\n+    return <div data-tick={tick} />;\n+  }\n+  const { rerender } = render(<Harness tick={0} />);\n+  rerender(<Harness tick={1} />);\n+\n+  expect(collected).toHaveLength(1);\n+});",
+          "patchLines": 72,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-dom-listeners/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,24 @@\n+import { useEffect } from \"react\";\n+import type { DomListener } from \"@/libs/dom-event\";\n+\n+/**\n+ * `collect` が返すリスナーを描画のあとに張り、`collect` が変わるたび・外れるときに外す。\n+ * 並びではなく集める手続きを受け取るのは、張る先の要素（ref の `current`）を描画のあとに\n+ * 読むため。\n+ *\n+ * @param collect 張るリスナーを集める手続き。張らないなら空の並びを返す。張り直したくない\n+ *   なら `useCallback` で安定させる\n+ */\n+export function useDomListeners(collect: () => readonly DomListener[]): void {\n+  useEffect(() => {\n+    const listeners = collect();\n+    for (const listener of listeners) {\n+      listener.attach();\n+    }\n+    return () => {\n+      for (const listener of listeners) {\n+        listener.detach();\n+      }\n+    };\n+  }, [collect]);\n+}",
+          "patchLines": 25,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 82,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,82 @@\n+import { fireEvent, render } from \"@testing-library/react\";\n+import { useCallback } from \"react\";\n+import { expect, test } from \"vitest\";\n+import { useSubscription } from \"@/hooks/use-subscription\";\n+import { Option } from \"@/utils/Option\";\n+import { useRemeasure } from \"../index\";\n+\n+/** 測り直した回数を `log` へ積む器。 */\n+function Harness({\n+  log,\n+  tick = 0,\n+}: Readonly<{ log: string[]; tick?: number }>) {\n+  useRemeasure(() => {\n+    log.push(\"remeasure\");\n+  });\n+  return <div data-tick={tick} />;\n+}\n+\n+test(\"描画すると測る\", () => {\n+  const log: string[] = [];\n+  render(<Harness log={log} />);\n+\n+  expect(log).toEqual([\"remeasure\"]);\n+});\n+\n+test(\"描き直すたびに測り直す\", () => {\n+  const log: string[] = [];\n+  const { rerender } = render(<Harness log={log} tick={0} />);\n+  rerender(<Harness log={log} tick={1} />);\n+\n+  expect(log).toEqual([\"remeasure\", \"remeasure\"]);\n+});\n+\n+test(\"ウィンドウの大きさが変わると測り直す\", () => {\n+  const log: string[] = [];\n+  render(<Harness log={log} />);\n+  fireEvent(window, new Event(\"resize\"));\n+\n+  expect(log).toEqual([\"remeasure\", \"remeasure\"]);\n+});\n+\n+test(\"外れたあとはウィンドウの大きさが変わっても測り直さない\", () => {\n+  const log: string[] = [];\n+  const { unmount } = render(<Harness log={log} />);\n+  unmount();\n+  fireEvent(window, new Event(\"resize\"));\n+\n+  expect(log).toEqual([\"remeasure\"]);\n+});\n+\n+test(\"描画のあとに始める購読より先に測る\", () => {\n+  const log: string[] = [];\n+  function Ordered() {\n+    const subscribe = useCallback(() => {\n+      log.push(\"subscribe\");\n+      return Option.none;\n+    }, []);\n+    useSubscription(subscribe);\n+    useRemeasure(() => {\n+      log.push(\"remeasure\");\n+    });\n+    return <div />;\n+  }\n+  render(<Ordered />);\n+\n+  expect(log).toEqual([\"remeasure\", \"subscribe\"]);\n+});\n+\n+test(\"測る手続きが変わったあとにウィンドウの大きさが変わると、新しい手続きで測る\", () => {\n+  const log: string[] = [];\n+  function Labeled({ label }: Readonly<{ label: string }>) {\n+    useRemeasure(() => {\n+      log.push(label);\n+    });\n+    return <div />;\n+  }\n+  const { rerender } = render(<Labeled label=\"a\" />);\n+  rerender(<Labeled label=\"b\" />);\n+  fireEvent(window, new Event(\"resize\"));\n+\n+  expect(log).toEqual([\"a\", \"b\", \"b\"]);\n+});",
+          "patchLines": 83,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-remeasure/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 21,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,21 @@\n+import { useLayoutEffect } from \"react\";\n+import { DomListener } from \"@/libs/dom-event\";\n+\n+/**\n+ * 描画を画面へ出す前に `remeasure` を呼ぶ。コミットのたびと、ウィンドウの大きさが変わる\n+ * たびに呼ぶ（再レンダーを伴わない位置の変化のうち、拾えるのはウィンドウの大きさだけ）。\n+ *\n+ * @param remeasure 今の描かれ方を測り直す手続き\n+ */\n+export function useRemeasure(remeasure: () => void): void {\n+  useLayoutEffect(() => {\n+    remeasure();\n+    /*\n+     * リスナーもコミットのたびに張り直す。1 度だけ張ると、最初の `remeasure` を掴んだまま\n+     * になり、測る相手を変えたあとに古い相手を測り続ける。\n+     */\n+    const resize = DomListener.createOnWindow(\"resize\", remeasure);\n+    resize.attach();\n+    return resize.detach;\n+  });\n+}",
+          "patchLines": 22,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-subscription/__tests__/use-subscription.normal.test.tsx",
+          "status": "A",
+          "oldPath": null,
+          "additions": 53,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,53 @@\n+import { render } from \"@testing-library/react\";\n+import { useCallback } from \"react\";\n+import { expect, test } from \"vitest\";\n+import { Option } from \"@/utils/Option\";\n+import { useSubscription } from \"../index\";\n+\n+/** 始めた・止めた記録を `log` へ積む購読を張る器。 */\n+function Harness({\n+  log,\n+  topic,\n+  tick = 0,\n+}: Readonly<{ log: string[]; topic: string; tick?: number }>) {\n+  const subscribe = useCallback(() => {\n+    log.push(`start:${topic}`);\n+    const stop = () => {\n+      log.push(`stop:${topic}`);\n+    };\n+    return Option.some(stop);\n+  }, [log, topic]);\n+  useSubscription(subscribe);\n+  return <div data-tick={tick} />;\n+}\n+\n+test(\"描画すると購読を始める\", () => {\n+  const log: string[] = [];\n+  render(<Harness log={log} topic=\"a\" />);\n+\n+  expect(log).toEqual([\"start:a\"]);\n+});\n+\n+test(\"外れると購読を止める\", () => {\n+  const log: string[] = [];\n+  const { unmount } = render(<Harness log={log} topic=\"a\" />);\n+  unmount();\n+\n+  expect(log).toEqual([\"start:a\", \"stop:a\"]);\n+});\n+\n+test(\"同じ手続きのまま描き直しても、購読を始め直さない\", () => {\n+  const log: string[] = [];\n+  const { rerender } = render(<Harness log={log} topic=\"a\" tick={0} />);\n+  rerender(<Harness log={log} topic=\"a\" tick={1} />);\n+\n+  expect(log).toEqual([\"start:a\"]);\n+});\n+\n+test(\"手続きが変わると、前の購読を止めてから始め直す\", () => {\n+  const log: string[] = [];\n+  const { rerender } = render(<Harness log={log} topic=\"a\" />);\n+  rerender(<Harness log={log} topic=\"b\" />);\n+\n+  expect(log).toEqual([\"start:a\", \"stop:a\", \"start:b\"]);\n+});",
+          "patchLines": 54,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-subscription/index.ts",
+          "status": "A",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,22 @@\n+import { useEffect } from \"react\";\n+import { Option } from \"@/utils/Option\";\n+\n+/**\n+ * 購読を始める手続き。始めたら止め方を、始めなかったら `none` を返す。止め方は\n+ * `libs/tauri-ipc` の `Unsubscribe` と同じ形で、Tauri 以外の相手も返すため素の関数で受ける。\n+ */\n+export type Subscribe = () => Option<() => void>;\n+\n+/**\n+ * 描画のあとに購読を始め、`subscribe` が変わるたび・外れるときに止める。購読の相手は\n+ * `libs/` が渡す時計・タイマー・Tauri の通知・非同期の結果で、どれも「始めたら止め方を返す\n+ * 手続き」に揃えて渡す。DOM のイベントは `useDomListeners` で張る。\n+ *\n+ * @param subscribe 始める手続き。張り直したくないなら `useCallback` で安定させる\n+ */\n+export function useSubscription(subscribe: Subscribe): void {\n+  useEffect(() => {\n+    const unsubscribe = subscribe();\n+    return Option.isSome(unsubscribe) ? unsubscribe.value : undefined;\n+  }, [subscribe]);\n+}",
+          "patchLines": 23,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d41bc49e71e0b46a83aac6b5673ad5ed96bf7ac0",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T03:19:17Z",
+      "subject": "♻️ [Refactoring]: #1444 effect を直接書いていた 9 ファイルを用途別フックへ移す",
+      "body": "- DOM のイベント: context-menu の外側クリック、use-key-shortcut、\n  use-canvas-view の wheel、use-modifier-key-hold を useDomListeners へ\n- 購読: use-document-session（起動時の読み込み・メニューとドロップ）、\n  use-auto-save、use-document-reload、use-elapsed を useSubscription へ\n- 測り直し: use-measured を useRemeasure へ\n- context-menu のフォーカスは effect をやめて ref callback にする\n- main.tsx の default import をやめ、StrictMode を名前付きで読む\n- 「Effect の依存」等の古い語を指していたコメントを新しい語に揃える\n\n背景:\nIssue 1444 で effect を用途別フックの中に閉じ込める。今の 11 か所\n（effect 10 + layout effect 1）は外部システムとの同期で、不要な effect\nは無かった。\n\n採用理由:\n各所の effect の依存を、そのまま useCallback の依存へ移す形にした。\n既存の公開 API のシグネチャは変えないので、呼び出し側・ストーリーは\n変わらない。フォーカスは購読ではないので、フックに載せず ref callback\nで当てる。Effect Event（runMenuCommand / openDropped / reload）は\nuseCallback 経由で渡すが、呼ばれるのは useSubscription の effect の\n中だけで、時機は元と同じ（その旨をコードに書いた）。\n\n代替案:\n- フォーカスも useSubscription で書く: 購読ではなく、名前と実体が\n  ずれる\n- useMeasured を src/hooks へ移して許可する: 層をまたぐ移動になる\n\n影響とトレードオフ:\n振る舞いは変えない。第 1 工程で固定した 3 件と、触ったフックを守って\nいた既存テスト 231 件が緑のまま（234 件）。ref callback の副作用は\nlint が見ない穴として残る。react-hooks の lint を入れると、Effect\nEvent を useCallback 経由で渡す 3 か所が違反になる見込み。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1444\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": "src/app/main.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -1,10 +1,10 @@\n-import React from \"react\";\n+import { StrictMode } from \"react\";\n import ReactDOM from \"react-dom/client\";\n import { App } from \"@/app/App\";\n import \"@/app/styles.css\";\n \n ReactDOM.createRoot(document.getElementById(\"root\") as HTMLElement).render(\n-  <React.StrictMode>\n+  <StrictMode>\n     <App />\n-  </React.StrictMode>,\n+  </StrictMode>,\n );",
+          "patchLines": 14,
+          "truncated": false
+        },
+        {
+          "path": "src/components/context-menu/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 9,
+          "patch": "@@ -6,11 +6,12 @@ import {\n   isValidElement,\n   type ReactElement,\n   type ReactNode,\n+  useCallback,\n   useContext,\n-  useEffect,\n   useRef,\n } from \"react\";\n-import { KeyName, KeyNames } from \"@/libs/dom-event\";\n+import { useDomListeners } from \"@/hooks/use-dom-listeners\";\n+import { DomListener, KeyName, KeyNames } from \"@/libs/dom-event\";\n import type { ValueOf } from \"@/types/ValueOf\";\n import { ArrayEx } from \"@/utils/ArrayEx\";\n import { Option } from \"@/utils/Option\";\n@@ -315,11 +316,12 @@ function ContextMenuRoot({\n    * （React が `focus()` を呼ぶのはフォーム要素だけ）。\n    * 1 度だけ当てるのは、↑↓ で行へ移したフォーカスを再レンダーで奪い返さないため。\n    */\n-  useEffect(() => {\n-    menuRef.current?.focus();\n+  const attachMenu = useCallback((menu: HTMLDivElement | null) => {\n+    menuRef.current = menu;\n+    menu?.focus();\n   }, []);\n \n-  useEffect(() => {\n+  const collectOutsidePressListeners = useCallback(() => {\n     const closeOnOutside = (event: PointerEvent) => {\n       const menu = menuRef.current;\n       const isInsideMenu =\n@@ -332,17 +334,16 @@ function ContextMenuRoot({\n       onClose();\n     };\n \n-    globalThis.document.addEventListener(\"pointerdown\", closeOnOutside);\n-    return () =>\n-      globalThis.document.removeEventListener(\"pointerdown\", closeOnOutside);\n+    return [DomListener.createOnDocument(\"pointerdown\", closeOnOutside)];\n   }, [onClose]);\n+  useDomListeners(collectOutsidePressListeners);\n \n   const lists = collectElements(children, ContextMenuList);\n   const placement = menuPlacement(at, menuHeight(lists));\n \n   return (\n     <div\n-      ref={menuRef}\n+      ref={attachMenu}\n       role=\"menu\"\n       aria-label=\"コンテキストメニュー\"\n       tabIndex={-1}",
+          "patchLines": 52,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 6,
+          "patch": "@@ -2,7 +2,7 @@ import {\n   type ActionDispatch,\n   type PointerEvent as ReactPointerEvent,\n   type RefObject,\n-  useEffect,\n+  useCallback,\n   useReducer,\n   useRef,\n } from \"react\";\n@@ -13,7 +13,8 @@ import {\n } from \"@/features/editor/features/canvas/domains/canvas-view\";\n import { CanvasPointer } from \"@/features/editor/features/canvas/utils/CanvasPointer\";\n import { DrawnBounds } from \"@/features/editor/features/canvas/utils/DrawnBounds\";\n-import { CommandKey } from \"@/libs/dom-event\";\n+import { useDomListeners } from \"@/hooks/use-dom-listeners\";\n+import { CommandKey, DomListener } from \"@/libs/dom-event\";\n import { ElementMeasure } from \"@/libs/element-measure\";\n import { Option } from \"@/utils/Option\";\n \n@@ -88,18 +89,18 @@ function useWheelControl(\n   surface: RefObject<HTMLElement | null>,\n   dispatch: ActionDispatch<[action: CanvasViewAction]>,\n ): void {\n-  useEffect(() => {\n+  const collectListeners = useCallback(() => {\n     const element = surface.current;\n     if (element === null) {\n-      return;\n+      return [];\n     }\n     const handleWheel = (event: WheelEvent) => {\n       event.preventDefault();\n       dispatch(wheelAction(event));\n     };\n-    element.addEventListener(\"wheel\", handleWheel, { passive: false });\n-    return () => element.removeEventListener(\"wheel\", handleWheel);\n+    return [DomListener.createOnElement(element, \"wheel\", handleWheel)];\n   }, [surface, dispatch]);\n+  useDomListeners(collectListeners);\n }\n \n /**",
+          "patchLines": 42,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 18,
+          "patch": "@@ -1,4 +1,5 @@\n-import { useLayoutEffect, useState } from \"react\";\n+import { useState } from \"react\";\n+import { useRemeasure } from \"@/hooks/use-remeasure\";\n import { Option } from \"@/utils/Option\";\n \n /**\n@@ -9,8 +10,7 @@ import { Option } from \"@/utils/Option\";\n  * 起きるため、原因を列挙して deps に並べると上流の状態が増えるたびに追随が要る。測り直\n  * した値が前と同じなら**同じ参照を返して再レンダーを止める**。\n  *\n- * 拾えないのは**再レンダーを伴わない位置変化**（Web フォントや画像の読み込み完了）。ウ\n- * ィンドウの大きさの変化だけは再レンダーが起きないので明示的に購読する。\n+ * 測り直す時機と、拾えない位置の変化は `useRemeasure` に従う。\n  *\n  * @param measure 今の描かれ方を測る手続き。測れなければ `none`\n  * @param equals 前の結果と測り直した結果が同じかを比べる関数\n@@ -22,21 +22,11 @@ export function useMeasured<T>(\n ): Option<T> {\n   const [measured, setMeasured] = useState<Option<T>>(Option.none);\n \n-  useLayoutEffect(() => {\n-    const remeasure = () => {\n-      setMeasured((previous) => {\n-        const next = measure();\n-        return Option.equals(previous, next, equals) ? previous : next;\n-      });\n-    };\n-\n-    remeasure();\n-    /*\n-     * 購読も毎コミット張り直す。`[]` で 1 度だけ張ると、リスナーが最初の `measure` を\n-     * 掴んだままになり、測る相手を変えたあとに古い相手を測り続ける。\n-     */\n-    globalThis.window.addEventListener(\"resize\", remeasure);\n-    return () => globalThis.window.removeEventListener(\"resize\", remeasure);\n+  useRemeasure(() => {\n+    setMeasured((previous) => {\n+      const next = measure();\n+      return Option.equals(previous, next, equals) ? previous : next;\n+    });\n   });\n \n   return measured;",
+          "patchLines": 44,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 10,
+          "patch": "@@ -1,5 +1,7 @@\n-import { useEffect } from \"react\";\n+import { useCallback } from \"react\";\n+import { useDomListeners } from \"@/hooks/use-dom-listeners\";\n import { KeyShortcut, type KeyTriggers } from \"@/hooks/use-key-shortcut\";\n+import { DomListener } from \"@/libs/dom-event\";\n \n /**\n  * 押している間だけ効く修飾キー（パンの space・距離の Alt / Option）。\n@@ -29,7 +31,7 @@ export function useModifierKeyHold(\n   key: HeldModifierKey,\n   onChange: (isHeld: boolean) => void,\n ): void {\n-  useEffect(() => {\n+  const collectListeners = useCallback(() => {\n     const hold = (event: KeyboardEvent) => {\n       const startsHold =\n         key.shortcut.codes.includes(event.code) &&\n@@ -45,13 +47,11 @@ export function useModifierKeyHold(\n     };\n     const clear = () => onChange(false);\n \n-    globalThis.document.addEventListener(\"keydown\", hold);\n-    globalThis.document.addEventListener(\"keyup\", release);\n-    globalThis.window.addEventListener(\"blur\", clear);\n-    return () => {\n-      globalThis.document.removeEventListener(\"keydown\", hold);\n-      globalThis.document.removeEventListener(\"keyup\", release);\n-      globalThis.window.removeEventListener(\"blur\", clear);\n-    };\n+    return [\n+      DomListener.createOnDocument(\"keydown\", hold),\n+      DomListener.createOnDocument(\"keyup\", release),\n+      DomListener.createOnWindow(\"blur\", clear),\n+    ];\n   }, [key, onChange]);\n+  useDomListeners(collectListeners);\n }",
+          "patchLines": 38,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 14,
+          "deletions": 7,
+          "patch": "@@ -1,4 +1,4 @@\n-import { useEffect, useEffectEvent, useReducer, useState } from \"react\";\n+import { useCallback, useEffectEvent, useReducer, useState } from \"react\";\n import { OpenedDocument } from \"@/domains/session/opened-document\";\n import type { FilePath } from \"@/domains/unit/file-path\";\n import {\n@@ -7,6 +7,7 @@ import {\n   type OpenOutcome,\n } from \"@/features/editor/features/document-start/domains/document-session\";\n import { RecentFiles } from \"@/features/editor/features/document-start/domains/recent-files\";\n+import { useSubscription } from \"@/hooks/use-subscription\";\n import type { AppMenu, AppMenuCommand } from \"@/libs/app-menu\";\n import type { AppStateIpc } from \"@/libs/app-state-ipc\";\n import { AppStateJson } from \"@/libs/app-state-json\";\n@@ -421,7 +422,7 @@ function rememberOpened(\n  *\n  * 開く操作が終わると開いているドキュメントと最近使ったファイルの一覧が一緒に動き、更新の\n  * 型も複数あるので `useReducer` で 1 つの状態にまとめる（rules/hooks.md）。指示を受け取れ\n- * なかった経路は購読の Effect だけが更新する独立した値なので `useState` のまま持つ。\n+ * なかった経路は購読（`useSubscription`）だけが更新する独立した値なので `useState` のまま持つ。\n  *\n  * @param ports ダイアログ・I/O・メニュー・ドロップ・アプリ自身の状態・ウィンドウの相手\n  * @returns 今のセッション、最近開いたファイルのパス（新しい順）、その一覧を読み取れ\n@@ -477,7 +478,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{\n \n   /*\n    * 届いた指示の解釈は購読の張り直しと関係がないため Effect Event に出す。\n-   * これが無いと、レンダーのたびに変わるハンドラを Effect の依存に入れることになり、\n+   * これが無いと、レンダーのたびに変わるハンドラを購読の手続きの依存に入れることになり、\n    * 開くたびに購読が張り直されて、その隙間に届いた指示を落とす。\n    */\n   const runMenuCommand = useEffectEvent((command: AppMenuCommand) => {\n@@ -508,7 +509,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{\n     openDocumentsAt(paths);\n   });\n \n-  useEffect(() => {\n+  const restoreOnStart = useCallback(() => {\n     let ignore = false;\n \n     /**\n@@ -537,12 +538,16 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{\n     };\n     void restore();\n \n-    return () => {\n+    const release = () => {\n       ignore = true;\n     };\n+    return Option.some(release);\n   }, [ports.appState, ports.ipc]);\n+  useSubscription(restoreOnStart);\n \n-  useEffect(() => {\n+  // Effect Event を Effect の外から参照するが、呼ばれるのは `useSubscription` の effect の\n+  // 中だけで、時機は元と同じ。\n+  const subscribeCommands = useCallback(() => {\n     let stopped = false;\n     const unsubscribes: (() => void)[] = [];\n \n@@ -582,13 +587,15 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{\n     };\n     void start();\n \n-    return () => {\n+    const release = () => {\n       stopped = true;\n       for (const unsubscribe of unsubscribes) {\n         unsubscribe();\n       }\n     };\n+    return Option.some(release);\n   }, [ports.menu, ports.drop]);\n+  useSubscription(subscribeCommands);\n \n   return {\n     session: state.session,",
+          "patchLines": 77,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 6,
+          "patch": "@@ -1,10 +1,12 @@\n-import { useEffect, useRef, useState } from \"react\";\n+import { useCallback, useRef, useState } from \"react\";\n import type { DesignDocument } from \"@/domains/dcmp/design-document\";\n import { DocumentSaveState } from \"@/domains/session/document-save-state\";\n import { FileValidity } from \"@/domains/session/file-validity\";\n import type { FilePath } from \"@/domains/unit/file-path\";\n+import { useSubscription } from \"@/hooks/use-subscription\";\n import { type DocumentIpc, toDocumentAccessFailure } from \"@/libs/document-ipc\";\n import { DocumentJson } from \"@/libs/document-json\";\n+import { Option } from \"@/utils/Option\";\n import { Result } from \"@/utils/Result\";\n \n /**\n@@ -58,10 +60,10 @@ export function useAutoSave({\n    */\n   const savedDocumentRef = useRef(document);\n \n-  useEffect(() => {\n-    // 凍結が解ければ妥当性が変わってこの effect が再び走り、書き出しの要否から決め直される。\n+  const scheduleSave = useCallback(() => {\n+    // 凍結が解ければ妥当性が変わって購読が張り直され、書き出しの要否から決め直される。\n     if (FileValidity.isInvalid(fileValidity)) {\n-      return;\n+      return Option.none;\n     }\n     if (document === savedDocumentRef.current) {\n       /*\n@@ -70,7 +72,7 @@ export function useAutoSave({\n        * 戻すので、この分岐に入りタイマーが cleanup で消える）で `saving` のまま固まる。\n        */\n       setSaveState(DocumentSaveState.Saved);\n-      return;\n+      return Option.none;\n     }\n     setSaveState(DocumentSaveState.Saving);\n \n@@ -92,11 +94,13 @@ export function useAutoSave({\n       setSaveState(DocumentSaveState.Saved);\n     }, AutoSaveDebounceMs);\n \n-    return () => {\n+    const cancel = () => {\n       ignore = true;\n       clearTimeout(timer);\n     };\n+    return Option.some(cancel);\n   }, [ipc, path, document, fileValidity]);\n+  useSubscription(scheduleSave);\n \n   return saveState;\n }",
+          "patchLines": 52,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 4,
+          "patch": "@@ -1,7 +1,8 @@\n-import { useEffect, useEffectEvent, useState } from \"react\";\n+import { useCallback, useEffectEvent, useState } from \"react\";\n import type { DocumentAccessFailure } from \"@/domains/session/document-access-failure\";\n import { DocumentReload } from \"@/domains/session/document-reload\";\n import type { FilePath } from \"@/domains/unit/file-path\";\n+import { useSubscription } from \"@/hooks/use-subscription\";\n import {\n   type DocumentChanged,\n   type DocumentIpc,\n@@ -47,7 +48,7 @@ export function useDocumentReload({\n \n   /*\n    * 届いた内容の解釈は監視の張り直しと関係がないため Effect Event に出す。\n-   * これが無いと、レンダーのたびに変わる `onReload` を Effect の依存に入れることになり、\n+   * これが無いと、レンダーのたびに変わる `onReload` を購読の手続きの依存に入れることになり、\n    * 監視と購読が張り直されて、その隙間に届いた変更を落とす。\n    */\n   const reload = useEffectEvent((changed: DocumentChanged) => {\n@@ -60,7 +61,9 @@ export function useDocumentReload({\n     onReload(DocumentReload.fromParsed(DocumentJson.parse(changed.content)));\n   });\n \n-  useEffect(() => {\n+  // Effect Event を Effect の外から参照するが、呼ばれるのは `useSubscription` の effect の\n+  // 中だけで、時機は元と同じ。\n+  const watchChanges = useCallback(() => {\n     let stopped = false;\n     let unsubscribe: Option<Unsubscribe> = Option.none;\n \n@@ -87,14 +90,16 @@ export function useDocumentReload({\n     };\n     void start();\n \n-    return () => {\n+    const release = () => {\n       stopped = true;\n       if (Option.isSome(unsubscribe)) {\n         unsubscribe.value();\n       }\n       void ipc.unwatch(path);\n     };\n+    return Option.some(release);\n   }, [ipc, path]);\n+  useSubscription(watchChanges);\n \n   return failure;\n }",
+          "patchLines": 48,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-elapsed/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 6,
+          "patch": "@@ -1,6 +1,7 @@\n-import { useEffect, useState } from \"react\";\n+import { useCallback, useState } from \"react\";\n import { Elapsed } from \"@/domains/unit/elapsed\";\n import type { Instant } from \"@/domains/unit/instant\";\n+import { useSubscription } from \"@/hooks/use-subscription\";\n import type { Clock } from \"@/libs/clock\";\n import { Option } from \"@/utils/Option\";\n \n@@ -27,19 +28,22 @@ export function useElapsed(\n    */\n   const sinceEpochMs = Option.isSome(since) ? since.value.epochMs : undefined;\n \n-  useEffect(() => {\n+  const tick = useCallback(() => {\n     if (sinceEpochMs === undefined) {\n-      return;\n+      return Option.none;\n     }\n     /*\n      * 購読を始める前に今の時刻へ追いつく。`now` は mount 時のままなので、数え始めた\n      * 時点では起点より古く、これが無いと最初の 1 秒だけ負の経過時間が出る。\n      */\n     setNow(clock.now());\n-    return clock.subscribeSeconds(() => {\n-      setNow(clock.now());\n-    });\n+    return Option.some(\n+      clock.subscribeSeconds(() => {\n+        setNow(clock.now());\n+      }),\n+    );\n   }, [clock, sinceEpochMs]);\n+  useSubscription(tick);\n \n   return Option.map(since, (from) => Elapsed.create({ from, to: now }));\n }",
+          "patchLines": 37,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -27,7 +27,7 @@ export type FileRevertControl = Readonly<{\n /**\n  * 外部変更で不正になったファイルを、表示中の内容で上書きして捨てる（UI 案 docs/Design\n  * Composer.html の Error 画面 `revert file`）。書き込みはボタンの押下から始めるので\n- * `useEffect` には置かない。\n+ * 購読（`useSubscription`）には置かない。\n  *\n  * 待っていてもエラー一覧が畳まれない。\n  *",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-key-shortcut/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 6,
+          "patch": "@@ -1,5 +1,6 @@\n-import { createContext, type ReactNode, useContext, useEffect } from \"react\";\n-import { CommandKey } from \"@/libs/dom-event\";\n+import { createContext, type ReactNode, useCallback, useContext } from \"react\";\n+import { useDomListeners } from \"@/hooks/use-dom-listeners\";\n+import { CommandKey, DomListener } from \"@/libs/dom-event\";\n import type { ValueOf } from \"@/types/ValueOf\";\n import { ElementEx } from \"@/utils/ElementEx\";\n \n@@ -181,9 +182,9 @@ export function KeyShortcutScopeProvider({\n export function useKeyShortcuts(bindings: readonly KeyShortcutBinding[]): void {\n   const scope = useContext(KeyShortcutScopeContext);\n \n-  useEffect(() => {\n+  const collectListeners = useCallback(() => {\n     if (scope === KeyShortcutScopes.Suspended) {\n-      return;\n+      return [];\n     }\n     const handleKeyDown = (event: KeyboardEvent) => {\n       const bound = bindings.find(\n@@ -197,9 +198,9 @@ export function useKeyShortcuts(bindings: readonly KeyShortcutBinding[]): void {\n       event.preventDefault();\n       bound.onPress();\n     };\n-    document.addEventListener(\"keydown\", handleKeyDown);\n-    return () => document.removeEventListener(\"keydown\", handleKeyDown);\n+    return [DomListener.createOnDocument(\"keydown\", handleKeyDown)];\n   }, [bindings, scope]);\n+  useDomListeners(collectListeners);\n }\n \n /**",
+          "patchLines": 33,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "311b8075ede626bc5846310ef68dc175ac824688",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T03:19:26Z",
+      "subject": "🔧 [Config]: #1444 用途別フック 3 本以外での effect の import を oxlint で止める",
+      "body": "- src 全体に no-restricted-imports の paths を置き、react の\n  useEffect / useLayoutEffect / useInsertionEffect と default import を\n  止める\n- components/hooks/utils/types と libs の override にも同じ paths を写す\n- その直後に、use-dom-listeners / use-subscription / use-remeasure の\n  index.ts だけを許可する override を置く\n- .claude/hooks/README.md「カバー範囲と残る穴」に、構成と残る穴を書く\n\n背景:\nrules/hooks.md の「useEffect は最終手段」は文章だけで、どこで使って\nよいかを機械で止めていなかった。Issue 1444 で、文章の規約を\n決定論的な検査に置き換える。\n\n採用理由:\noxlint の override は同じ規則のオプションを丸ごと置き換え、後ろが\n勝つ（実測）。そのため禁止の paths を既存の override にも写し、許可を\n最後に置く。default import を止めないと React.useEffect が抜け、\nuseLayoutEffect を止めないと抜け道になる（どちらも実測）。\n\n代替案:\n- files の否定パターンで許可する: oxlint が解釈しない（実測）\n- 禁止を独立の override にする: 後ろの override が置き換えて片方の\n  禁止が消える（実測）\n- src/hooks 全体を許可する: 用途別の 3 本に閉じない\n\n影響とトレードオフ:\n導入時の違反 10 件（effect の 9 ファイル + main.tsx）は前のコミットで\n0 件にした。プローブ 21 件中 20 件が error、動的 import(\"react\") だけが\n通る。違反 0 件のため、override を消したり paths を写し忘れたりしても\n落ちる検査は無い（判定表は Issue 1445 の U1 で作る）。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1444\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 0,
+          "patch": "@@ -360,6 +360,10 @@ deny メッセージには `jq` / `python3` が欠けていればその名前も\n   - `react` プラグイン有効化により `src/**/*.tsx` へ `react` の correctness 規則が `warn` で入る（導入時 0 件）。そのうち `jsx-props-no-spread-multi` は自動修正を持つため、`post-edit-lint.sh` の `oxlint --fix` が同一 props の二重 spread を黙って 1 つにまとめる（実測）\n   - **残る穴は恒久の判断として受け入れる（#1066）。** 除外ファイル内の生 `<button>`（`artboard-list` / `token-list` の見出し `+` 等）や `role=\"button\"` の生要素（既存例 `artboard-frame/index.tsx`）は見ず、`// @lint-suppress-ok` でファイル単位の抑制もできる。また違反 0 件のため `error` override 自体を消しても落ちる検査はない（他の oxlint 規則と同じく判定表は置かず、削除時に `pnpm run lint` が 0 件で通ることを実測済み）\n   - 許可を要素単位まで狭めない。`overrides.files` の glob はファイル単位しか書けず、要素単位にするには Python 検出器が必要になり配線先が増えて編集時（`post-edit-lint.sh`）に効かなくなるため\n+- `.oxlintrc.json` の `overrides`（#1444）は `src/` 全体に `no-restricted-imports` の `paths` を `error` で置き、`react` の `useEffect` / `useLayoutEffect` / `useInsertionEffect` と default import を止める（規範は `rules/hooks.md`「useEffect: 最終手段として扱う」）。許可するのは `src/hooks/` の `use-dom-listeners` / `use-subscription` / `use-remeasure` の `index.ts` の 3 本だけ。導入時の違反 10 件（effect の 9 ファイルと default import の `src/app/main.tsx`）は同じ PR で 0 件にした\n+  - **`no-restricted-imports` を持つ override を足すときは、`paths` を写し、許可の override を最後に置く。** override は同じ規則のオプションを丸ごと置き換え、後ろが勝つ（実測）。写し忘れるとその範囲で effect の禁止が黙って外れ、許可を前に置くと許可した 3 本が落ちる。`files` の否定パターンは効かない（実測）\n+  - 残る穴: 違反 0 件なので override を消しても写し忘れても落ちる検査は無い（判定表は #1445 の U1）/ 動的 `import(\"react\")` / ref callback に書いた副作用 / 3 本に渡す手続きの中身 / `DomListener.attach` は effect の外でも呼べる / `src/` の外\n+  - Effect Event を `useCallback` 経由で `useSubscription` へ渡す 3 か所（`use-document-session` の `runMenuCommand` / `openDropped`、`use-document-reload` の `reload`）は、react-hooks の lint を入れると違反になる見込み（oxlint 1.58 の `react/rules-of-hooks` では 0 件を実測。eslint 版は未確認）\n - **feature 間の deep import・循環参照・モジュール内部への deep import**（#257 のゴール 1・2・6）は `lib/import-rule-violations.py` が検査する。oxlint に置かなかったのは 3 つとも**リポジトリ構造を読まないと判定できない**ためであり、`overrides.files` の静的 glob では書けない（#284 実測で同一 feature 内ドメイン間 import まで巻き込み 38 件の偽陽性。数値出典は #257 コメント）\n   - **判定根拠はスクリプトの docstring に記載している**（入れ子モジュール・`__tests__/` の扱い・feature だけ狭い理由）。二重管理を避けるためここには写さない。判定表は `lib/import-rule-cases.sh`\n   - **ゴール 6 の実効範囲は現状ほぼ fixture 専用。** 入れ子モジュールの index を許すため `module-public-api` に該当するのは「モジュールフォルダ配下の非 index ファイルを外から読む」形だけで、テスト・ストーリーを除いた該当ファイルは実測 4 件のみ（`index.ts` 直書き規約が守られているため）。**将来の退行を止める枠**としての位置づけ",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": ".oxlintrc.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 30,
+          "deletions": 0,
+          "patch": "@@ -8,6 +8,15 @@\n     \"max-depth\": [\"error\", { \"max\": 3 }]\n   },\n   \"overrides\": [\n+    {\n+      \"files\": [\"src/**/*.ts\", \"src/**/*.tsx\"],\n+      \"rules\": {\n+        \"no-restricted-imports\": [\"error\", { \"paths\": [\n+          { \"name\": \"react\", \"importNames\": [\"useEffect\", \"useLayoutEffect\", \"useInsertionEffect\"], \"message\": \"effect は src/hooks の use-dom-listeners / use-subscription / use-remeasure を通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）\" },\n+          { \"name\": \"react\", \"importNames\": [\"default\"], \"message\": \"React は名前付きで import する（default の React.useEffect が effect の禁止をすり抜けるため）\" }\n+        ] }]\n+      }\n+    },\n     {\n       \"files\": [\"src/domains/**/*.ts\", \"src/domains/**/*.tsx\"],\n       \"rules\": {\n@@ -126,6 +135,24 @@\n         \"src/utils/**/*.ts\", \"src/utils/**/*.tsx\",\n         \"src/types/**/*.ts\", \"src/types/**/*.tsx\"\n       ],\n+      \"rules\": {\n+        \"no-restricted-imports\": [\"error\", { \"patterns\": [\n+          { \"group\": [\"**/domains/**\", \"@/domains/**\", \"@/domains\"], \"message\": \"components/hooks/utils/types はドメイン知識(domains)を import できません（rules/architecture.md「依存方向のルール」）\" },\n+          { \"group\": [\"**/services/**\", \"@/services/**\", \"@/services\"], \"message\": \"components/hooks/utils/types はドメイン知識(services)を import できません\" },\n+          { \"group\": [\"**/features/**\", \"@/features/**\", \"@/features\"], \"message\": \"components/hooks/utils/types はドメイン知識(features)を import できません\" }\n+        ], \"paths\": [\n+          { \"name\": \"react\", \"importNames\": [\"useEffect\", \"useLayoutEffect\", \"useInsertionEffect\"], \"message\": \"effect は src/hooks の use-dom-listeners / use-subscription / use-remeasure を通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）\" },\n+          { \"name\": \"react\", \"importNames\": [\"default\"], \"message\": \"React は名前付きで import する（default の React.useEffect が effect の禁止をすり抜けるため）\" }\n+        ] }]\n+      }\n+    },\n+    {\n+      // effect を import してよいのはここだけ。同じ規則の後ろの override がオプションを丸ごと置き換えるので、patterns だけを持たせて paths を外す\n+      \"files\": [\n+        \"src/hooks/use-dom-listeners/index.ts\",\n+        \"src/hooks/use-subscription/index.ts\",\n+        \"src/hooks/use-remeasure/index.ts\"\n+      ],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n           { \"group\": [\"**/domains/**\", \"@/domains/**\", \"@/domains\"], \"message\": \"components/hooks/utils/types はドメイン知識(domains)を import できません（rules/architecture.md「依存方向のルール」）\" },\n@@ -142,6 +169,9 @@\n           { \"group\": [\"**/features/**\", \"@/features/**\", \"@/features\"], \"message\": \"libs は features を import できません\" },\n           { \"group\": [\"**/components/**\", \"@/components/**\", \"@/components\"], \"message\": \"libs は components を import できません\" },\n           { \"group\": [\"**/hooks/**\", \"@/hooks/**\", \"@/hooks\"], \"message\": \"libs は hooks を import できません\" }\n+        ], \"paths\": [\n+          { \"name\": \"react\", \"importNames\": [\"useEffect\", \"useLayoutEffect\", \"useInsertionEffect\"], \"message\": \"effect は src/hooks の use-dom-listeners / use-subscription / use-remeasure を通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）\" },\n+          { \"name\": \"react\", \"importNames\": [\"default\"], \"message\": \"React は名前付きで import する（default の React.useEffect が effect の禁止をすり抜けるため）\" }\n         ] }]\n       }\n     },",
+          "patchLines": 51,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "829d038b2b5adbe8e6de8a7ef474fbe7b55eab76",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T03:19:37Z",
+      "subject": "📝 [Doc]: #1444 rules/hooks.md の effect の規約を lint と用途別フックへの参照に書き換える",
+      "body": "- useEffect の節の冒頭を「effect は src/hooks の用途別フックを通して\n  だけ使う（それ以外の import は lint が止める）」に書き換え、\n  「libs のラッパー経由」はその文の末尾へ統合する\n- 「許可されるのは…クリーンアップ関数を必ず返す」の段落を消す\n- document / window のリスナーは useDomListeners で張る、と書き換える\n- 二重発火の段の ignore の説明を購読の言葉に揃える\n- always_loaded_cap を 757 から 755 に下げる\n\n背景:\nIssue 1444 で effect の置き場所を lint で止め、外し方を型\n（DomListener と Option）で返させるようにした。文章で求めていた\n「クリーンアップを必ず返す」「useEffect 内で登録して解除する」は、\n検査と型が担うようになった。\n\n採用理由:\n逆ピラミッドの考え方に沿って、機械が担うようになった文を常時ロード\nから削る。「libs 経由」は今も真なので消さず、冒頭の文に統合して\n行を減らす。\n\n代替案:\n- 「libs のラッパー経由」の行を残す（68 行のまま）: 常時ロードの\n  行数を減らすという Issue の範囲を満たさない\n- グローバルリスナーの解除の文を消す: 解除を求める文が rules から\n  無くなるので、useDomListeners で張る、に書き換える\n\n影響とトレードオフ:\nhooks.md は 68 行から 66 行、常時ロードは 755 行になる。導出値の\nstate 化・イベント起因・リセット・チェーンの 4 項目は機械で判定\nできないので残す。Issue 1449 が指す hooks.md の行番号が 2 行ずれる\n（コメント済み）。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1444\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -39,7 +39,7 @@ cd \"$(dirname \"$0\")\"\n \n # 常時ロード(AGENTS.md + rules/)と harness-growth スキルの行数の予算。\n # ラチェット: 足すなら同量削り、縮めたら実測に合わせて下げる。上げない。\n-always_loaded_cap=757\n+always_loaded_cap=755\n growth_skill_cap=88\n \n # 記録を読む awk が共有する関数。",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": "rules/hooks.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 5,
+          "patch": "@@ -2,15 +2,13 @@\n \n ## useEffect: 最終手段として扱う\n \n-`useEffect` は「外部システムとの同期」専用とする。React 公式 \"You Might Not Need an Effect\" に従い、外部システムが関与しない `useEffect` は禁止する。\n+effect（`useEffect` / `useLayoutEffect` / `useInsertionEffect`）は「外部システムとの同期」専用とし、`src/hooks/` の用途別フック（DOM のイベント・購読・描画前の測り直し）を通してだけ使う（それ以外の import は lint が止める）。React 公式 \"You Might Not Need an Effect\" に従い、外部システムが関与しない処理をそれらのフックへ渡さない。同期する相手は `libs/` のラッパーで渡す。\n \n - **導出可能な値の state 化禁止**: レンダー中に計算できるものは計算する。重い計算のキャッシュには `useMemo` を使う\n - **イベント起因の処理を Effect に書かない**: ユーザー操作への応答（保存実行・通知など）はイベントハンドラに書く\n - **state リセット目的の Effect 禁止**: コンポーネントツリーのリセットは `key` の変更で行う\n - **Effect チェーン禁止**: ある Effect が state を更新し別の Effect を発火させる連鎖は設計の誤り\n \n-許可されるのは、ブラウザ API・外部ライブラリとの同期（必ず `libs/` のラッパー経由）と、購読の開始／解除（クリーンアップ関数を必ず返す）だけ。\n-\n ## useState / useReducer の使い分け\n \n **判断基準: 1 つの処理（ユーザー操作・イベント）が複数の state を更新するなら `useReducer` を使う。**\n@@ -35,7 +33,7 @@ hooks（`useState` の更新ロジック・reducer・カスタムフック・イ\n **要素の props で済むイベントを `document` / `window` に張ることは禁止。** イベントは原則、対象要素の props（`onClick`, `onKeyDown`, `onChange` 等）で処理する。\n \n - `document` / `window` への `addEventListener` が許されるのは、**本質的にグローバルな関心事のみ**（`resize`、ページ全体のキーボードショートカット、要素外クリックの検知など）\n-- その場合も必ず `useEffect` 内で登録し、クリーンアップ関数で解除する（解除漏れは違反）\n+- `document` / `window` のリスナーは `useDomListeners` で張る（張り方と外し方は `libs/dom-event` の `DomListener` が対で持つ）\n - グローバルリスナーが必要なロジックはカスタムフックに切り出す\n \n ## useRef の使い分け\n@@ -45,7 +43,7 @@ React 公式 `useRef` リファレンス（\"Information that's used for renderin\n \n **ref をフラグにした「防御」は禁止。**\n \n-- **二重発火防止の `hasFetchedRef` 禁止**: StrictMode の二重実行を ref で抑えにいかない。「防ぐ」のではなく「結果を捨てる」のが公式設計（`useEffect` 内で `let ignore = false`、cleanup で `ignore = true`。必要なら `AbortController`）\n+- **二重発火防止の `hasFetchedRef` 禁止**: StrictMode の二重実行を ref で抑えにいかない。「防ぐ」のではなく「結果を捨てる」のが公式設計（購読を始めるときに `let ignore = false`、止めるときに `ignore = true`。必要なら `AbortController`）\n - **ローディング状態を `isLoadingRef` で持たない**: スピナー・`disabled`・エラー UI に出すなら `useState` 一択\n - **連打防止の `inFlightRef` 禁止**: ボタンなら `useState` + `disabled` 属性が第一選択（DOM レベルで二重発火を遮断できる）\n - カスタムフックがハンドラを返す場合も同様に、フック内で `useState` を持ち `isSubmitting` 等を返して呼び出し側で `disabled` に流す",
+          "patchLines": 35,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "38eb13ae797166cb2f6f84c29e7e5c86813d83d8",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T03:36:30Z",
+      "subject": "♻️ [Refactoring]: #1444 DomListener を外し方を返す関数にし、useDomListeners を useSubscription の上に作る",
+      "body": "- DomListener を () => () => void（張ると外し方を返す関数）にし、\n  attach / detach の名前をなくす\n- useDomListeners は、集めて張り外し方を集める手続きを useSubscription\n  に渡すだけにし、effect の import をなくす\n- effect を import してよいファイルを use-subscription / use-remeasure\n  の 2 本に絞る（.oxlintrc.json の許可の override）\n- useSubscription の doc で「購読」を「始めたら止め方を返す手続き」と\n  定義し、Effect Event を参照してよい理由を @param に置く\n- useRemeasure の doc に、拾えない変化（Web フォント・画像の読み込み\n  完了など）と依存配列を持たない理由を置く\n- 複数のリスナーをすべて外すことを確かめるテストを 1 件追加\n\n背景:\nフェーズ 6 のレビューで、detach が仕様書・UI 案の「Detach（インス\nタンスの解除）」と同じ語になっていること、useDomListeners と\nuseSubscription が同じ「張る・張り直す・外す」を別々に実装している\nことが指摘された。\n\n採用理由:\n張ると外し方を返す形は useSubscription の Subscribe と同じ形なので、\nuseDomListeners を useSubscription の上に素直に書ける。張り直しの\n規則が 1 か所になり、effect を import するファイルも 1 本減る。\n公開する用途別フックは 3 本のままで、「1 ファイルに固めない」という\n人の判断（呼び出し側から見える用途別のフック）には反しない。\n\n代替案:\n- detach を別の語に改名する: remove は DesignDocument.remove 等と\n  ぶつかり、外し方を返す形にすれば名前そのものが要らない\n- useSubscription を改名する: cancel は UI の Cancel と、sync・接続は\n  既存の語とぶつかるので、名前は据え置き doc で意味を定義する\n\n影響とトレードオフ:\n既存の呼び出し側は DomListener を useDomListeners に渡すだけなので\n変わらない。useRemeasure は layout effect なので useSubscription に\n乗せず、resize を DomListener で直接張る。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1444\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".oxlintrc.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 5,
+          "patch": "@@ -12,7 +12,7 @@\n       \"files\": [\"src/**/*.ts\", \"src/**/*.tsx\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"paths\": [\n-          { \"name\": \"react\", \"importNames\": [\"useEffect\", \"useLayoutEffect\", \"useInsertionEffect\"], \"message\": \"effect は src/hooks の use-dom-listeners / use-subscription / use-remeasure を通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）\" },\n+          { \"name\": \"react\", \"importNames\": [\"useEffect\", \"useLayoutEffect\", \"useInsertionEffect\"], \"message\": \"effect は src/hooks の用途別フックを通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）\" },\n           { \"name\": \"react\", \"importNames\": [\"default\"], \"message\": \"React は名前付きで import する（default の React.useEffect が effect の禁止をすり抜けるため）\" }\n         ] }]\n       }\n@@ -141,15 +141,14 @@\n           { \"group\": [\"**/services/**\", \"@/services/**\", \"@/services\"], \"message\": \"components/hooks/utils/types はドメイン知識(services)を import できません\" },\n           { \"group\": [\"**/features/**\", \"@/features/**\", \"@/features\"], \"message\": \"components/hooks/utils/types はドメイン知識(features)を import できません\" }\n         ], \"paths\": [\n-          { \"name\": \"react\", \"importNames\": [\"useEffect\", \"useLayoutEffect\", \"useInsertionEffect\"], \"message\": \"effect は src/hooks の use-dom-listeners / use-subscription / use-remeasure を通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）\" },\n+          { \"name\": \"react\", \"importNames\": [\"useEffect\", \"useLayoutEffect\", \"useInsertionEffect\"], \"message\": \"effect は src/hooks の用途別フックを通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）\" },\n           { \"name\": \"react\", \"importNames\": [\"default\"], \"message\": \"React は名前付きで import する（default の React.useEffect が effect の禁止をすり抜けるため）\" }\n         ] }]\n       }\n     },\n     {\n-      // effect を import してよいのはここだけ。同じ規則の後ろの override がオプションを丸ごと置き換えるので、patterns だけを持たせて paths を外す\n+      // effect を import してよいのはここだけ。patterns だけを持たせる理由は .claude/hooks/README.md（#1444 の項）\n       \"files\": [\n-        \"src/hooks/use-dom-listeners/index.ts\",\n         \"src/hooks/use-subscription/index.ts\",\n         \"src/hooks/use-remeasure/index.ts\"\n       ],\n@@ -170,7 +169,7 @@\n           { \"group\": [\"**/components/**\", \"@/components/**\", \"@/components\"], \"message\": \"libs は components を import できません\" },\n           { \"group\": [\"**/hooks/**\", \"@/hooks/**\", \"@/hooks\"], \"message\": \"libs は hooks を import できません\" }\n         ], \"paths\": [\n-          { \"name\": \"react\", \"importNames\": [\"useEffect\", \"useLayoutEffect\", \"useInsertionEffect\"], \"message\": \"effect は src/hooks の use-dom-listeners / use-subscription / use-remeasure を通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）\" },\n+          { \"name\": \"react\", \"importNames\": [\"useEffect\", \"useLayoutEffect\", \"useInsertionEffect\"], \"message\": \"effect は src/hooks の用途別フックを通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）\" },\n           { \"name\": \"react\", \"importNames\": [\"default\"], \"message\": \"React は名前付きで import する（default の React.useEffect が effect の禁止をすり抜けるため）\" }\n         ] }]\n       }",
+          "patchLines": 36,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-dom-listeners/__tests__/use-dom-listeners.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 0,
+          "patch": "@@ -42,6 +42,32 @@ test(\"外れると、集めたリスナーはイベントを受け取らなく\n   expect(received).toEqual([]);\n });\n \n+test(\"集めたリスナーが複数あっても、外れるとどれも受け取らなくなる\", () => {\n+  const received: string[] = [];\n+  function Harness() {\n+    const collect = useCallback(\n+      () => [\n+        DomListener.createOnDocument(\"keydown\", (event) => {\n+          received.push(`keydown:${event.key}`);\n+        }),\n+        DomListener.createOnWindow(\"blur\", () => {\n+          received.push(\"blur\");\n+        }),\n+      ],\n+      [],\n+    );\n+    useDomListeners(collect);\n+    return <div />;\n+  }\n+  const { unmount } = render(<Harness />);\n+  unmount();\n+\n+  fireEvent.keyDown(document, { key: \"x\" });\n+  fireEvent.blur(window);\n+\n+  expect(received).toEqual([]);\n+});\n+\n test(\"手続きが変わると、前のリスナーは受け取らず新しいリスナーだけが受け取る\", () => {\n   const received: string[] = [];\n   const { rerender } = render(",
+          "patchLines": 33,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-dom-listeners/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 12,
+          "deletions": 8,
+          "patch": "@@ -1,5 +1,7 @@\n-import { useEffect } from \"react\";\n+import { useCallback } from \"react\";\n+import { useSubscription } from \"@/hooks/use-subscription\";\n import type { DomListener } from \"@/libs/dom-event\";\n+import { Option } from \"@/utils/Option\";\n \n /**\n  * `collect` が返すリスナーを描画のあとに張り、`collect` が変わるたび・外れるときに外す。\n@@ -10,15 +12,17 @@ import type { DomListener } from \"@/libs/dom-event\";\n  *   なら `useCallback` で安定させる\n  */\n export function useDomListeners(collect: () => readonly DomListener[]): void {\n-  useEffect(() => {\n+  const subscribe = useCallback(() => {\n     const listeners = collect();\n-    for (const listener of listeners) {\n-      listener.attach();\n-    }\n-    return () => {\n-      for (const listener of listeners) {\n-        listener.detach();\n+\n+    const unsubscribes = listeners.map((listener) => listener());\n+\n+    const unsubscribe = () => {\n+      for (const unsubscribeListener of unsubscribes) {\n+        unsubscribeListener();\n       }\n     };\n+    return Option.some(unsubscribe);\n   }, [collect]);\n+  useSubscription(subscribe);\n }",
+          "patchLines": 34,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-remeasure/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 3,
+          "patch": "@@ -3,19 +3,26 @@ import { DomListener } from \"@/libs/dom-event\";\n \n /**\n  * 描画を画面へ出す前に `remeasure` を呼ぶ。コミットのたびと、ウィンドウの大きさが変わる\n- * たびに呼ぶ（再レンダーを伴わない位置の変化のうち、拾えるのはウィンドウの大きさだけ）。\n+ * たびに呼ぶ。再レンダーを伴わない変化のうち拾えるのはウィンドウの大きさだけで、Web\n+ * フォント・画像の読み込み完了などは拾えない。\n+ *\n+ * 依存配列を持たずコミットのたびに測り直すのは、描かれ方が変わる原因が呼び出し側の状態\n+ * だけでなく上流の状態の変化でも起きるため。原因を依存に並べると、上流の状態が増える\n+ * たびに追随が要る。\n  *\n  * @param remeasure 今の描かれ方を測り直す手続き\n  */\n export function useRemeasure(remeasure: () => void): void {\n   useLayoutEffect(() => {\n     remeasure();\n+\n     /*\n      * リスナーもコミットのたびに張り直す。1 度だけ張ると、最初の `remeasure` を掴んだまま\n      * になり、測る相手を変えたあとに古い相手を測り続ける。\n      */\n     const resize = DomListener.createOnWindow(\"resize\", remeasure);\n-    resize.attach();\n-    return resize.detach;\n+    const unsubscribe = resize();\n+\n+    return unsubscribe;\n   });\n }",
+          "patchLines": 30,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-subscription/__tests__/use-subscription.normal.test.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -12,10 +12,10 @@ function Harness({\n }: Readonly<{ log: string[]; topic: string; tick?: number }>) {\n   const subscribe = useCallback(() => {\n     log.push(`start:${topic}`);\n-    const stop = () => {\n+    const unsubscribe = () => {\n       log.push(`stop:${topic}`);\n     };\n-    return Option.some(stop);\n+    return Option.some(unsubscribe);\n   }, [log, topic]);\n   useSubscription(subscribe);\n   return <div data-tick={tick} />;",
+          "patchLines": 13,
+          "truncated": false
+        },
+        {
+          "path": "src/hooks/use-subscription/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 4,
+          "patch": "@@ -8,15 +8,17 @@ import { Option } from \"@/utils/Option\";\n export type Subscribe = () => Option<() => void>;\n \n /**\n- * 描画のあとに購読を始め、`subscribe` が変わるたび・外れるときに止める。購読の相手は\n- * `libs/` が渡す時計・タイマー・Tauri の通知・非同期の結果で、どれも「始めたら止め方を返す\n- * 手続き」に揃えて渡す。DOM のイベントは `useDomListeners` で張る。\n+ * 描画のあとに購読を始め、`subscribe` が変わるたび・外れるときに止める。ここでの購読は\n+ * 「始めたら止め方を返す手続き」を指し、時計・Tauri の通知・非同期の結果などをこの形に\n+ * 揃えて渡す。DOM のイベントは `useDomListeners` で張る。\n  *\n- * @param subscribe 始める手続き。張り直したくないなら `useCallback` で安定させる\n+ * @param subscribe 始める手続き。張り直したくないなら `useCallback` で安定させる。\n+ *   `subscribe` は effect の中でだけ呼ぶので、Effect Event を参照してよい\n  */\n export function useSubscription(subscribe: Subscribe): void {\n   useEffect(() => {\n     const unsubscribe = subscribe();\n+\n     return Option.isSome(unsubscribe) ? unsubscribe.value : undefined;\n   }, [subscribe]);\n }",
+          "patchLines": 22,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/dom-event/dom-listener/__tests__/dom-listener.normal.test.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 8,
+          "patch": "@@ -7,9 +7,9 @@ test(\"document に張ったリスナーはイベントを受け取り、外す\n     received.push(event.key);\n   });\n \n-  listener.attach();\n+  const unsubscribe = listener();\n   globalThis.document.dispatchEvent(new KeyboardEvent(\"keydown\", { key: \"a\" }));\n-  listener.detach();\n+  unsubscribe();\n   globalThis.document.dispatchEvent(new KeyboardEvent(\"keydown\", { key: \"b\" }));\n \n   expect(received).toEqual([\"a\"]);\n@@ -21,9 +21,9 @@ test(\"window に張ったリスナーはイベントを受け取り、外すと\n     received.push(\"blur\");\n   });\n \n-  listener.attach();\n+  const unsubscribe = listener();\n   globalThis.window.dispatchEvent(new FocusEvent(\"blur\"));\n-  listener.detach();\n+  unsubscribe();\n   globalThis.window.dispatchEvent(new FocusEvent(\"blur\"));\n \n   expect(received).toEqual([\"blur\"]);\n@@ -35,11 +35,11 @@ test(\"要素に張ったリスナーは既定動作を止められる\", () => {\n     event.preventDefault(),\n   );\n \n-  listener.attach();\n+  const unsubscribe = listener();\n   const notCanceled = surface.dispatchEvent(\n     new WheelEvent(\"wheel\", { cancelable: true }),\n   );\n-  listener.detach();\n+  unsubscribe();\n \n   expect(notCanceled).toBe(false);\n });\n@@ -51,9 +51,9 @@ test(\"要素から外したリスナーは、イベントを受け取らなく\n     received.push(\"wheel\");\n   });\n \n-  listener.attach();\n+  const unsubscribe = listener();\n   surface.dispatchEvent(new WheelEvent(\"wheel\"));\n-  listener.detach();\n+  unsubscribe();\n   surface.dispatchEvent(new WheelEvent(\"wheel\"));\n \n   expect(received).toEqual([\"wheel\"]);",
+          "patchLines": 50,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/dom-event/dom-listener/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 20,
+          "patch": "@@ -1,11 +1,8 @@\n /**\n- * 張る DOM のイベントリスナー 1 件。張り方と外し方を対で持ち、外すときに張ったときと同じ\n- * 対象・種類・関数を渡し損ねないようにする。\n+ * 張る DOM のイベントリスナー 1 件。呼ぶと張り、外し方を返す。張り方と外し方を対で持ち、\n+ * 外すときに張ったときと同じ対象・種類・関数を渡し損ねないようにする。\n  */\n-export type DomListener = Readonly<{\n-  attach: () => void;\n-  detach: () => void;\n-}>;\n+export type DomListener = () => () => void;\n \n export const DomListener = {\n   /**\n@@ -13,15 +10,15 @@ export const DomListener = {\n    *\n    * @param type 待ち受けるイベントの種類\n    * @param listener イベントが届いたときに呼ぶもの\n-   * @returns `document` へ張り、同じ組で外すリスナー\n+   * @returns 呼ぶと `document` へ張り、同じ組で外す手続きを返すリスナー\n    */\n   createOnDocument<K extends keyof DocumentEventMap>(\n     type: K,\n     listener: (event: DocumentEventMap[K]) => void,\n   ): DomListener {\n-    return {\n-      attach: () => globalThis.document.addEventListener(type, listener),\n-      detach: () => globalThis.document.removeEventListener(type, listener),\n+    return () => {\n+      globalThis.document.addEventListener(type, listener);\n+      return () => globalThis.document.removeEventListener(type, listener);\n     };\n   },\n \n@@ -30,36 +27,36 @@ export const DomListener = {\n    *\n    * @param type 待ち受けるイベントの種類\n    * @param listener イベントが届いたときに呼ぶもの\n-   * @returns `window` へ張り、同じ組で外すリスナー\n+   * @returns 呼ぶと `window` へ張り、同じ組で外す手続きを返すリスナー\n    */\n   createOnWindow<K extends keyof WindowEventMap>(\n     type: K,\n     listener: (event: WindowEventMap[K]) => void,\n   ): DomListener {\n-    return {\n-      attach: () => globalThis.window.addEventListener(type, listener),\n-      detach: () => globalThis.window.removeEventListener(type, listener),\n+    return () => {\n+      globalThis.window.addEventListener(type, listener);\n+      return () => globalThis.window.removeEventListener(type, listener);\n     };\n   },\n \n   /**\n    * 要素に張るリスナーを作る。`passive` にせず張るので、`preventDefault` で既定動作を止め\n-   * られる（要素へ直接張るのは、React が passive で張る `onWheel` では止められないとき）。\n+   * られる。React の `onWheel` は passive で登録されて `preventDefault` が効かないため、\n+   * 既定動作を止めたいホイールはこれで要素へ直接張る。\n    *\n    * @param element 張る先の要素\n    * @param type 待ち受けるイベントの種類\n    * @param listener イベントが届いたときに呼ぶもの\n-   * @returns 要素へ張り、同じ組で外すリスナー\n+   * @returns 呼ぶと要素へ張り、同じ組で外す手続きを返すリスナー\n    */\n   createOnElement<K extends keyof HTMLElementEventMap>(\n     element: HTMLElement,\n     type: K,\n     listener: (event: HTMLElementEventMap[K]) => void,\n   ): DomListener {\n-    return {\n-      attach: () =>\n-        element.addEventListener(type, listener, { passive: false }),\n-      detach: () => element.removeEventListener(type, listener),\n+    return () => {\n+      element.addEventListener(type, listener, { passive: false });\n+      return () => element.removeEventListener(type, listener);\n     };\n   },\n } as const;",
+          "patchLines": 82,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "dac0e6fa6e7aaa6b6b441896390c289988b7c445",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T03:36:49Z",
+      "subject": "♻️ [Refactoring]: #1444 用途別フックの呼び出し側で、止め方・手続きの名前と重複した説明を揃える",
+      "body": "- 止め方のローカル名を unsubscribe に揃える（release / cancel を廃止）。\n  同じスコープで名前がぶつかる箇所は unsubscribeChanged /\n  unsubscribeSource に改名する\n- use-elapsed の tick を subscribeSeconds に改名する\n- context-menu の ref callback attachMenu を focusOnMount に改名し、\n  useCallback([]) で同じ関数に保つ理由を 1 行書く\n- Effect Event の理由のコメント 2 か所を消す（useSubscription の\n  doc に一本化した）\n- passive の説明は createOnElement の doc を、測り直す時機の説明は\n  useRemeasure の doc を指す形に縮める\n- タイマーや fetch を「購読」と呼んでいたコメントを書き直す\n\n背景:\nフェーズ 6 のレビュー（naming / comment / duplication）で、止め方の\n名前が release（既存ではポインタを離す意味）・cancel・stop に割れて\nいること、同じ理由の説明が複数箇所にあること、「購読」がタイマーや\n一度きりの読み込みにまで広がっていることが指摘された。\n\n採用理由:\n止め方は Clock.subscribeSeconds などの既存の解除関数と同じ語に揃え、\nfocusOnMount は同じ用途の先例（row-name-field）に揃えた。同じ理由の\n説明は、保証している側に 1 か所だけ置く。\n\n代替案:\n- collect* の語形（走査して集める意味とずれる）を直す: 直す価値が\n  低いので見送る\n\n影響とトレードオフ:\n振る舞いは変えない。第 1 工程のテスト T1 が、focusOnMount を\nuseCallback で包まないと落ちることを実測した。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1444\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": "src/components/context-menu/index.tsx",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "patch": "@@ -314,9 +314,10 @@ function ContextMenuRoot({\n   /*\n    * 開いた時点でキーの届く先をメニューへ移す。`autoFocus` は div では効かない\n    * （React が `focus()` を呼ぶのはフォーム要素だけ）。\n-   * 1 度だけ当てるのは、↑↓ で行へ移したフォーカスを再レンダーで奪い返さないため。\n+   * `useCallback` で同じ関数に保つのは、変わると描き直しのたびに当て直し、↑↓ で行へ移した\n+   * フォーカスを奪い返すため。\n    */\n-  const attachMenu = useCallback((menu: HTMLDivElement | null) => {\n+  const focusOnMount = useCallback((menu: HTMLDivElement | null) => {\n     menuRef.current = menu;\n     menu?.focus();\n   }, []);\n@@ -343,7 +344,7 @@ function ContextMenuRoot({\n \n   return (\n     <div\n-      ref={attachMenu}\n+      ref={focusOnMount}\n       role=\"menu\"\n       aria-label=\"コンテキストメニュー\"\n       tabIndex={-1}",
+          "patchLines": 22,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 3,
+          "patch": "@@ -78,9 +78,8 @@ function wheelAction(event: WheelEvent): CanvasViewAction {\n /**\n  * ホイールをキャンバスの操作として扱う。\n  *\n- * React の `onWheel` は passive で登録されるため `preventDefault` が効かず、ctrl + ホイー\n- * ルがブラウザ側のページズームも同時に起こしてしまう。要素の props で受けられないのはこの\n- * 1 点のためで、対象は `surface` 自身に限る。\n+ * ctrl + ホイールでブラウザ側のページズームを起こさないよう、`surface` 自身へ\n+ * `DomListener.createOnElement` で張る（props の `onWheel` で受けない理由はその doc）。\n  *\n  * @param surface ホイールの登録先になるキャンバスの土台\n  * @param dispatch 読み替えたアクションの送り先",
+          "patchLines": 12,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 6,
+          "patch": "@@ -5,12 +5,8 @@ import { Option } from \"@/utils/Option\";\n /**\n  * 描かれているものを測った結果を、変わるたびに追いかけて返す。\n  *\n- * **依存配列を持たず毎コミット測り直す。** 位置が動く原因はキャンバス自身のドキュメント\n- * / 倍率だけでなく、トークン選択やエラー一覧の出入りで中央ペインの高さが変わることでも\n- * 起きるため、原因を列挙して deps に並べると上流の状態が増えるたびに追随が要る。測り直\n- * した値が前と同じなら**同じ参照を返して再レンダーを止める**。\n- *\n- * 測り直す時機と、拾えない位置の変化は `useRemeasure` に従う。\n+ * 測り直した値が前と同じなら**同じ参照を返して再レンダーを止める**。測り直す時機とその\n+ * 理由、拾えない位置の変化は `useRemeasure` に従う。\n  *\n  * @param measure 今の描かれ方を測る手続き。測れなければ `none`\n  * @param equals 前の結果と測り直した結果が同じかを比べる関数",
+          "patchLines": 15,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 8,
+          "patch": "@@ -538,15 +538,13 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{\n     };\n     void restore();\n \n-    const release = () => {\n+    const unsubscribe = () => {\n       ignore = true;\n     };\n-    return Option.some(release);\n+    return Option.some(unsubscribe);\n   }, [ports.appState, ports.ipc]);\n   useSubscription(restoreOnStart);\n \n-  // Effect Event を Effect の外から参照するが、呼ばれるのは `useSubscription` の effect の\n-  // 中だけで、時機は元と同じ。\n   const subscribeCommands = useCallback(() => {\n     let stopped = false;\n     const unsubscribes: (() => void)[] = [];\n@@ -587,13 +585,13 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{\n     };\n     void start();\n \n-    const release = () => {\n+    const unsubscribe = () => {\n       stopped = true;\n-      for (const unsubscribe of unsubscribes) {\n-        unsubscribe();\n+      for (const unsubscribeSource of unsubscribes) {\n+        unsubscribeSource();\n       }\n     };\n-    return Option.some(release);\n+    return Option.some(unsubscribe);\n   }, [ports.menu, ports.drop]);\n   useSubscription(subscribeCommands);\n ",
+          "patchLines": 36,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -61,7 +61,7 @@ export function useAutoSave({\n   const savedDocumentRef = useRef(document);\n \n   const scheduleSave = useCallback(() => {\n-    // 凍結が解ければ妥当性が変わって購読が張り直され、書き出しの要否から決め直される。\n+    // 凍結が解ければ妥当性が変わって張り直され、書き出しの要否から決め直される。\n     if (FileValidity.isInvalid(fileValidity)) {\n       return Option.none;\n     }\n@@ -94,11 +94,11 @@ export function useAutoSave({\n       setSaveState(DocumentSaveState.Saved);\n     }, AutoSaveDebounceMs);\n \n-    const cancel = () => {\n+    const unsubscribe = () => {\n       ignore = true;\n       clearTimeout(timer);\n     };\n-    return Option.some(cancel);\n+    return Option.some(unsubscribe);\n   }, [ipc, path, document, fileValidity]);\n   useSubscription(scheduleSave);\n ",
+          "patchLines": 23,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 8,
+          "patch": "@@ -61,11 +61,9 @@ export function useDocumentReload({\n     onReload(DocumentReload.fromParsed(DocumentJson.parse(changed.content)));\n   });\n \n-  // Effect Event を Effect の外から参照するが、呼ばれるのは `useSubscription` の effect の\n-  // 中だけで、時機は元と同じ。\n   const watchChanges = useCallback(() => {\n     let stopped = false;\n-    let unsubscribe: Option<Unsubscribe> = Option.none;\n+    let unsubscribeChanged: Option<Unsubscribe> = Option.none;\n \n     const start = async (): Promise<void> => {\n       // 購読を先に張る。監視の開始を先にすると、購読が成立するまでの間に届いた\n@@ -79,7 +77,7 @@ export function useDocumentReload({\n         subscribed.value();\n         return;\n       }\n-      unsubscribe = Option.some(subscribed.value);\n+      unsubscribeChanged = Option.some(subscribed.value);\n \n       const watched = await ipc.watch(path);\n       if (!Result.isOk(watched)) {\n@@ -90,14 +88,14 @@ export function useDocumentReload({\n     };\n     void start();\n \n-    const release = () => {\n+    const unsubscribe = () => {\n       stopped = true;\n-      if (Option.isSome(unsubscribe)) {\n-        unsubscribe.value();\n+      if (Option.isSome(unsubscribeChanged)) {\n+        unsubscribeChanged.value();\n       }\n       void ipc.unwatch(path);\n     };\n-    return Option.some(release);\n+    return Option.some(unsubscribe);\n   }, [ipc, path]);\n   useSubscription(watchChanges);\n ",
+          "patchLines": 41,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-elapsed/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -28,7 +28,7 @@ export function useElapsed(\n    */\n   const sinceEpochMs = Option.isSome(since) ? since.value.epochMs : undefined;\n \n-  const tick = useCallback(() => {\n+  const subscribeSeconds = useCallback(() => {\n     if (sinceEpochMs === undefined) {\n       return Option.none;\n     }\n@@ -43,7 +43,7 @@ export function useElapsed(\n       }),\n     );\n   }, [clock, sinceEpochMs]);\n-  useSubscription(tick);\n+  useSubscription(subscribeSeconds);\n \n   return Option.map(since, (from) => Elapsed.create({ from, to: now }));\n }",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -27,7 +27,7 @@ export type FileRevertControl = Readonly<{\n /**\n  * 外部変更で不正になったファイルを、表示中の内容で上書きして捨てる（UI 案 docs/Design\n  * Composer.html の Error 画面 `revert file`）。書き込みはボタンの押下から始めるので\n- * 購読（`useSubscription`）には置かない。\n+ * `useSubscription` に渡す手続きには置かない。\n  *\n  * 待っていてもエラー一覧が畳まれない。\n  *",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "1d467ba21fc64370780a9e872931c2910faf1951",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T03:36:49Z",
+      "subject": "📝 [Doc]: #1444 rules/hooks.md と README を、許可 2 本の構成と残る穴に合わせる",
+      "body": "- rules/hooks.md: リスナーの文を「張り方と外し方は libs/dom-event の\n  DomListener が対で持つ（用途別フックの外から張るときは\n  useDomListeners に渡す）」にし、二重発火の段から「購読」の語を外す\n- README: effect を import してよいのが use-subscription /\n  use-remeasure の 2 本になったことを反映し、hooks 系 override の\n  patterns を許可の override にも写す手順と、useCallback で安定させて\n  いるかを検査しない残る穴を足す。override の理由はここに一本化する\n\n背景:\nフェーズ 6 のレビュー（harness 2・3、structure 1、solution 1）で、\n規範の文が useRemeasure の直接張りと食い違うこと、override の理由が\n.oxlintrc.json と README の 2 か所にあること、patterns の写しと\nuseCallback の包み忘れが検出されない穴として書かれていないことが\n指摘された。\n\n採用理由:\n行数を増やさずに規範の文を実装に合わせ、検査で守れない点は README の\n残る穴に集める。\n\n代替案:\n- useCallback の包み忘れを、依存配列を引数に取る形にして biome に\n  検査させる: ラッパー側に lint 抑制コメントが 2 本要り、\n  rules/hooks.md の「lint 抑制コメント禁止」とぶつかるので採らない\n\n影響とトレードオフ:\nrules/hooks.md は 66 行のままで、常時ロードの上限は 755 のまま。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1444\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "patch": "@@ -360,10 +360,11 @@ deny メッセージには `jq` / `python3` が欠けていればその名前も\n   - `react` プラグイン有効化により `src/**/*.tsx` へ `react` の correctness 規則が `warn` で入る（導入時 0 件）。そのうち `jsx-props-no-spread-multi` は自動修正を持つため、`post-edit-lint.sh` の `oxlint --fix` が同一 props の二重 spread を黙って 1 つにまとめる（実測）\n   - **残る穴は恒久の判断として受け入れる（#1066）。** 除外ファイル内の生 `<button>`（`artboard-list` / `token-list` の見出し `+` 等）や `role=\"button\"` の生要素（既存例 `artboard-frame/index.tsx`）は見ず、`// @lint-suppress-ok` でファイル単位の抑制もできる。また違反 0 件のため `error` override 自体を消しても落ちる検査はない（他の oxlint 規則と同じく判定表は置かず、削除時に `pnpm run lint` が 0 件で通ることを実測済み）\n   - 許可を要素単位まで狭めない。`overrides.files` の glob はファイル単位しか書けず、要素単位にするには Python 検出器が必要になり配線先が増えて編集時（`post-edit-lint.sh`）に効かなくなるため\n-- `.oxlintrc.json` の `overrides`（#1444）は `src/` 全体に `no-restricted-imports` の `paths` を `error` で置き、`react` の `useEffect` / `useLayoutEffect` / `useInsertionEffect` と default import を止める（規範は `rules/hooks.md`「useEffect: 最終手段として扱う」）。許可するのは `src/hooks/` の `use-dom-listeners` / `use-subscription` / `use-remeasure` の `index.ts` の 3 本だけ。導入時の違反 10 件（effect の 9 ファイルと default import の `src/app/main.tsx`）は同じ PR で 0 件にした\n-  - **`no-restricted-imports` を持つ override を足すときは、`paths` を写し、許可の override を最後に置く。** override は同じ規則のオプションを丸ごと置き換え、後ろが勝つ（実測）。写し忘れるとその範囲で effect の禁止が黙って外れ、許可を前に置くと許可した 3 本が落ちる。`files` の否定パターンは効かない（実測）\n-  - 残る穴: 違反 0 件なので override を消しても写し忘れても落ちる検査は無い（判定表は #1445 の U1）/ 動的 `import(\"react\")` / ref callback に書いた副作用 / 3 本に渡す手続きの中身 / `DomListener.attach` は effect の外でも呼べる / `src/` の外\n-  - Effect Event を `useCallback` 経由で `useSubscription` へ渡す 3 か所（`use-document-session` の `runMenuCommand` / `openDropped`、`use-document-reload` の `reload`）は、react-hooks の lint を入れると違反になる見込み（oxlint 1.58 の `react/rules-of-hooks` では 0 件を実測。eslint 版は未確認）\n+- `.oxlintrc.json` の `overrides`（#1444）は `src/` 全体に `no-restricted-imports` の `paths` を `error` で置き、`react` の `useEffect` / `useLayoutEffect` / `useInsertionEffect` と default import を止める（規範は `rules/hooks.md`「useEffect: 最終手段として扱う」）。許可するのは `src/hooks/` の `use-subscription` / `use-remeasure` の `index.ts` の 2 本だけ（`use-dom-listeners` は `useSubscription` の上に作り、effect を import しない）。導入時の違反 10 件（effect の 9 ファイルと default import の `src/app/main.tsx`）は同じ PR で 0 件にした\n+  - **`no-restricted-imports` を持つ override を足すときは、`paths` を写し、許可の override を最後に置く。** override は同じ規則のオプションを丸ごと置き換え、後ろが勝つ（実測）。写し忘れるとその範囲で effect の禁止が黙って外れ、許可を前に置くと許可した 2 本が落ちる。`files` の否定パターンは効かない（実測）\n+  - 許可の override は hooks を含む override（`src/components/` 〜 `src/types/`）の `patterns` だけを持ち、`paths` を持たないことで effect の禁止を外す。**hooks を含む override の `patterns` を変えたら、許可の override にも写す**（写し忘れると許可した 2 本だけ依存方向の検査が古いまま残る）\n+  - 残る穴: 違反 0 件なので override を消しても写し忘れても落ちる検査は無い（判定表は #1445 の U1）/ 動的 `import(\"react\")` / ref callback に書いた副作用 / 用途別フックに渡す手続きの中身 / `DomListener` は effect の外でも呼べる / `src/` の外 / `useSubscription` / `useDomListeners` に渡す手続きを `useCallback` で安定させているかは検査しない（包み忘れると描き直しのたびに張り直し、その隙間の通知を落としうる）\n+  - Effect Event を `useCallback` 経由で `useSubscription` へ渡す 3 か所（`use-document-session` の `runMenuCommand` / `openDropped`、`use-document-reload` の `reload`）は、react-hooks の lint を入れると違反になる見込み（oxlint 1.58 の `react/rules-of-hooks` では 0 件を実測。eslint 版は未確認）。参照してよい理由は `useSubscription` の doc（`@param subscribe`）に置く\n - **feature 間の deep import・循環参照・モジュール内部への deep import**（#257 のゴール 1・2・6）は `lib/import-rule-violations.py` が検査する。oxlint に置かなかったのは 3 つとも**リポジトリ構造を読まないと判定できない**ためであり、`overrides.files` の静的 glob では書けない（#284 実測で同一 feature 内ドメイン間 import まで巻き込み 38 件の偽陽性。数値出典は #257 コメント）\n   - **判定根拠はスクリプトの docstring に記載している**（入れ子モジュール・`__tests__/` の扱い・feature だけ狭い理由）。二重管理を避けるためここには写さない。判定表は `lib/import-rule-cases.sh`\n   - **ゴール 6 の実効範囲は現状ほぼ fixture 専用。** 入れ子モジュールの index を許すため `module-public-api` に該当するのは「モジュールフォルダ配下の非 index ファイルを外から読む」形だけで、テスト・ストーリーを除いた該当ファイルは実測 4 件のみ（`index.ts` 直書き規約が守られているため）。**将来の退行を止める枠**としての位置づけ",
+          "patchLines": 16,
+          "truncated": false
+        },
+        {
+          "path": "rules/hooks.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -33,7 +33,7 @@ hooks（`useState` の更新ロジック・reducer・カスタムフック・イ\n **要素の props で済むイベントを `document` / `window` に張ることは禁止。** イベントは原則、対象要素の props（`onClick`, `onKeyDown`, `onChange` 等）で処理する。\n \n - `document` / `window` への `addEventListener` が許されるのは、**本質的にグローバルな関心事のみ**（`resize`、ページ全体のキーボードショートカット、要素外クリックの検知など）\n-- `document` / `window` のリスナーは `useDomListeners` で張る（張り方と外し方は `libs/dom-event` の `DomListener` が対で持つ）\n+- 張り方と外し方は `libs/dom-event` の `DomListener` が対で持つ（用途別フックの外から張るときは `useDomListeners` に渡す）\n - グローバルリスナーが必要なロジックはカスタムフックに切り出す\n \n ## useRef の使い分け\n@@ -43,7 +43,7 @@ React 公式 `useRef` リファレンス（\"Information that's used for renderin\n \n **ref をフラグにした「防御」は禁止。**\n \n-- **二重発火防止の `hasFetchedRef` 禁止**: StrictMode の二重実行を ref で抑えにいかない。「防ぐ」のではなく「結果を捨てる」のが公式設計（購読を始めるときに `let ignore = false`、止めるときに `ignore = true`。必要なら `AbortController`）\n+- **二重発火防止の `hasFetchedRef` 禁止**: StrictMode の二重実行を ref で抑えにいかない。「防ぐ」のではなく「結果を捨てる」のが公式設計（処理を始めるときに `let ignore = false`、止めるときに `ignore = true`。必要なら `AbortController`）\n - **ローディング状態を `isLoadingRef` で持たない**: スピナー・`disabled`・エラー UI に出すなら `useState` 一択\n - **連打防止の `inFlightRef` 禁止**: ボタンなら `useState` + `disabled` 属性が第一選択（DOM レベルで二重発火を遮断できる）\n - カスタムフックがハンドラを返す場合も同様に、フック内で `useState` を持ち `isSubmitting` 等を返して呼び出し側で `disabled` に流す",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "4e03be1a98120ee0cdad153e61faf2f8cf6028bd",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T05:35:14Z",
+      "subject": "📝 [Doc]: #1444 README の #1444 の項に、useCallback の包み忘れで再レンダーが止まらない帰結と、許可の override の正しい位置を書く",
+      "body": "- 残る穴に「同期で state を更新する手続き（例: 時計の購読）では、\n  包み忘れると再レンダーが止まらず、テストは落ちるのではなく終わら\n  なくなる（実測）」を足す\n- 「許可の override を最後に置く」を「hooks を含む override より後に\n  置く」に直す（後ろに libs の override がある）\n\n背景:\ntest-reviewer が use-elapsed の useCallback を外すと、テストが落ちず\nに 90 秒で強制終了することを実測した。また、許可の override の位置の\n記述が .oxlintrc.json の実際の並びと合っていなかった。\n\n採用理由:\n検査で守れない穴は README に集める方針なので、帰結の重さ（無限の\n再レンダーと、CI がタイムアウトまで待つこと）もそこへ書く。\n\n代替案:\n- useSubscription の @param にも書く: 同じ説明を 2 か所に置くこと\n  になるので、README に一本化する\n\n影響とトレードオフ:\n文書だけの変更。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1444\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -361,9 +361,9 @@ deny メッセージには `jq` / `python3` が欠けていればその名前も\n   - **残る穴は恒久の判断として受け入れる（#1066）。** 除外ファイル内の生 `<button>`（`artboard-list` / `token-list` の見出し `+` 等）や `role=\"button\"` の生要素（既存例 `artboard-frame/index.tsx`）は見ず、`// @lint-suppress-ok` でファイル単位の抑制もできる。また違反 0 件のため `error` override 自体を消しても落ちる検査はない（他の oxlint 規則と同じく判定表は置かず、削除時に `pnpm run lint` が 0 件で通ることを実測済み）\n   - 許可を要素単位まで狭めない。`overrides.files` の glob はファイル単位しか書けず、要素単位にするには Python 検出器が必要になり配線先が増えて編集時（`post-edit-lint.sh`）に効かなくなるため\n - `.oxlintrc.json` の `overrides`（#1444）は `src/` 全体に `no-restricted-imports` の `paths` を `error` で置き、`react` の `useEffect` / `useLayoutEffect` / `useInsertionEffect` と default import を止める（規範は `rules/hooks.md`「useEffect: 最終手段として扱う」）。許可するのは `src/hooks/` の `use-subscription` / `use-remeasure` の `index.ts` の 2 本だけ（`use-dom-listeners` は `useSubscription` の上に作り、effect を import しない）。導入時の違反 10 件（effect の 9 ファイルと default import の `src/app/main.tsx`）は同じ PR で 0 件にした\n-  - **`no-restricted-imports` を持つ override を足すときは、`paths` を写し、許可の override を最後に置く。** override は同じ規則のオプションを丸ごと置き換え、後ろが勝つ（実測）。写し忘れるとその範囲で effect の禁止が黙って外れ、許可を前に置くと許可した 2 本が落ちる。`files` の否定パターンは効かない（実測）\n+  - **`no-restricted-imports` を持つ override を足すときは、`paths` を写し、許可の override は hooks を含む override より後に置く。** override は同じ規則のオプションを丸ごと置き換え、後ろが勝つ（実測）。写し忘れるとその範囲で effect の禁止が黙って外れ、許可を前に置くと許可した 2 本が落ちる。`files` の否定パターンは効かない（実測）\n   - 許可の override は hooks を含む override（`src/components/` 〜 `src/types/`）の `patterns` だけを持ち、`paths` を持たないことで effect の禁止を外す。**hooks を含む override の `patterns` を変えたら、許可の override にも写す**（写し忘れると許可した 2 本だけ依存方向の検査が古いまま残る）\n-  - 残る穴: 違反 0 件なので override を消しても写し忘れても落ちる検査は無い（判定表は #1445 の U1）/ 動的 `import(\"react\")` / ref callback に書いた副作用 / 用途別フックに渡す手続きの中身 / `DomListener` は effect の外でも呼べる / `src/` の外 / `useSubscription` / `useDomListeners` に渡す手続きを `useCallback` で安定させているかは検査しない（包み忘れると描き直しのたびに張り直し、その隙間の通知を落としうる）\n+  - 残る穴: 違反 0 件なので override を消しても写し忘れても落ちる検査は無い（判定表は #1445 の U1）/ 動的 `import(\"react\")` / ref callback に書いた副作用 / 用途別フックに渡す手続きの中身 / `DomListener` は effect の外でも呼べる / `src/` の外 / `useSubscription` / `useDomListeners` に渡す手続きを `useCallback` で安定させているかは検査しない（包み忘れると描き直しのたびに張り直し、その隙間の通知を落としうる。同期で state を更新する手続き（例: 時計の購読）では、包み忘れると再レンダーが止まらず、テストは落ちるのではなく終わらなくなる（実測））\n   - Effect Event を `useCallback` 経由で `useSubscription` へ渡す 3 か所（`use-document-session` の `runMenuCommand` / `openDropped`、`use-document-reload` の `reload`）は、react-hooks の lint を入れると違反になる見込み（oxlint 1.58 の `react/rules-of-hooks` では 0 件を実測。eslint 版は未確認）。参照してよい理由は `useSubscription` の doc（`@param subscribe`）に置く\n - **feature 間の deep import・循環参照・モジュール内部への deep import**（#257 のゴール 1・2・6）は `lib/import-rule-violations.py` が検査する。oxlint に置かなかったのは 3 つとも**リポジトリ構造を読まないと判定できない**ためであり、`overrides.files` の静的 glob では書けない（#284 実測で同一 feature 内ドメイン間 import まで巻き込み 38 件の偽陽性。数値出典は #257 コメント）\n   - **判定根拠はスクリプトの docstring に記載している**（入れ子モジュール・`__tests__/` の扱い・feature だけ狭い理由）。二重管理を避けるためここには写さない。判定表は `lib/import-rule-cases.sh`",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": ".github/scripts/storybook-visual-regression.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "rules/architecture.md",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "rules/hooks.md",
+      "status": "added"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/canvas/components/canvas-toolbar/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/sidebar/components/document-tree/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/sidebar/components/left-pane-rail/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/tokens/components/token-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/hooks/use-remeasure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": "src/app/main.tsx",
+      "to": "src/app/App.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/__tests__/pointer-gesture.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/__stories__/menu-content.tsx",
+      "to": "src/components/context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/__tests__/context-menu.dismiss.test.tsx",
+      "to": "src/components/context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/__tests__/context-menu.edge.test.tsx",
+      "to": "src/components/context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/__tests__/context-menu.keyboard.test.tsx",
+      "to": "src/components/context-menu/__tests__/setup.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/__tests__/context-menu.keyboard.test.tsx",
+      "to": "src/components/context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/__tests__/context-menu.keyboard.test.tsx",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/__tests__/context-menu.normal.test.tsx",
+      "to": "src/components/context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/__tests__/context-menu.placement.test.tsx",
+      "to": "src/components/context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/__tests__/setup.tsx",
+      "to": "src/components/context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/index.stories.tsx",
+      "to": "src/components/context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/index.tsx",
+      "to": "src/hooks/use-dom-listeners/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/components/context-menu/index.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/index.tsx",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/index.tsx",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/components/context-menu/index.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/__tests__/editor-context-menu.type.test.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/components/context-menu/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-context-menu/index.tsx",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/editor-screen/index.tsx",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.grab-select.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.context-menu.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.range-select.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.selection-distance-suspended.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.zoom-pan.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/setup.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-frame/index.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/artboard-label/index.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.stories.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/index.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/resize-handle-overlay/index.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/text-inline-editor/index.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-alt-pointing/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-artboard-drag/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-elements.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/__tests__/canvas-gesture.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.normal.test.tsx",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/domains/unit/offset/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/features/editor/features/canvas/domains/canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/features/editor/features/canvas/utils/CanvasPointer.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/features/editor/features/canvas/utils/DrawnBounds.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/hooks/use-dom-listeners/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+      "to": "src/hooks/use-remeasure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+      "to": "src/hooks/use-dom-listeners/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-drag/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/__tests__/use-range-select.normal.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-range-select/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-measured/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-space-held/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-modifier-key-hold/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-space-held/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/index.ts",
+      "to": "src/features/editor/features/canvas/hooks/use-canvas-view/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/document-start.edge.test.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/__tests__/setup.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.stories.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/domains/__tests__/sample-document.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/libs/document-dialog/fake/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/__tests__/use-document-session.entry.test.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/domains/session/opened-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/features/editor/features/document-start/domains/document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/features/editor/features/document-start/domains/recent-files/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-menu/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-state-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-state-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/app-window/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-dialog/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/file-drop/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/types/IndexMove.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/utils/ArrayEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-start/index.ts",
+      "to": "src/features/editor/features/document-start/hooks/use-document-session/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/setup.ts",
+      "to": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.edge.test.tsx",
+      "to": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.file-invalid.test.tsx",
+      "to": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/__tests__/use-auto-save.normal.test.tsx",
+      "to": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/domains/session/document-save-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/domains/session/file-validity/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/__tests__/setup.ts",
+      "to": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/domains/session/document-access-failure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/domains/session/document-reload/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/libs/tauri-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-elapsed/__tests__/use-elapsed.normal.test.tsx",
+      "to": "src/features/editor/features/document-sync/hooks/use-elapsed/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-elapsed/index.ts",
+      "to": "src/domains/unit/elapsed/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-elapsed/index.ts",
+      "to": "src/domains/unit/instant/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-elapsed/index.ts",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-elapsed/index.ts",
+      "to": "src/libs/clock/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-elapsed/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/__tests__/use-file-revert.normal.test.tsx",
+      "to": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/domains/dcmp/design-document/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/domains/session/document-save-state/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/domains/unit/file-path/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/libs/document-ipc/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/libs/document-json/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "to": "src/utils/Result.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/index.ts",
+      "to": "src/features/editor/features/document-sync/hooks/use-auto-save/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/index.ts",
+      "to": "src/features/editor/features/document-sync/hooks/use-document-reload/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/index.ts",
+      "to": "src/features/editor/features/document-sync/hooks/use-elapsed/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/document-sync/index.ts",
+      "to": "src/features/editor/features/document-sync/hooks/use-file-revert/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/sidebar/components/row-name-field/index.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-activate-tab-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-clear-selection-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-copy-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-delete-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-duplicate-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-fit-document-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-fit-selection-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-group-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-paste-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-redo-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-rename-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-reorder-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-reposition-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-undo-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/hooks/use-ungroup-shortcut/index.ts",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/hooks/use-dom-listeners/__tests__/use-dom-listeners.normal.test.tsx",
+      "to": "src/hooks/use-dom-listeners/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-dom-listeners/__tests__/use-dom-listeners.normal.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-dom-listeners/index.ts",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-dom-listeners/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-dom-listeners/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-key-shortcut/__tests__/use-key-shortcut.normal.test.tsx",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/hooks/use-key-shortcut/__tests__/use-key-shortcut.scope.test.tsx",
+      "to": "src/hooks/use-key-shortcut/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": "src/hooks/use-key-shortcut/index.tsx",
+      "to": "src/hooks/use-dom-listeners/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-key-shortcut/index.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/hooks/use-key-shortcut/index.tsx",
+      "to": "src/types/ValueOf.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/hooks/use-key-shortcut/index.tsx",
+      "to": "src/utils/ElementEx.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+      "to": "src/hooks/use-remeasure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-remeasure/__tests__/use-remeasure.normal.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-remeasure/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-reorder-drag/__tests__/use-reorder-drag.normal.test.tsx",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/hooks/use-reorder-drag/index.ts",
+      "to": "src/libs/dom-event/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/hooks/use-subscription/__tests__/use-subscription.normal.test.tsx",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-subscription/__tests__/use-subscription.normal.test.tsx",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/hooks/use-subscription/index.ts",
+      "to": "src/utils/Option.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/dom-event/dom-listener/__tests__/dom-listener.normal.test.ts",
+      "to": "src/libs/dom-event/dom-listener/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/dom-event/index.ts",
+      "to": "src/libs/dom-event/alt-key/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/dom-event/index.ts",
+      "to": "src/libs/dom-event/command-key/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/dom-event/index.ts",
+      "to": "src/libs/dom-event/dom-listener/index.ts",
+      "status": "added"
+    },
+    {
+      "from": "src/libs/dom-event/index.ts",
+      "to": "src/libs/dom-event/key-name/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/dom-event/index.ts",
+      "to": "src/libs/dom-event/pointer-button/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "vite.config.ts",
+      "to": "src/app/main.tsx",
+      "status": "kept"
+    }
+  ]
+}
