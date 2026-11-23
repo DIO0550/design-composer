@@ -2,7 +2,7 @@ import {
   type ActionDispatch,
   type PointerEvent as ReactPointerEvent,
   type RefObject,
-  useEffect,
+  useCallback,
   useReducer,
   useRef,
 } from "react";
@@ -13,7 +13,8 @@ import {
 } from "@/features/editor/features/canvas/domains/canvas-view";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
-import { CommandKey } from "@/libs/dom-event";
+import { useDomListeners } from "@/hooks/use-dom-listeners";
+import { CommandKey, DomListener } from "@/libs/dom-event";
 import { ElementMeasure } from "@/libs/element-measure";
 import { Option } from "@/utils/Option";
 
@@ -77,9 +78,8 @@ function wheelAction(event: WheelEvent): CanvasViewAction {
 /**
  * ホイールをキャンバスの操作として扱う。
  *
- * React の `onWheel` は passive で登録されるため `preventDefault` が効かず、ctrl + ホイー
- * ルがブラウザ側のページズームも同時に起こしてしまう。要素の props で受けられないのはこの
- * 1 点のためで、対象は `surface` 自身に限る。
+ * ctrl + ホイールでブラウザ側のページズームを起こさないよう、`surface` 自身へ
+ * `DomListener.createOnElement` で張る（props の `onWheel` で受けない理由はその doc）。
  *
  * @param surface ホイールの登録先になるキャンバスの土台
  * @param dispatch 読み替えたアクションの送り先
@@ -88,18 +88,18 @@ function useWheelControl(
   surface: RefObject<HTMLElement | null>,
   dispatch: ActionDispatch<[action: CanvasViewAction]>,
 ): void {
-  useEffect(() => {
+  const collectListeners = useCallback(() => {
     const element = surface.current;
     if (element === null) {
-      return;
+      return [];
     }
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
       dispatch(wheelAction(event));
     };
-    element.addEventListener("wheel", handleWheel, { passive: false });
-    return () => element.removeEventListener("wheel", handleWheel);
+    return [DomListener.createOnElement(element, "wheel", handleWheel)];
   }, [surface, dispatch]);
+  useDomListeners(collectListeners);
 }
 
 /**

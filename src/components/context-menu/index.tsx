@@ -6,11 +6,12 @@ import {
   isValidElement,
   type ReactElement,
   type ReactNode,
+  useCallback,
   useContext,
-  useEffect,
   useRef,
 } from "react";
-import { KeyName, KeyNames } from "@/libs/dom-event";
+import { useDomListeners } from "@/hooks/use-dom-listeners";
+import { DomListener, KeyName, KeyNames } from "@/libs/dom-event";
 import type { ValueOf } from "@/types/ValueOf";
 import { ArrayEx } from "@/utils/ArrayEx";
 import { Option } from "@/utils/Option";
@@ -313,13 +314,15 @@ function ContextMenuRoot({
   /*
    * 開いた時点でキーの届く先をメニューへ移す。`autoFocus` は div では効かない
    * （React が `focus()` を呼ぶのはフォーム要素だけ）。
-   * 1 度だけ当てるのは、↑↓ で行へ移したフォーカスを再レンダーで奪い返さないため。
+   * `useCallback` で同じ関数に保つのは、変わると描き直しのたびに当て直し、↑↓ で行へ移した
+   * フォーカスを奪い返すため。
    */
-  useEffect(() => {
-    menuRef.current?.focus();
+  const focusOnMount = useCallback((menu: HTMLDivElement | null) => {
+    menuRef.current = menu;
+    menu?.focus();
   }, []);
 
-  useEffect(() => {
+  const collectOutsidePressListeners = useCallback(() => {
     const closeOnOutside = (event: PointerEvent) => {
       const menu = menuRef.current;
       const isInsideMenu =
@@ -332,17 +335,16 @@ function ContextMenuRoot({
       onClose();
     };
 
-    globalThis.document.addEventListener("pointerdown", closeOnOutside);
-    return () =>
-      globalThis.document.removeEventListener("pointerdown", closeOnOutside);
+    return [DomListener.createOnDocument("pointerdown", closeOnOutside)];
   }, [onClose]);
+  useDomListeners(collectOutsidePressListeners);
 
   const lists = collectElements(children, ContextMenuList);
   const placement = menuPlacement(at, menuHeight(lists));
 
   return (
     <div
-      ref={menuRef}
+      ref={focusOnMount}
       role="menu"
       aria-label="コンテキストメニュー"
       tabIndex={-1}

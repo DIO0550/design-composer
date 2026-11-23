@@ -158,3 +158,15 @@ test("リセットすると倍率と位置の両方が初期状態に戻る", as
 
   expect(transform()).toBe("translate(0px, 0px) scale(1)");
 });
+
+test("ctrl を押しながらホイールを回すと、ブラウザの既定動作（ページのズーム）を止める", () => {
+  render(<CanvasViewHarness />);
+  const prevented: boolean[] = [];
+  const record = (event: Event) => prevented.push(event.defaultPrevented);
+  globalThis.document.addEventListener("wheel", record);
+
+  wheel(canvasSurface(), { x: 0, y: -100 }, "ctrl");
+  globalThis.document.removeEventListener("wheel", record);
+
+  expect(prevented).toEqual([true]);
+});

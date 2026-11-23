@@ -199,3 +199,18 @@ test("押せる行が 1 つも無いメニューでは ↓ を押してもフォ
 
   expect(focusedRow()).toBeNull();
 });
+
+test("↓ で行へ移したあとにメニューが描き直されても、フォーカスは行に残る", async () => {
+  const { rerender } = renderMenu({
+    children: list(row("Copy"), row("Paste")),
+  });
+  await userEvent.keyboard("{ArrowDown}");
+
+  rerender(
+    <ContextMenu at={{ x: 0, y: 0 }} onClose={() => {}}>
+      {list(row("Copy"), row("Paste"))}
+    </ContextMenu>,
+  );
+
+  expect(focusedRow()).toBe("Copy");
+});

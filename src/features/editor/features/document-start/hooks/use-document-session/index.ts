@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useReducer, useState } from "react";
+import { useCallback, useEffectEvent, useReducer, useState } from "react";
 import { OpenedDocument } from "@/domains/session/opened-document";
 import type { FilePath } from "@/domains/unit/file-path";
 import {
@@ -7,6 +7,7 @@ import {
   type OpenOutcome,
 } from "@/features/editor/features/document-start/domains/document-session";
 import { RecentFiles } from "@/features/editor/features/document-start/domains/recent-files";
+import { useSubscription } from "@/hooks/use-subscription";
 import type { AppMenu, AppMenuCommand } from "@/libs/app-menu";
 import type { AppStateIpc } from "@/libs/app-state-ipc";
 import { AppStateJson } from "@/libs/app-state-json";
@@ -421,7 +422,7 @@ function rememberOpened(
  *
  * 開く操作が終わると開いているドキュメントと最近使ったファイルの一覧が一緒に動き、更新の
  * 型も複数あるので `useReducer` で 1 つの状態にまとめる（rules/hooks.md）。指示を受け取れ
- * なかった経路は購読の Effect だけが更新する独立した値なので `useState` のまま持つ。
+ * なかった経路は購読（`useSubscription`）だけが更新する独立した値なので `useState` のまま持つ。
  *
  * @param ports ダイアログ・I/O・メニュー・ドロップ・アプリ自身の状態・ウィンドウの相手
  * @returns 今のセッション、最近開いたファイルのパス（新しい順）、その一覧を読み取れ
@@ -477,7 +478,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
 
   /*
    * 届いた指示の解釈は購読の張り直しと関係がないため Effect Event に出す。
-   * これが無いと、レンダーのたびに変わるハンドラを Effect の依存に入れることになり、
+   * これが無いと、レンダーのたびに変わるハンドラを購読の手続きの依存に入れることになり、
    * 開くたびに購読が張り直されて、その隙間に届いた指示を落とす。
    */
   const runMenuCommand = useEffectEvent((command: AppMenuCommand) => {
@@ -508,7 +509,7 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     openDocumentsAt(paths);
   });
 
-  useEffect(() => {
+  const restoreOnStart = useCallback(() => {
     let ignore = false;
 
     /**
@@ -537,12 +538,14 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     };
     void restore();
 
-    return () => {
+    const unsubscribe = () => {
       ignore = true;
     };
+    return Option.some(unsubscribe);
   }, [ports.appState, ports.ipc]);
+  useSubscription(restoreOnStart);
 
-  useEffect(() => {
+  const subscribeCommands = useCallback(() => {
     let stopped = false;
     const unsubscribes: (() => void)[] = [];
 
@@ -582,13 +585,15 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     };
     void start();
 
-    return () => {
+    const unsubscribe = () => {
       stopped = true;
-      for (const unsubscribe of unsubscribes) {
-        unsubscribe();
+      for (const unsubscribeSource of unsubscribes) {
+        unsubscribeSource();
       }
     };
+    return Option.some(unsubscribe);
   }, [ports.menu, ports.drop]);
+  useSubscription(subscribeCommands);
 
   return {
     session: state.session,
