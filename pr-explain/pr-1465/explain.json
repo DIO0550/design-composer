@@ -1,0 +1,1414 @@
+{
+  "version": 1,
+  "pr": 1465,
+  "sha": "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2",
+  "issue": 1445,
+  "overview": {
+    "title": "テスト規約の 3 規則を oxlint の jest プラグインで止める",
+    "lead": "モジュールの丸ごと差し替え・前処理のフック・domains / services での代役を lint の error で止め、設定の誤りで規則が黙って外れる退行を実物の oxlint で走る判定表で捕まえる。",
+    "before": [
+      {
+        "text": "`vi.mock` や `beforeEach` を書いても lint は通り、規約の文章だけが止めていた。"
+      },
+      {
+        "text": "`.mts` / `.cts` のファイルでは、層の向きと effect の禁止が黙って外れていた。"
+      }
+    ],
+    "after": [
+      {
+        "text": "`vi.mock` / `vi.doMock` と `afterEach` 以外のフックは src 全体で error。",
+        "message": "m-deny"
+      },
+      {
+        "text": "domains / services / feature の domains では、さらに `vi.fn` などの代役と `useFakeTimers` / `setSystemTime` が error。",
+        "message": "m-deny"
+      },
+      {
+        "text": "push 前と CI で、設定の判定表が 163 ケースを実物の oxlint で確かめる。",
+        "message": "m-run"
+      },
+      {
+        "text": "override の glob は `*.{ts,tsx,mts,cts}` で書く。",
+        "message": "m-read"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "2 つの override の順序",
+        "text": "`plugins` の重複と、2 つ目にも `mock` / `doMock` を写す約束。崩すと警告なしに規則が外れる。",
+        "go": {
+          "kind": "file",
+          "path": ".oxlintrc.json"
+        }
+      },
+      {
+        "title": "判定表の判定の仕組み",
+        "text": "出力全体とケースごとの判定が同じ判定関数を通り、自己検査が「警告だけなら broken」を固定している。",
+        "go": {
+          "kind": "callBox",
+          "id": "b-verdict"
+        }
+      },
+      {
+        "title": "第 1 工程の行を消した理由",
+        "text": "domains の時刻系を 9 本から 2 本に絞り、判定表の 7 行を消した。理由は Issue に記録した。",
+        "go": {
+          "kind": "stepChange",
+          "flow": "f-table",
+          "stepChange": 3
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "rule",
+      "label": "テスト規約の lint 化",
+      "role": "モジュールの丸ごと差し替え・前処理のフック・domains / services の代役を、oxlint の jest プラグインの error で止める。",
+      "review": [
+        "2 つの jest の override の順序と、両方に書いた plugins が README の約束どおりか。",
+        "domains / services で止めるメソッドが、時刻を差し替えられる 2 本を含めて過不足ないか。"
+      ]
+    },
+    {
+      "id": "table",
+      "label": "設定の判定表",
+      "role": "実物の oxlint を 1 回走らせ、設定の誤りで規則が黙って外れていないかを 163 ケースで確かめる。",
+      "review": [
+        "出力から判定できないときに全件 broken にする判定が、共有の判定関数に寄っているか。",
+        "自己検査と拡張子の照合が、判定表自身の退行を落とせるか。"
+      ]
+    },
+    {
+      "id": "glob",
+      "label": "拡張子の取りこぼし",
+      "role": "override の glob を ts / tsx / mts / cts の 4 つに広げ、mts / cts のファイルで層の向きと effect の禁止が外れていた穴を塞ぐ。"
+    },
+    {
+      "id": "docs",
+      "label": "規約と手引きの整理",
+      "role": "lint が止めるようになった 2 行を規約から削り、残した文を lint と同じ語に揃え、README と growth の手順に約束を書く。"
+    }
+  ],
+  "layerRoles": [
+    {
+      "layer": "ハーネス",
+      "role": "検査・判定表・手引き。"
+    },
+    {
+      "layer": "その他",
+      "role": "oxlint の設定と規約の文章。"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".oxlintrc.json",
+      "name": "oxlint の設定",
+      "role": "lint の規則と、ファイルの範囲ごとの上書き（override）を持つ。",
+      "feature": "rule",
+      "change": "jest の override を 2 つ足し、既存の 13 個の glob を 4 拡張子へ広げた。",
+      "icon": "store"
+    },
+    {
+      "path": ".github/scripts/oxlint-config-cases.sh",
+      "name": "設定の判定表",
+      "role": "ケースのファイルを一時ディレクトリに置き、実物の oxlint で止まる・通る・見ないを確かめる。",
+      "feature": "table",
+      "change": "新規。",
+      "icon": "scan"
+    },
+    {
+      "path": ".claude/hooks/lib/cases-report.sh",
+      "name": "判定表の共有部品",
+      "role": "終了コードと出力から deny / pass / broken を決め、ok / NG を数える。",
+      "feature": "table"
+    },
+    {
+      "path": "harness/githooks/pre-push",
+      "name": "push 前の検査",
+      "role": "push の前に検査を順に走らせる。",
+      "feature": "table",
+      "change": "判定表を 1 本足した。"
+    },
+    {
+      "path": ".github/workflows/frontend.yml",
+      "name": "CI の検査ジョブ",
+      "role": "PR で lint と型検査を走らせる。",
+      "feature": "table",
+      "change": "check ジョブに判定表を足した。"
+    },
+    {
+      "path": "rules/testing.md",
+      "name": "テスト規約",
+      "role": "常時読み込まれるテストの書き方の規範。",
+      "feature": "docs",
+      "change": "lint が止める 2 行を削り、残りを lint と同じ語に揃えた。"
+    },
+    {
+      "path": ".claude/hooks/README.md",
+      "name": "検査の手引き",
+      "role": "フック・検出器・lint 設定のカバー範囲と残る穴を書く。",
+      "feature": "docs",
+      "change": "#1445 の項（約束 4 つ・判定表へケースを足す約束・残る穴）を足した。"
+    },
+    {
+      "path": ".claude/skills/harness-growth/SKILL.md",
+      "name": "ハーネスを育てる手順",
+      "role": "指摘が繰り返した分類に、lint・検出器・判例で手を入れる手順。",
+      "feature": "docs",
+      "change": "lint 設定を足したら判定表にもケースを足す、への参照を足した。",
+      "graph": false
+    }
+  ],
+  "actors": [
+    {
+      "id": "author",
+      "label": "テストを書くセッション",
+      "role": "src のテストを書き、編集直後と push 前に lint を受ける。"
+    },
+    {
+      "id": "oxlint",
+      "label": "oxlint",
+      "role": "設定を読み、ファイルごとに規則の診断を出す外部の lint ツール。",
+      "icon": "scan"
+    }
+  ],
+  "messages": [
+    {
+      "id": "m-write",
+      "from": "author",
+      "to": "oxlint",
+      "kind": "cmd",
+      "name": "テストを lint にかける",
+      "code": "pnpm run lint",
+      "via": "exec"
+    },
+    {
+      "id": "m-read",
+      "from": "oxlint",
+      "to": ".oxlintrc.json",
+      "kind": "qry",
+      "name": "override を読む",
+      "code": "\"plugins\": [\"jest\"], \"jest/no-hooks\": [\"error\", …]",
+      "via": "file",
+      "status": "changed",
+      "returns": "ファイルに効く規則"
+    },
+    {
+      "id": "m-deny",
+      "from": "oxlint",
+      "to": "author",
+      "kind": "evt",
+      "name": "規則違反で止める",
+      "code": "[Error/eslint-plugin-jest(no-restricted-jest-methods)]",
+      "via": "log",
+      "status": "added"
+    },
+    {
+      "id": "m-prepush",
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/oxlint-config-cases.sh",
+      "kind": "cmd",
+      "name": "判定表を走らせる",
+      "code": "run_check \"oxlint の設定の判定表\" bash .github/scripts/oxlint-config-cases.sh",
+      "via": "exec",
+      "status": "added"
+    },
+    {
+      "id": "m-ci",
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/oxlint-config-cases.sh",
+      "kind": "cmd",
+      "name": "CI で判定表を走らせる",
+      "code": "run: bash .github/scripts/oxlint-config-cases.sh",
+      "via": "exec",
+      "status": "added"
+    },
+    {
+      "id": "m-copy",
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": ".oxlintrc.json",
+      "kind": "qry",
+      "name": "設定を写して入れ子に置く",
+      "code": "cp \"$config\" \"$work/.oxlintrc.json\"",
+      "via": "file",
+      "status": "added"
+    },
+    {
+      "id": "m-run",
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": "oxlint",
+      "kind": "cmd",
+      "name": "全ケースを 1 回で lint する",
+      "code": "\"$oxlint_bin\" -f unix .",
+      "via": "exec",
+      "status": "added",
+      "returns": "unix 形式の診断行と終了コード"
+    },
+    {
+      "id": "m-decide",
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "qry",
+      "name": "判定を決める",
+      "code": "decide \"$lines\" \"$has_error\" \"\\(${rule}\\)\\]$\"",
+      "via": "call",
+      "status": "added",
+      "returns": "deny / pass / broken"
+    },
+    {
+      "id": "m-report",
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "kind": "cmd",
+      "name": "結果を数える",
+      "code": "report \"$expected\" \"$verdict\" \"$label\"",
+      "via": "call",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "f-lint",
+      "label": "テストを書いて lint を受ける",
+      "gist": "モジュールの丸ごと差し替えや前処理のフックを書くと、規約を読まなくても lint が error で止める。",
+      "text": "編集直後の lint・push 前の lint・CI のどれでも同じ設定が効く。",
+      "steps": [
+        "m-write",
+        "m-read",
+        "m-deny"
+      ],
+      "beforeSteps": [
+        "m-write",
+        "m-read"
+      ],
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "jest の規則を持たない設定を読む。",
+          "afterText": "src 全体と domains / services の 2 つの jest の override を読む。",
+          "change": "テスト規約の 3 規則が設定に入った。"
+        },
+        {
+          "status": "added",
+          "afterStep": 3,
+          "afterText": "違反の行を error として返し、push を止める。",
+          "change": "これまでは規約の文章を読んで守るしかなかった。"
+        }
+      ],
+      "measure": {
+        "what": "規約の文章で守っていた規則のうち lint が止めるもの",
+        "before": "0",
+        "after": "3"
+      }
+    },
+    {
+      "id": "f-table",
+      "label": "push 前に設定の判定表を走らせる",
+      "gist": "設定の誤りで規則が黙って外れると、判定表が NG を出して push を止める。",
+      "steps": [
+        "m-prepush",
+        "m-copy",
+        "m-run",
+        "m-decide",
+        "m-report"
+      ],
+      "beforeSteps": [],
+      "stepChanges": [
+        {
+          "status": "added",
+          "afterStep": 1
+        },
+        {
+          "status": "added",
+          "afterStep": 2
+        },
+        {
+          "status": "added",
+          "afterStep": 3,
+          "afterCost": "heavy"
+        },
+        {
+          "status": "added",
+          "afterStep": 4,
+          "afterText": "出力全体を先に同じ判定に掛け、判定できなければ全ケースを broken にする。"
+        },
+        {
+          "status": "added",
+          "afterStep": 5
+        }
+      ],
+      "measure": {
+        "what": "設定の誤りを捕まえるケース",
+        "before": "0",
+        "after": "163（ほかに自己検査 4・拡張子の照合 1）"
+      }
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
+      "phase": "prep",
+      "role": "設定の判定表を先に入れ、元の設定で落ちることを確かめる（仕様の固定）。",
+      "why": "override の誤りは警告もエラーも出さずに規則を外すので、実物の oxlint で確かめる表を先に置いて RED を見た。deny 92 件が got=pass、broken 0 件。",
+      "flows": [
+        "f-table"
+      ],
+      "review": [
+        "表の各行が、規則・置くパス・中身の 1 行 1 ケースになっているか。",
+        "pre-push と CI の check ジョブの両方につながっているか。"
+      ],
+      "notes": [
+        {
+          "path": "harness/githooks/pre-push",
+          "start": 27,
+          "end": 28,
+          "text": "node_modules の oxlint を呼ぶので、ツールが揃うときだけ走る区間に置く。"
+        },
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "start": 167,
+          "end": 167,
+          "text": "全ケースを 1 回の起動で lint する。ケースごとの起動だと約 11 秒かかる。"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "start": 1,
+          "end": 192,
+          "feature": "table",
+          "text": "判定表を新設"
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "start": 27,
+          "end": 28,
+          "feature": "table",
+          "text": "push 前に走らせる"
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "start": 53,
+          "end": 57,
+          "feature": "table",
+          "text": "CI の check ジョブで走らせる"
+        }
+      ]
+    },
+    {
+      "sha": "07b2129cb5c7c6f0d336d1488a07bed9d4f78fa6",
+      "phase": "core",
+      "role": "jest の override を 2 つ足し、既存の glob を 4 拡張子へ広げる（仕様の実現）。",
+      "why": "src 全体と domains / services で止めるものが違い、override は同じ規則のオプションを丸ごと置き換えるため、2 つ目にも mock / doMock を並べて後ろに置いた。",
+      "flows": [
+        "f-lint",
+        "f-table"
+      ],
+      "review": [
+        "2 つ目の override が 1 つ目より後ろにあり、mock / doMock も並べているか。",
+        "require-to-throw-message の off に理由があるか。"
+      ],
+      "notes": [
+        {
+          "path": ".oxlintrc.json",
+          "start": 217,
+          "end": 225,
+          "text": "1 つ目: src 全体。afterEach だけ許す。"
+        },
+        {
+          "path": ".oxlintrc.json",
+          "start": 229,
+          "end": 236,
+          "text": "2 つ目: domains / services / feature の domains。plugins を書かないとこの override ごと無視される。"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".oxlintrc.json",
+          "start": 217,
+          "end": 260,
+          "feature": "rule",
+          "text": "jest の override を 2 つ足す"
+        },
+        {
+          "path": ".oxlintrc.json",
+          "start": 12,
+          "end": 170,
+          "feature": "glob",
+          "text": "glob を 4 拡張子へ"
+        }
+      ]
+    },
+    {
+      "sha": "586d56b60253beb48d6ecff112a358874bcb9346",
+      "phase": "core",
+      "role": "lint が止めるようになった 2 行を規約から削る。",
+      "why": "常時読み込まれる規約の 1 行は毎回のコストなので、機械が止める規則は文章から外す。上限は 755 から 753 へ下げた。",
+      "review": [
+        "削った後の節が、lint が判定できない部分だけを残しているか。"
+      ],
+      "featureRanges": [
+        {
+          "path": "rules/testing.md",
+          "start": 59,
+          "end": 59,
+          "feature": "docs",
+          "text": "規約から 2 行を削る"
+        },
+        {
+          "path": "harness/records/count.sh",
+          "start": 42,
+          "end": 42,
+          "feature": "docs",
+          "text": "常時ロードの上限を 753 へ"
+        }
+      ]
+    },
+    {
+      "sha": "2eba99d88918eb15aab5a4f8ee8b354025293b68",
+      "phase": "fin",
+      "role": "README に判定表と約束・残る穴を書き、件数を直す。",
+      "why": "設定の誤りが黙って規則を外す約束 4 つと、override を足したら判定表にもケースを足す約束を、次に設定を触る人へ残す。",
+      "featureRanges": [
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 360,
+          "end": 380,
+          "feature": "docs",
+          "text": "#1445 の項を足す"
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "start": 1,
+          "end": 80,
+          "feature": "docs",
+          "text": "検査と判定表の本数を直す"
+        }
+      ]
+    },
+    {
+      "sha": "ef95588a627be6dad171955c61593d49961a0c5f",
+      "phase": "revise",
+      "role": "判定できないときに oxlint の出力を 1 回出し、判定を共有部品へ寄せ、時刻の行を絞る。",
+      "why": "設定を読めないとき、原因の 1 行を捨てて 170 行の broken だけを出していた。共有の判定関数と同じ組み合わせ表を自前で持っていた。",
+      "review": [
+        "出力全体の判定が共有の判定関数を通っているか。"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "start": 173,
+          "end": 177,
+          "text": "出力全体を同じ判定に掛け、broken なら終了コードと出力を標準エラーへ 1 回だけ出す。"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "start": 1,
+          "end": 200,
+          "feature": "table",
+          "text": "判定できない理由を出し、時刻の行を絞る"
+        }
+      ]
+    },
+    {
+      "sha": "4df8d6dad143fd8266890abd7db56b00c410c38e",
+      "phase": "revise",
+      "role": "domains で止める時刻系メソッドを 2 本に絞り、理由の参照を足す。",
+      "why": "残りの 7 本は fake timers が有効でないと動かず、止めた効果が重複していた（vitest 4 で実測）。",
+      "notes": [
+        {
+          "path": ".oxlintrc.json",
+          "start": 247,
+          "end": 248,
+          "text": "時刻を差し替えないことを言う専用のメッセージ。"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".oxlintrc.json",
+          "start": 214,
+          "end": 252,
+          "feature": "rule",
+          "text": "時刻系を 2 本に絞る"
+        }
+      ]
+    },
+    {
+      "sha": "b61fa74e6398489e63ed23f6a35b9313e52e7040",
+      "phase": "revise",
+      "role": "規約のモックの節を lint の範囲と同じ語に揃える。",
+      "why": "行を削った結果、「手書きのスタブも」の相手が文中に無くなり、2 行下の「フェイク」と呼び名が割れていた。",
+      "notes": [
+        {
+          "path": "rules/testing.md",
+          "start": 59,
+          "end": 61,
+          "text": "lint のメッセージ（そのときもフェイクを渡す）と同じ語にした。"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "rules/testing.md",
+          "start": 59,
+          "end": 61,
+          "feature": "docs",
+          "text": "規約の語を揃える"
+        }
+      ]
+    },
+    {
+      "sha": "b3d0b48d74caa803583d64ce1f4b7bb6c5f7bb30",
+      "phase": "revise",
+      "role": "README の一覧の写しを外し、判定表へケースを足す約束を growth の手順に繋ぐ。",
+      "why": "README が設定と判定表の一覧を写していて、照合されないまま片方だけ古くなる形だった。",
+      "notes": [
+        {
+          "path": ".claude/skills/harness-growth/SKILL.md",
+          "start": 40,
+          "end": 40,
+          "text": "lint 設定を足す入口から、判定表の約束を辿れるようにした。"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".claude/hooks/README.md",
+          "start": 360,
+          "end": 380,
+          "feature": "docs",
+          "text": "一覧の写しを外す"
+        },
+        {
+          "path": ".claude/skills/harness-growth/SKILL.md",
+          "start": 40,
+          "end": 40,
+          "feature": "docs",
+          "text": "growth から約束を辿る"
+        }
+      ]
+    },
+    {
+      "sha": "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2",
+      "phase": "hard",
+      "role": "判定表に、判定の自己検査と拡張子の照合を足す。",
+      "why": "test-reviewer の実測で、判定の正規表現を緩めても、拡張子の配列から mts を外しても、判定表が緑のまま残った。",
+      "flows": [
+        "f-table"
+      ],
+      "review": [
+        "自己検査 4 行が、警告だけ・error・別の規則・行なしを覆っているか。",
+        "拡張子の照合が、設定の 19 本の波括弧をすべて拾っているか。"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "start": 90,
+          "end": 94,
+          "text": "1 ケース分の判定。表のループと自己検査の両方がここを通る。"
+        },
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "start": 103,
+          "end": 115,
+          "text": "設定の glob の波括弧を集め、配列と同じ集合かを照合する。"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "start": 17,
+          "end": 115,
+          "feature": "table",
+          "text": "自己検査と拡張子の照合"
+        },
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "start": 216,
+          "end": 222,
+          "feature": "table",
+          "text": "ループを判定関数の呼び出しにする"
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "s-table",
+      "label": "設定の判定表",
+      "file": ".github/scripts/oxlint-config-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "t-mock",
+      "suite": "s-table",
+      "name": "feature のテストで vi.mock を使うと止まる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "src 全体でモジュールの丸ごと差し替えを止める 1 つ目の override を守る。",
+      "given": "feature のテストに vi.mock を書いたファイルを 4 拡張子で置く",
+      "when": "oxlint を走らせる",
+      "then": "どの拡張子でも no-restricted-jest-methods の error が出る",
+      "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
+      "excerpt": {
+        "path": ".github/scripts/oxlint-config-cases.sh",
+        "start": 149,
+        "end": 149,
+        "text": "deny|no-restricted-jest-methods|feature のテストで vi.mock を使うと止まる|src/features/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nvi.mock(\"./m\");"
+      },
+      "covers": [
+        "m-run",
+        "m-decide"
+      ],
+      "targets": [
+        ".oxlintrc.json"
+      ]
+    },
+    {
+      "id": "t-mock-domains",
+      "suite": "s-table",
+      "name": "domains のテストで vi.mock を使うと止まる",
+      "techniques": [
+        "regression"
+      ],
+      "why": "2 つ目の override が同じ規則のオプションを置き換えても、mock / doMock が残っていることを守る（約束 ③）。",
+      "given": "domains のテストに vi.mock を書く",
+      "when": "oxlint を走らせる",
+      "then": "error が出る",
+      "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
+      "excerpt": {
+        "path": ".github/scripts/oxlint-config-cases.sh",
+        "start": 154,
+        "end": 154,
+        "text": "deny|no-restricted-jest-methods|domains のテストで vi.mock を使うと止まる|src/domains/unit/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nvi.mock(\"./m\");"
+      },
+      "covers": [
+        "m-run",
+        "m-decide"
+      ],
+      "targets": [
+        ".oxlintrc.json"
+      ]
+    },
+    {
+      "id": "t-fn",
+      "suite": "s-table",
+      "name": "domains のテストで vi.fn を使うと止まる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "domains / services だけで代役を止める 2 つ目の override を守る。",
+      "given": "domains のテストに vi.fn を書く",
+      "when": "oxlint を走らせる",
+      "then": "error が出る",
+      "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
+      "excerpt": {
+        "path": ".github/scripts/oxlint-config-cases.sh",
+        "start": 158,
+        "end": 158,
+        "text": "deny|no-restricted-jest-methods|domains のテストで vi.fn を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nexport const f = vi.fn();"
+      },
+      "covers": [
+        "m-run",
+        "m-decide"
+      ],
+      "targets": [
+        ".oxlintrc.json"
+      ]
+    },
+    {
+      "id": "t-fn-feature",
+      "suite": "s-table",
+      "name": "feature のテストでは vi.fn を使える",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "2 つ目の override の範囲が feature のテストまで広がっていないことを守る。",
+      "given": "feature のテストに vi.fn を書く",
+      "when": "oxlint を走らせる",
+      "then": "規則の診断が出ない",
+      "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
+      "excerpt": {
+        "path": ".github/scripts/oxlint-config-cases.sh",
+        "start": 170,
+        "end": 170,
+        "text": "pass|no-restricted-jest-methods|feature のテストでは vi.fn を使える|src/features/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nexport const f = vi.fn();"
+      },
+      "covers": [
+        "m-run",
+        "m-decide"
+      ],
+      "targets": [
+        ".oxlintrc.json"
+      ]
+    },
+    {
+      "id": "t-timer",
+      "suite": "s-table",
+      "name": "domains のテストで vi.useFakeTimers を使うと止まる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "domains で時刻を差し替える入口を止めていることを守る。",
+      "given": "domains のテストに vi.useFakeTimers を書く",
+      "when": "oxlint を走らせる",
+      "then": "error が出る",
+      "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
+      "excerpt": {
+        "path": ".github/scripts/oxlint-config-cases.sh",
+        "start": 168,
+        "end": 168,
+        "text": "deny|no-restricted-jest-methods|domains のテストで vi.useFakeTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.useFakeTimers();"
+      },
+      "covers": [
+        "m-run",
+        "m-decide"
+      ],
+      "targets": [
+        ".oxlintrc.json"
+      ]
+    },
+    {
+      "id": "t-hook",
+      "suite": "s-table",
+      "name": "テストで beforeEach を使うと止まる",
+      "techniques": [
+        "equivalence"
+      ],
+      "why": "前処理のフックを止める no-hooks を守る。",
+      "given": "feature のテストに beforeEach を書く",
+      "when": "oxlint を走らせる",
+      "then": "no-hooks の error が出る",
+      "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
+      "excerpt": {
+        "path": ".github/scripts/oxlint-config-cases.sh",
+        "start": 175,
+        "end": 175,
+        "text": "deny|no-hooks|テストで beforeEach を使うと止まる|src/features/probe/__tests__/probe.normal.test.{ext}|import { beforeEach } from \"vitest\";\\nbeforeEach(() => {});"
+      },
+      "covers": [
+        "m-run",
+        "m-decide"
+      ],
+      "targets": [
+        ".oxlintrc.json"
+      ]
+    },
+    {
+      "id": "t-after",
+      "suite": "s-table",
+      "name": "テストの土台 src/test-setup.ts で afterEach は使える",
+      "techniques": [
+        "boundary"
+      ],
+      "why": "後始末の afterEach だけは許す、という規約の例外を守る。",
+      "given": "src/test-setup.ts に afterEach を書く",
+      "when": "oxlint を走らせる",
+      "then": "規則の診断が出ない",
+      "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
+      "excerpt": {
+        "path": ".github/scripts/oxlint-config-cases.sh",
+        "start": 182,
+        "end": 182,
+        "text": "pass|no-hooks|テストの土台 src/test-setup.ts で afterEach は使える|src/test-setup.ts|import { afterEach } from \"vitest\";\\nafterEach(() => {});"
+      },
+      "covers": [
+        "m-run",
+        "m-decide"
+      ],
+      "targets": [
+        ".oxlintrc.json"
+      ]
+    },
+    {
+      "id": "t-around",
+      "suite": "s-table",
+      "name": "aroundEach は見ない",
+      "techniques": [
+        "regression"
+      ],
+      "why": "規則が見ない書き方を miss として固定し、取りこぼしにした理由ごと残す。",
+      "given": "feature のテストに aroundEach を書く",
+      "when": "oxlint を走らせる",
+      "then": "診断が出ず、期待どおり miss として ok になる",
+      "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
+      "excerpt": {
+        "path": ".github/scripts/oxlint-config-cases.sh",
+        "start": 184,
+        "end": 184,
+        "text": "miss|no-hooks|aroundEach は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { aroundEach } from \"vitest\";\\naroundEach(async (run) => {\\n  await run();\\n});"
+      },
+      "covers": [
+        "m-run",
+        "m-decide"
+      ],
+      "targets": [
+        ".oxlintrc.json"
+      ]
+    },
+    {
+      "id": "t-self-warn",
+      "suite": "s-table",
+      "name": "自己検査: 規則の警告だけなら broken",
+      "techniques": [
+        "error"
+      ],
+      "why": "error を warn に下げる退行を判定表が落とせることを、実物の設定に頼らず守る。",
+      "given": "no-hooks の Warning の行だけを判定関数に与える",
+      "when": "判定する",
+      "then": "broken になる",
+      "commit": "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2",
+      "excerpt": {
+        "path": ".github/scripts/oxlint-config-cases.sh",
+        "start": 97,
+        "end": 97,
+        "text": "report broken \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の警告だけなら broken\""
+      },
+      "covers": [
+        "m-decide"
+      ],
+      "targets": [
+        ".github/scripts/oxlint-config-cases.sh"
+      ]
+    },
+    {
+      "id": "t-ext",
+      "suite": "s-table",
+      "name": "設定の files の拡張子の波括弧が extensions と同じ集合",
+      "techniques": [
+        "regression"
+      ],
+      "why": "判定表の拡張子の配列から 1 つ外したとき、ケースが減るだけで緑になる退行を落とす。",
+      "given": "設定の glob の波括弧を集める",
+      "when": "配列と比べる",
+      "then": "19 本すべてが同じ集合なら ok、1 本でも違えば NG",
+      "commit": "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2",
+      "excerpt": {
+        "path": ".github/scripts/oxlint-config-cases.sh",
+        "start": 103,
+        "end": 115,
+        "text": "extension_sets=\"$(grep -oE '\\.\\{[^{}\"]*\\}\"' \"$config\" | sed -E 's/^\\.\\{(.*)\\}\"$/\\1/' |\n  while IFS= read -r set; do tr ',' '\\n' <<<\"$set\" | sort | paste -sd ' ' -; done)\"\nexpected_set=\"$(printf '%s\\n' \"${extensions[@]}\" | sort | paste -sd ' ' -)\"\nmismatched_sets=\"$(grep -vxF -- \"$expected_set\" <<<\"$extension_sets\" | sort -u | paste -sd '/' -)\"\nif [ -z \"$extension_sets\" ]; then\n  echo 'NG   設定の files から拡張子の波括弧を 1 つも拾えなかった'\n  cases_failed=1\nelif [ -n \"$mismatched_sets\" ]; then\n  printf 'NG   設定の files の拡張子が extensions(%s)と食い違う(%s)\\n' \"$expected_set\" \"$mismatched_sets\"\n  cases_failed=1\nelse\n  printf 'ok   設定の files の拡張子の波括弧 %s 本が extensions と同じ集合\\n' \"$(wc -l <<<\"$extension_sets\")\"\nfi"
+      },
+      "covers": [
+        "m-copy"
+      ],
+      "targets": [
+        ".oxlintrc.json",
+        ".github/scripts/oxlint-config-cases.sh"
+      ]
+    }
+  ],
+  "calls": {
+    "gist": "判定表の中で、1 ケース分の判定を関数に切り出し、表の前で固定の入力を与える自己検査を回す。",
+    "review": [
+      "出力全体の判定とケースごとの判定が、同じ判定関数を通っているか。"
+    ],
+    "boxes": [
+      {
+        "id": "b-main",
+        "name": "判定表の本体",
+        "role": "ケースを置き、oxlint を 1 回走らせて結果を振り分ける。",
+        "module": ".github/scripts/oxlint-config-cases.sh",
+        "status": "added",
+        "now": "出力全体とケースごとの判定を同じ判定関数に通す。"
+      },
+      {
+        "id": "b-verdict",
+        "name": "case_verdict",
+        "role": "1 ケース分の出力行から表の綴りの判定を返す。",
+        "module": ".github/scripts/oxlint-config-cases.sh",
+        "status": "added",
+        "now": "error の行の有無 → decide → normalize_miss。"
+      },
+      {
+        "id": "b-self",
+        "name": "自己検査",
+        "role": "固定の行を判定関数に与え、警告だけなら broken などを確かめる。",
+        "module": ".github/scripts/oxlint-config-cases.sh",
+        "status": "added",
+        "now": "4 行。"
+      },
+      {
+        "id": "b-decide",
+        "name": "decide",
+        "role": "終了コードと見出しの有無から deny / pass / broken を決める。",
+        "module": ".claude/hooks/lib/cases-report.sh",
+        "now": "変えていない。"
+      },
+      {
+        "id": "b-miss",
+        "name": "normalize_miss",
+        "role": "期待が miss のとき、pass を miss と読み替える。",
+        "module": ".claude/hooks/lib/cases-report.sh",
+        "now": "変えていない。"
+      }
+    ],
+    "edges": [
+      {
+        "id": "e-main-verdict",
+        "from": "b-main",
+        "to": "b-verdict",
+        "code": "case_verdict \"${case_expected[$index]}\" \"${case_rule[$index]}\" \"$lines\"",
+        "status": "added",
+        "now": "ケースごとの判定。"
+      },
+      {
+        "id": "e-main-decide",
+        "from": "b-main",
+        "to": "b-decide",
+        "code": "decide \"$output\" \"$status\" \"$error_line\"",
+        "status": "added",
+        "now": "出力全体が判定できるか。"
+      },
+      {
+        "id": "e-self-verdict",
+        "from": "b-self",
+        "to": "b-verdict",
+        "code": "case_verdict deny no-hooks \"$self_test_head … [Warning/…(no-hooks)]\"",
+        "status": "added",
+        "now": "警告だけなら broken を確かめる。"
+      },
+      {
+        "id": "e-verdict-decide",
+        "from": "b-verdict",
+        "to": "b-decide",
+        "code": "decide \"$lines\" \"$has_error\" \"\\(${rule}\\)\\]$\"",
+        "status": "added",
+        "now": "規則の見出しで判定。"
+      },
+      {
+        "id": "e-verdict-miss",
+        "from": "b-verdict",
+        "to": "b-miss",
+        "code": "normalize_miss \"$expected\" \"$(decide …)\"",
+        "status": "added",
+        "now": "miss の読み替え。"
+      }
+    ]
+  },
+  "impact": {
+    "title": "テストの書き方の規約が、読まなくても lint で止まる",
+    "lead": "テストを書くセッションは、モジュールの丸ごと差し替え・前処理のフック・純粋な層のテストでの代役を、規約を読み落としても編集直後と push 前に止められる。",
+    "changed": {
+      "before": [
+        {
+          "text": "規約の文章を読んで守るしかなく、書いてしまっても検査は通った。"
+        }
+      ],
+      "after": [
+        {
+          "text": "書いた時点で lint が error を出し、push が止まる。",
+          "message": "m-deny"
+        },
+        {
+          "text": "設定を書き換えて規則が黙って外れると、push 前の判定表が止める。",
+          "message": "m-run"
+        }
+      ],
+      "specs": [
+        {
+          "path": "rules/testing.md",
+          "locator": "「モックは原則使わない」の節",
+          "text": "lint が止める 2 行を削り、残りを lint のメッセージと同じ語に揃えた。",
+          "shas": [
+            "586d56b60253beb48d6ecff112a358874bcb9346",
+            "b61fa74e6398489e63ed23f6a35b9313e52e7040"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1444,
+          "text": "effect の禁止で、override の写し方と順序の約束が先にできた。"
+        },
+        {
+          "issue": 1463,
+          "text": "lint 以外の検出器が mts / cts を見ていない穴の続き。"
+        },
+        {
+          "issue": 1464,
+          "text": "設定を書き換え可能な形式へ移してメッセージの写しを減らすかの評価。"
+        }
+      ],
+      "primers": [
+        "p-override",
+        "p-table"
+      ]
+    },
+    "tables": [
+      {
+        "label": "どこのテストで何が止まるか",
+        "gist": "止まる範囲は書いた場所で変わる。",
+        "rowHeads": [
+          {
+            "id": "feat",
+            "label": "画面や操作のテスト"
+          },
+          {
+            "id": "dom",
+            "label": "純粋な層（ドメイン・サービス）のテスト"
+          },
+          {
+            "id": "setup",
+            "label": "テスト全体の土台"
+          }
+        ],
+        "columnHeads": [
+          {
+            "id": "mock",
+            "label": "モジュールの丸ごと差し替え"
+          },
+          {
+            "id": "stub",
+            "label": "代役の関数・時刻の差し替え"
+          },
+          {
+            "id": "before",
+            "label": "前処理のフック"
+          },
+          {
+            "id": "after",
+            "label": "後始末のフック"
+          }
+        ],
+        "outcomes": [
+          {
+            "rowHead": "feat",
+            "columnHead": "mock",
+            "result": "止まる",
+            "was": "通る",
+            "tests": [
+              "t-mock"
+            ]
+          },
+          {
+            "rowHead": "feat",
+            "columnHead": "stub",
+            "result": "使える",
+            "tests": [
+              "t-fn-feature"
+            ]
+          },
+          {
+            "rowHead": "feat",
+            "columnHead": "before",
+            "result": "止まる",
+            "was": "通る",
+            "tests": [
+              "t-hook"
+            ]
+          },
+          {
+            "rowHead": "feat",
+            "columnHead": "after",
+            "result": "使える"
+          },
+          {
+            "rowHead": "dom",
+            "columnHead": "mock",
+            "result": "止まる",
+            "was": "通る",
+            "tests": [
+              "t-mock-domains"
+            ]
+          },
+          {
+            "rowHead": "dom",
+            "columnHead": "stub",
+            "result": "止まる",
+            "was": "通る",
+            "tests": [
+              "t-fn",
+              "t-timer"
+            ]
+          },
+          {
+            "rowHead": "dom",
+            "columnHead": "before",
+            "result": "止まる",
+            "was": "通る"
+          },
+          {
+            "rowHead": "dom",
+            "columnHead": "after",
+            "result": "使える"
+          },
+          {
+            "rowHead": "setup",
+            "columnHead": "mock",
+            "result": "止まる",
+            "was": "通る"
+          },
+          {
+            "rowHead": "setup",
+            "columnHead": "stub",
+            "result": "使える"
+          },
+          {
+            "rowHead": "setup",
+            "columnHead": "before",
+            "result": "止まる",
+            "was": "通る"
+          },
+          {
+            "rowHead": "setup",
+            "columnHead": "after",
+            "result": "使える",
+            "tests": [
+              "t-after"
+            ]
+          }
+        ]
+      }
+    ],
+    "added": [
+      {
+        "label": "拡張子が mts / cts のソース",
+        "before": [
+          {
+            "text": "層の向きと副作用フックの禁止が黙って外れていた。"
+          }
+        ],
+        "after": [
+          {
+            "text": "ts / tsx と同じく止まる。"
+          }
+        ],
+        "primers": [
+          "p-glob"
+        ]
+      }
+    ],
+    "kept": [
+      {
+        "text": "規則が見ない書き方（名前空間での呼び出し、テスト関数に付いた前処理など）は、これまでどおり止まらない。",
+        "tests": [
+          "t-around"
+        ]
+      },
+      {
+        "text": "既存のテストは 1 件も書き換えていない（導入時の違反 0 件）。"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "id": "p-override",
+      "kind": "language",
+      "category": "oxlint",
+      "label": "override",
+      "gist": "ファイルの範囲ごとに規則を上書きする仕組み。[[同じ規則のオプションは丸ごと置き換わる|t-replace]]。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "設定の overrides に files（glob）と rules を並べる。あるファイルに複数の override が当たると、後ろに書いたものが勝つ。"
+        },
+        {
+          "kind": "caution",
+          "text": "jest のような追加の規則群を使う override には、その override 自身に plugins を書く。書かないとその override は黙って無視される。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".oxlintrc.json",
+            "start": 216,
+            "end": 230,
+            "text": "    {\n      // テスト規約を止める。plugins を 2 つの override の両方に書き、domains / services の override をこの後ろに置く理由は .claude/hooks/README.md（#1445 の項）\n      \"files\": [\"src/**/*.{ts,tsx,mts,cts}\"],\n      \"plugins\": [\"jest\"],\n      \"rules\": {\n        \"jest/no-restricted-jest-methods\": [\"error\", {\n          \"mock\": \"vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）\",\n          \"doMock\": \"vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）\"\n        }],\n        \"jest/no-hooks\": [\"error\", { \"allow\": [\"afterEach\"] }],\n        // jest プラグインが warn で入れる correctness 規則のうち、これだけを外す。理由は .claude/hooks/README.md（#1445 の項）\n        \"jest/require-to-throw-message\": \"off\"\n      }\n    },\n    {"
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".oxlintrc.json",
+          "lineRange": {
+            "start": 216,
+            "end": 252
+          },
+          "text": "テスト規約の 2 つの override。",
+          "shas": [
+            "07b2129cb5c7c6f0d336d1488a07bed9d4f78fa6",
+            "4df8d6dad143fd8266890abd7db56b00c410c38e"
+          ]
+        }
+      ],
+      "seeAlso": [
+        "p-table"
+      ]
+    },
+    {
+      "id": "p-glob",
+      "kind": "language",
+      "category": "glob",
+      "label": "波括弧の glob",
+      "gist": "`*.{ts,tsx}` のように、波括弧の中のどれかに当たるパスを 1 つの glob で書く。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`src/**/*.{ts,tsx,mts,cts}` は 4 つの拡張子のどれかで終わる src 配下の全ファイルに当たる。"
+        },
+        {
+          "kind": "memo",
+          "text": "oxlint は mts / cts も lint するので、ts / tsx だけを並べた glob ではそれらのファイルで規則が外れる。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".oxlintrc.json",
+          "lineRange": {
+            "start": 12,
+            "end": 12
+          },
+          "text": "src 全体に効く effect の禁止。",
+          "shas": [
+            "07b2129cb5c7c6f0d336d1488a07bed9d4f78fa6"
+          ]
+        },
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "lineRange": {
+            "start": 103,
+            "end": 115
+          },
+          "text": "判定表が波括弧の中身を配列と照合する。",
+          "shas": [
+            "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "p-table",
+      "kind": "codebase",
+      "category": "ハーネス",
+      "label": "判定表",
+      "status": "added",
+      "gist": "検出器や設定の振る舞いを、期待（deny / pass / miss）と入力の 1 行 1 ケースで固定する表。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "`.claude/hooks/lib/cases-report.sh` の判定関数で deny / pass / broken を決め、ok / NG を数える。miss は「規則が見ない書き方」を明示する期待。"
+        },
+        {
+          "kind": "rule",
+          "text": "override を足したり変えたりしたら、その範囲のケースもこの表に足す。"
+        },
+        {
+          "kind": "excerpt",
+          "excerpt": {
+            "path": ".github/scripts/oxlint-config-cases.sh",
+            "start": 86,
+            "end": 100,
+            "text": "#\n# $1 表に書かれた期待\n# $2 規則(unix 形式の出力で末尾の括弧に入る名前)\n# $3 そのケースのファイルについての出力の行\ncase_verdict() {\n  local expected=\"$1\" rule=\"$2\" lines=\"$3\" has_error=0\n  grep -qE \"$error_line\" <<<\"$lines\" && has_error=1\n  normalize_miss \"$expected\" \"$(decide \"$lines\" \"$has_error\" \"\\\\(${rule}\\\\)\\\\]\\$\")\"\n}\n\nself_test_head='c1/src/features/probe/__tests__/probe.normal.test.ts:2:1:'\nreport broken \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の警告だけなら broken\"\nreport deny \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Error/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の error なら deny\"\nreport broken \"$(case_verdict deny no-hooks \"$self_test_head Expected { after 'if' condition. [Error/eslint(curly)]\")\" \"自己検査: 別の規則の error だけなら broken\"\nreport pass \"$(case_verdict pass no-hooks \"\")\" \"自己検査: 行が無ければ pass\""
+          }
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "lineRange": {
+            "start": 205,
+            "end": 223
+          },
+          "text": "oxlint を 1 回走らせて振り分ける本体。",
+          "shas": [
+            "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
+            "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2"
+          ]
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "lineRange": {
+            "start": 27,
+            "end": 28
+          },
+          "text": "push 前に走らせる。",
+          "shas": [
+            "b344df7cf74dec4e83a62e4a9edce2da7a3290a6"
+          ]
+        }
+      ],
+      "tests": [
+        "t-self-warn",
+        "t-ext"
+      ],
+      "flows": [
+        "f-table"
+      ],
+      "seeAlso": [
+        "p-override"
+      ]
+    }
+  ],
+  "terms": [
+    {
+      "id": "t-replace",
+      "label": "オプションの置き換え",
+      "text": "同じ規則を持つ override が 2 つ当たると、オプションは合わさらず後ろの override のものだけが使われる。だから 2 つ目にも 1 つ目の禁止を写す。"
+    }
+  ],
+  "quiz": [
+    {
+      "id": "q1",
+      "kind": "choice",
+      "title": "2 つ目の override の写し",
+      "prompt": "domains 用の 2 つ目の jest の override にも mock / doMock を並べている理由は？",
+      "options": [
+        "同じ規則のオプションは後ろの override のものに丸ごと置き換わるから",
+        "mock は domains でだけ止めたいから",
+        "plugins を省略するため",
+        "判定表の件数を増やすため"
+      ],
+      "answer": 1,
+      "why": "override は同じ規則のオプションをマージせず置き換える。写さないと domains では mock の禁止が外れる。",
+      "go": [
+        {
+          "kind": "file",
+          "path": ".oxlintrc.json"
+        }
+      ]
+    },
+    {
+      "id": "q2",
+      "kind": "yesno",
+      "title": "警告だけのとき",
+      "prompt": "判定表では、狙った規則の診断が warn だけなら deny として ok になる。",
+      "holds": false,
+      "why": "1 ファイル 1 規則の表なので、警告だけなら broken にして、error を warn に下げた退行を落とす。自己検査がこれを固定している。",
+      "go": [
+        {
+          "kind": "flow",
+          "id": "f-table"
+        }
+      ]
+    },
+    {
+      "id": "q3",
+      "kind": "order",
+      "title": "判定表の流れ",
+      "prompt": "判定表が 1 回走るときの順に並べよ。",
+      "items": [
+        "自己検査と拡張子の照合",
+        "ケースのファイルを一時ディレクトリに置く",
+        "oxlint を 1 回走らせる",
+        "出力全体が判定できるかを確かめる",
+        "ケースごとに判定して数える"
+      ],
+      "why": "自己検査と照合は oxlint を起動する前に済み、出力全体が判定できないときは全ケースを broken にする。",
+      "go": [
+        {
+          "kind": "flow",
+          "id": "f-table"
+        }
+      ]
+    }
+  ]
+}
