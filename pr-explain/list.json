@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1465,
+      "title": "✨ [New Feature]: #1445 テスト規約の 3 規則を oxlint の jest プラグインで止める"
+    },
+    {
       "pr": 1462,
       "title": "♻️ [Refactoring]: #1444 useEffect を用途別フックに閉じ込め、それ以外での使用を oxlint で止める"
     },
