@@ -9,7 +9,7 @@
   },
   "overrides": [
     {
-      "files": ["src/**/*.ts", "src/**/*.tsx"],
+      "files": ["src/**/*.{ts,tsx,mts,cts}"],
       "rules": {
         "no-restricted-imports": ["error", { "paths": [
           { "name": "react", "importNames": ["useEffect", "useLayoutEffect", "useInsertionEffect"], "message": "effect は src/hooks の用途別フックを通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）" },
@@ -18,7 +18,7 @@
       }
     },
     {
-      "files": ["src/domains/**/*.ts", "src/domains/**/*.tsx"],
+      "files": ["src/domains/**/*.{ts,tsx,mts,cts}"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
@@ -30,7 +30,7 @@
       }
     },
     {
-      "files": ["src/domains/unit/**/*.ts", "src/domains/unit/**/*.tsx"],
+      "files": ["src/domains/unit/**/*.{ts,tsx,mts,cts}"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
@@ -43,7 +43,7 @@
       }
     },
     {
-      "files": ["src/domains/dcmp/**/*.ts", "src/domains/dcmp/**/*.tsx"],
+      "files": ["src/domains/dcmp/**/*.{ts,tsx,mts,cts}"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
@@ -56,7 +56,7 @@
       }
     },
     {
-      "files": ["src/domains/compiled/**/*.ts", "src/domains/compiled/**/*.tsx"],
+      "files": ["src/domains/compiled/**/*.{ts,tsx,mts,cts}"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
@@ -69,7 +69,7 @@
       }
     },
     {
-      "files": ["src/domains/**/__tests__/**/*.ts", "src/domains/**/__tests__/**/*.tsx"],
+      "files": ["src/domains/**/__tests__/**/*.{ts,tsx,mts,cts}"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
@@ -80,7 +80,7 @@
       }
     },
     {
-      "files": ["src/domains/unit/**/__tests__/**/*.ts", "src/domains/unit/**/__tests__/**/*.tsx"],
+      "files": ["src/domains/unit/**/__tests__/**/*.{ts,tsx,mts,cts}"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
@@ -92,7 +92,7 @@
       }
     },
     {
-      "files": ["src/domains/dcmp/**/__tests__/**/*.ts", "src/domains/dcmp/**/__tests__/**/*.tsx"],
+      "files": ["src/domains/dcmp/**/__tests__/**/*.{ts,tsx,mts,cts}"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
@@ -104,7 +104,7 @@
       }
     },
     {
-      "files": ["src/domains/compiled/**/__tests__/**/*.ts", "src/domains/compiled/**/__tests__/**/*.tsx"],
+      "files": ["src/domains/compiled/**/__tests__/**/*.{ts,tsx,mts,cts}"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "domains は services を import できません（rules/architecture.md「依存方向のルール」）" },
@@ -116,7 +116,7 @@
       }
     },
     {
-      "files": ["src/services/**/*.ts", "src/services/**/*.tsx"],
+      "files": ["src/services/**/*.{ts,tsx,mts,cts}"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
           { "group": ["**/features/**", "@/features/**", "@/features"], "message": "services は features を import できません（rules/architecture.md「依存方向のルール」）" },
@@ -130,10 +130,10 @@
     },
     {
       "files": [
-        "src/components/**/*.ts", "src/components/**/*.tsx",
-        "src/hooks/**/*.ts", "src/hooks/**/*.tsx",
-        "src/utils/**/*.ts", "src/utils/**/*.tsx",
-        "src/types/**/*.ts", "src/types/**/*.tsx"
+        "src/components/**/*.{ts,tsx,mts,cts}",
+        "src/hooks/**/*.{ts,tsx,mts,cts}",
+        "src/utils/**/*.{ts,tsx,mts,cts}",
+        "src/types/**/*.{ts,tsx,mts,cts}"
       ],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
@@ -161,7 +161,7 @@
       }
     },
     {
-      "files": ["src/libs/**/*.ts", "src/libs/**/*.tsx"],
+      "files": ["src/libs/**/*.{ts,tsx,mts,cts}"],
       "rules": {
         "no-restricted-imports": ["error", { "patterns": [
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "libs は services を import できません（rules/architecture.md「依存方向のルール」）" },
@@ -211,6 +211,42 @@
       "plugins": ["react"],
       "rules": {
         "react/forbid-elements": "off"
+      }
+    },
+    {
+      // テスト規約を止める。plugins を 2 つの override の両方に書き、domains / services の override をこの後ろに置く理由は .claude/hooks/README.md（#1445 の項）
+      "files": ["src/**/*.{ts,tsx,mts,cts}"],
+      "plugins": ["jest"],
+      "rules": {
+        "jest/no-restricted-jest-methods": ["error", {
+          "mock": "vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）",
+          "doMock": "vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）"
+        }],
+        "jest/no-hooks": ["error", { "allow": ["afterEach"] }],
+        // jest プラグインが warn で入れる correctness 規則のうち、これだけを外す。理由は .claude/hooks/README.md（#1445 の項）
+        "jest/require-to-throw-message": "off"
+      }
+    },
+    {
+      "files": [
+        "src/domains/**/*.{ts,tsx,mts,cts}",
+        "src/services/**/*.{ts,tsx,mts,cts}",
+        "src/features/**/domains/**/*.{ts,tsx,mts,cts}"
+      ],
+      "plugins": ["jest"],
+      "rules": {
+        "jest/no-restricted-jest-methods": ["error", {
+          "mock": "vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）",
+          "doMock": "vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）",
+          "fn": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
+          "spyOn": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
+          "stubGlobal": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
+          "stubEnv": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
+          "importMock": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
+          "mockObject": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
+          "useFakeTimers": "domains / services のテストは時刻を差し替えない。時刻に依る値は引数で渡す（rules/testing.md「モックは原則使わない」）",
+          "setSystemTime": "domains / services のテストは時刻を差し替えない。時刻に依る値は引数で渡す（rules/testing.md「モックは原則使わない」）"
+        }]
       }
     }
   ]

@@ -37,7 +37,7 @@ bash harness/records/count.sh --list <分類> # その分類の、窓が開い�
 
 上から順に「これで捕まえられるか」を確かめる。
 
-1. **linter の設定**（`.oxlintrc.json` / Biome）— 既存の配線（編集後 lint・push 前 lint・CI）にそのまま乗る
+1. **linter の設定**（`.oxlintrc.json` / Biome）— 既存の配線（編集後 lint・push 前 lint・CI）にそのまま乗る。`.oxlintrc.json` の `no-restricted-imports` か jest の規則を持つ override を足したり変えたりしたら、`.github/scripts/oxlint-config-cases.sh` にケースを足す（`.claude/hooks/README.md` の #1445 の項）
 2. **自前の検出器**（`.claude/hooks/lib/`）— リポジトリ構造を読まないと判定できないもの。配線は `.claude/hooks/`・`harness/githooks/`・`.github/` の 3 層（`.claude/hooks/README.md`「配線」）
 3. **手順の中の検査**（`.claude/skills/` のコマンド、`harness/githooks/pre-push`）— 実行順序が決まっているときだけ
 

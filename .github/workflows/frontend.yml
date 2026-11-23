@@ -50,6 +50,11 @@ jobs:
       - name: oxlint
         run: pnpm exec oxlint
 
+      # 実物の oxlint を node_modules から呼ぶので、依存を入れない rules-check ではなくここに置く
+      # (.claude/hooks/README.md「判定表をどの層へ置くか」)。
+      - name: oxlint の設定の判定表
+        run: bash .github/scripts/oxlint-config-cases.sh
+
       # json レポーターでテスト実行時間(ファイル別 / テスト別)も計測する
       - name: Test with coverage
         run: >-
