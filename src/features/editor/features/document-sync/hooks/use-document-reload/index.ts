@@ -1,7 +1,8 @@
-import { useEffect, useEffectEvent, useState } from "react";
+import { useCallback, useEffectEvent, useState } from "react";
 import type { DocumentAccessFailure } from "@/domains/session/document-access-failure";
 import { DocumentReload } from "@/domains/session/document-reload";
 import type { FilePath } from "@/domains/unit/file-path";
+import { useSubscription } from "@/hooks/use-subscription";
 import {
   type DocumentChanged,
   type DocumentIpc,
@@ -47,7 +48,7 @@ export function useDocumentReload({
 
   /*
    * 届いた内容の解釈は監視の張り直しと関係がないため Effect Event に出す。
-   * これが無いと、レンダーのたびに変わる `onReload` を Effect の依存に入れることになり、
+   * これが無いと、レンダーのたびに変わる `onReload` を購読の手続きの依存に入れることになり、
    * 監視と購読が張り直されて、その隙間に届いた変更を落とす。
    */
   const reload = useEffectEvent((changed: DocumentChanged) => {
@@ -60,7 +61,9 @@ export function useDocumentReload({
     onReload(DocumentReload.fromParsed(DocumentJson.parse(changed.content)));
   });
 
-  useEffect(() => {
+  // Effect Event を Effect の外から参照するが、呼ばれるのは `useSubscription` の effect の
+  // 中だけで、時機は元と同じ。
+  const watchChanges = useCallback(() => {
     let stopped = false;
     let unsubscribe: Option<Unsubscribe> = Option.none;
 
@@ -87,14 +90,16 @@ export function useDocumentReload({
     };
     void start();
 
-    return () => {
+    const release = () => {
       stopped = true;
       if (Option.isSome(unsubscribe)) {
         unsubscribe.value();
       }
       void ipc.unwatch(path);
     };
+    return Option.some(release);
   }, [ipc, path]);
+  useSubscription(watchChanges);
 
   return failure;
 }

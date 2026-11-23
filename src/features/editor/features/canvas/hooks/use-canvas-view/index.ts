@@ -2,7 +2,7 @@ import {
   type ActionDispatch,
   type PointerEvent as ReactPointerEvent,
   type RefObject,
-  useEffect,
+  useCallback,
   useReducer,
   useRef,
 } from "react";
@@ -13,7 +13,8 @@ import {
 } from "@/features/editor/features/canvas/domains/canvas-view";
 import { CanvasPointer } from "@/features/editor/features/canvas/utils/CanvasPointer";
 import { DrawnBounds } from "@/features/editor/features/canvas/utils/DrawnBounds";
-import { CommandKey } from "@/libs/dom-event";
+import { useDomListeners } from "@/hooks/use-dom-listeners";
+import { CommandKey, DomListener } from "@/libs/dom-event";
 import { ElementMeasure } from "@/libs/element-measure";
 import { Option } from "@/utils/Option";
 
@@ -88,18 +89,18 @@ function useWheelControl(
   surface: RefObject<HTMLElement | null>,
   dispatch: ActionDispatch<[action: CanvasViewAction]>,
 ): void {
-  useEffect(() => {
+  const collectListeners = useCallback(() => {
     const element = surface.current;
     if (element === null) {
-      return;
+      return [];
     }
     const handleWheel = (event: WheelEvent) => {
       event.preventDefault();
       dispatch(wheelAction(event));
     };
-    element.addEventListener("wheel", handleWheel, { passive: false });
-    return () => element.removeEventListener("wheel", handleWheel);
+    return [DomListener.createOnElement(element, "wheel", handleWheel)];
   }, [surface, dispatch]);
+  useDomListeners(collectListeners);
 }
 
 /**

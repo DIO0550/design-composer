@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import type { DesignDocument } from "@/domains/dcmp/design-document";
 import { DocumentSaveState } from "@/domains/session/document-save-state";
 import { FileValidity } from "@/domains/session/file-validity";
 import type { FilePath } from "@/domains/unit/file-path";
+import { useSubscription } from "@/hooks/use-subscription";
 import { type DocumentIpc, toDocumentAccessFailure } from "@/libs/document-ipc";
 import { DocumentJson } from "@/libs/document-json";
+import { Option } from "@/utils/Option";
 import { Result } from "@/utils/Result";
 
 /**
@@ -58,10 +60,10 @@ export function useAutoSave({
    */
   const savedDocumentRef = useRef(document);
 
-  useEffect(() => {
-    // 凍結が解ければ妥当性が変わってこの effect が再び走り、書き出しの要否から決め直される。
+  const scheduleSave = useCallback(() => {
+    // 凍結が解ければ妥当性が変わって購読が張り直され、書き出しの要否から決め直される。
     if (FileValidity.isInvalid(fileValidity)) {
-      return;
+      return Option.none;
     }
     if (document === savedDocumentRef.current) {
       /*
@@ -70,7 +72,7 @@ export function useAutoSave({
        * 戻すので、この分岐に入りタイマーが cleanup で消える）で `saving` のまま固まる。
        */
       setSaveState(DocumentSaveState.Saved);
-      return;
+      return Option.none;
     }
     setSaveState(DocumentSaveState.Saving);
 
@@ -92,11 +94,13 @@ export function useAutoSave({
       setSaveState(DocumentSaveState.Saved);
     }, AutoSaveDebounceMs);
 
-    return () => {
+    const cancel = () => {
       ignore = true;
       clearTimeout(timer);
     };
+    return Option.some(cancel);
   }, [ipc, path, document, fileValidity]);
+  useSubscription(scheduleSave);
 
   return saveState;
 }

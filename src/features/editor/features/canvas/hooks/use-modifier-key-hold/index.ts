@@ -1,5 +1,7 @@
-import { useEffect } from "react";
+import { useCallback } from "react";
+import { useDomListeners } from "@/hooks/use-dom-listeners";
 import { KeyShortcut, type KeyTriggers } from "@/hooks/use-key-shortcut";
+import { DomListener } from "@/libs/dom-event";
 
 /**
  * 押している間だけ効く修飾キー（パンの space・距離の Alt / Option）。
@@ -29,7 +31,7 @@ export function useModifierKeyHold(
   key: HeldModifierKey,
   onChange: (isHeld: boolean) => void,
 ): void {
-  useEffect(() => {
+  const collectListeners = useCallback(() => {
     const hold = (event: KeyboardEvent) => {
       const startsHold =
         key.shortcut.codes.includes(event.code) &&
@@ -45,13 +47,11 @@ export function useModifierKeyHold(
     };
     const clear = () => onChange(false);
 
-    globalThis.document.addEventListener("keydown", hold);
-    globalThis.document.addEventListener("keyup", release);
-    globalThis.window.addEventListener("blur", clear);
-    return () => {
-      globalThis.document.removeEventListener("keydown", hold);
-      globalThis.document.removeEventListener("keyup", release);
-      globalThis.window.removeEventListener("blur", clear);
-    };
+    return [
+      DomListener.createOnDocument("keydown", hold),
+      DomListener.createOnDocument("keyup", release),
+      DomListener.createOnWindow("blur", clear),
+    ];
   }, [key, onChange]);
+  useDomListeners(collectListeners);
 }

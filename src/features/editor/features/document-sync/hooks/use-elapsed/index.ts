@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { Elapsed } from "@/domains/unit/elapsed";
 import type { Instant } from "@/domains/unit/instant";
+import { useSubscription } from "@/hooks/use-subscription";
 import type { Clock } from "@/libs/clock";
 import { Option } from "@/utils/Option";
 
@@ -27,19 +28,22 @@ export function useElapsed(
    */
   const sinceEpochMs = Option.isSome(since) ? since.value.epochMs : undefined;
 
-  useEffect(() => {
+  const tick = useCallback(() => {
     if (sinceEpochMs === undefined) {
-      return;
+      return Option.none;
     }
     /*
      * 購読を始める前に今の時刻へ追いつく。`now` は mount 時のままなので、数え始めた
      * 時点では起点より古く、これが無いと最初の 1 秒だけ負の経過時間が出る。
      */
     setNow(clock.now());
-    return clock.subscribeSeconds(() => {
-      setNow(clock.now());
-    });
+    return Option.some(
+      clock.subscribeSeconds(() => {
+        setNow(clock.now());
+      }),
+    );
   }, [clock, sinceEpochMs]);
+  useSubscription(tick);
 
   return Option.map(since, (from) => Elapsed.create({ from, to: now }));
 }

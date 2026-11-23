@@ -1,5 +1,6 @@
-import { createContext, type ReactNode, useContext, useEffect } from "react";
-import { CommandKey } from "@/libs/dom-event";
+import { createContext, type ReactNode, useCallback, useContext } from "react";
+import { useDomListeners } from "@/hooks/use-dom-listeners";
+import { CommandKey, DomListener } from "@/libs/dom-event";
 import type { ValueOf } from "@/types/ValueOf";
 import { ElementEx } from "@/utils/ElementEx";
 
@@ -181,9 +182,9 @@ export function KeyShortcutScopeProvider({
 export function useKeyShortcuts(bindings: readonly KeyShortcutBinding[]): void {
   const scope = useContext(KeyShortcutScopeContext);
 
-  useEffect(() => {
+  const collectListeners = useCallback(() => {
     if (scope === KeyShortcutScopes.Suspended) {
-      return;
+      return [];
     }
     const handleKeyDown = (event: KeyboardEvent) => {
       const bound = bindings.find(
@@ -197,9 +198,9 @@ export function useKeyShortcuts(bindings: readonly KeyShortcutBinding[]): void {
       event.preventDefault();
       bound.onPress();
     };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return [DomListener.createOnDocument("keydown", handleKeyDown)];
   }, [bindings, scope]);
+  useDomListeners(collectListeners);
 }
 
 /**
