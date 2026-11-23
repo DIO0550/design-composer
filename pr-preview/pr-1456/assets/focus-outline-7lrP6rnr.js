@@ -1,0 +1,1 @@
+import{n as e}from"./chunk-BneVvdWh.js";var t,n,r=e((()=>{t=`focus-visible:outline-2 focus-visible:outline-[#0a74c9] focus-visible:outline-offset-2`,n=`focus-within:outline-2 focus-within:outline-[#0a74c9] focus-within:outline-offset-2`}));export{n,r,t};
