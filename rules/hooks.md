@@ -33,7 +33,7 @@ hooks（`useState` の更新ロジック・reducer・カスタムフック・イ
 **要素の props で済むイベントを `document` / `window` に張ることは禁止。** イベントは原則、対象要素の props（`onClick`, `onKeyDown`, `onChange` 等）で処理する。
 
 - `document` / `window` への `addEventListener` が許されるのは、**本質的にグローバルな関心事のみ**（`resize`、ページ全体のキーボードショートカット、要素外クリックの検知など）
-- `document` / `window` のリスナーは `useDomListeners` で張る（張り方と外し方は `libs/dom-event` の `DomListener` が対で持つ）
+- 張り方と外し方は `libs/dom-event` の `DomListener` が対で持つ（用途別フックの外から張るときは `useDomListeners` に渡す）
 - グローバルリスナーが必要なロジックはカスタムフックに切り出す
 
 ## useRef の使い分け
@@ -43,7 +43,7 @@ React 公式 `useRef` リファレンス（"Information that's used for renderin
 
 **ref をフラグにした「防御」は禁止。**
 
-- **二重発火防止の `hasFetchedRef` 禁止**: StrictMode の二重実行を ref で抑えにいかない。「防ぐ」のではなく「結果を捨てる」のが公式設計（購読を始めるときに `let ignore = false`、止めるときに `ignore = true`。必要なら `AbortController`）
+- **二重発火防止の `hasFetchedRef` 禁止**: StrictMode の二重実行を ref で抑えにいかない。「防ぐ」のではなく「結果を捨てる」のが公式設計（処理を始めるときに `let ignore = false`、止めるときに `ignore = true`。必要なら `AbortController`）
 - **ローディング状態を `isLoadingRef` で持たない**: スピナー・`disabled`・エラー UI に出すなら `useState` 一択
 - **連打防止の `inFlightRef` 禁止**: ボタンなら `useState` + `disabled` 属性が第一選択（DOM レベルで二重発火を遮断できる）
 - カスタムフックがハンドラを返す場合も同様に、フック内で `useState` を持ち `isSubmitting` 等を返して呼び出し側で `disabled` に流す
