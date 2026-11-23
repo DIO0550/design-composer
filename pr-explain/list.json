@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1462,
+      "title": "♻️ [Refactoring]: #1444 useEffect を用途別フックに閉じ込め、それ以外での使用を oxlint で止める"
+    },
+    {
       "pr": 1458,
       "title": "✨ [New Feature]: #1438 Epic・実装・バグ・調査の Issue テンプレートを足す"
     },
