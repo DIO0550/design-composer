@@ -1,4 +1,4 @@
-name: 調査
+name: 調査（ソースを変えずに答えを書く）
 description: ソースを変えずに調べて、答えを Issue に書いて閉じる作業
 body:
   - type: markdown
