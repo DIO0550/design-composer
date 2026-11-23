@@ -1,7 +1,7 @@
 {
   "version": 1,
   "pr": 1465,
-  "sha": "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2",
+  "sha": "6ba5cc061570ffbf8c82558aea37974746bb029a",
   "issue": 1445,
   "overview": {
     "title": "テスト規約の 3 規則を oxlint の jest プラグインで止める",
@@ -347,7 +347,7 @@
       "measure": {
         "what": "設定の誤りを捕まえるケース",
         "before": "0",
-        "after": "163（ほかに自己検査 4・拡張子の照合 1）"
+        "after": "163（ほかに自己検査 5・拡張子の照合 1）"
       }
     }
   ],
@@ -637,6 +637,58 @@
           "text": "ループを判定関数の呼び出しにする"
         }
       ]
+    },
+    {
+      "sha": "8b4c45c82a96828ee774906f2ebf5a8baa026784",
+      "phase": "revise",
+      "role": "判定表で、重大度を対象規則の診断行から決め、別の規則の診断が混ざれば broken にする。",
+      "why": "PR のレビュー（Devin）で、対象規則が warn・別の規則が error のケースを deny と読む穴が実物の oxlint で再現された。",
+      "flows": [
+        "f-table"
+      ],
+      "review": [
+        "1 ファイル 1 規則の前提が判定で強制されているか。"
+      ],
+      "notes": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "start": 93,
+          "end": 98,
+          "text": "対象規則の見出しに当たらない行があれば broken、重大度は対象規則の行で見る。"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "start": 85,
+          "end": 108,
+          "feature": "table",
+          "text": "重大度を対象規則の行で決める"
+        }
+      ]
+    },
+    {
+      "sha": "6ba5cc061570ffbf8c82558aea37974746bb029a",
+      "phase": "revise",
+      "role": "テスト規約に、前提の作り方の指針を戻す。",
+      "why": "前処理のフックの行を削ったとき、前提は各テスト内か setup() で作るという指針まで消えていた。lint が見ない書き方が残るので指針は要る。",
+      "notes": [
+        {
+          "path": "rules/testing.md",
+          "start": 69,
+          "end": 69,
+          "text": "禁止は lint に任せ、作り方だけを括弧で戻した。"
+        }
+      ],
+      "featureRanges": [
+        {
+          "path": "rules/testing.md",
+          "start": 69,
+          "end": 69,
+          "feature": "docs",
+          "text": "前提の作り方の指針を戻す"
+        }
+      ]
     }
   ],
   "suites": [
@@ -661,8 +713,8 @@
       "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
       "excerpt": {
         "path": ".github/scripts/oxlint-config-cases.sh",
-        "start": 149,
-        "end": 149,
+        "start": 157,
+        "end": 157,
         "text": "deny|no-restricted-jest-methods|feature のテストで vi.mock を使うと止まる|src/features/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nvi.mock(\"./m\");"
       },
       "covers": [
@@ -687,8 +739,8 @@
       "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
       "excerpt": {
         "path": ".github/scripts/oxlint-config-cases.sh",
-        "start": 154,
-        "end": 154,
+        "start": 162,
+        "end": 162,
         "text": "deny|no-restricted-jest-methods|domains のテストで vi.mock を使うと止まる|src/domains/unit/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nvi.mock(\"./m\");"
       },
       "covers": [
@@ -713,8 +765,8 @@
       "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
       "excerpt": {
         "path": ".github/scripts/oxlint-config-cases.sh",
-        "start": 158,
-        "end": 158,
+        "start": 166,
+        "end": 166,
         "text": "deny|no-restricted-jest-methods|domains のテストで vi.fn を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nexport const f = vi.fn();"
       },
       "covers": [
@@ -739,8 +791,8 @@
       "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
       "excerpt": {
         "path": ".github/scripts/oxlint-config-cases.sh",
-        "start": 170,
-        "end": 170,
+        "start": 178,
+        "end": 178,
         "text": "pass|no-restricted-jest-methods|feature のテストでは vi.fn を使える|src/features/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nexport const f = vi.fn();"
       },
       "covers": [
@@ -765,8 +817,8 @@
       "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
       "excerpt": {
         "path": ".github/scripts/oxlint-config-cases.sh",
-        "start": 168,
-        "end": 168,
+        "start": 176,
+        "end": 176,
         "text": "deny|no-restricted-jest-methods|domains のテストで vi.useFakeTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.useFakeTimers();"
       },
       "covers": [
@@ -791,8 +843,8 @@
       "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
       "excerpt": {
         "path": ".github/scripts/oxlint-config-cases.sh",
-        "start": 175,
-        "end": 175,
+        "start": 183,
+        "end": 183,
         "text": "deny|no-hooks|テストで beforeEach を使うと止まる|src/features/probe/__tests__/probe.normal.test.{ext}|import { beforeEach } from \"vitest\";\\nbeforeEach(() => {});"
       },
       "covers": [
@@ -817,8 +869,8 @@
       "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
       "excerpt": {
         "path": ".github/scripts/oxlint-config-cases.sh",
-        "start": 182,
-        "end": 182,
+        "start": 190,
+        "end": 190,
         "text": "pass|no-hooks|テストの土台 src/test-setup.ts で afterEach は使える|src/test-setup.ts|import { afterEach } from \"vitest\";\\nafterEach(() => {});"
       },
       "covers": [
@@ -843,8 +895,8 @@
       "commit": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
       "excerpt": {
         "path": ".github/scripts/oxlint-config-cases.sh",
-        "start": 184,
-        "end": 184,
+        "start": 192,
+        "end": 192,
         "text": "miss|no-hooks|aroundEach は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { aroundEach } from \"vitest\";\\naroundEach(async (run) => {\\n  await run();\\n});"
       },
       "covers": [
@@ -869,8 +921,8 @@
       "commit": "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2",
       "excerpt": {
         "path": ".github/scripts/oxlint-config-cases.sh",
-        "start": 97,
-        "end": 97,
+        "start": 103,
+        "end": 103,
         "text": "report broken \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の警告だけなら broken\""
       },
       "covers": [
@@ -894,8 +946,8 @@
       "commit": "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2",
       "excerpt": {
         "path": ".github/scripts/oxlint-config-cases.sh",
-        "start": 103,
-        "end": 115,
+        "start": 111,
+        "end": 123,
         "text": "extension_sets=\"$(grep -oE '\\.\\{[^{}\"]*\\}\"' \"$config\" | sed -E 's/^\\.\\{(.*)\\}\"$/\\1/' |\n  while IFS= read -r set; do tr ',' '\\n' <<<\"$set\" | sort | paste -sd ' ' -; done)\"\nexpected_set=\"$(printf '%s\\n' \"${extensions[@]}\" | sort | paste -sd ' ' -)\"\nmismatched_sets=\"$(grep -vxF -- \"$expected_set\" <<<\"$extension_sets\" | sort -u | paste -sd '/' -)\"\nif [ -z \"$extension_sets\" ]; then\n  echo 'NG   設定の files から拡張子の波括弧を 1 つも拾えなかった'\n  cases_failed=1\nelif [ -n \"$mismatched_sets\" ]; then\n  printf 'NG   設定の files の拡張子が extensions(%s)と食い違う(%s)\\n' \"$expected_set\" \"$mismatched_sets\"\n  cases_failed=1\nelse\n  printf 'ok   設定の files の拡張子の波括弧 %s 本が extensions と同じ集合\\n' \"$(wc -l <<<\"$extension_sets\")\"\nfi"
       },
       "covers": [
@@ -935,7 +987,7 @@
         "role": "固定の行を判定関数に与え、警告だけなら broken などを確かめる。",
         "module": ".github/scripts/oxlint-config-cases.sh",
         "status": "added",
-        "now": "4 行。"
+        "now": "5 行（警告と別の規則の error の混在を含む）。"
       },
       {
         "id": "b-decide",
@@ -1275,8 +1327,8 @@
         {
           "path": ".github/scripts/oxlint-config-cases.sh",
           "lineRange": {
-            "start": 103,
-            "end": 115
+            "start": 111,
+            "end": 123
           },
           "text": "判定表が波括弧の中身を配列と照合する。",
           "shas": [
@@ -1305,9 +1357,9 @@
           "kind": "excerpt",
           "excerpt": {
             "path": ".github/scripts/oxlint-config-cases.sh",
-            "start": 86,
-            "end": 100,
-            "text": "#\n# $1 表に書かれた期待\n# $2 規則(unix 形式の出力で末尾の括弧に入る名前)\n# $3 そのケースのファイルについての出力の行\ncase_verdict() {\n  local expected=\"$1\" rule=\"$2\" lines=\"$3\" has_error=0\n  grep -qE \"$error_line\" <<<\"$lines\" && has_error=1\n  normalize_miss \"$expected\" \"$(decide \"$lines\" \"$has_error\" \"\\\\(${rule}\\\\)\\\\]\\$\")\"\n}\n\nself_test_head='c1/src/features/probe/__tests__/probe.normal.test.ts:2:1:'\nreport broken \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の警告だけなら broken\"\nreport deny \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Error/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の error なら deny\"\nreport broken \"$(case_verdict deny no-hooks \"$self_test_head Expected { after 'if' condition. [Error/eslint(curly)]\")\" \"自己検査: 別の規則の error だけなら broken\"\nreport pass \"$(case_verdict pass no-hooks \"\")\" \"自己検査: 行が無ければ pass\""
+            "start": 85,
+            "end": 108,
+            "text": "# 1 ケース分の出力の行から、表の綴り(deny / pass / miss / broken)の判定を返す。\n#\n# $1 表に書かれた期待\n# $2 規則(unix 形式の出力で末尾の括弧に入る名前)\n# $3 そのケースのファイルについての出力の行\ncase_verdict() {\n  local expected=\"$1\" rule=\"$2\" lines=\"$3\" has_error=0 other_rule_lines\n  local heading=\"\\\\(${rule}\\\\)\\\\]\\$\"\n  other_rule_lines=\"$(grep -vE \"$heading\" <<<\"$lines\")\"\n  if [ -n \"$other_rule_lines\" ]; then\n    echo \"broken\"\n    return 0\n  fi\n  grep -qE \"${error_line}.*${heading}\" <<<\"$lines\" && has_error=1\n  normalize_miss \"$expected\" \"$(decide \"$lines\" \"$has_error\" \"$heading\")\"\n}\n\nself_test_head='c1/src/features/probe/__tests__/probe.normal.test.ts:2:1:'\nreport broken \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の警告だけなら broken\"\nreport deny \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Error/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の error なら deny\"\nreport broken \"$(case_verdict deny no-hooks \"$self_test_head Expected { after 'if' condition. [Error/eslint(curly)]\")\" \"自己検査: 別の規則の error だけなら broken\"\nreport broken \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]\n$self_test_head Expected { after 'if' condition. [Error/eslint(curly)]\")\" \"自己検査: 規則の警告と別の規則の error が混ざれば broken\"\nreport pass \"$(case_verdict pass no-hooks \"\")\" \"自己検査: 行が無ければ pass\""
           }
         }
       ],
@@ -1315,8 +1367,8 @@
         {
           "path": ".github/scripts/oxlint-config-cases.sh",
           "lineRange": {
-            "start": 205,
-            "end": 223
+            "start": 213,
+            "end": 231
           },
           "text": "oxlint を 1 回走らせて振り分ける本体。",
           "shas": [
