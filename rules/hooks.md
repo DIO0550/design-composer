@@ -2,14 +2,12 @@
 
 ## useEffect: 最終手段として扱う
 
-`useEffect` は「外部システムとの同期」専用とする。React 公式 "You Might Not Need an Effect" に従い、外部システムが関与しない `useEffect` は禁止する。
+effect（`useEffect` / `useLayoutEffect` / `useInsertionEffect`）は「外部システムとの同期」専用とし、`src/hooks/` の用途別フック（DOM のイベント・購読・描画前の測り直し）を通してだけ使う（それ以外の import は lint が止める）。React 公式 "You Might Not Need an Effect" に従い、外部システムが関与しない処理をそれらのフックへ渡さない。同期する相手は `libs/` のラッパーで渡す。
 
 - **導出可能な値の state 化禁止**: レンダー中に計算できるものは計算する。重い計算のキャッシュには `useMemo` を使う
 - **イベント起因の処理を Effect に書かない**: ユーザー操作への応答（保存実行・通知など）はイベントハンドラに書く
 - **state リセット目的の Effect 禁止**: コンポーネントツリーのリセットは `key` の変更で行う
 - **Effect チェーン禁止**: ある Effect が state を更新し別の Effect を発火させる連鎖は設計の誤り
-
-許可されるのは、ブラウザ API・外部ライブラリとの同期（必ず `libs/` のラッパー経由）と、購読の開始／解除（クリーンアップ関数を必ず返す）だけ。
 
 ## useState / useReducer の使い分け
 
@@ -35,7 +33,7 @@ hooks（`useState` の更新ロジック・reducer・カスタムフック・イ
 **要素の props で済むイベントを `document` / `window` に張ることは禁止。** イベントは原則、対象要素の props（`onClick`, `onKeyDown`, `onChange` 等）で処理する。
 
 - `document` / `window` への `addEventListener` が許されるのは、**本質的にグローバルな関心事のみ**（`resize`、ページ全体のキーボードショートカット、要素外クリックの検知など）
-- その場合も必ず `useEffect` 内で登録し、クリーンアップ関数で解除する（解除漏れは違反）
+- `document` / `window` のリスナーは `useDomListeners` で張る（張り方と外し方は `libs/dom-event` の `DomListener` が対で持つ）
 - グローバルリスナーが必要なロジックはカスタムフックに切り出す
 
 ## useRef の使い分け
@@ -45,7 +43,7 @@ React 公式 `useRef` リファレンス（"Information that's used for renderin
 
 **ref をフラグにした「防御」は禁止。**
 
-- **二重発火防止の `hasFetchedRef` 禁止**: StrictMode の二重実行を ref で抑えにいかない。「防ぐ」のではなく「結果を捨てる」のが公式設計（`useEffect` 内で `let ignore = false`、cleanup で `ignore = true`。必要なら `AbortController`）
+- **二重発火防止の `hasFetchedRef` 禁止**: StrictMode の二重実行を ref で抑えにいかない。「防ぐ」のではなく「結果を捨てる」のが公式設計（購読を始めるときに `let ignore = false`、止めるときに `ignore = true`。必要なら `AbortController`）
 - **ローディング状態を `isLoadingRef` で持たない**: スピナー・`disabled`・エラー UI に出すなら `useState` 一択
 - **連打防止の `inFlightRef` 禁止**: ボタンなら `useState` + `disabled` 属性が第一選択（DOM レベルで二重発火を遮断できる）
 - カスタムフックがハンドラを返す場合も同様に、フック内で `useState` を持ち `isSubmitting` 等を返して呼び出し側で `disabled` に流す
