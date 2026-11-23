@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 #
 # フックの判定表(`*-cases.sh`)が共有する、ケースの前提の置き方。落ちる検出器・起動できないコマンド・
-# 本体が同じテストヘルパーを渡されたパスへ置くものと、サブエージェントの中の呼び出しの入力を組むものと、
-# フックを一時ディレクトリへ写すもの。
+# 本体が同じテストヘルパーを渡されたパスへ置くものと、サブエージェントの中の呼び出しの入力と Bash の
+# 呼び出しの入力を組むものと、フックを一時ディレクトリへ写すものと、Bash の呼び出しの判定表をフックへ流すもの。
 #
 # 使う側: lib/pre-push-detector-cases.sh / lib/edit-detector-cases.sh / lib/import-rule-cases.sh /
-# lib/verification-agent-cases.sh / lib/parent-session-edit-cases.sh / lib/issue-flow-kind-cases.sh
+# lib/verification-agent-cases.sh / lib/parent-session-edit-cases.sh / lib/issue-flow-kind-cases.sh /
+# lib/git-add-all-cases.sh / lib/commit-md-heading-cases.sh
 #
 # 終了コードと出力の組を実物の検出器から決まった形で作れないので、判定表は検出器をスタブで作る
 # (ここに置くのは判定表どうしが共有する落ちる側。報告の行を出すスタブは報告の綴りが違うので各判定表が持つ)。
@@ -73,5 +74,35 @@ place_duplicate_helpers() {
     mkdir -p "$folder"
     printf 'function openedAt(path: string) {\n  return OpenedDocument.create({ path, document: sampleDocument() });\n}\n' \
       >"$folder/setup.ts"
+  done
+}
+
+# Bash の PreToolUse でフックへ渡す JSON を書く(`tool_input.command` だけを載せる)。
+#
+# $1 フックへ渡すコマンド
+bash_call_input() {
+  jq -n --arg c "$1" '{tool_input: {command: $c}}'
+}
+
+# 標準入力の判定表を 1 行ずつ Bash の PreToolUse の入力にして PreToolUse フックへ流し、`report` で報告する。
+# `cases-report.sh` を source した判定表から呼ぶ。
+#
+# 表の 1 行は `期待|ケース名|コマンド`(コマンドは最後の列なので `|` を含んでよい)。期待の種類は `cases-report.sh` の
+# `normalize_miss`。コマンドの `@@` は改行に、`⇥` はタブに戻してから渡す。判定は `cases-report.sh` の
+# `hook_verdict_by_permission`。
+#
+# ケースをファイルに置くのは、Bash で打って確かめると、deny の行は配線したあとのフック自身に止められるから。
+#
+# 入力を組むのに jq を使う(`bash_call_input`)ので、jq が無いと deny の行が NG になる。
+# `harness/githooks/pre-push` は jq がある環境でだけ走らせる。
+#
+# $1 フックのパス
+report_bash_call_cases() {
+  local hook="$1" expected label command verdict
+  while IFS='|' read -r expected label command; do
+    command="${command//@@/$'\n'}"
+    command="${command//⇥/$'\t'}"
+    verdict="$(hook_verdict_by_permission "$hook" <<<"$(bash_call_input "$command")")"
+    report "$expected" "$(normalize_miss "$expected" "$verdict")" "$label"
   done
 }

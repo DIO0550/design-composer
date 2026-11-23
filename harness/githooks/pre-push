@@ -100,11 +100,14 @@ run_check "編集時の検査フックの判定表" bash .claude/hooks/lib/edit-
 resume_checks
 
 # gh を差し替えて走る .github/scripts/ の判定表(sticky コメントを貼る・差し替える共通スクリプトと、
-# PR が閉じる Issue の検査)。どちらも jq を使うので、jq が無い環境では判定が変わっていなくても
-# NG を出す。python3 は使わないので上の区間とは分ける。
+# PR が閉じる Issue の検査)と、jq で入力を組む層 3 の部品(一括 add・行頭 `#` の拒否)の判定表。
+# どれも jq を使うので、jq が無い環境では判定が変わっていなくても NG を出す。python3 は使わないので
+# 上の区間とは分ける。
 command -v jq >/dev/null 2>&1 || skip_following_checks "jq が無い"
 run_check "sticky コメントの投稿・差し替えの判定表" bash .github/scripts/upsert-sticky-comment-cases.sh
 run_check "PR が閉じる Issue の検査の判定表" bash .github/scripts/check-pr-closing-issue-cases.sh
+run_check "git add -A の拒否の判定表" bash .claude/hooks/lib/git-add-all-cases.sh
+run_check "コミット本文の行頭 # の拒否の判定表" bash .claude/hooks/lib/commit-md-heading-cases.sh
 resume_checks
 
 # 作業ツリーを書き換えるサブエージェントの実行中フラグ(層 3 の部品)の判定表。bash だけで走るので飛ばさない。
@@ -112,6 +115,9 @@ run_check "作業ツリーを書き換えるサブエージェントの実行中
 
 # implementation-flow の中の親セッションの編集の拒否(層 3 の部品)の判定表。bash だけで走るので飛ばさない。
 run_check "親セッションの編集の判定表" bash .claude/hooks/lib/parent-session-edit-cases.sh
+
+# 保護ブランチの編集の拒否(層 3 の部品)の判定表。bash と git だけで走るので飛ばさない。
+run_check "保護ブランチの編集の拒否の判定表" bash .claude/hooks/lib/protected-branch-edit-cases.sh
 
 # 上の判定表が共有する、判定の読み取りと報告と検出器の種別の照合そのものの判定表。bash だけで走るので飛ばさない。
 run_check "判定の読み取りと報告と種別の照合の判定表" bash .claude/hooks/lib/cases-report-cases.sh

@@ -16,9 +16,9 @@
     "react-rules-plugin@d-market-react": true,
     "spec-plugin@d-market-spec": true,
     "spec-based-code-review-plugin@d-market-spec": true,
-    "git-workflow-plugin@d-market-git": true,
+    "git-workflow-plugin@d-market-git": false,
     "spec-to-issues-plugin@d-market-git": true,
-    "workflow-automation-plugin@d-market-git": true,
+    "workflow-automation-plugin@d-market-git": false,
     "doc-gen-plugin@d-market-doc-gen": true,
     "statusline-plugin@d-market-statusline": true,
     "skill-creator@d-market-skill": true,
@@ -28,9 +28,7 @@
     "rust-rules-plugin@d-market-rust": true,
     "rust-hooks-plugin@d-market-rust": true,
     "typescript-lsp@claude-plugins-official": true,
-    "rust-analyzer-lsp@claude-plugins-official": true,
-    "code-intent-layering-guard@d-market-workflow": true,
-    "discord-notifier@d-market-workflow": true
+    "rust-analyzer-lsp@claude-plugins-official": true
   },
   "extraKnownMarketplaces": {
     "d-market-typescript": {
@@ -85,12 +83,6 @@
         "source": "github",
         "repo": "DIO0550/d-market-rust"
       }
-    },
-    "d-market-workflow": {
-      "source": {
-        "source": "git",
-        "url": "https://github.com/DIO0550/d-market-workflow.git"
-      }
     }
   },
   "hooks": {
@@ -123,6 +115,14 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-git-during-verification-agent.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-git-add-all.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-commit-md-heading.sh\""
           },
           {
             "type": "command",
@@ -168,6 +168,15 @@
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-parent-session-edit.sh\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-protected-branch-edit.sh\""
           }
         ]
       },

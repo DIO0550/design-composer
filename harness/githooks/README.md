@@ -17,13 +17,13 @@ DevContainer の `postCreateCommand`（`.devcontainer/devcontainer.json`）に�
 
 ## 何が走るか
 
-### `pre-push` が呼ぶ検査一覧（計 34 本）
+### `pre-push` が呼ぶ検査一覧（計 37 本）
 
 | カテゴリ | 検査 | 呼んでいるもの |
 | --- | --- | --- |
 | 型・lint・規約検査（9 本） | 型 / lint / format / doc コメント / テスト規約 / import 規約 / story の title / 名指ししたパス / テストヘルパーの重複 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src` |
 | 差分ベース検査と判定表（3 本） | 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加分の検査の判定表 | `.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh` |
-| 検出器・フックの判定表（12 本） | import 規約 / story の title / 名指ししたパス / doc コメント / テストヘルパーの重複 / Issue の作業の種類 / カナリア / push 前検査フック / 編集時検査フック / 作業ツリーを書き換えるサブエージェントの実行中フラグ / 親セッションの編集 / 判定の読み取り・報告・種別照合 | `.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.claude/hooks/lib/issue-flow-kind-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/parent-session-edit-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh` |
+| 検出器・フックの判定表（15 本） | import 規約 / story の title / 名指ししたパス / doc コメント / テストヘルパーの重複 / Issue の作業の種類 / カナリア / push 前検査フック / 編集時検査フック / 作業ツリーを書き換えるサブエージェントの実行中フラグ / 親セッションの編集 / git add -A の拒否 / コミット本文の行頭 `#` の拒否 / 保護ブランチの編集の拒否 / 判定の読み取り・報告・種別照合 | `.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.claude/hooks/lib/issue-flow-kind-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/parent-session-edit-cases.sh`・`.claude/hooks/lib/git-add-all-cases.sh`・`.claude/hooks/lib/commit-md-heading-cases.sh`・`.claude/hooks/lib/protected-branch-edit-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh` |
 | PR 解説ページの判定表（5 本） | 変更の地図 / 解説ページの置き場 / 解説の検査 / 解説ページの枠の検査 / 解説ページの核 | `.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh` |
 | PR 運用・記録・集計（5 本） | 行数のラチェット / 集計の判定表 / sticky コメントの投稿・差し替えの判定表 / PR が閉じる Issue の検査の判定表 / `pre-push` の結果行の判定表 | `harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.github/scripts/upsert-sticky-comment-cases.sh`・`.github/scripts/check-pr-closing-issue-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |
 
@@ -40,7 +40,7 @@ DevContainer の `postCreateCommand`（`.devcontainer/devcontainer.json`）に�
 - **検査本体は `.claude/hooks/lib/` と共有する。** Claude Code のフックは同じスクリプトを走らせる即時フィードバック版とし、二重管理を避ける
 - **`check-added-*` の 2 本とその共有部品は `.github/scripts/` に置く。** base との差分で判定する CI と同じスクリプトをそのまま呼ぶ。[その判定表](../../.github/scripts/check-added-cases.sh)と共有ライブラリ（前提チェックの `.github/scripts/lib/detector-precondition.sh`、異常終了を判別する `.github/scripts/lib/detector-report.sh`、追加行番号を取り出す `.github/scripts/lib/added-lines.sh`）も同じ場所に置く。前提チェックと異常終了判別は層 3 の `.claude/hooks/lib/pre-push-detector.sh` と `.claude/hooks/lib/edit-detector.sh` からも参照し、層ごとの判定のぶれを防ぐ
 - **PR 解説ページの判定表 5 本も `.github/scripts/` に置く。** 対象が `pr-explain.yml`・`pr-explain-list.yml` と `pr-explain` スキルから呼ばれるスクリプトと同じ場所にあるため
-- **行数のラチェット（`count.sh --ratchet`）と判定表（上の表の各 `*-cases.sh` 計 22 本）は、`.claude/hooks/` 側の `pre-push-*.sh` に対応物を持たない。** 判定表をどの層へ置くかと層 3 へ足さない理由は `.claude/hooks/README.md`「カバー範囲と残る穴」を参照
+- **行数のラチェット（`count.sh --ratchet`）と判定表（上の表の各 `*-cases.sh` 計 25 本）は、`.claude/hooks/` 側の `pre-push-*.sh` に対応物を持たない。** 判定表をどの層へ置くかと層 3 へ足さない理由は `.claude/hooks/README.md`「カバー範囲と残る穴」を参照
 
 ### 道具がない環境でのスキップ条件
 
@@ -51,7 +51,7 @@ DevContainer の `postCreateCommand`（`.devcontainer/devcontainer.json`）に�
 | `pnpm` または `node_modules` | 型 / lint / format |
 | `python3`（起動できないものが PATH にある場合を含む） | doc コメント（と判定表） / import 規約（と判定表） / story の title（と判定表） / 名指ししたパス（と判定表） / テストヘルパーの重複（と判定表） / Issue の作業の種類の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加分の検査の判定表 / 変更の地図・解説ページの置き場・解説の検査・解説ページの枠の検査の判定表 |
 | `python3`（同上）または `jq` | カナリアの判定表 / push 前検査フックの判定表 / 編集時検査フックの判定表 |
-| `jq` | sticky コメントの投稿・差し替えの判定表 / PR が閉じる Issue の検査の判定表 |
+| `jq` | sticky コメントの投稿・差し替えの判定表 / PR が閉じる Issue の検査の判定表 / git add -A の拒否の判定表 / コミット本文の行頭 `#` の拒否の判定表 |
 | `python3`（同上）または `node`（起動できないもの・Node 20 未満が PATH にある場合を含む） | 解説ページの核の判定表 |
 
 **飛ばしたことを出力に「飛ばします」と残し、最後の行の件数にも数える。** 通常の成功と同じ出力だと、検査が本当に走った証拠にならないため。

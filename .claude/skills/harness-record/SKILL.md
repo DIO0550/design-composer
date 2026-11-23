@@ -96,7 +96,7 @@ ls "${TMPDIR:-/tmp}"/design-composer-firings-*.log
 - PR 本文には記録した分類の一覧を書く
 - **指摘が 0 件の回でも PR を出す**（記録を残すこと自体が目的）
 - `rules/`・フック・スキルには触れず、差分は `harness/records/` の新規 1 ファイルだけにする
-- **記録 PR には Issue を立てず、`Closes` も書かない**（`AGENTS.md`「着手した Issue は、その回で閉じる」の例外）。この例外は `.github/scripts/check-pr-closing-issue.sh` が「`harness/records/` 配下の新規 1 ファイルのみ」を条件に許可しているため、2 ファイル以上必要になった場合は検査条件も合わせて直す
+- **記録 PR には Issue を立てず、`Closes` も書かない**（`AGENTS.md`「着手した Issue は、その回で閉じる」の例外。`pull-request` スキルの Issue 連携（Issue のリンク必須・`Closes`）も当てない）。この例外は `.github/scripts/check-pr-closing-issue.sh` が「`harness/records/` 配下の新規 1 ファイルのみ」を条件に許可しているため、2 ファイル以上必要になった場合は検査条件も合わせて直す
 
 ---
 
