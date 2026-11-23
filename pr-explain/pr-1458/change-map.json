@@ -4,7 +4,7 @@
   "headBranch": "claude/fervent-bohr-zs1bfi",
   "baseBranch": "main",
   "mergeBase": "7e3ae04baa7c0ae6ce83ee4cd9658911fa5edca6",
-  "head": "21f0c8796041205389dce69f7c540a14d006f570",
+  "head": "df8a3e3fecb08cf3e37721a4fe807d05f1b61558",
   "groups": [
     {
       "label": "ハーネス",
@@ -249,6 +249,36 @@
           "deletions": 1,
           "patch": "@@ -38,7 +38,7 @@ body:\n     id: split\n     attributes:\n       label: 分割の判断\n-      description: 親や元の Issue から分けたなら、その理由とリンク。分けるかどうかを着手してから決めるなら空のままでよい\n+      description: この Issue を子に分けるなら、その軸と理由。分けないなら、その理由。作る時点で決まっていなければ空でよく、決めたら書き足す\n   - type: textarea\n     id: out-of-scope\n     attributes:",
           "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "df8a3e3fecb08cf3e37721a4fe807d05f1b61558",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T05:30:42Z",
+      "subject": "🐛 [Bug Fix]: #1438 バグと調査のテンプレート名を 3 文字超にして作成画面に出るようにする",
+      "body": "- bug.yml の name を「バグ（既存の振る舞いの誤り）」に変える\n- investigation.yml の name を「調査（ソースを変えずに答えを書く）」に変える\n\n背景:\nPR #1458 のレビュー（Devin の bot）で指摘された。GitHub の docs（Configuring issue templates for your repository）に「The name field must be more than 3 characters. If it's not, the template won't be shown when creating an issue.」とあり、2 文字の「バグ」「調査」では作成画面の候補に出なかった。\n\n採用理由:\nほかの 2 本と同じ「名前（括弧で範囲）」の形にして、4 文字以上にした。\n\n影響とトレードオフ:\nSchemaStore のスキーマは name に minLength 1 しか課していないため、計画の確かめ方では捕まえられなかった。リポジトリの外の check.py の shape に「name が 3 文字を超える」を足し、壊し方「名前を 2 文字にする」を mutations に足した（新しい sha256 は 74a880dc…2084）。今の名前に当てると、新しい shape が 2 本とも NG になることを先に確かめた。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NZQHLFV2MuY769VeU",
+      "files": [
+        {
+          "path": ".github/ISSUE_TEMPLATE/bug.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -1,4 +1,4 @@\n-name: バグ\n+name: バグ（既存の振る舞いの誤り）\n description: 既存の振る舞いの誤り。拠り所（仕様書の節や既存のテスト）と食い違う動き\n labels:\n   - bug",
+          "patchLines": 6,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/investigation.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -1,4 +1,4 @@\n-name: 調査\n+name: 調査（ソースを変えずに答えを書く）\n description: ソースを変えずに調べて、答えを Issue に書いて閉じる作業\n body:\n   - type: markdown",
+          "patchLines": 6,
           "truncated": false
         }
       ]
