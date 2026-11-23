@@ -214,6 +214,7 @@
       }
     },
     {
+      // テスト規約を止める。plugins を 2 つの override の両方に書き、domains / services の override をこの後ろに置く理由は .claude/hooks/README.md（#1445 の項）
       "files": ["src/**/*.{ts,tsx,mts,cts}"],
       "plugins": ["jest"],
       "rules": {
@@ -222,6 +223,7 @@
           "doMock": "vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）"
         }],
         "jest/no-hooks": ["error", { "allow": ["afterEach"] }],
+        // jest プラグインが warn で入れる correctness 規則のうち、これだけを外す。理由は .claude/hooks/README.md（#1445 の項）
         "jest/require-to-throw-message": "off"
       }
     },
@@ -242,15 +244,8 @@
           "stubEnv": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
           "importMock": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
           "mockObject": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
-          "useFakeTimers": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
-          "useRealTimers": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
-          "setSystemTime": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
-          "advanceTimersByTime": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
-          "advanceTimersByTimeAsync": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
-          "advanceTimersToNextTimer": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
-          "runAllTimers": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
-          "runAllTimersAsync": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）",
-          "runOnlyPendingTimers": "domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）"
+          "useFakeTimers": "domains / services のテストは時刻を差し替えない。時刻に依る値は引数で渡す（rules/testing.md「モックは原則使わない」）",
+          "setSystemTime": "domains / services のテストは時刻を差し替えない。時刻に依る値は引数で渡す（rules/testing.md「モックは原則使わない」）"
         }]
       }
     }
