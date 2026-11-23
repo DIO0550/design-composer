@@ -82,7 +82,7 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 4. Issue を新規作成するときは、**作成の呼び出しの中で**種類を決める（作った後にラベルを付ける形は、作成の時点で止められる）。行の書式は `.claude/hooks/lib/issue-flow-kind-violations.py` の定数が持ち、欠けた作成は `block-issue-without-flow-kind.sh` が止める（止めた理由に書式が出る）
    - (a) 対話中なら AskUserQuestion で尋ね、人が答えた `flow:*` を作成の呼び出しのラベルに含める
    - (b) 人がいない起動なら、本文に提案の行を書く
-   - (c) `implementation-flow` に通さない Issue（`harness-growth` の介入・棚卸し・tracking の親など）は、本文に通さない行を書く
+   - (c) `implementation-flow` に通さない Issue（`harness-growth` の介入・棚卸し・Epic など）は、本文に通さない行を書く
 5. **親が自分で選んだラベルは付けない・外さない。** 親は提案までとし、決めるのは人にする。選ぶ側と手順が軽くなって得をする側が同じだと軽い側へ倒れる（`implementation-flow` を通さず検証エージェントだけを呼んだ実例が `harness/case-law/process.md`「単発（まだ語彙にしていない）」の pr-473 にある）。「なければ `flow:feature`」のような既定値も同じ理由で置かない（ラベルのない Issue でバグ修正の再現テストが抜けるため）
 6. 途中で種類が変わったら、ここへ戻って確定し直し、フェーズ 3 から計画し直す。古い種類のまま検証した計画は使わない。種類に合わない作業だと分かったときも、3 の手順で人に尋ねる
 
