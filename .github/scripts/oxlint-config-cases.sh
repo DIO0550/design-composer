@@ -17,7 +17,8 @@
 # 判定は、そのケースのファイルに `[Error/` の行があれば 1、無ければ 0 として、規則の名前の見出しと
 # `decide` で突き合わせる。`[Error/` の有無はファイル単位で見るので、**1 ファイルで 1 規則だけを確かめる
 # この表に限り、規則の診断が警告だけなら broken になる**(`error` を `warn` に下げる・`off` を外して警告が
-# 出る、の退行を落とす)。
+# 出る、の退行を落とす)。実物の設定ではこの枝に届かないので、表の前で 1 ケース分の判定(`case_verdict`)に
+# 固定の行を与える自己検査を回す。
 #
 # その前に、oxlint の出力全体を同じ `decide` に掛ける。broken なら出力から規則ごとの判定ができないので、
 # 終了コードと出力を 1 回だけ標準エラーへ出し、全ケースを broken にする。設定が壊れたとき(診断の行を
@@ -30,6 +31,8 @@
 # 表は `期待|規則|ケース名|置くパス|中身` の 1 行 1 ケース。規則は oxlint の unix 形式の出力で末尾の括弧に
 # 入る名前。
 # 置くパスに `{ext}` があれば `ts` `tsx` `mts` `cts` の 4 ケースに展開し、ケース名に ` (.mts)` などを付ける。
+# この 4 つが設定の `files` の glob の拡張子の波括弧(`*.{ts,tsx,mts,cts}`)のどれとも同じ集合かも照合する
+# (配列から 1 つ外しても、ケースが減るだけで緑のまま残るため)。
 # 中身は `printf '%b'` で書く(`\n` が改行になる)。
 #
 # | 期待 | 意味 |
@@ -75,6 +78,41 @@ place_case() {
   case_label+=("$3")
   case_prefix+=("c$number/$4:")
 }
+
+# oxlint の unix 形式の出力で、error の診断の行に当たる正規表現。
+error_line='\[Error/'
+
+# 1 ケース分の出力の行から、表の綴り(deny / pass / miss / broken)の判定を返す。
+#
+# $1 表に書かれた期待
+# $2 規則(unix 形式の出力で末尾の括弧に入る名前)
+# $3 そのケースのファイルについての出力の行
+case_verdict() {
+  local expected="$1" rule="$2" lines="$3" has_error=0
+  grep -qE "$error_line" <<<"$lines" && has_error=1
+  normalize_miss "$expected" "$(decide "$lines" "$has_error" "\\(${rule}\\)\\]\$")"
+}
+
+self_test_head='c1/src/features/probe/__tests__/probe.normal.test.ts:2:1:'
+report broken "$(case_verdict deny no-hooks "$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]")" "自己検査: 規則の警告だけなら broken"
+report deny "$(case_verdict deny no-hooks "$self_test_head Do not use setup or teardown hooks. [Error/eslint-plugin-jest(no-hooks)]")" "自己検査: 規則の error なら deny"
+report broken "$(case_verdict deny no-hooks "$self_test_head Expected { after 'if' condition. [Error/eslint(curly)]")" "自己検査: 別の規則の error だけなら broken"
+report pass "$(case_verdict pass no-hooks "")" "自己検査: 行が無ければ pass"
+
+# 設定の `files` の glob の拡張子の波括弧を 1 本ずつ、中身を並べ替えて空白区切りの 1 行にする。
+extension_sets="$(grep -oE '\.\{[^{}"]*\}"' "$config" | sed -E 's/^\.\{(.*)\}"$/\1/' |
+  while IFS= read -r set; do tr ',' '\n' <<<"$set" | sort | paste -sd ' ' -; done)"
+expected_set="$(printf '%s\n' "${extensions[@]}" | sort | paste -sd ' ' -)"
+mismatched_sets="$(grep -vxF -- "$expected_set" <<<"$extension_sets" | sort -u | paste -sd '/' -)"
+if [ -z "$extension_sets" ]; then
+  echo 'NG   設定の files から拡張子の波括弧を 1 つも拾えなかった'
+  cases_failed=1
+elif [ -n "$mismatched_sets" ]; then
+  printf 'NG   設定の files の拡張子が extensions(%s)と食い違う(%s)\n' "$expected_set" "$mismatched_sets"
+  cases_failed=1
+else
+  printf 'ok   設定の files の拡張子の波括弧 %s 本が extensions と同じ集合\n' "$(wc -l <<<"$extension_sets")"
+fi
 
 cases="$(cat <<'CASES'
 deny|no-restricted-imports|feature で useEffect を import すると止まる|src/features/probe/index.{ext}|import { useEffect } from "react";\nexport const probe = useEffect;
@@ -164,9 +202,6 @@ while IFS='|' read -r expected rule label path body; do
   done
 done <<<"$cases"
 
-# oxlint の unix 形式の出力で、error の診断の行に当たる正規表現。
-error_line='\[Error/'
-
 output="$(cd "$work" && "$oxlint_bin" -f unix . 2>&1)"
 status=$?
 
@@ -183,10 +218,7 @@ for index in "${!case_prefix[@]}"; do
     continue
   fi
   lines="$(awk -v p="${case_prefix[$index]}" 'index($0, p) == 1' <<<"$output")"
-  has_error=0
-  grep -qE "$error_line" <<<"$lines" && has_error=1
-  decision="$(decide "$lines" "$has_error" "\\(${case_rule[$index]}\\)\\]\$")"
-  report "${case_expected[$index]}" "$(normalize_miss "${case_expected[$index]}" "$decision")" "${case_label[$index]}"
+  report "${case_expected[$index]}" "$(case_verdict "${case_expected[$index]}" "${case_rule[$index]}" "$lines")" "${case_label[$index]}"
 done
 report_cases_ran cases "$cases_before"
 
