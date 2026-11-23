@@ -538,15 +538,13 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     };
     void restore();
 
-    const release = () => {
+    const unsubscribe = () => {
       ignore = true;
     };
-    return Option.some(release);
+    return Option.some(unsubscribe);
   }, [ports.appState, ports.ipc]);
   useSubscription(restoreOnStart);
 
-  // Effect Event を Effect の外から参照するが、呼ばれるのは `useSubscription` の effect の
-  // 中だけで、時機は元と同じ。
   const subscribeCommands = useCallback(() => {
     let stopped = false;
     const unsubscribes: (() => void)[] = [];
@@ -587,13 +585,13 @@ export function useDocumentSession(ports: DocumentSessionPorts): Readonly<{
     };
     void start();
 
-    const release = () => {
+    const unsubscribe = () => {
       stopped = true;
-      for (const unsubscribe of unsubscribes) {
-        unsubscribe();
+      for (const unsubscribeSource of unsubscribes) {
+        unsubscribeSource();
       }
     };
-    return Option.some(release);
+    return Option.some(unsubscribe);
   }, [ports.menu, ports.drop]);
   useSubscription(subscribeCommands);
 

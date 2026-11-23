@@ -27,7 +27,7 @@ export type FileRevertControl = Readonly<{
 /**
  * 外部変更で不正になったファイルを、表示中の内容で上書きして捨てる（UI 案 docs/Design
  * Composer.html の Error 画面 `revert file`）。書き込みはボタンの押下から始めるので
- * 購読（`useSubscription`）には置かない。
+ * `useSubscription` に渡す手続きには置かない。
  *
  * 待っていてもエラー一覧が畳まれない。
  *

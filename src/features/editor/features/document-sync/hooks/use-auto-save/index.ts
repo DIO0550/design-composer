@@ -61,7 +61,7 @@ export function useAutoSave({
   const savedDocumentRef = useRef(document);
 
   const scheduleSave = useCallback(() => {
-    // 凍結が解ければ妥当性が変わって購読が張り直され、書き出しの要否から決め直される。
+    // 凍結が解ければ妥当性が変わって張り直され、書き出しの要否から決め直される。
     if (FileValidity.isInvalid(fileValidity)) {
       return Option.none;
     }
@@ -94,11 +94,11 @@ export function useAutoSave({
       setSaveState(DocumentSaveState.Saved);
     }, AutoSaveDebounceMs);
 
-    const cancel = () => {
+    const unsubscribe = () => {
       ignore = true;
       clearTimeout(timer);
     };
-    return Option.some(cancel);
+    return Option.some(unsubscribe);
   }, [ipc, path, document, fileValidity]);
   useSubscription(scheduleSave);
 

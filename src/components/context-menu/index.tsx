@@ -314,9 +314,10 @@ function ContextMenuRoot({
   /*
    * 開いた時点でキーの届く先をメニューへ移す。`autoFocus` は div では効かない
    * （React が `focus()` を呼ぶのはフォーム要素だけ）。
-   * 1 度だけ当てるのは、↑↓ で行へ移したフォーカスを再レンダーで奪い返さないため。
+   * `useCallback` で同じ関数に保つのは、変わると描き直しのたびに当て直し、↑↓ で行へ移した
+   * フォーカスを奪い返すため。
    */
-  const attachMenu = useCallback((menu: HTMLDivElement | null) => {
+  const focusOnMount = useCallback((menu: HTMLDivElement | null) => {
     menuRef.current = menu;
     menu?.focus();
   }, []);
@@ -343,7 +344,7 @@ function ContextMenuRoot({
 
   return (
     <div
-      ref={attachMenu}
+      ref={focusOnMount}
       role="menu"
       aria-label="コンテキストメニュー"
       tabIndex={-1}

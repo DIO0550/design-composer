@@ -28,7 +28,7 @@ export function useElapsed(
    */
   const sinceEpochMs = Option.isSome(since) ? since.value.epochMs : undefined;
 
-  const tick = useCallback(() => {
+  const subscribeSeconds = useCallback(() => {
     if (sinceEpochMs === undefined) {
       return Option.none;
     }
@@ -43,7 +43,7 @@ export function useElapsed(
       }),
     );
   }, [clock, sinceEpochMs]);
-  useSubscription(tick);
+  useSubscription(subscribeSeconds);
 
   return Option.map(since, (from) => Elapsed.create({ from, to: now }));
 }

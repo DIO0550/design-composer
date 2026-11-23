@@ -61,11 +61,9 @@ export function useDocumentReload({
     onReload(DocumentReload.fromParsed(DocumentJson.parse(changed.content)));
   });
 
-  // Effect Event を Effect の外から参照するが、呼ばれるのは `useSubscription` の effect の
-  // 中だけで、時機は元と同じ。
   const watchChanges = useCallback(() => {
     let stopped = false;
-    let unsubscribe: Option<Unsubscribe> = Option.none;
+    let unsubscribeChanged: Option<Unsubscribe> = Option.none;
 
     const start = async (): Promise<void> => {
       // 購読を先に張る。監視の開始を先にすると、購読が成立するまでの間に届いた
@@ -79,7 +77,7 @@ export function useDocumentReload({
         subscribed.value();
         return;
       }
-      unsubscribe = Option.some(subscribed.value);
+      unsubscribeChanged = Option.some(subscribed.value);
 
       const watched = await ipc.watch(path);
       if (!Result.isOk(watched)) {
@@ -90,14 +88,14 @@ export function useDocumentReload({
     };
     void start();
 
-    const release = () => {
+    const unsubscribe = () => {
       stopped = true;
-      if (Option.isSome(unsubscribe)) {
-        unsubscribe.value();
+      if (Option.isSome(unsubscribeChanged)) {
+        unsubscribeChanged.value();
       }
       void ipc.unwatch(path);
     };
-    return Option.some(release);
+    return Option.some(unsubscribe);
   }, [ipc, path]);
   useSubscription(watchChanges);
 
