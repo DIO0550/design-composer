@@ -1,0 +1,1175 @@
+{
+  "version": 2,
+  "pr": 1465,
+  "headBranch": "claude/practical-curie-jhny3j",
+  "baseBranch": "main",
+  "mergeBase": "c48828ca33b8d199d3e5f85888f9a8e0c7083854",
+  "head": "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2",
+  "groups": [
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/canvas-toolbar/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/sidebar",
+      "files": [
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/left-pane-rail/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-list/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "hooks",
+      "files": [
+        {
+          "path": "src/hooks/use-remeasure/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/hooks/use-subscription/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "src(その他)",
+      "files": [
+        {
+          "path": "src/test-setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 5,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/check-test-rules.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/canary-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/commit-md-heading-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/git-add-all-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/parent-session-edit-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/test-rules-scan.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/harness-growth/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-frontend-report.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-lint-suppressions.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-tauri-version-match.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/detector-precondition.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 225,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/storybook-visual-regression.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "AGENTS.md",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/lib/check-tally.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "rules/architecture.md",
+          "changed": false
+        },
+        {
+          "path": "rules/hooks.md",
+          "changed": false
+        },
+        {
+          "path": "rules/testing.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": ".oxlintrc.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 51,
+          "deletions": 15,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "b344df7cf74dec4e83a62e4a9edce2da7a3290a6",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T06:39:13Z",
+      "subject": "🧪 [Tests]: #1445 oxlint の設定の判定表を足し、pre-push と CI の check ジョブにつなぐ",
+      "body": "- .github/scripts/oxlint-config-cases.sh を新設。ケースごとに実物の\n  .oxlintrc.json を写したディレクトリへ 1 ファイルを置き、oxlint を\n  1 回だけ走らせて、期待（deny / pass / miss）と照らす。81 行を\n  {ext}（ts / tsx / mts / cts）で展開して 170 件\n- 対象: テスト規約（vi.mock / vi.doMock、afterEach 以外のフック、\n  domains・services のテストでのモック・スタブ・スパイ・時刻の差し\n  替え）、effect の import の禁止、層の向き、.mts / .cts\n- harness/githooks/pre-push の pnpm が使える区間と、frontend.yml の\n  check ジョブに配線する\n\n背景:\nIssue 1445 の U1 で、テスト規約の 3 規則を oxlint の jest プラグイン\nへ移す。flow:feature の第 1 工程として、移す前の設定で落ちる判定表\nを先に置く。違反 0 件の lint 設定は、override の順や glob を誤って\n規則が消えても緑のままなので、設定が実際に止めるかを判定表で固定\nする。\n\n採用理由:\nmain の設定に当てると 92 件が「deny のはずが pass」で落ち、broken は\n0 件（親が自分で走らせて確かめた）。層の向きで落ちるのは .mts / .cts\nの側だけで、.ts / .tsx は今の振る舞いのまま ok。候補の設定を当てる\nと 170 件すべて ok になることも確かめた。oxlint は 1 回にまとめて\n走らせ、所要は約 3 秒。\n\n代替案:\n- ケースごとに oxlint を走らせる: 約 12 秒かかる\n- 判定表を .claude/hooks/lib/ に置く: そこはフックの部品とその判定表\n  の置き場で、.oxlintrc.json は層 1〜3 が共有する設定\n- CI の rules-check ジョブに置く: pnpm install をしないジョブで、\n  oxlint を node_modules から呼べない\n\n影響とトレードオフ:\nこのコミットの時点では pre-push の「oxlint の設定の判定表」だけが\n落ちる（第 2 工程で設定を直して通す）。miss の行（名前空間で\nimport した vi、分割代入、aroundEach / aroundAll、test.beforeEach\nなど）は意図した取りこぼしとして固定する。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1445\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 192,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,192 @@\n+#!/usr/bin/env bash\n+#\n+# oxlint の設定(`.oxlintrc.json`)の判定表。ケースごとに 1 ファイルを置いて実物の oxlint で lint し、\n+# 規則ごとに deny / pass / miss が期待どおりかを 1 コマンドで確かめる。\n+#\n+# 使い方: bash .github/scripts/oxlint-config-cases.sh\n+# 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n+#\n+# **表を置くのは、設定の誤りが「黙って何も止めない」形で現れるから。** override の glob の写し忘れ・\n+# `plugins` の書き忘れ・オプションの形の誤りでも oxlint はエラーを出さず、`src` に違反が無い限り\n+# `pnpm run lint` は緑のまま残る。\n+#\n+# **ケースごとに `$work/c<番号>/` へ実物の設定を写してファイルを 1 つ置き、oxlint は `$work` で 1 回だけ\n+# 走らせる。** 入れ子の設定はその下のファイルにだけ効くので、1 回の出力をパスの頭でケースへ振り分けられる。\n+# ケースごとに起動すると、起動の時間がケースの数だけ積もる。\n+#\n+# 判定は、そのケースのファイルに `[Error/` の行があれば 1、無ければ 0 として、規則の名前の見出しと\n+# `decide` で突き合わせる。**規則の診断が警告だけなら broken にする**(`error` を `warn` に下げる・`off` を\n+# 外して警告が出る、の退行を落とす)。oxlint の終了コードが 0 / 1 以外か、1 なのに `[Error/` の行が 1 つも\n+# 無いときは、設定を読めていないので全ケースを broken にする(設定が壊れると、診断の行を出さずに exit 1 で\n+# 終わる)。\n+#\n+# 表は `期待|規則|ケース名|置くパス|中身` の 1 行 1 ケース。規則は oxlint の unix 形式の出力で末尾の括弧に\n+# 入る名前(`no-restricted-imports` / `no-restricted-jest-methods` / `no-hooks` / `require-to-throw-message`)。\n+# 置くパスに `{ext}` があれば `ts` `tsx` `mts` `cts` の 4 ケースに展開し、ケース名に ` (.mts)` などを付ける。\n+# 中身は `printf '%b'` で書く(`\\n` が改行になる)。\n+#\n+# | 期待 | 意味 |\n+# | --- | --- |\n+# | `deny` | その規則の error として報告してほしい |\n+# | `pass` | 報告してはいけない(誤検知したら信用を失う側) |\n+# | `miss` | **意図した取りこぼし。** 規則が見ない書き方。`pass` と分けてあるのは、並べると次に読む人がバグと\n+#            読んで、取りこぼしにした理由ごと消しにいくため |\n+set -uo pipefail\n+\n+scripts_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n+repo_root=\"$(cd \"$scripts_dir/../..\" && pwd)\"\n+config=\"$repo_root/.oxlintrc.json\"\n+oxlint_bin=\"$repo_root/node_modules/.bin/oxlint\"\n+work=\"$(mktemp -d)\" || exit 1\n+trap 'rm -rf \"$work\"' EXIT\n+\n+source \"$repo_root/.claude/hooks/lib/cases-report.sh\"\n+\n+extensions=(ts tsx mts cts)\n+\n+# 展開したケースごとの期待・規則・ケース名・出力の行の頭(`c<番号>/<パス>:`)。\n+case_expected=()\n+case_rule=()\n+case_label=()\n+case_prefix=()\n+\n+# 1 ケースを `$work/c<番号>/` に置き、展開したケースの配列に足す。\n+#\n+# $1 期待\n+# $2 規則\n+# $3 ケース名\n+# $4 置くパス(`{ext}` は展開済み)\n+# $5 中身\n+place_case() {\n+  local number=$((${#case_prefix[@]} + 1))\n+  local dir=\"$work/c$number\"\n+  mkdir -p \"$dir/$(dirname \"$4\")\"\n+  cp \"$config\" \"$dir/.oxlintrc.json\"\n+  printf '%b\\n' \"$5\" >\"$dir/$4\"\n+  case_expected+=(\"$1\")\n+  case_rule+=(\"$2\")\n+  case_label+=(\"$3\")\n+  case_prefix+=(\"c$number/$4:\")\n+}\n+\n+cases=\"$(cat <<'CASES'\n+deny|no-restricted-imports|feature で useEffect を import すると止まる|src/features/probe/index.{ext}|import { useEffect } from \"react\";\\nexport const probe = useEffect;\n+deny|no-restricted-imports|feature で useLayoutEffect を import すると止まる|src/features/probe/index.ts|import { useLayoutEffect } from \"react\";\\nexport const probe = useLayoutEffect;\n+deny|no-restricted-imports|feature で useInsertionEffect を import すると止まる|src/features/probe/index.ts|import { useInsertionEffect } from \"react\";\\nexport const probe = useInsertionEffect;\n+deny|no-restricted-imports|feature で React を default import すると止まる|src/features/probe/index.{ext}|import React from \"react\";\\nexport const probe = React;\n+pass|no-restricted-imports|feature で useState は import できる|src/features/probe/index.ts|import { useState } from \"react\";\\nexport const probe = useState;\n+deny|no-restricted-imports|components で useEffect を import すると止まる|src/components/probe/index.{ext}|import { useEffect } from \"react\";\\nexport const probe = useEffect;\n+deny|no-restricted-imports|components で React を default import すると止まる|src/components/probe/index.tsx|import React from \"react\";\\nexport const probe = React;\n+deny|no-restricted-imports|components で domains を import すると止まる|src/components/probe/index.{ext}|import { probe } from \"@/domains/unit/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|許可していない hooks で useEffect を import すると止まる|src/hooks/use-probe/index.{ext}|import { useEffect } from \"react\";\\nexport const probe = useEffect;\n+deny|no-restricted-imports|許可したモジュールのテストで useEffect を import すると止まる|src/hooks/use-subscription/__tests__/use-subscription.normal.test.{ext}|import { useEffect } from \"react\";\\nexport const probe = useEffect;\n+deny|no-restricted-imports|use-subscription でも index.tsx なら useEffect は止まる|src/hooks/use-subscription/index.tsx|import { useEffect } from \"react\";\\nexport const probe = useEffect;\n+pass|no-restricted-imports|use-subscription の index.ts は useEffect を import できる|src/hooks/use-subscription/index.ts|import { useEffect, useLayoutEffect } from \"react\";\\nexport const probe = [useEffect, useLayoutEffect];\n+pass|no-restricted-imports|use-remeasure の index.ts は useEffect を import できる|src/hooks/use-remeasure/index.ts|import { useEffect, useLayoutEffect } from \"react\";\\nexport const probe = [useEffect, useLayoutEffect];\n+deny|no-restricted-imports|use-subscription の index.ts でも domains は import できない|src/hooks/use-subscription/index.ts|import { probe } from \"@/domains/unit/px\";\\nexport const p = probe;\n+deny|no-restricted-imports|hooks で domains を import すると止まる|src/hooks/use-probe/index.{ext}|import { probe } from \"@/domains/unit/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|utils で domains を import すると止まる|src/utils/Probe.{ext}|import { probe } from \"@/domains/unit/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|types で domains を import すると止まる|src/types/Probe.{ext}|import type { Probe } from \"@/domains/unit/probe\";\\nexport type P = Probe;\n+deny|no-restricted-imports|libs で useEffect を import すると止まる|src/libs/probe/index.{ext}|import { useEffect } from \"react\";\\nexport const probe = useEffect;\n+deny|no-restricted-imports|libs で React を default import すると止まる|src/libs/probe/index.ts|import React from \"react\";\\nexport const probe = React;\n+deny|no-restricted-imports|libs で services を import すると止まる|src/libs/probe/index.{ext}|import { probe } from \"@/services/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|domains で libs を import すると止まる|src/domains/session/probe/index.{ext}|import { probe } from \"@/libs/probe\";\\nexport const p = probe;\n+pass|no-restricted-imports|domains のテストは libs を import できる|src/domains/session/probe/__tests__/probe.normal.test.{ext}|import { probe } from \"@/libs/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|domains のテストで services を import すると止まる|src/domains/session/probe/__tests__/probe.normal.test.{ext}|import { probe } from \"@/services/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|unit で dcmp を import すると止まる|src/domains/unit/probe/index.{ext}|import { probe } from \"@/domains/dcmp/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|unit のテストで dcmp を import すると止まる|src/domains/unit/probe/__tests__/probe.normal.test.{ext}|import { probe } from \"@/domains/dcmp/probe\";\\nexport const p = probe;\n+pass|no-restricted-imports|dcmp は unit を import できる|src/domains/dcmp/probe/index.{ext}|import { probe } from \"@/domains/unit/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|dcmp で compiled を import すると止まる|src/domains/dcmp/probe/index.{ext}|import { probe } from \"@/domains/compiled/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|dcmp のテストで compiled を import すると止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.{ext}|import { probe } from \"@/domains/compiled/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|compiled で session を import すると止まる|src/domains/compiled/probe/index.{ext}|import { probe } from \"@/domains/session/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|compiled のテストで session を import すると止まる|src/domains/compiled/probe/__tests__/probe.normal.test.{ext}|import { probe } from \"@/domains/session/probe\";\\nexport const p = probe;\n+deny|no-restricted-imports|services で features を import すると止まる|src/services/probe/index.{ext}|import { probe } from \"@/features/probe\";\\nexport const p = probe;\n+deny|no-restricted-jest-methods|feature のテストで vi.mock を使うと止まる|src/features/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nvi.mock(\"./m\");\n+deny|no-restricted-jest-methods|feature のテストで vi.doMock を使うと止まる|src/features/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.doMock(\"./m\");\n+deny|no-restricted-jest-methods|libs のテストでも vi.mock は止まる|src/libs/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.mock(\"./m\");\n+deny|no-restricted-jest-methods|vi の別名 vitest で vi.mock を呼んでも止まる|src/features/probe/__tests__/probe.normal.test.ts|import { vitest } from \"vitest\";\\nvitest.mock(\"./m\");\n+deny|no-restricted-jest-methods|テストの土台 src/test-setup.ts で vi.mock を使うと止まる|src/test-setup.ts|import { vi } from \"vitest\";\\nvi.mock(\"./m\");\n+deny|no-restricted-jest-methods|domains のテストで vi.mock を使うと止まる|src/domains/unit/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nvi.mock(\"./m\");\n+deny|no-restricted-jest-methods|domains のテストで vi.doMock を使うと止まる|src/domains/unit/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.doMock(\"./m\");\n+deny|no-restricted-jest-methods|services のテストで vi.mock を使うと止まる|src/services/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.mock(\"./m\");\n+deny|no-restricted-jest-methods|feature の domains のテストで vi.mock を使うと止まる|src/features/probe/domains/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.mock(\"./m\");\n+deny|no-restricted-jest-methods|domains のテストで vi.fn を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nexport const f = vi.fn();\n+deny|no-restricted-jest-methods|domains の共有フィクスチャで vi.fn を使うと止まる|src/domains/__tests__/probe.ts|import { vi } from \"vitest\";\\nexport const f = vi.fn();\n+deny|no-restricted-jest-methods|services のテストで vi.fn を使うと止まる|src/services/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nexport const f = vi.fn();\n+deny|no-restricted-jest-methods|feature の domains のテストで vi.fn を使うと止まる|src/features/probe/domains/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nexport const f = vi.fn();\n+deny|no-restricted-jest-methods|子 feature の domains のテストで vi.fn を使うと止まる|src/features/probe/features/child/domains/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const f = vi.fn();\n+deny|no-restricted-jest-methods|domains のテストで vi.spyOn を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const f = vi.spyOn(Math, \"max\");\n+deny|no-restricted-jest-methods|domains のテストで vi.stubGlobal を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.stubGlobal(\"probe\", 1);\n+deny|no-restricted-jest-methods|domains のテストで vi.stubEnv を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.stubEnv(\"PROBE\", \"1\");\n+deny|no-restricted-jest-methods|domains のテストで vi.importMock を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const m = vi.importMock(\"./m\");\n+deny|no-restricted-jest-methods|domains のテストで vi.mockObject を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const m = vi.mockObject({});\n+deny|no-restricted-jest-methods|domains のテストで vi.useFakeTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.useFakeTimers();\n+deny|no-restricted-jest-methods|domains のテストで vi.useRealTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.useRealTimers();\n+deny|no-restricted-jest-methods|domains のテストで vi.setSystemTime を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.setSystemTime(0);\n+deny|no-restricted-jest-methods|domains のテストで vi.advanceTimersByTime を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.advanceTimersByTime(1);\n+deny|no-restricted-jest-methods|domains のテストで vi.advanceTimersByTimeAsync を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const p = vi.advanceTimersByTimeAsync(1);\n+deny|no-restricted-jest-methods|domains のテストで vi.advanceTimersToNextTimer を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.advanceTimersToNextTimer();\n+deny|no-restricted-jest-methods|domains のテストで vi.runAllTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.runAllTimers();\n+deny|no-restricted-jest-methods|domains のテストで vi.runAllTimersAsync を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const p = vi.runAllTimersAsync();\n+deny|no-restricted-jest-methods|domains のテストで vi.runOnlyPendingTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.runOnlyPendingTimers();\n+pass|no-restricted-jest-methods|feature のテストでは vi.fn を使える|src/features/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nexport const f = vi.fn();\n+pass|no-restricted-jest-methods|hooks のテストでは vi.fn を使える|src/hooks/use-probe/__tests__/use-probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const f = vi.fn();\n+pass|no-restricted-jest-methods|feature のテストでは時刻を偽物に差し替えられる|src/features/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.useFakeTimers();\\nvi.setSystemTime(0);\n+miss|no-restricted-jest-methods|名前空間で import した vi の mock は見ない|src/features/probe/__tests__/probe.normal.test.ts|import * as V from \"vitest\";\\nV.vi.mock(\"./m\");\n+miss|no-restricted-jest-methods|分割代入で取り出した mock は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nconst { mock } = vi;\\nmock(\"./m\");\n+deny|no-hooks|テストで beforeEach を使うと止まる|src/features/probe/__tests__/probe.normal.test.{ext}|import { beforeEach } from \"vitest\";\\nbeforeEach(() => {});\n+deny|no-hooks|テストで beforeAll を使うと止まる|src/features/probe/__tests__/probe.normal.test.ts|import { beforeAll } from \"vitest\";\\nbeforeAll(() => {});\n+deny|no-hooks|テストで afterAll を使うと止まる|src/features/probe/__tests__/probe.normal.test.ts|import { afterAll } from \"vitest\";\\nafterAll(() => {});\n+deny|no-hooks|別名で import した beforeEach も止まる|src/features/probe/__tests__/probe.normal.test.ts|import { beforeEach as setup } from \"vitest\";\\nsetup(() => {});\n+deny|no-hooks|domains のテストで beforeEach を使うと止まる|src/domains/unit/probe/__tests__/probe.normal.test.ts|import { beforeEach } from \"vitest\";\\nbeforeEach(() => {});\n+deny|no-hooks|テストの土台 src/test-setup.ts で beforeEach を使うと止まる|src/test-setup.ts|import { beforeEach } from \"vitest\";\\nbeforeEach(() => {});\n+pass|no-hooks|テストで afterEach は使える|src/features/probe/__tests__/probe.normal.test.{ext}|import { afterEach } from \"vitest\";\\nafterEach(() => {});\n+pass|no-hooks|テストの土台 src/test-setup.ts で afterEach は使える|src/test-setup.ts|import { afterEach } from \"vitest\";\\nafterEach(() => {});\n+pass|no-hooks|テストの中の onTestFinished は使える|src/features/probe/__tests__/probe.normal.test.ts|import { expect, onTestFinished, test } from \"vitest\";\\ntest(\"probe\", () => {\\n  onTestFinished(() => {});\\n  expect(1).toBe(1);\\n});\n+miss|no-hooks|aroundEach は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { aroundEach } from \"vitest\";\\naroundEach(async (run) => {\\n  await run();\\n});\n+miss|no-hooks|aroundAll は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { aroundAll } from \"vitest\";\\naroundAll(async (run) => {\\n  await run();\\n});\n+miss|no-hooks|名前空間で import した beforeEach は見ない|src/features/probe/__tests__/probe.normal.test.ts|import * as V from \"vitest\";\\nV.beforeEach(() => {});\n+miss|no-hooks|test.beforeEach は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { test } from \"vitest\";\\ntest.beforeEach(() => {});\n+miss|no-hooks|it.beforeAll は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { it } from \"vitest\";\\nit.beforeAll(() => {});\n+miss|no-hooks|test.extend で作ったテストの beforeEach は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { test } from \"vitest\";\\ntest.extend({}).beforeEach(() => {});\n+pass|require-to-throw-message|toThrow にメッセージを渡さなくてもよい|src/features/probe/__tests__/probe.normal.test.ts|import { expect, test } from \"vitest\";\\ntest(\"probe\", () => {\\n  expect(() => JSON.parse(\"{\")).toThrow();\\n});\n+CASES\n+)\"\n+\n+while IFS='|' read -r expected rule label path body; do\n+  [ -n \"$label\" ] || continue\n+  if [[ \"$path\" != *\"{ext}\"* ]]; then\n+    place_case \"$expected\" \"$rule\" \"$label\" \"$path\" \"$body\"\n+    continue\n+  fi\n+  for ext in \"${extensions[@]}\"; do\n+    place_case \"$expected\" \"$rule\" \"$label (.$ext)\" \"${path//\\{ext\\}/$ext}\" \"$body\"\n+  done\n+done <<<\"$cases\"\n+\n+output=\"$(cd \"$work\" && \"$oxlint_bin\" -f unix . 2>&1)\"\n+status=$?\n+\n+# 設定を読めていないなら、どのケースのファイルにも診断が無く、規則ごとの判定ができない。\n+config_unread=\"\"\n+case \"$status\" in\n+  0) ;;\n+  1) grep -q '\\[Error/' <<<\"$output\" || config_unread=1 ;;\n+  *) config_unread=1 ;;\n+esac\n+\n+cases_before=$cases_reported\n+for index in \"${!case_prefix[@]}\"; do\n+  if [ -n \"$config_unread\" ]; then\n+    report \"${case_expected[$index]}\" broken \"${case_label[$index]}\"\n+    continue\n+  fi\n+  lines=\"$(awk -v p=\"${case_prefix[$index]}\" 'index($0, p) == 1' <<<\"$output\")\"\n+  has_error=0\n+  grep -q '\\[Error/' <<<\"$lines\" && has_error=1\n+  decision=\"$(decide \"$lines\" \"$has_error\" \"\\\\(${case_rule[$index]}\\\\)\\\\]\\$\")\"\n+  report \"${case_expected[$index]}\" \"$(normalize_miss \"${case_expected[$index]}\" \"$decision\")\" \"${case_label[$index]}\"\n+done\n+report_cases_ran cases \"$cases_before\"\n+\n+exit \"$cases_failed\"",
+          "patchLines": 193,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "patch": "@@ -50,6 +50,11 @@ jobs:\n       - name: oxlint\n         run: pnpm exec oxlint\n \n+      # 実物の oxlint を node_modules から呼ぶので、依存を入れない rules-check ではなくここに置く\n+      # (.claude/hooks/README.md「判定表をどの層へ置くか」)。\n+      - name: oxlint の設定の判定表\n+        run: bash .github/scripts/oxlint-config-cases.sh\n+\n       # json レポーターでテスト実行時間(ファイル別 / テスト別)も計測する\n       - name: Test with coverage\n         run: >-",
+          "patchLines": 12,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -24,6 +24,8 @@ pnpm_usable || skip_following_checks \"pnpm / node_modules が無い\"\n run_check \"typecheck\" pnpm run typecheck\n run_check \"oxlint\" pnpm run lint\n run_check \"biome\" pnpm exec biome check\n+# .oxlintrc.json の判定表。node_modules の oxlint を呼ぶので、ここに置く。\n+run_check \"oxlint の設定の判定表\" bash .github/scripts/oxlint-config-cases.sh\n resume_checks\n \n run_check \"テスト規約\" bash .claude/hooks/lib/test-rules-scan.sh src",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "07b2129cb5c7c6f0d336d1488a07bed9d4f78fa6",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T06:54:42Z",
+      "subject": "🔧 [Config]: #1445 テスト規約の 3 規則を oxlint の jest プラグインで止め、override の glob を .mts / .cts まで広げる",
+      "body": "- src 全体の jest override を足す: vi.mock / vi.doMock と、afterEach\n  以外のフック（no-hooks）を止める。require-to-throw-message は off\n- domains / services / features の domains/ の jest override を足す:\n  さらに fn / spyOn / stubGlobal / stubEnv / importMock / mockObject と\n  時刻の差し替え 9 メソッドを止める\n- 層ごとの override 12 個の glob を *.{ts,tsx,mts,cts} にまとめる\n\n背景:\nIssue 1445 の U1。rules/testing.md の「vi.mock 禁止」「domains・\nservices のテストでのモック禁止」「beforeEach 禁止」は文章だけで、\n機械では止めていなかった。Issue 1444 のレビューで、override の\nglob が .mts / .cts を見ていないことも分かった。\n\n採用理由:\n第 1 工程（b344df7）の判定表の 92 件の RED を、設定を 1 か所ずつ\n直しながら通した（34 サイクル、後退 0、broken 0）。守らないと壊れる\n約束が 4 つあり、どれも判定表が落とす。plugins を両方の override に\n書く / オプションを {メソッド: メッセージ} で直に渡す / 2 つ目にも\nmock・doMock を並べる / 2 つ目を後ろに置く。\n\n代替案:\n- vitest プラグイン: 同じ働きの規則が無く、有効にすると別の規則で\n  警告が 362 件出る\n- トップレベルの plugins に jest: 既定のプラグインまで置き換わる\n- .mts / .cts を tsconfig 側で締め出す: import された .mts は型検査に\n  入る\n- aroundEach / aroundAll も止める: 13 の override すべてに写す必要が\n  あり、使用 0 件なので miss として残す\n\n影響とトレードオフ:\nsrc の違反は 0 件（pnpm run lint 0 / 0）。jest の correctness 規則\n（9 つ）は warn で入る。test.extend で作ったテストに誤った warn が\n出る。名前空間で import した vi、分割代入、test.beforeEach などは\n止められない（判定表の miss の行）。oxlint の外の検査は .mts /\n.cts をまだ見ない（Issue 1463）。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1445\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".oxlintrc.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 56,
+          "deletions": 15,
+          "patch": "@@ -9,7 +9,7 @@\n   },\n   \"overrides\": [\n     {\n-      \"files\": [\"src/**/*.ts\", \"src/**/*.tsx\"],\n+      \"files\": [\"src/**/*.{ts,tsx,mts,cts}\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"paths\": [\n           { \"name\": \"react\", \"importNames\": [\"useEffect\", \"useLayoutEffect\", \"useInsertionEffect\"], \"message\": \"effect は src/hooks の用途別フックを通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）\" },\n@@ -18,7 +18,7 @@\n       }\n     },\n     {\n-      \"files\": [\"src/domains/**/*.ts\", \"src/domains/**/*.tsx\"],\n+      \"files\": [\"src/domains/**/*.{ts,tsx,mts,cts}\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n           { \"group\": [\"**/services/**\", \"@/services/**\", \"@/services\"], \"message\": \"domains は services を import できません（rules/architecture.md「依存方向のルール」）\" },\n@@ -30,7 +30,7 @@\n       }\n     },\n     {\n-      \"files\": [\"src/domains/unit/**/*.ts\", \"src/domains/unit/**/*.tsx\"],\n+      \"files\": [\"src/domains/unit/**/*.{ts,tsx,mts,cts}\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n           { \"group\": [\"**/services/**\", \"@/services/**\", \"@/services\"], \"message\": \"domains は services を import できません（rules/architecture.md「依存方向のルール」）\" },\n@@ -43,7 +43,7 @@\n       }\n     },\n     {\n-      \"files\": [\"src/domains/dcmp/**/*.ts\", \"src/domains/dcmp/**/*.tsx\"],\n+      \"files\": [\"src/domains/dcmp/**/*.{ts,tsx,mts,cts}\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n           { \"group\": [\"**/services/**\", \"@/services/**\", \"@/services\"], \"message\": \"domains は services を import できません（rules/architecture.md「依存方向のルール」）\" },\n@@ -56,7 +56,7 @@\n       }\n     },\n     {\n-      \"files\": [\"src/domains/compiled/**/*.ts\", \"src/domains/compiled/**/*.tsx\"],\n+      \"files\": [\"src/domains/compiled/**/*.{ts,tsx,mts,cts}\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n           { \"group\": [\"**/services/**\", \"@/services/**\", \"@/services\"], \"message\": \"domains は services を import できません（rules/architecture.md「依存方向のルール」）\" },\n@@ -69,7 +69,7 @@\n       }\n     },\n     {\n-      \"files\": [\"src/domains/**/__tests__/**/*.ts\", \"src/domains/**/__tests__/**/*.tsx\"],\n+      \"files\": [\"src/domains/**/__tests__/**/*.{ts,tsx,mts,cts}\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n           { \"group\": [\"**/services/**\", \"@/services/**\", \"@/services\"], \"message\": \"domains は services を import できません（rules/architecture.md「依存方向のルール」）\" },\n@@ -80,7 +80,7 @@\n       }\n     },\n     {\n-      \"files\": [\"src/domains/unit/**/__tests__/**/*.ts\", \"src/domains/unit/**/__tests__/**/*.tsx\"],\n+      \"files\": [\"src/domains/unit/**/__tests__/**/*.{ts,tsx,mts,cts}\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n           { \"group\": [\"**/services/**\", \"@/services/**\", \"@/services\"], \"message\": \"domains は services を import できません（rules/architecture.md「依存方向のルール」）\" },\n@@ -92,7 +92,7 @@\n       }\n     },\n     {\n-      \"files\": [\"src/domains/dcmp/**/__tests__/**/*.ts\", \"src/domains/dcmp/**/__tests__/**/*.tsx\"],\n+      \"files\": [\"src/domains/dcmp/**/__tests__/**/*.{ts,tsx,mts,cts}\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n           { \"group\": [\"**/services/**\", \"@/services/**\", \"@/services\"], \"message\": \"domains は services を import できません（rules/architecture.md「依存方向のルール」）\" },\n@@ -104,7 +104,7 @@\n       }\n     },\n     {\n-      \"files\": [\"src/domains/compiled/**/__tests__/**/*.ts\", \"src/domains/compiled/**/__tests__/**/*.tsx\"],\n+      \"files\": [\"src/domains/compiled/**/__tests__/**/*.{ts,tsx,mts,cts}\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n           { \"group\": [\"**/services/**\", \"@/services/**\", \"@/services\"], \"message\": \"domains は services を import できません（rules/architecture.md「依存方向のルール」）\" },\n@@ -116,7 +116,7 @@\n       }\n     },\n     {\n-      \"files\": [\"src/services/**/*.ts\", \"src/services/**/*.tsx\"],\n+      \"files\": [\"src/services/**/*.{ts,tsx,mts,cts}\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n           { \"group\": [\"**/features/**\", \"@/features/**\", \"@/features\"], \"message\": \"services は features を import できません（rules/architecture.md「依存方向のルール」）\" },\n@@ -130,10 +130,10 @@\n     },\n     {\n       \"files\": [\n-        \"src/components/**/*.ts\", \"src/components/**/*.tsx\",\n-        \"src/hooks/**/*.ts\", \"src/hooks/**/*.tsx\",\n-        \"src/utils/**/*.ts\", \"src/utils/**/*.tsx\",\n-        \"src/types/**/*.ts\", \"src/types/**/*.tsx\"\n+        \"src/components/**/*.{ts,tsx,mts,cts}\",\n+        \"src/hooks/**/*.{ts,tsx,mts,cts}\",\n+        \"src/utils/**/*.{ts,tsx,mts,cts}\",\n+        \"src/types/**/*.{ts,tsx,mts,cts}\"\n       ],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n@@ -161,7 +161,7 @@\n       }\n     },\n     {\n-      \"files\": [\"src/libs/**/*.ts\", \"src/libs/**/*.tsx\"],\n+      \"files\": [\"src/libs/**/*.{ts,tsx,mts,cts}\"],\n       \"rules\": {\n         \"no-restricted-imports\": [\"error\", { \"patterns\": [\n           { \"group\": [\"**/services/**\", \"@/services/**\", \"@/services\"], \"message\": \"libs は services を import できません（rules/architecture.md「依存方向のルール」）\" },\n@@ -212,6 +212,47 @@\n       \"rules\": {\n         \"react/forbid-elements\": \"off\"\n       }\n+    },\n+    {\n+      \"files\": [\"src/**/*.{ts,tsx,mts,cts}\"],\n+      \"plugins\": [\"jest\"],\n+      \"rules\": {\n+        \"jest/no-restricted-jest-methods\": [\"error\", {\n+          \"mock\": \"vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）\",\n+          \"doMock\": \"vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）\"\n+        }],\n+        \"jest/no-hooks\": [\"error\", { \"allow\": [\"afterEach\"] }],\n+        \"jest/require-to-throw-message\": \"off\"\n+      }\n+    },\n+    {\n+      \"files\": [\n+        \"src/domains/**/*.{ts,tsx,mts,cts}\",\n+        \"src/services/**/*.{ts,tsx,mts,cts}\",\n+        \"src/features/**/domains/**/*.{ts,tsx,mts,cts}\"\n+      ],\n+      \"plugins\": [\"jest\"],\n+      \"rules\": {\n+        \"jest/no-restricted-jest-methods\": [\"error\", {\n+          \"mock\": \"vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）\",\n+          \"doMock\": \"vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）\",\n+          \"fn\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"spyOn\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"stubGlobal\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"stubEnv\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"importMock\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"mockObject\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"useFakeTimers\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"useRealTimers\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"setSystemTime\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"advanceTimersByTime\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"advanceTimersByTimeAsync\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"advanceTimersToNextTimer\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"runAllTimers\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"runAllTimersAsync\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n+          \"runOnlyPendingTimers\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\"\n+        }]\n+      }\n     }\n   ]\n }",
+          "patchLines": 162,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "586d56b60253beb48d6ecff112a358874bcb9346",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T06:54:42Z",
+      "subject": "📝 [Doc]: #1445 lint で止まるようになったテスト規約の 2 行を rules/testing.md から削る",
+      "body": "- 「vi.mock によるモジュール丸ごと差し替えは禁止」を削る\n- 「beforeEach での変数共有・ミューテーションは禁止…」を削る\n- 「domains / services のテストでモック・スタブ・スパイは全面禁止」は\n  lint で判定できない残り（手書きのスタブも使わず実物で確かめる。\n  必要に感じたら設計を見直す）だけの 1 行に縮める\n- always_loaded_cap を 755 から 753 に下げる\n\n背景:\n前のコミットで、vi.mock / doMock、afterEach 以外のフック、domains・\nservices のテストでのモック・スタブ・スパイ・時刻の差し替えを oxlint\nが止めるようになった。逆ピラミッドの考え方に沿って、機械が担う文は\n常時ロードから削る。\n\n採用理由:\ndomains / services の行を丸ごと消すと、lint で止めていない「手書きの\nスタブ」と「設計を見直す」という指針まで規約から外れる（plan-reviewer\nの指摘）。判定できない残りだけを残す。次の行の「でも」もそのまま\n読める。\n\n代替案:\n- afterEach はクリーンアップのときだけ、の行も消す: 目的を lint は\n  判定できない\n- toHaveBeenCalledWith の行も消す: 外部境界かどうかは意図で決まる\n\n影響とトレードオフ:\nrules/testing.md は 81 行から 79 行、常時ロードは 753 行。節名\n「モックは原則使わない」は変えないので、判例・エージェント定義の\n参照はそのまま。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1445\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -39,7 +39,7 @@ cd \"$(dirname \"$0\")\"\n \n # 常時ロード(AGENTS.md + rules/)と harness-growth スキルの行数の予算。\n # ラチェット: 足すなら同量削り、縮めたら実測に合わせて下げる。上げない。\n-always_loaded_cap=755\n+always_loaded_cap=753\n growth_skill_cap=88\n \n # 記録を読む awk が共有する関数。",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": "rules/testing.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 3,
+          "patch": "@@ -56,10 +56,9 @@\n \n 依存は実物を使い、相互作用（呼び出し回数・引数）ではなく**結果の状態・戻り値を検証**する。\n \n-- `domains/` `services/` のテストでモック・スタブ・スパイの使用は**全面禁止**（純粋関数なので実物で検証できる。モックが必要に感じたら設計を見直す）\n+- `domains/` `services/` のテストでは手書きのスタブも使わず実物で確かめる。必要に感じたら設計を見直す\n - features / hooks / components のテストでも、`domains/` `services/` は必ず実物を使う\n - 例外として代替してよいのは**プロセス外・制御不能な境界のみ**（`libs/` が包む外部 I/O: Tauri API、localStorage、fetch、時刻、乱数）。この場合も自動モックより単純なテスト用実装（フェイク）を優先する\n-- `vi.mock` によるモジュール丸ごと差し替えは禁止\n - 内部実装の呼び出し検証（`toHaveBeenCalledWith` 等）は外部境界の検証以外で使わない\n \n ## テストの書き方: ネスト禁止\n@@ -67,7 +66,6 @@\n Kent C. Dodds の \"Avoid Nesting when you're Testing\" に従う。\n \n - `describe` のネストは禁止（ファイル直下に `test` / `it` をフラットに並べ、グルーピングが必要ならカテゴリファイルを分ける）\n-- `beforeEach` での変数共有・ミューテーションは禁止。必要なセットアップは**各テスト内に書く**か、セットアップ関数（`setup()`、ファクトリ）を呼び出す\n - テストは 1 つだけ読めば前提がすべて分かる状態にする\n - クリーンアップが必要な場合のみ `afterEach` を許可（リソース解放など、テストの理解に影響しないもの）\n ",
+          "patchLines": 20,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "2eba99d88918eb15aab5a4f8ee8b354025293b68",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T06:54:42Z",
+      "subject": "📝 [Doc]: #1445 README に oxlint の設定の判定表と jest の override の約束・残る穴を書く",
+      "body": "- .claude/hooks/README.md: 判定表の本数・層の表・check ジョブに置く\n  理由・所要時間（約 2.8 秒）を足す。Issue 1445 の項を新設し、止める\n  もの・設定の 4 つの約束・判定表が見る範囲と見ない範囲・jest の\n  correctness 規則・.mts / .cts（oxlint の外は Issue 1463）・残る穴\n  を書く\n- Issue 1444 の項の「落ちる検査は無い」を、判定表が落とす形に直す\n- domains から libs の辺が warn だという古い記述を、今の設定（error、\n  テストだけ別の override で許す）に合わせる\n- harness/githooks/README.md: 検査の本数を 38 本に、判定表を「検出器・\n  フックの判定表」の区分に入れ、.github/scripts/ に置く理由を足す\n\n背景:\n前のコミットで判定表と jest の override が入った。設定のコメントに\n理由を書かない代わりに、守らないと壊れる約束と残る穴を README に\n集める方針。\n\n採用理由:\n約束 4 つは、どれも崩すと判定表が落ちることを実測した（plugins を\n消す 28 件、restrictedMethods で包む 8 件、mock を消す 7 件、順を\n入れ替える 28 件）。\n\n代替案:\n- 理由を .oxlintrc.json のコメントに書く: 同じ根拠が 2 か所に分かれ、\n  片方だけ古くなる（Issue 1444 のレビューで同じ指摘）\n\n影響とトレードオフ:\n文書だけの変更。fixture のパスは README に書かない（名指ししたパスの\n検査に止められるため）。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1445\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 17,
+          "deletions": 5,
+          "patch": "@@ -62,7 +62,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査名> <直し方>` は走査ルートを渡さず（検出器の既定を使用）、`[種別]` 行で違反を読み、異常終了時は「検査できなかった」の deny を返す（判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有）。`deny_on_all_src_failure`（引数同じ）は `--all src` で呼び終了コードで判定する（報告が `[` で始まらない検出器向け） |\n | `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時検査フックの共通処理。`.github/scripts/lib/detector-report.sh` の `detector_report` で検出器を走らせ、異常終了時は `print_edit_unchecked_context <イベント名> <検査名> <検出器>` で `permissionDecision` なしの `additionalContext`（「検査できていません」）を返し編集は止めない。PostToolUse の違反報告も `print_additional_context` で共通化し、python3 の疎通は `detector-precondition.sh` の `python3_usable` で確認する |\n | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring を参照 |\n-| `lib/cases-report.sh` | `lib/*-cases.sh`・`.github/scripts/*-cases.sh`・`harness/records/count-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` の各判定表（23 本） | 判定表が共有する 5 機能を提供する: (1) 判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category` / `hook_verdict_by_permission`）、(2) 結果報告（関数 `report`・変数 `cases_failed`）、(3) 検出器種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）、(4) 判定表末尾文の照合（`last_statement` / `report_exits_with_cases_failed`）、(5) 1 件以上走ったかの照合（関数 `report_cases_ran`・変数 `cases_reported`）。ケースの並べ方と検出器の呼び方は各判定表が持つ |\n+| `lib/cases-report.sh` | `lib/*-cases.sh`・`.github/scripts/*-cases.sh`・`harness/records/count-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` の各判定表（24 本） | 判定表が共有する 5 機能を提供する: (1) 判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category` / `hook_verdict_by_permission`）、(2) 結果報告（関数 `report`・変数 `cases_failed`）、(3) 検出器種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）、(4) 判定表末尾文の照合（`last_statement` / `report_exits_with_cases_failed`）、(5) 1 件以上走ったかの照合（関数 `report_cases_ran`・変数 `cases_reported`）。ケースの並べ方と検出器の呼び方は各判定表が持つ |\n | `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `lib/cases-report.sh` 自身の判定表。種別照合・`report` の出力と `cases_failed`・`decide*` / `hook_verdict_by_permission` の判定（pass / deny / broken / miss）・各判定表の末尾が `exit \"$cases_failed\"` であること・`report_cases_ran` の挙動を検証する（詳細は冒頭コメントとケース名）。食い違いがあれば exit 1 |\n | `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh` / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh` / `lib/issue-flow-kind-cases.sh` / `lib/git-add-all-cases.sh` / `lib/commit-md-heading-cases.sh` | 判定表が共有する前提の組み立て関数。落ちる検出器スタブ（`place_failing_detector`）・起動不能なコマンド（`broken_command_path_prefix`）・同一本体のテストヘルパー（`place_duplicate_helpers`）・サブエージェント呼び出し入力フィールド（`subagent_call_fields`）・フックの一時ディレクトリへの写し（`copy_repo_files`）・Bash の呼び出しの入力（`bash_call_input`。jq で組む）・Bash の呼び出しの判定表をフックへ流して報告する関数（`report_bash_call_cases`）を提供する |\n | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `import-rule-violations.py` の判定表。種別・件数・全種別の網羅・`scan()` と docstring の並び一致・スタブ検出器の broken 判定を検証する。食い違いがあれば exit 1 |\n@@ -209,11 +209,13 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | `.github/scripts/build-pr-explain-cases.sh` | あり | あり（`python3` がある環境のみ） |\n | `.github/scripts/check-pr-explain-template-cases.sh` | あり | あり（`python3` がある環境のみ） |\n | `.github/scripts/pr-explain-core-cases.sh` | あり | あり（`python3` と Node 20 以上がある環境のみ） |\n+| `.github/scripts/oxlint-config-cases.sh` | あり（`check` ジョブ） | あり（`pnpm` と `node_modules` がある環境のみ） |\n | `harness/githooks/lib/check-tally-cases.sh` | あり | あり |\n \n - **層 3 の部品を検査する 9 本（`canary-cases.sh` / `verification-agent-cases.sh` / `parent-session-edit-cases.sh` / `pre-push-detector-cases.sh` / `edit-detector-cases.sh` / `issue-flow-kind-cases.sh` / `git-add-all-cases.sh` / `commit-md-heading-cases.sh` / `protected-branch-edit-cases.sh`）も層 2・層 1 で走らせる。** ゲートが見ているのは「リポジトリ内のスクリプト判定が変わっていないか」であり、使用層とは独立している。フェーズ 7 はカナリア出力で不発を判定し、フェーズ 5・6 は検証エージェント実行中の git ブロックを前提にしているため、判定が黙って変わると手順が破綻する。また `lib/pre-push-detector.sh` と `lib/edit-detector.sh` は壊れても git hooks や CI が検出器を直接呼ぶため緑のまま残る。`edit-detector-cases.sh` は対象フック 3 本ごと一時ディレクトリへ複製して検証する。`issue-flow-kind-violations.py` を呼ぶ層は層 3 しか無く、字句への分け方が退行しても判定表のほかに落ちるものが無い。git 操作の 3 本は移植元の判定を直して載せたので、判定表のほかに退行を捕まえるものがない\n - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。** 対象の `check-added-*` と同じジョブに置き、`python3` と git だけで完結させる\n-- **層 2 に載せる判断基準は、`pre-push` 全体の所要時間への影響。** `pre-push` 全体は 73.0 秒（実測・`node_modules` あり）。各判定表の実測時間は次のとおり: `check-pr-closing-issue-cases.sh` 0.8 秒（5xx 再試行待ちを差し替え口で 0 化、#1034）・`lib/canary-cases.sh` 1.0 秒（ともに全体 105.8 秒の別環境実測）、解説ページ 5 本合計 16.2 秒（地図 3.4・置き場 5.6［再試行待ち 0 化］・解説の検査 4.3・枠の検査 2.8・核 0.1）、`check-tally-cases.sh` 0.1 秒未満、`lib/import-rule-cases.sh` 2.2 秒、`lib/edit-detector-cases.sh` 1.5 秒、`upsert-sticky-comment-cases.sh` 0.9 秒（再試行待ち 0 化）、`lib/issue-flow-kind-cases.sh` 1.4 秒（検出器の表は python3 を 1 回だけ起動して回す。ケースごとに起動した形は 8.0 秒）、`lib/git-add-all-cases.sh` 0.6 秒・`lib/commit-md-heading-cases.sh` 0.6 秒・`lib/protected-branch-edit-cases.sh` 0.5 秒（3 回の中央値）\n+- **`oxlint-config-cases.sh` は層 1 のジョブが `rules-check` ではなく `check`。** 実物の oxlint を `node_modules` から呼ぶため、`pnpm install` をしない `rules-check` では走らない\n+- **層 2 に載せる判断基準は、`pre-push` 全体の所要時間への影響。** `pre-push` 全体は 73.0 秒（実測・`node_modules` あり）。各判定表の実測時間は次のとおり: `check-pr-closing-issue-cases.sh` 0.8 秒（5xx 再試行待ちを差し替え口で 0 化、#1034）・`lib/canary-cases.sh` 1.0 秒（ともに全体 105.8 秒の別環境実測）、解説ページ 5 本合計 16.2 秒（地図 3.4・置き場 5.6［再試行待ち 0 化］・解説の検査 4.3・枠の検査 2.8・核 0.1）、`check-tally-cases.sh` 0.1 秒未満、`lib/import-rule-cases.sh` 2.2 秒、`lib/edit-detector-cases.sh` 1.5 秒、`upsert-sticky-comment-cases.sh` 0.9 秒（再試行待ち 0 化）、`lib/issue-flow-kind-cases.sh` 1.4 秒（検出器の表は python3 を 1 回だけ起動して回す。ケースごとに起動した形は 8.0 秒）、`lib/git-add-all-cases.sh` 0.6 秒・`lib/commit-md-heading-cases.sh` 0.6 秒・`lib/protected-branch-edit-cases.sh` 0.5 秒（3 回の中央値）、`oxlint-config-cases.sh` 2.8 秒（うち oxlint 0.2 秒。3 回の中央値。ケースごとに起動すると 1 回 0.07 秒 × 170 件で約 12.5 秒の見積もり）\n - **`check-duplicate-issue-pr-cases.sh` は層 1 のみ。** 問い合わせの再試行待ちで 22.0 秒（実測）かかり基準に収まらないため、`check-duplicate-issue-pr.sh` を触ったときは手動で走らせる（「動作確認」）。待ちを 0 にできるかは #1377 で扱う\n - **`issue-flow-kind-real-gh-cases.sh` は層 1 のみ。** 実物の gh を 1 ケースごとに起動するので 11.5 秒（実測）かかり、gh と openssl の無い開発環境もある。`issue-flow-kind-violations.py` か `issue-flow-kind-cases.sh` を触ったときは手動で走らせる（「動作確認」）\n - 層 3（`pre-push-*.sh`）には足さない。層 1・層 2 に置く以上、守る範囲が増えないため\n@@ -347,7 +349,7 @@ deny メッセージには `jq` / `python3` が欠けていればその名前も\n - `pre-push-typecheck.sh` / `pre-push-lint.sh` は `node_modules` 未インストール時（ツール実行不能時）は黙ってスキップする\n - `post-merge-review.sh` はマージを**ブロックしない**（`additionalContext` を返すだけ）。マージは人の判断であり、記録がないことを理由に止めても記録の質は上がらないため\n   - 検知対象は `mcp__github__merge_pull_request` と `gh pr merge` のみ。素の `git merge` はベースブランチ取り込みで日常的に走るため対象外とする\n-- `.oxlintrc.json` の `overrides`（`rules/architecture.md`「依存方向のルール」の強制）は、`domains/` → `libs/` の辺だけ `warn`（**ブロックしない**）。導入時点で `@/libs/document-ipc`（型のみ）・`@/libs/document-json` への import が計 5 件存在し（`document-save-state` は申し送りの既知債務、残り 3 件はテストの `DocumentJson` fixture 利用）、ドメインの型・モジュール再配置を伴う判断（`AGENTS.md`「設計判断の確認」）のため導入回では移動していない。`services/` → `features/` `libs/` `components/` `hooks/`・`components/` `hooks/` `utils/` `types/` → `domains/` `services/` `features/`・`libs/` → `services/` `features/` `components/` `hooks/` の 3 方向は既存違反 0 件だったため `error` で導入した\n+- `.oxlintrc.json` の `overrides`（`rules/architecture.md`「依存方向のルール」の強制）は、`domains/` → `libs/` の辺も含めてすべて `error` で置き、`domains/` の `__tests__/` だけは別の override で `libs/` の import を許す。導入時は `domains/` → `libs/` の辺だけ `warn`（ブロックしない）にしていた。導入時点で `@/libs/document-ipc`（型のみ）・`@/libs/document-json` への import が計 5 件存在し（`document-save-state` は申し送りの既知債務、残り 3 件はテストの `DocumentJson` fixture 利用）、ドメインの型・モジュール再配置を伴う判断（`AGENTS.md`「設計判断の確認」）のため導入回では移動しなかった。`services/` → `features/` `libs/` `components/` `hooks/`・`components/` `hooks/` `utils/` `types/` → `domains/` `services/` `features/`・`libs/` → `services/` `features/` `components/` `hooks/` の 3 方向は既存違反 0 件だったため `error` で導入した\n   - `features/<x>/domains/` への同種の適用は未実装\n - `.oxlintrc.json` の `overrides`（`rules/architecture.md`「モジュールの公開API」の「複数ファイルへの分割が必要になったら」の閾値）は、`src/**/*.tsx` に `max-lines: 600` を `error` で置く。防ぎたいのは 1 ファイルに 11 コンポーネント・716 行が同居したような肥大化\n   - **数えるのは空行とコメントを除いた行**（`skipBlankLines` / `skipComments` を `true` に設定。既定は両方 false で `wc -l` 相当）。これにより `__tests__/` を除外せずに導入時点の違反 0 件が成立している（生 620 行の `use-editor-state.actions.test.tsx` が空行 96 行を引いて 600 行以内に収まる）\n@@ -358,13 +360,20 @@ deny メッセージには `jq` / `python3` が欠けていればその名前も\n - `.oxlintrc.json` の `overrides`（#1066）は、`src/**/*.tsx` に `react/forbid-elements` を `error` で置き、生の `<button>` を禁じる（対応する規範は `rules/` になく lint のみが持つ）。押せるものは `src/components/button` の `Button` で描く。除外対象（`src/components/**`・`src/**/__tests__/**`・基本ボタンに当たらない行やレールを描くファイル）の一覧と理由は `.oxlintrc.json` のコメントで管理する（ここに写さない）。導入時点の違反 0 件\n   - **`\"plugins\": [\"react\"]` は `error` 側・`off` 側の両方の override に必要。** 欠けると発火しない／`off` が効かない（probe で実測）。また `off` の override は `error` より後ろに置く（前に置くと `error` で上書きされる。実測）\n   - `react` プラグイン有効化により `src/**/*.tsx` へ `react` の correctness 規則が `warn` で入る（導入時 0 件）。そのうち `jsx-props-no-spread-multi` は自動修正を持つため、`post-edit-lint.sh` の `oxlint --fix` が同一 props の二重 spread を黙って 1 つにまとめる（実測）\n-  - **残る穴は恒久の判断として受け入れる（#1066）。** 除外ファイル内の生 `<button>`（`artboard-list` / `token-list` の見出し `+` 等）や `role=\"button\"` の生要素（既存例 `artboard-frame/index.tsx`）は見ず、`// @lint-suppress-ok` でファイル単位の抑制もできる。また違反 0 件のため `error` override 自体を消しても落ちる検査はない（他の oxlint 規則と同じく判定表は置かず、削除時に `pnpm run lint` が 0 件で通ることを実測済み）\n+  - **残る穴は恒久の判断として受け入れる（#1066）。** 除外ファイル内の生 `<button>`（`artboard-list` / `token-list` の見出し `+` 等）や `role=\"button\"` の生要素（既存例 `artboard-frame/index.tsx`）は見ず、`// @lint-suppress-ok` でファイル単位の抑制もできる。また違反 0 件のため `error` override 自体を消しても落ちる検査はない（oxlint の設定の判定表 `.github/scripts/oxlint-config-cases.sh` は #1445 でできたが、この規則のケースは入れていない。削除時に `pnpm run lint` が 0 件で通ることを実測済み）\n   - 許可を要素単位まで狭めない。`overrides.files` の glob はファイル単位しか書けず、要素単位にするには Python 検出器が必要になり配線先が増えて編集時（`post-edit-lint.sh`）に効かなくなるため\n - `.oxlintrc.json` の `overrides`（#1444）は `src/` 全体に `no-restricted-imports` の `paths` を `error` で置き、`react` の `useEffect` / `useLayoutEffect` / `useInsertionEffect` と default import を止める（規範は `rules/hooks.md`「useEffect: 最終手段として扱う」）。許可するのは `src/hooks/` の `use-subscription` / `use-remeasure` の `index.ts` の 2 本だけ（`use-dom-listeners` は `useSubscription` の上に作り、effect を import しない）。導入時の違反 10 件（effect の 9 ファイルと default import の `src/app/main.tsx`）は同じ PR で 0 件にした\n   - **`no-restricted-imports` を持つ override を足すときは、`paths` を写し、許可の override は hooks を含む override より後に置く。** override は同じ規則のオプションを丸ごと置き換え、後ろが勝つ（実測）。写し忘れるとその範囲で effect の禁止が黙って外れ、許可を前に置くと許可した 2 本が落ちる。`files` の否定パターンは効かない（実測）\n   - 許可の override は hooks を含む override（`src/components/` 〜 `src/types/`）の `patterns` だけを持ち、`paths` を持たないことで effect の禁止を外す。**hooks を含む override の `patterns` を変えたら、許可の override にも写す**（写し忘れると許可した 2 本だけ依存方向の検査が古いまま残る）\n-  - 残る穴: 違反 0 件なので override を消しても写し忘れても落ちる検査は無い（判定表は #1445 の U1）/ 動的 `import(\"react\")` / ref callback に書いた副作用 / 用途別フックに渡す手続きの中身 / `DomListener` は effect の外でも呼べる / `src/` の外 / `useSubscription` / `useDomListeners` に渡す手続きを `useCallback` で安定させているかは検査しない（包み忘れると描き直しのたびに張り直し、その隙間の通知を落としうる。同期で state を更新する手続き（例: 時計の購読）では、包み忘れると再レンダーが止まらず、テストは落ちるのではなく終わらなくなる（実測））\n+  - 違反 0 件なので `pnpm run lint` は落ちないが、override を消す・`paths` を写し忘れる・許可の override を消す、は `.github/scripts/oxlint-config-cases.sh` が落とす（#1445）\n+  - 残る穴: 動的 `import(\"react\")` / ref callback に書いた副作用 / 用途別フックに渡す手続きの中身 / `DomListener` は effect の外でも呼べる / `src/` の外 / `useSubscription` / `useDomListeners` に渡す手続きを `useCallback` で安定させているかは検査しない（包み忘れると描き直しのたびに張り直し、その隙間の通知を落としうる。同期で state を更新する手続き（例: 時計の購読）では、包み忘れると再レンダーが止まらず、テストは落ちるのではなく終わらなくなる（実測））\n   - Effect Event を `useCallback` 経由で `useSubscription` へ渡す 3 か所（`use-document-session` の `runMenuCommand` / `openDropped`、`use-document-reload` の `reload`）は、react-hooks の lint を入れると違反になる見込み（oxlint 1.58 の `react/rules-of-hooks` では 0 件を実測。eslint 版は未確認）。参照してよい理由は `useSubscription` の doc（`@param subscribe`）に置く\n+- `.oxlintrc.json` の `overrides`（#1445）は jest プラグインの `no-restricted-jest-methods` と `no-hooks` を `error` で置き、テスト規約（`rules/testing.md`「モックは原則使わない」「テストの書き方: ネスト禁止」）を止める。`src/` 全体で `vi.mock` / `vi.doMock` と `afterEach` 以外のフック（`beforeEach` / `beforeAll` / `afterAll`）を止め、`src/domains/`・`src/services/`・feature の `domains/` ではさらに `vi.fn` / `vi.spyOn` / `vi.stubGlobal` / `vi.stubEnv` / `vi.importMock` / `vi.mockObject` と時刻の差し替え（`vi.useFakeTimers` など 9 メソッド）を止める。導入時の違反 0 件\n+  - **守らないと黙って何も止めなくなる約束が 4 つある（どれも実測。判定表が落とす）。** ① `\"plugins\": [\"jest\"]` を 2 つの override のどちらにも書く（無いとその override は無視される） ② オプションは `{メソッド: メッセージ}` を直に渡す（`{ \"restrictedMethods\": {...} }` で包むと何も止めない） ③ 2 つ目の override にも `mock` / `doMock` を並べる（同じ規則のオプションは丸ごと置き換わる） ④ 2 つ目は 1 つ目より後ろに置く（後ろが勝つ）\n+  - **`no-restricted-imports` か jest の 2 規則を持つ override を足したら、その範囲のケースを判定表 `.github/scripts/oxlint-config-cases.sh` にも足す。** 判定表が見るのはこの 3 規則と `require-to-throw-message` の `off` だけで、`curly` / `max-depth` / `max-lines` / `react/forbid-elements` は見ない（#1066 の判断のまま）\n+  - jest プラグインを有効にすると、jest の correctness 10 規則が `warn` で入る。`require-to-throw-message` だけ `off` にした（既存の `toThrow()` 3 件があり、規約はメッセージを求めない）。残る 9 規則は導入時 0 件。そのうち `no-focused-tests` / `valid-title` は自動修正を持つため、`post-edit-lint.sh` の `oxlint --fix` が `test.only` を `test` に、前後に空白のあるテスト名を詰めた名前に黙って書き換える（実測）\n+  - **override の glob は `*.{ts,tsx,mts,cts}` で書く。** oxlint は `.mts` / `.cts` も lint するが、`.ts` / `.tsx` だけを並べた glob ではそこで層の向きと effect の禁止が黙って外れていた（#1445 で広げた。`.tsx` だけを見る override と許可の override は変えていない）。tsconfig 側で `.mts` / `.cts` を外す案は採らなかった。`include` を絞っても import された `.mts` は型検査に入り（`tsc --listFilesOnly` で実測）、型検査を外すだけになるため。oxlint の外に残る `.mts` / `.cts` の穴は #1463\n+  - 残る穴（判定表の `miss` の行）: `aroundEach` / `aroundAll`、名前空間で import した `vi` の `mock` と `beforeEach`、分割代入で取り出した `mock`、`test.beforeEach` / `it.beforeAll` / `test.extend({}).beforeEach`。また `test.extend` で作ったテストには、correctness の `expect-expect` / `no-disabled-tests` / `no-standalone-expect` が誤って `warn` を出す（実測。今の使用は 0 件で、`warn` は push を止めない）\n - **feature 間の deep import・循環参照・モジュール内部への deep import**（#257 のゴール 1・2・6）は `lib/import-rule-violations.py` が検査する。oxlint に置かなかったのは 3 つとも**リポジトリ構造を読まないと判定できない**ためであり、`overrides.files` の静的 glob では書けない（#284 実測で同一 feature 内ドメイン間 import まで巻き込み 38 件の偽陽性。数値出典は #257 コメント）\n   - **判定根拠はスクリプトの docstring に記載している**（入れ子モジュール・`__tests__/` の扱い・feature だけ狭い理由）。二重管理を避けるためここには写さない。判定表は `lib/import-rule-cases.sh`\n   - **ゴール 6 の実効範囲は現状ほぼ fixture 専用。** 入れ子モジュールの index を許すため `module-public-api` に該当するのは「モジュールフォルダ配下の非 index ファイルを外から読む」形だけで、テスト・ストーリーを除いた該当ファイルは実測 4 件のみ（`index.ts` 直書き規約が守られているため）。**将来の退行を止める枠**としての位置づけ\n@@ -507,6 +516,9 @@ bash .github/scripts/check-duplicate-issue-pr-cases.sh; echo \"exit=$?\"\n # sticky コメントの投稿・差し替えの判定表(`ok` だけなら期待どおり)。pre-push と CI も走らせる\n bash .github/scripts/upsert-sticky-comment-cases.sh; echo \"exit=$?\"\n \n+# oxlint の設定(.oxlintrc.json)の判定表(`ok` だけなら期待どおり)。pre-push と CI の check ジョブも走らせる\n+bash .github/scripts/oxlint-config-cases.sh; echo \"exit=$?\"\n+\n # 記録の集計の判定表(見ている観点は count-cases.sh 冒頭)。pre-push と CI も走らせる\n bash harness/records/count-cases.sh; echo \"exit=$?\"\n ```",
+          "patchLines": 66,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 4,
+          "patch": "@@ -17,13 +17,13 @@ DevContainer の `postCreateCommand`（`.devcontainer/devcontainer.json`）に\n \n ## 何が走るか\n \n-### `pre-push` が呼ぶ検査一覧（計 37 本）\n+### `pre-push` が呼ぶ検査一覧（計 38 本）\n \n | カテゴリ | 検査 | 呼んでいるもの |\n | --- | --- | --- |\n | 型・lint・規約検査（9 本） | 型 / lint / format / doc コメント / テスト規約 / import 規約 / story の title / 名指ししたパス / テストヘルパーの重複 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src` |\n | 差分ベース検査と判定表（3 本） | 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加分の検査の判定表 | `.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh` |\n-| 検出器・フックの判定表（15 本） | import 規約 / story の title / 名指ししたパス / doc コメント / テストヘルパーの重複 / Issue の作業の種類 / カナリア / push 前検査フック / 編集時検査フック / 作業ツリーを書き換えるサブエージェントの実行中フラグ / 親セッションの編集 / git add -A の拒否 / コミット本文の行頭 `#` の拒否 / 保護ブランチの編集の拒否 / 判定の読み取り・報告・種別照合 | `.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.claude/hooks/lib/issue-flow-kind-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/parent-session-edit-cases.sh`・`.claude/hooks/lib/git-add-all-cases.sh`・`.claude/hooks/lib/commit-md-heading-cases.sh`・`.claude/hooks/lib/protected-branch-edit-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh` |\n+| 検出器・フックの判定表（16 本） | oxlint の設定 / import 規約 / story の title / 名指ししたパス / doc コメント / テストヘルパーの重複 / Issue の作業の種類 / カナリア / push 前検査フック / 編集時検査フック / 作業ツリーを書き換えるサブエージェントの実行中フラグ / 親セッションの編集 / git add -A の拒否 / コミット本文の行頭 `#` の拒否 / 保護ブランチの編集の拒否 / 判定の読み取り・報告・種別照合 | `.github/scripts/oxlint-config-cases.sh`・`.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.claude/hooks/lib/issue-flow-kind-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/parent-session-edit-cases.sh`・`.claude/hooks/lib/git-add-all-cases.sh`・`.claude/hooks/lib/commit-md-heading-cases.sh`・`.claude/hooks/lib/protected-branch-edit-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh` |\n | PR 解説ページの判定表（5 本） | 変更の地図 / 解説ページの置き場 / 解説の検査 / 解説ページの枠の検査 / 解説ページの核 | `.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh` |\n | PR 運用・記録・集計（5 本） | 行数のラチェット / 集計の判定表 / sticky コメントの投稿・差し替えの判定表 / PR が閉じる Issue の検査の判定表 / `pre-push` の結果行の判定表 | `harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.github/scripts/upsert-sticky-comment-cases.sh`・`.github/scripts/check-pr-closing-issue-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |\n \n@@ -40,7 +40,8 @@ DevContainer の `postCreateCommand`（`.devcontainer/devcontainer.json`）に\n - **検査本体は `.claude/hooks/lib/` と共有する。** Claude Code のフックは同じスクリプトを走らせる即時フィードバック版とし、二重管理を避ける\n - **`check-added-*` の 2 本とその共有部品は `.github/scripts/` に置く。** base との差分で判定する CI と同じスクリプトをそのまま呼ぶ。[その判定表](../../.github/scripts/check-added-cases.sh)と共有ライブラリ（前提チェックの `.github/scripts/lib/detector-precondition.sh`、異常終了を判別する `.github/scripts/lib/detector-report.sh`、追加行番号を取り出す `.github/scripts/lib/added-lines.sh`）も同じ場所に置く。前提チェックと異常終了判別は層 3 の `.claude/hooks/lib/pre-push-detector.sh` と `.claude/hooks/lib/edit-detector.sh` からも参照し、層ごとの判定のぶれを防ぐ\n - **PR 解説ページの判定表 5 本も `.github/scripts/` に置く。** 対象が `pr-explain.yml`・`pr-explain-list.yml` と `pr-explain` スキルから呼ばれるスクリプトと同じ場所にあるため\n-- **行数のラチェット（`count.sh --ratchet`）と判定表（上の表の各 `*-cases.sh` 計 25 本）は、`.claude/hooks/` 側の `pre-push-*.sh` に対応物を持たない。** 判定表をどの層へ置くかと層 3 へ足さない理由は `.claude/hooks/README.md`「カバー範囲と残る穴」を参照\n+- **oxlint の設定の判定表も `.github/scripts/` に置く。** 対象の `.oxlintrc.json` は層 1〜3 が共有する設定で、`.claude/hooks/lib/` に置くフックの部品ではないため\n+- **行数のラチェット（`count.sh --ratchet`）と判定表（上の表の各 `*-cases.sh` 計 26 本）は、`.claude/hooks/` 側の `pre-push-*.sh` に対応物を持たない。** 判定表をどの層へ置くかと層 3 へ足さない理由は `.claude/hooks/README.md`「カバー範囲と残る穴」を参照\n \n ### 道具がない環境でのスキップ条件\n \n@@ -48,7 +49,7 @@ DevContainer の `postCreateCommand`（`.devcontainer/devcontainer.json`）に\n \n | ないもの | 飛ぶ検査 |\n | --- | --- |\n-| `pnpm` または `node_modules` | 型 / lint / format |\n+| `pnpm` または `node_modules` | 型 / lint / format / oxlint の設定の判定表 |\n | `python3`（起動できないものが PATH にある場合を含む） | doc コメント（と判定表） / import 規約（と判定表） / story の title（と判定表） / 名指ししたパス（と判定表） / テストヘルパーの重複（と判定表） / Issue の作業の種類の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加分の検査の判定表 / 変更の地図・解説ページの置き場・解説の検査・解説ページの枠の検査の判定表 |\n | `python3`（同上）または `jq` | カナリアの判定表 / push 前検査フックの判定表 / 編集時検査フックの判定表 |\n | `jq` | sticky コメントの投稿・差し替えの判定表 / PR が閉じる Issue の検査の判定表 / git add -A の拒否の判定表 / コミット本文の行頭 `#` の拒否の判定表 |",
+          "patchLines": 35,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "ef95588a627be6dad171955c61593d49961a0c5f",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T07:11:21Z",
+      "subject": "🧪 [Tests]: #1445 oxlint の判定表で判定できない理由を出し時刻の行を絞る",
+      "body": "- 出力全体を decide に掛け、broken なら全件 broken にして終了コードと\n  oxlint の出力を標準エラーへ 1 回だけ出す（変数は output_unjudgeable）\n- Error 行の正規表現を error_line の 1 か所に置く\n- domains で止める時刻系の行を useFakeTimers / setSystemTime の 2 本に絞る\n- 冒頭の「警告だけなら broken」を 1 ファイル 1 規則の表に限る書き方にし、\n  miss と pass を分ける理由は normalize_miss の doc を指す\n- ケース名の「偽物」をリポジトリの語「フェイクタイマー」に揃える\n\n背景:\nフェーズ 6 のレビュー（over-guard / duplication / naming / comment）で、\n設定を読めないときに oxlint が出した理由を捨てて 170 行の broken だけを\n出していること、decide と同じ組み合わせ表を自前で持っていることが\n指摘された。\n\n採用理由:\n判定できるかどうかを共有部品の decide に寄せると、Error 行の綴りが\n変わったときに片方だけ直る状態がなくなる。時刻系の 7 本は fake timers が\n有効でないと動かず、useFakeTimers を止めた効果と重複するので行を減らす。\n\n代替案:\n170 行の broken を 1 行の NG にまとめる案は採らなかった。件数の照合\n（report_cases_ran）と他の判定表の出力の形を崩さないため。\n\n影響とトレードオフ:\nexit 0 なのに Error 行がある組み合わせは、前は判定を続けたが全件 broken に\nなる。oxlint は error があれば exit 1 で終わるので実際には起きない。\n第 1 工程（b344df7）で固定した行を 7 行消している。仕様を絞る判断が\nフェーズ 6 の採否で決まったためで、理由は Issue 1445 に残す。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1445#issuecomment-7093893302\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 25,
+          "deletions": 24,
+          "patch": "@@ -15,13 +15,20 @@\n # ケースごとに起動すると、起動の時間がケースの数だけ積もる。\n #\n # 判定は、そのケースのファイルに `[Error/` の行があれば 1、無ければ 0 として、規則の名前の見出しと\n-# `decide` で突き合わせる。**規則の診断が警告だけなら broken にする**(`error` を `warn` に下げる・`off` を\n-# 外して警告が出る、の退行を落とす)。oxlint の終了コードが 0 / 1 以外か、1 なのに `[Error/` の行が 1 つも\n-# 無いときは、設定を読めていないので全ケースを broken にする(設定が壊れると、診断の行を出さずに exit 1 で\n-# 終わる)。\n+# `decide` で突き合わせる。`[Error/` の有無はファイル単位で見るので、**1 ファイルで 1 規則だけを確かめる\n+# この表に限り、規則の診断が警告だけなら broken になる**(`error` を `warn` に下げる・`off` を外して警告が\n+# 出る、の退行を落とす)。\n+#\n+# その前に、oxlint の出力全体を同じ `decide` に掛ける。broken なら出力から規則ごとの判定ができないので、\n+# 終了コードと出力を 1 回だけ標準エラーへ出し、全ケースを broken にする。設定が壊れたとき(診断の行を\n+# 出さずに exit 1 で終わる)と oxlint が無いとき(exit 127)は、その一例。\n+#\n+# 表が見る規則は `no-restricted-imports` と jest の `no-restricted-jest-methods` / `no-hooks` と、\n+# `require-to-throw-message` の `off` だけ。`curly` / `max-depth` / `max-lines` / `react/forbid-elements` は\n+# 見ない。\n #\n # 表は `期待|規則|ケース名|置くパス|中身` の 1 行 1 ケース。規則は oxlint の unix 形式の出力で末尾の括弧に\n-# 入る名前(`no-restricted-imports` / `no-restricted-jest-methods` / `no-hooks` / `require-to-throw-message`)。\n+# 入る名前。\n # 置くパスに `{ext}` があれば `ts` `tsx` `mts` `cts` の 4 ケースに展開し、ケース名に ` (.mts)` などを付ける。\n # 中身は `printf '%b'` で書く(`\\n` が改行になる)。\n #\n@@ -29,8 +36,8 @@\n # | --- | --- |\n # | `deny` | その規則の error として報告してほしい |\n # | `pass` | 報告してはいけない(誤検知したら信用を失う側) |\n-# | `miss` | **意図した取りこぼし。** 規則が見ない書き方。`pass` と分けてあるのは、並べると次に読む人がバグと\n-#            読んで、取りこぼしにした理由ごと消しにいくため |\n+# | `miss` | **意図した取りこぼし。** 規則が見ない書き方(`pass` と分ける理由は `.claude/hooks/lib/cases-report.sh`\n+#            の `normalize_miss`) |\n set -uo pipefail\n \n scripts_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n@@ -121,17 +128,10 @@ deny|no-restricted-jest-methods|domains のテストで vi.stubEnv を使うと\n deny|no-restricted-jest-methods|domains のテストで vi.importMock を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const m = vi.importMock(\"./m\");\n deny|no-restricted-jest-methods|domains のテストで vi.mockObject を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const m = vi.mockObject({});\n deny|no-restricted-jest-methods|domains のテストで vi.useFakeTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.useFakeTimers();\n-deny|no-restricted-jest-methods|domains のテストで vi.useRealTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.useRealTimers();\n deny|no-restricted-jest-methods|domains のテストで vi.setSystemTime を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.setSystemTime(0);\n-deny|no-restricted-jest-methods|domains のテストで vi.advanceTimersByTime を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.advanceTimersByTime(1);\n-deny|no-restricted-jest-methods|domains のテストで vi.advanceTimersByTimeAsync を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const p = vi.advanceTimersByTimeAsync(1);\n-deny|no-restricted-jest-methods|domains のテストで vi.advanceTimersToNextTimer を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.advanceTimersToNextTimer();\n-deny|no-restricted-jest-methods|domains のテストで vi.runAllTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.runAllTimers();\n-deny|no-restricted-jest-methods|domains のテストで vi.runAllTimersAsync を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const p = vi.runAllTimersAsync();\n-deny|no-restricted-jest-methods|domains のテストで vi.runOnlyPendingTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.runOnlyPendingTimers();\n pass|no-restricted-jest-methods|feature のテストでは vi.fn を使える|src/features/probe/__tests__/probe.normal.test.{ext}|import { vi } from \"vitest\";\\nexport const f = vi.fn();\n pass|no-restricted-jest-methods|hooks のテストでは vi.fn を使える|src/hooks/use-probe/__tests__/use-probe.normal.test.ts|import { vi } from \"vitest\";\\nexport const f = vi.fn();\n-pass|no-restricted-jest-methods|feature のテストでは時刻を偽物に差し替えられる|src/features/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.useFakeTimers();\\nvi.setSystemTime(0);\n+pass|no-restricted-jest-methods|feature のテストではフェイクタイマーで時刻を差し替えられる|src/features/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nvi.useFakeTimers();\\nvi.setSystemTime(0);\n miss|no-restricted-jest-methods|名前空間で import した vi の mock は見ない|src/features/probe/__tests__/probe.normal.test.ts|import * as V from \"vitest\";\\nV.vi.mock(\"./m\");\n miss|no-restricted-jest-methods|分割代入で取り出した mock は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { vi } from \"vitest\";\\nconst { mock } = vi;\\nmock(\"./m\");\n deny|no-hooks|テストで beforeEach を使うと止まる|src/features/probe/__tests__/probe.normal.test.{ext}|import { beforeEach } from \"vitest\";\\nbeforeEach(() => {});\n@@ -164,26 +164,27 @@ while IFS='|' read -r expected rule label path body; do\n   done\n done <<<\"$cases\"\n \n+# oxlint の unix 形式の出力で、error の診断の行に当たる正規表現。\n+error_line='\\[Error/'\n+\n output=\"$(cd \"$work\" && \"$oxlint_bin\" -f unix . 2>&1)\"\n status=$?\n \n-# 設定を読めていないなら、どのケースのファイルにも診断が無く、規則ごとの判定ができない。\n-config_unread=\"\"\n-case \"$status\" in\n-  0) ;;\n-  1) grep -q '\\[Error/' <<<\"$output\" || config_unread=1 ;;\n-  *) config_unread=1 ;;\n-esac\n+output_unjudgeable=\"\"\n+if [ \"$(decide \"$output\" \"$status\" \"$error_line\")\" = \"broken\" ]; then\n+  output_unjudgeable=1\n+  printf 'oxlint の出力から判定できない(終了コード %s)。出力:\\n%s\\n' \"$status\" \"$output\" >&2\n+fi\n \n cases_before=$cases_reported\n for index in \"${!case_prefix[@]}\"; do\n-  if [ -n \"$config_unread\" ]; then\n+  if [ -n \"$output_unjudgeable\" ]; then\n     report \"${case_expected[$index]}\" broken \"${case_label[$index]}\"\n     continue\n   fi\n   lines=\"$(awk -v p=\"${case_prefix[$index]}\" 'index($0, p) == 1' <<<\"$output\")\"\n   has_error=0\n-  grep -q '\\[Error/' <<<\"$lines\" && has_error=1\n+  grep -qE \"$error_line\" <<<\"$lines\" && has_error=1\n   decision=\"$(decide \"$lines\" \"$has_error\" \"\\\\(${case_rule[$index]}\\\\)\\\\]\\$\")\"\n   report \"${case_expected[$index]}\" \"$(normalize_miss \"${case_expected[$index]}\" \"$decision\")\" \"${case_label[$index]}\"\n done",
+          "patchLines": 93,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "4df8d6dad143fd8266890abd7db56b00c410c38e",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T07:11:36Z",
+      "subject": "🔧 [Config]: #1445 domains で止める時刻系メソッドを 2 本に絞り理由の参照を足す",
+      "body": "- 2 つ目の jest override の時刻系を useFakeTimers / setSystemTime だけにし、\n  時刻を差し替えないことを言う専用のメッセージを付ける\n- jest の override と require-to-throw-message の off に、理由を書いた\n  README の #1445 の項を指すコメントを足す\n\n背景:\nuseRealTimers や advanceTimersByTime などは fake timers が有効でないと\n動かず、止めても useFakeTimers を止めた効果と重複していた（vitest 4 で\n実測）。メッセージも「モック・スタブ・スパイ」で時刻のことを言って\nいなかった。\n\n採用理由:\n独立して時刻を差し替えるのは useFakeTimers と setSystemTime だけなので、\n止める力を変えずに写しを 7 行減らせる。理由の参照は #1444 の先例と同じ形。\n\n代替案:\nメッセージの写しを定数で共有する（oxlint.config.ts へ移す）案は、\n層の向きの override 全体の書き換えになるため Issue 1464 で評価する。\n\n影響とトレードオフ:\ndomains のテストで止まるメソッドが 9 本から 2 本に減るが、残りは単独では\n時刻を差し替えられないので抜け道にはならない。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1445#issuecomment-7093893302\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".oxlintrc.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 9,
+          "patch": "@@ -214,6 +214,7 @@\n       }\n     },\n     {\n+      // テスト規約を止める。plugins を 2 つの override の両方に書き、domains / services の override をこの後ろに置く理由は .claude/hooks/README.md（#1445 の項）\n       \"files\": [\"src/**/*.{ts,tsx,mts,cts}\"],\n       \"plugins\": [\"jest\"],\n       \"rules\": {\n@@ -222,6 +223,7 @@\n           \"doMock\": \"vi.mock / vi.doMock でモジュールを丸ごと差し替えない。差し替えてよいのは libs/ が包む外部 I/O だけで、そのときもフェイクを渡す（rules/testing.md「モックは原則使わない」）\"\n         }],\n         \"jest/no-hooks\": [\"error\", { \"allow\": [\"afterEach\"] }],\n+        // jest プラグインが warn で入れる correctness 規則のうち、これだけを外す。理由は .claude/hooks/README.md（#1445 の項）\n         \"jest/require-to-throw-message\": \"off\"\n       }\n     },\n@@ -242,15 +244,8 @@\n           \"stubEnv\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n           \"importMock\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n           \"mockObject\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n-          \"useFakeTimers\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n-          \"useRealTimers\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n-          \"setSystemTime\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n-          \"advanceTimersByTime\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n-          \"advanceTimersByTimeAsync\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n-          \"advanceTimersToNextTimer\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n-          \"runAllTimers\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n-          \"runAllTimersAsync\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\",\n-          \"runOnlyPendingTimers\": \"domains / services のテストではモック・スタブ・スパイを使わない。純粋関数なので実物で確かめる（rules/testing.md「モックは原則使わない」）\"\n+          \"useFakeTimers\": \"domains / services のテストは時刻を差し替えない。時刻に依る値は引数で渡す（rules/testing.md「モックは原則使わない」）\",\n+          \"setSystemTime\": \"domains / services のテストは時刻を差し替えない。時刻に依る値は引数で渡す（rules/testing.md「モックは原則使わない」）\"\n         }]\n       }\n     }",
+          "patchLines": 34,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "b61fa74e6398489e63ed23f6a35b9313e52e7040",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T07:11:36Z",
+      "subject": "📝 [Doc]: #1445 テスト規約のモックの節を lint の範囲と同じ語に揃える",
+      "body": "- domains / services の行を「フェイクも使わず」にして目的語を戻す\n- 境界の例外の行を「vi.fn などで作るモックではなく、フェイクを渡す」にする\n\n背景:\nvi.mock の行を lint へ移して消した結果、「手書きのスタブも」の「も」の\n相手が文中に無くなり、2 行下の「フェイク」と呼び名が割れた。\n「自動モックより…優先」は、lint が vi.mock を全面で止めることと\n食い違って読めた。\n\n採用理由:\nlint のメッセージ（「そのときもフェイクを渡す」）と同じ語にすると、\n規約と lint のどちらから読んでも同じことを言う。行数は増やさない。\n\n代替案:\n59 行目を計画どおり消す案は、plan-reviewer の採否で「lint が判定できない\n手書きのフェイクの禁止は残す」と決めたため採らない。\n\n影響とトレードオフ:\n常時ロードの行数は変わらない（753 / 753）。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1445#issuecomment-7093893302\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": "rules/testing.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -56,9 +56,9 @@\n \n 依存は実物を使い、相互作用（呼び出し回数・引数）ではなく**結果の状態・戻り値を検証**する。\n \n-- `domains/` `services/` のテストでは手書きのスタブも使わず実物で確かめる。必要に感じたら設計を見直す\n+- `domains/` `services/` のテストではフェイクも使わず実物で確かめる。フェイクが必要に感じたら設計を見直す\n - features / hooks / components のテストでも、`domains/` `services/` は必ず実物を使う\n-- 例外として代替してよいのは**プロセス外・制御不能な境界のみ**（`libs/` が包む外部 I/O: Tauri API、localStorage、fetch、時刻、乱数）。この場合も自動モックより単純なテスト用実装（フェイク）を優先する\n+- 例外として代替してよいのは**プロセス外・制御不能な境界のみ**（`libs/` が包む外部 I/O: Tauri API、localStorage、fetch、時刻、乱数）。この場合も `vi.fn` などで作るモックではなく、単純なテスト用実装（フェイク）を渡す\n - 内部実装の呼び出し検証（`toHaveBeenCalledWith` 等）は外部境界の検証以外で使わない\n \n ## テストの書き方: ネスト禁止",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "b3d0b48d74caa803583d64ce1f4b7bb6c5f7bb30",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T07:11:44Z",
+      "subject": "📝 [Doc]: #1445 README の一覧の写しを外し判定表へ足す約束を growth に繋ぐ",
+      "body": "- README の #1445 の項から、止めるメソッドの列挙・残る穴の列挙・判定表が\n  見る規則の範囲を外し、持ち主（.oxlintrc.json の jest override・判定表の\n  miss の行・判定表の冒頭）を指す形にする\n- 所要時間の見積もりを 163 件の実測（中央値 2.7 秒）に合わせる\n- harness-growth の linter の設定の行に、override を足したら判定表に\n  ケースを足す約束への参照を足す\n\n背景:\nREADME が設定と判定表の一覧を書き写しており、実装の途中で miss の行が\n増えたときも手で追随していた。cases-report.sh と同じ README の他の項は\n「一覧は持ち主にだけ書き、写さない」方針を取っている。判定表へケースを\n足す約束は README にしか無く、lint 設定を足す入口の harness-growth から\n辿れなかった。\n\n採用理由:\n写した一覧は照合する検査が無く、片方だけ古くなる。持ち主を指すだけに\nすれば README は表に無い事実（test.extend の warn）だけを持つ。\n\n代替案:\nREADME の一覧を照合する検査を足す案は、写しを守るための仕組みが増える\nだけなので採らない。\n\n影響とトレードオフ:\nREADME だけを読んでも止めるメソッドの名前は分からなくなり、設定か\n判定表を開く必要がある。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1445#issuecomment-7093893302\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 5,
+          "patch": "@@ -215,7 +215,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n - **層 3 の部品を検査する 9 本（`canary-cases.sh` / `verification-agent-cases.sh` / `parent-session-edit-cases.sh` / `pre-push-detector-cases.sh` / `edit-detector-cases.sh` / `issue-flow-kind-cases.sh` / `git-add-all-cases.sh` / `commit-md-heading-cases.sh` / `protected-branch-edit-cases.sh`）も層 2・層 1 で走らせる。** ゲートが見ているのは「リポジトリ内のスクリプト判定が変わっていないか」であり、使用層とは独立している。フェーズ 7 はカナリア出力で不発を判定し、フェーズ 5・6 は検証エージェント実行中の git ブロックを前提にしているため、判定が黙って変わると手順が破綻する。また `lib/pre-push-detector.sh` と `lib/edit-detector.sh` は壊れても git hooks や CI が検出器を直接呼ぶため緑のまま残る。`edit-detector-cases.sh` は対象フック 3 本ごと一時ディレクトリへ複製して検証する。`issue-flow-kind-violations.py` を呼ぶ層は層 3 しか無く、字句への分け方が退行しても判定表のほかに落ちるものが無い。git 操作の 3 本は移植元の判定を直して載せたので、判定表のほかに退行を捕まえるものがない\n - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。** 対象の `check-added-*` と同じジョブに置き、`python3` と git だけで完結させる\n - **`oxlint-config-cases.sh` は層 1 のジョブが `rules-check` ではなく `check`。** 実物の oxlint を `node_modules` から呼ぶため、`pnpm install` をしない `rules-check` では走らない\n-- **層 2 に載せる判断基準は、`pre-push` 全体の所要時間への影響。** `pre-push` 全体は 73.0 秒（実測・`node_modules` あり）。各判定表の実測時間は次のとおり: `check-pr-closing-issue-cases.sh` 0.8 秒（5xx 再試行待ちを差し替え口で 0 化、#1034）・`lib/canary-cases.sh` 1.0 秒（ともに全体 105.8 秒の別環境実測）、解説ページ 5 本合計 16.2 秒（地図 3.4・置き場 5.6［再試行待ち 0 化］・解説の検査 4.3・枠の検査 2.8・核 0.1）、`check-tally-cases.sh` 0.1 秒未満、`lib/import-rule-cases.sh` 2.2 秒、`lib/edit-detector-cases.sh` 1.5 秒、`upsert-sticky-comment-cases.sh` 0.9 秒（再試行待ち 0 化）、`lib/issue-flow-kind-cases.sh` 1.4 秒（検出器の表は python3 を 1 回だけ起動して回す。ケースごとに起動した形は 8.0 秒）、`lib/git-add-all-cases.sh` 0.6 秒・`lib/commit-md-heading-cases.sh` 0.6 秒・`lib/protected-branch-edit-cases.sh` 0.5 秒（3 回の中央値）、`oxlint-config-cases.sh` 2.8 秒（うち oxlint 0.2 秒。3 回の中央値。ケースごとに起動すると 1 回 0.07 秒 × 170 件で約 12.5 秒の見積もり）\n+- **層 2 に載せる判断基準は、`pre-push` 全体の所要時間への影響。** `pre-push` 全体は 73.0 秒（実測・`node_modules` あり）。各判定表の実測時間は次のとおり: `check-pr-closing-issue-cases.sh` 0.8 秒（5xx 再試行待ちを差し替え口で 0 化、#1034）・`lib/canary-cases.sh` 1.0 秒（ともに全体 105.8 秒の別環境実測）、解説ページ 5 本合計 16.2 秒（地図 3.4・置き場 5.6［再試行待ち 0 化］・解説の検査 4.3・枠の検査 2.8・核 0.1）、`check-tally-cases.sh` 0.1 秒未満、`lib/import-rule-cases.sh` 2.2 秒、`lib/edit-detector-cases.sh` 1.5 秒、`upsert-sticky-comment-cases.sh` 0.9 秒（再試行待ち 0 化）、`lib/issue-flow-kind-cases.sh` 1.4 秒（検出器の表は python3 を 1 回だけ起動して回す。ケースごとに起動した形は 8.0 秒）、`lib/git-add-all-cases.sh` 0.6 秒・`lib/commit-md-heading-cases.sh` 0.6 秒・`lib/protected-branch-edit-cases.sh` 0.5 秒（3 回の中央値）、`oxlint-config-cases.sh` 2.7 秒（うち oxlint 0.2 秒。3 回の中央値。ケースごとに起動すると 1 回 0.07 秒 × 163 件で約 11 秒の見積もり）\n - **`check-duplicate-issue-pr-cases.sh` は層 1 のみ。** 問い合わせの再試行待ちで 22.0 秒（実測）かかり基準に収まらないため、`check-duplicate-issue-pr.sh` を触ったときは手動で走らせる（「動作確認」）。待ちを 0 にできるかは #1377 で扱う\n - **`issue-flow-kind-real-gh-cases.sh` は層 1 のみ。** 実物の gh を 1 ケースごとに起動するので 11.5 秒（実測）かかり、gh と openssl の無い開発環境もある。`issue-flow-kind-violations.py` か `issue-flow-kind-cases.sh` を触ったときは手動で走らせる（「動作確認」）\n - 層 3（`pre-push-*.sh`）には足さない。層 1・層 2 に置く以上、守る範囲が増えないため\n@@ -360,7 +360,7 @@ deny メッセージには `jq` / `python3` が欠けていればその名前も\n - `.oxlintrc.json` の `overrides`（#1066）は、`src/**/*.tsx` に `react/forbid-elements` を `error` で置き、生の `<button>` を禁じる（対応する規範は `rules/` になく lint のみが持つ）。押せるものは `src/components/button` の `Button` で描く。除外対象（`src/components/**`・`src/**/__tests__/**`・基本ボタンに当たらない行やレールを描くファイル）の一覧と理由は `.oxlintrc.json` のコメントで管理する（ここに写さない）。導入時点の違反 0 件\n   - **`\"plugins\": [\"react\"]` は `error` 側・`off` 側の両方の override に必要。** 欠けると発火しない／`off` が効かない（probe で実測）。また `off` の override は `error` より後ろに置く（前に置くと `error` で上書きされる。実測）\n   - `react` プラグイン有効化により `src/**/*.tsx` へ `react` の correctness 規則が `warn` で入る（導入時 0 件）。そのうち `jsx-props-no-spread-multi` は自動修正を持つため、`post-edit-lint.sh` の `oxlint --fix` が同一 props の二重 spread を黙って 1 つにまとめる（実測）\n-  - **残る穴は恒久の判断として受け入れる（#1066）。** 除外ファイル内の生 `<button>`（`artboard-list` / `token-list` の見出し `+` 等）や `role=\"button\"` の生要素（既存例 `artboard-frame/index.tsx`）は見ず、`// @lint-suppress-ok` でファイル単位の抑制もできる。また違反 0 件のため `error` override 自体を消しても落ちる検査はない（oxlint の設定の判定表 `.github/scripts/oxlint-config-cases.sh` は #1445 でできたが、この規則のケースは入れていない。削除時に `pnpm run lint` が 0 件で通ることを実測済み）\n+  - **残る穴は恒久の判断として受け入れる（#1066）。** 除外ファイル内の生 `<button>`（`artboard-list` / `token-list` の見出し `+` 等）や `role=\"button\"` の生要素（既存例 `artboard-frame/index.tsx`）は見ず、`// @lint-suppress-ok` でファイル単位の抑制もできる。また違反 0 件のため `error` override 自体を消しても落ちる検査はない（oxlint の設定の判定表 `.github/scripts/oxlint-config-cases.sh` が見る規則の範囲は、判定表の冒頭を参照。削除時に `pnpm run lint` が 0 件で通ることを実測済み）\n   - 許可を要素単位まで狭めない。`overrides.files` の glob はファイル単位しか書けず、要素単位にするには Python 検出器が必要になり配線先が増えて編集時（`post-edit-lint.sh`）に効かなくなるため\n - `.oxlintrc.json` の `overrides`（#1444）は `src/` 全体に `no-restricted-imports` の `paths` を `error` で置き、`react` の `useEffect` / `useLayoutEffect` / `useInsertionEffect` と default import を止める（規範は `rules/hooks.md`「useEffect: 最終手段として扱う」）。許可するのは `src/hooks/` の `use-subscription` / `use-remeasure` の `index.ts` の 2 本だけ（`use-dom-listeners` は `useSubscription` の上に作り、effect を import しない）。導入時の違反 10 件（effect の 9 ファイルと default import の `src/app/main.tsx`）は同じ PR で 0 件にした\n   - **`no-restricted-imports` を持つ override を足すときは、`paths` を写し、許可の override は hooks を含む override より後に置く。** override は同じ規則のオプションを丸ごと置き換え、後ろが勝つ（実測）。写し忘れるとその範囲で effect の禁止が黙って外れ、許可を前に置くと許可した 2 本が落ちる。`files` の否定パターンは効かない（実測）\n@@ -368,12 +368,12 @@ deny メッセージには `jq` / `python3` が欠けていればその名前も\n   - 違反 0 件なので `pnpm run lint` は落ちないが、override を消す・`paths` を写し忘れる・許可の override を消す、は `.github/scripts/oxlint-config-cases.sh` が落とす（#1445）\n   - 残る穴: 動的 `import(\"react\")` / ref callback に書いた副作用 / 用途別フックに渡す手続きの中身 / `DomListener` は effect の外でも呼べる / `src/` の外 / `useSubscription` / `useDomListeners` に渡す手続きを `useCallback` で安定させているかは検査しない（包み忘れると描き直しのたびに張り直し、その隙間の通知を落としうる。同期で state を更新する手続き（例: 時計の購読）では、包み忘れると再レンダーが止まらず、テストは落ちるのではなく終わらなくなる（実測））\n   - Effect Event を `useCallback` 経由で `useSubscription` へ渡す 3 か所（`use-document-session` の `runMenuCommand` / `openDropped`、`use-document-reload` の `reload`）は、react-hooks の lint を入れると違反になる見込み（oxlint 1.58 の `react/rules-of-hooks` では 0 件を実測。eslint 版は未確認）。参照してよい理由は `useSubscription` の doc（`@param subscribe`）に置く\n-- `.oxlintrc.json` の `overrides`（#1445）は jest プラグインの `no-restricted-jest-methods` と `no-hooks` を `error` で置き、テスト規約（`rules/testing.md`「モックは原則使わない」「テストの書き方: ネスト禁止」）を止める。`src/` 全体で `vi.mock` / `vi.doMock` と `afterEach` 以外のフック（`beforeEach` / `beforeAll` / `afterAll`）を止め、`src/domains/`・`src/services/`・feature の `domains/` ではさらに `vi.fn` / `vi.spyOn` / `vi.stubGlobal` / `vi.stubEnv` / `vi.importMock` / `vi.mockObject` と時刻の差し替え（`vi.useFakeTimers` など 9 メソッド）を止める。導入時の違反 0 件\n+- `.oxlintrc.json` の `overrides`（#1445）は jest プラグインの `no-restricted-jest-methods` と `no-hooks` を `error` で置き、テスト規約（`rules/testing.md`「モックは原則使わない」「テストの書き方: ネスト禁止」）を止める。override は `src/` 全体に効く 1 つ目と、`src/domains/`・`src/services/`・feature の `domains/` でさらに止める 2 つ目に分ける。止めるメソッドとフックは `.oxlintrc.json` の 2 つの jest の override が持ち（domains / services だけで止めるものは 2 つ目）、ここに写さない。導入時の違反 0 件\n   - **守らないと黙って何も止めなくなる約束が 4 つある（どれも実測。判定表が落とす）。** ① `\"plugins\": [\"jest\"]` を 2 つの override のどちらにも書く（無いとその override は無視される） ② オプションは `{メソッド: メッセージ}` を直に渡す（`{ \"restrictedMethods\": {...} }` で包むと何も止めない） ③ 2 つ目の override にも `mock` / `doMock` を並べる（同じ規則のオプションは丸ごと置き換わる） ④ 2 つ目は 1 つ目より後ろに置く（後ろが勝つ）\n-  - **`no-restricted-imports` か jest の 2 規則を持つ override を足したら、その範囲のケースを判定表 `.github/scripts/oxlint-config-cases.sh` にも足す。** 判定表が見るのはこの 3 規則と `require-to-throw-message` の `off` だけで、`curly` / `max-depth` / `max-lines` / `react/forbid-elements` は見ない（#1066 の判断のまま）\n+  - **`no-restricted-imports` か jest の 2 規則を持つ override を足したら、その範囲のケースを判定表 `.github/scripts/oxlint-config-cases.sh` にも足す。** 判定表が見る規則の範囲は判定表の冒頭が持つ（ここに写さない）\n   - jest プラグインを有効にすると、jest の correctness 10 規則が `warn` で入る。`require-to-throw-message` だけ `off` にした（既存の `toThrow()` 3 件があり、規約はメッセージを求めない）。残る 9 規則は導入時 0 件。そのうち `no-focused-tests` / `valid-title` は自動修正を持つため、`post-edit-lint.sh` の `oxlint --fix` が `test.only` を `test` に、前後に空白のあるテスト名を詰めた名前に黙って書き換える（実測）\n   - **override の glob は `*.{ts,tsx,mts,cts}` で書く。** oxlint は `.mts` / `.cts` も lint するが、`.ts` / `.tsx` だけを並べた glob ではそこで層の向きと effect の禁止が黙って外れていた（#1445 で広げた。`.tsx` だけを見る override と許可の override は変えていない）。tsconfig 側で `.mts` / `.cts` を外す案は採らなかった。`include` を絞っても import された `.mts` は型検査に入り（`tsc --listFilesOnly` で実測）、型検査を外すだけになるため。oxlint の外に残る `.mts` / `.cts` の穴は #1463\n-  - 残る穴（判定表の `miss` の行）: `aroundEach` / `aroundAll`、名前空間で import した `vi` の `mock` と `beforeEach`、分割代入で取り出した `mock`、`test.beforeEach` / `it.beforeAll` / `test.extend({}).beforeEach`。また `test.extend` で作ったテストには、correctness の `expect-expect` / `no-disabled-tests` / `no-standalone-expect` が誤って `warn` を出す（実測。今の使用は 0 件で、`warn` は push を止めない）\n+  - 残る穴は判定表の `miss` の行が持つ（ここに写さない）。表に無い穴として、`test.extend` で作ったテストには、correctness の `expect-expect` / `no-disabled-tests` / `no-standalone-expect` が誤って `warn` を出す（実測。今の使用は 0 件で、`warn` は push を止めない）\n - **feature 間の deep import・循環参照・モジュール内部への deep import**（#257 のゴール 1・2・6）は `lib/import-rule-violations.py` が検査する。oxlint に置かなかったのは 3 つとも**リポジトリ構造を読まないと判定できない**ためであり、`overrides.files` の静的 glob では書けない（#284 実測で同一 feature 内ドメイン間 import まで巻き込み 38 件の偽陽性。数値出典は #257 コメント）\n   - **判定根拠はスクリプトの docstring に記載している**（入れ子モジュール・`__tests__/` の扱い・feature だけ狭い理由）。二重管理を避けるためここには写さない。判定表は `lib/import-rule-cases.sh`\n   - **ゴール 6 の実効範囲は現状ほぼ fixture 専用。** 入れ子モジュールの index を許すため `module-public-api` に該当するのは「モジュールフォルダ配下の非 index ファイルを外から読む」形だけで、テスト・ストーリーを除いた該当ファイルは実測 4 件のみ（`index.ts` 直書き規約が守られているため）。**将来の退行を止める枠**としての位置づけ",
+          "patchLines": 34,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/harness-growth/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -37,7 +37,7 @@ bash harness/records/count.sh --list <分類> # その分類の、窓が開い\n \n 上から順に「これで捕まえられるか」を確かめる。\n \n-1. **linter の設定**（`.oxlintrc.json` / Biome）— 既存の配線（編集後 lint・push 前 lint・CI）にそのまま乗る\n+1. **linter の設定**（`.oxlintrc.json` / Biome）— 既存の配線（編集後 lint・push 前 lint・CI）にそのまま乗る。`.oxlintrc.json` の `no-restricted-imports` か jest の規則を持つ override を足したり変えたりしたら、`.github/scripts/oxlint-config-cases.sh` にケースを足す（`.claude/hooks/README.md` の #1445 の項）\n 2. **自前の検出器**（`.claude/hooks/lib/`）— リポジトリ構造を読まないと判定できないもの。配線は `.claude/hooks/`・`harness/githooks/`・`.github/` の 3 層（`.claude/hooks/README.md`「配線」）\n 3. **手順の中の検査**（`.claude/skills/` のコマンド、`harness/githooks/pre-push`）— 実行順序が決まっているときだけ\n ",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T07:37:43Z",
+      "subject": "🧪 [Tests]: #1445 oxlint の判定表に判定の自己検査と拡張子の照合を足す",
+      "body": "- 1 ケース分の判定を case_verdict に切り出し、表の前で固定の行を与える\n  自己検査を 4 行回す（警告だけ → broken / error → deny / 別の規則の\n  error だけ → broken / 行なし → pass）\n- 設定の files の glob の拡張子の波括弧がどれも extensions と同じ集合かを\n  照合する行を足す\n\n背景:\ntest-reviewer の実測で、error_line を Warning まで緩める・has_error を\n「行があれば 1」にする、のどちらも正しい設定と no-hooks を warn に下げた\n設定の両方で緑のまま残った。実物の設定では「警告だけ」の枝に届かない\nため。拡張子の配列から mts を外しても、ケースが減るだけで緑だった。\n\n採用理由:\n判定ロジックは固定の入力で確かめれば実物の oxlint を壊さずに済む。\n拡張子は配列と設定の両方に現れるので、互いに照合すれば片方だけ\n縮めた退行を落とせる。\n\n代替案:\n全件 broken にする処理の挙動（原因を 1 回出す）を固定する案と、\nreport_cases_ran の呼び忘れを照合する案は採らなかった。前者は消しても\nexit 1 は保たれ、後者は既存の判定表すべてに共通する話でこの差分に\n固有ではない。\n\n影響とトレードオフ:\nok の行が 5 行増える。所要時間は測り直して変わらなかった（中央値 2.8 秒\n前後で、README の 2.7 秒と環境差の範囲）。\n\n参考:\nhttps://github.com/DIO0550/design-composer/issues/1445\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 40,
+          "deletions": 8,
+          "patch": "@@ -17,7 +17,8 @@\n # 判定は、そのケースのファイルに `[Error/` の行があれば 1、無ければ 0 として、規則の名前の見出しと\n # `decide` で突き合わせる。`[Error/` の有無はファイル単位で見るので、**1 ファイルで 1 規則だけを確かめる\n # この表に限り、規則の診断が警告だけなら broken になる**(`error` を `warn` に下げる・`off` を外して警告が\n-# 出る、の退行を落とす)。\n+# 出る、の退行を落とす)。実物の設定ではこの枝に届かないので、表の前で 1 ケース分の判定(`case_verdict`)に\n+# 固定の行を与える自己検査を回す。\n #\n # その前に、oxlint の出力全体を同じ `decide` に掛ける。broken なら出力から規則ごとの判定ができないので、\n # 終了コードと出力を 1 回だけ標準エラーへ出し、全ケースを broken にする。設定が壊れたとき(診断の行を\n@@ -30,6 +31,8 @@\n # 表は `期待|規則|ケース名|置くパス|中身` の 1 行 1 ケース。規則は oxlint の unix 形式の出力で末尾の括弧に\n # 入る名前。\n # 置くパスに `{ext}` があれば `ts` `tsx` `mts` `cts` の 4 ケースに展開し、ケース名に ` (.mts)` などを付ける。\n+# この 4 つが設定の `files` の glob の拡張子の波括弧(`*.{ts,tsx,mts,cts}`)のどれとも同じ集合かも照合する\n+# (配列から 1 つ外しても、ケースが減るだけで緑のまま残るため)。\n # 中身は `printf '%b'` で書く(`\\n` が改行になる)。\n #\n # | 期待 | 意味 |\n@@ -76,6 +79,41 @@ place_case() {\n   case_prefix+=(\"c$number/$4:\")\n }\n \n+# oxlint の unix 形式の出力で、error の診断の行に当たる正規表現。\n+error_line='\\[Error/'\n+\n+# 1 ケース分の出力の行から、表の綴り(deny / pass / miss / broken)の判定を返す。\n+#\n+# $1 表に書かれた期待\n+# $2 規則(unix 形式の出力で末尾の括弧に入る名前)\n+# $3 そのケースのファイルについての出力の行\n+case_verdict() {\n+  local expected=\"$1\" rule=\"$2\" lines=\"$3\" has_error=0\n+  grep -qE \"$error_line\" <<<\"$lines\" && has_error=1\n+  normalize_miss \"$expected\" \"$(decide \"$lines\" \"$has_error\" \"\\\\(${rule}\\\\)\\\\]\\$\")\"\n+}\n+\n+self_test_head='c1/src/features/probe/__tests__/probe.normal.test.ts:2:1:'\n+report broken \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の警告だけなら broken\"\n+report deny \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Error/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の error なら deny\"\n+report broken \"$(case_verdict deny no-hooks \"$self_test_head Expected { after 'if' condition. [Error/eslint(curly)]\")\" \"自己検査: 別の規則の error だけなら broken\"\n+report pass \"$(case_verdict pass no-hooks \"\")\" \"自己検査: 行が無ければ pass\"\n+\n+# 設定の `files` の glob の拡張子の波括弧を 1 本ずつ、中身を並べ替えて空白区切りの 1 行にする。\n+extension_sets=\"$(grep -oE '\\.\\{[^{}\"]*\\}\"' \"$config\" | sed -E 's/^\\.\\{(.*)\\}\"$/\\1/' |\n+  while IFS= read -r set; do tr ',' '\\n' <<<\"$set\" | sort | paste -sd ' ' -; done)\"\n+expected_set=\"$(printf '%s\\n' \"${extensions[@]}\" | sort | paste -sd ' ' -)\"\n+mismatched_sets=\"$(grep -vxF -- \"$expected_set\" <<<\"$extension_sets\" | sort -u | paste -sd '/' -)\"\n+if [ -z \"$extension_sets\" ]; then\n+  echo 'NG   設定の files から拡張子の波括弧を 1 つも拾えなかった'\n+  cases_failed=1\n+elif [ -n \"$mismatched_sets\" ]; then\n+  printf 'NG   設定の files の拡張子が extensions(%s)と食い違う(%s)\\n' \"$expected_set\" \"$mismatched_sets\"\n+  cases_failed=1\n+else\n+  printf 'ok   設定の files の拡張子の波括弧 %s 本が extensions と同じ集合\\n' \"$(wc -l <<<\"$extension_sets\")\"\n+fi\n+\n cases=\"$(cat <<'CASES'\n deny|no-restricted-imports|feature で useEffect を import すると止まる|src/features/probe/index.{ext}|import { useEffect } from \"react\";\\nexport const probe = useEffect;\n deny|no-restricted-imports|feature で useLayoutEffect を import すると止まる|src/features/probe/index.ts|import { useLayoutEffect } from \"react\";\\nexport const probe = useLayoutEffect;\n@@ -164,9 +202,6 @@ while IFS='|' read -r expected rule label path body; do\n   done\n done <<<\"$cases\"\n \n-# oxlint の unix 形式の出力で、error の診断の行に当たる正規表現。\n-error_line='\\[Error/'\n-\n output=\"$(cd \"$work\" && \"$oxlint_bin\" -f unix . 2>&1)\"\n status=$?\n \n@@ -183,10 +218,7 @@ for index in \"${!case_prefix[@]}\"; do\n     continue\n   fi\n   lines=\"$(awk -v p=\"${case_prefix[$index]}\" 'index($0, p) == 1' <<<\"$output\")\"\n-  has_error=0\n-  grep -qE \"$error_line\" <<<\"$lines\" && has_error=1\n-  decision=\"$(decide \"$lines\" \"$has_error\" \"\\\\(${case_rule[$index]}\\\\)\\\\]\\$\")\"\n-  report \"${case_expected[$index]}\" \"$(normalize_miss \"${case_expected[$index]}\" \"$decision\")\" \"${case_label[$index]}\"\n+  report \"${case_expected[$index]}\" \"$(case_verdict \"${case_expected[$index]}\" \"${case_rule[$index]}\" \"$lines\")\" \"${case_label[$index]}\"\n done\n report_cases_ran cases \"$cases_before\"\n ",
+          "patchLines": 83,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/check-test-rules.sh",
+      "to": "rules/testing.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "to": "rules/testing.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/test-rules-scan.sh",
+      "to": "rules/testing.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/pre-push-test-helper-duplication.sh",
+      "to": "rules/testing.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-added-test-helper-duplication.sh",
+      "to": "rules/testing.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": ".oxlintrc.json",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": "src/hooks/use-remeasure/index.ts",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": "src/test-setup.ts",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/commit-md-heading-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/git-add-all-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-frontend-report.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-tauri-version-match.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/oxlint-config-cases.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "pnpm-lock.yaml",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": ".github/scripts/storybook-visual-regression.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "rules/architecture.md",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "rules/hooks.md",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "rules/testing.md",
+      "status": "added"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/canvas/components/canvas-toolbar/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/sidebar/components/document-tree/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/sidebar/components/left-pane-rail/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/tokens/components/token-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/hooks/use-remeasure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": "harness/githooks/pre-push",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/git-add-all-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/lib/detector-precondition.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/oxlint-config-cases.sh",
+      "status": "added"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": ".claude/skills/harness-growth/SKILL.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    }
+  ]
+}
