@@ -15,7 +15,7 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 | 4 | 計画の検証 | `plan-reviewer` の指摘と、それへの対応 |
 | 5 | 実装 | コードとテスト |
 | 6 | 実装の検証 | 観点別のレビューエージェントの指摘と、それへの対応 |
-| 7 | PR | 差分を説明する PR |
+| 7 | PR | 差分と判断を説明する PR |
 | 8 | マージ後の追記 | 閉じた Issue へのコメントと、続きの Issue |
 
 **検証の観点はこのファイルに書かない。** 観点は `.claude/agents/` の `plan-reviewer.md` と観点別の `*-reviewer.md` で定義する（検証の観点を親のコンテキストに通さないための分割）。
@@ -207,7 +207,7 @@ diff_text | grep -ciE 'UI 案|Design Composer\.html'   # ui-reviewer の語
 ## フェーズ 7: PR
 
 - **PR を出す前に、フェーズ 1「種類の確定」の手順 1 でラベルを読み直す。** 変わっていたらフェーズ 1 へ戻る（手順 6）
-- **PR 本文は差分の説明に絞る**（判断の履歴は Issue 側にある）
+- **PR 本文は `pull-request` スキルで書く。** 意思決定の書き方は `.claude/.pr-template.yml` の `decision_record` に従い、材料にはコミット本文に加えて Issue の計画・却下案を使う（Issue からは省かない → `AGENTS.md`「実装の進め方」）
 - **本文に `Closes #<Issue 番号>` を書く**（`AGENTS.md`「着手した Issue は、その回で閉じる」。閉じる Issue がない PR は `.github/workflows/pr-closing-issue.yml` が落とす）
 - CI（lint / typecheck / test / 視覚差分）を通す。push 前検査や CI が落ちた場合、修正は種類（と工程）と一緒に `implementer` へ渡す（判断を伴わない自動修正コマンドだけは親が走らせてよい →「役割の分担」）
 - **PR を出したら `pr-explain` スキルで解説（`explain.json`）を書く。** 振る舞いが変わる push をしたら書き直す（`.claude/skills/pr-explain/`）
@@ -262,6 +262,7 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # �
 - **検証は必ず別のエージェントに投げる。** 自分で書いた計画やコードを自分で検証しても同じ前提のまま読むため、抜けが同じ位置に残る
 - **検証エージェントに実装させない。** 指摘だけを返させ、採否は親が判断し、修正は別に起動する `implementer` に任せる
 - **`implementer` から返ったら、`git status --porcelain` を「計画のファイル表と渡した指摘の対象」と突き合わせる。** 一致したら commit して作業ツリーの基準にする（push はフェーズ 7。2 工程に分ける種類の第 1 工程ではフェーズ 5 の狭い範囲で突き合わせる）
+- **implementation-flow の中でのコミットの区切りはこの手順（工程と `implementer` から返るたび）が決め、`commit` スキルの分割ルールより優先する。** 件名と本文の書き方は `commit` スキルに従う
 - **それ以外のエージェントから返ったら、指摘を読む前に作業ツリーが基準のまま（`git status --porcelain` が空）か確認する。** 定義に「変更しない」と書いてあっても書き換える場合があるため、戻さずに指摘対応へ進むと `implementer` の変更と混ざってコミットに載る
 - **修正は `SendMessage` で続けず、新しい Agent 呼び出しで `implementer` に渡す。** 実行中マーカーを作るフックの matcher は `Task|Agent` であり、`SendMessage` には反応しないため（`.claude/settings.json`）
 - **作業ツリーを書き換えるサブエージェントは、他のツール呼び出しを同じメッセージに並べず単独・フォアグラウンドで起動し、完了を受け取るまで `git add` / `commit` / `push` を挟まない。** ミューテーション実測や実装の途中にコミットすると、その瞬間の書き換えが紛れ込む。`block-git-during-verification-agent.sh` がマーカーのある間の git 操作を止める（対象は `.claude/hooks/README.md`）が、マーカーが残るのはフォアグラウンドにある間だけ。`run_in_background: true` を明示した起動は `track-verification-agent-activity.sh` が拒否するものの、フォアグラウンド起動でも 120 秒を超えると約 120 秒でバックグラウンドへ移され、移された後はマーカーが消える（フック冒頭参照）。単独起動にするのは、バックグラウンド移行後に並列呼び出しが実行中に走りうるのを防ぐため（実測記録は `harness/case-law/process.md`）

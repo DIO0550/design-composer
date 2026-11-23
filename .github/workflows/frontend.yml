@@ -205,6 +205,16 @@ jobs:
       - name: 親セッションの編集の判定表
         run: bash .claude/hooks/lib/parent-session-edit-cases.sh
 
+      - name: git add -A の拒否の判定表
+        run: bash .claude/hooks/lib/git-add-all-cases.sh
+
+      # `#` の前に空白がある名前は、引用符で囲まないと YAML が ` #` から後ろをコメントとして捨てる。
+      - name: "コミット本文の行頭 # の拒否の判定表"
+        run: bash .claude/hooks/lib/commit-md-heading-cases.sh
+
+      - name: 保護ブランチの編集の拒否の判定表
+        run: bash .claude/hooks/lib/protected-branch-edit-cases.sh
+
       - name: 判定の読み取りと報告と種別の照合の判定表
         run: bash .claude/hooks/lib/cases-report-cases.sh
 
