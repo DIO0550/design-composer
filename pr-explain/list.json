@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1466,
+      "title": "📝 [Doc]: PR #1462 の振り返りを harness/records に記録する"
+    },
+    {
       "pr": 1465,
       "title": "✨ [New Feature]: #1445 テスト規約の 3 規則を oxlint の jest プラグインで止める"
     },
