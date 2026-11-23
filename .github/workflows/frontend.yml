@@ -183,6 +183,11 @@ jobs:
       - name: Issue の作業の種類の判定表
         run: bash .claude/hooks/lib/issue-flow-kind-cases.sh
 
+      # 実物の gh と openssl を使う(ランナーの image にある)。pre-push に置かない理由は
+      # .claude/hooks/README.md「カバー範囲と残る穴」。
+      - name: Issue の作業の種類を実物の gh で確かめる判定表
+        run: bash .claude/hooks/lib/issue-flow-kind-real-gh-cases.sh
+
       # pre-push は jq の無い環境で飛ばすが、ランナーの image には jq がある
       # (ci-trace.yml も素の jq を呼ぶ)ので、ここは無条件に走らせる。
       - name: カナリアの判定表
