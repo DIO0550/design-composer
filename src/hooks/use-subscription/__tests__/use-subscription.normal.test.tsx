@@ -12,10 +12,10 @@ function Harness({
 }: Readonly<{ log: string[]; topic: string; tick?: number }>) {
   const subscribe = useCallback(() => {
     log.push(`start:${topic}`);
-    const stop = () => {
+    const unsubscribe = () => {
       log.push(`stop:${topic}`);
     };
-    return Option.some(stop);
+    return Option.some(unsubscribe);
   }, [log, topic]);
   useSubscription(subscribe);
   return <div data-tick={tick} />;

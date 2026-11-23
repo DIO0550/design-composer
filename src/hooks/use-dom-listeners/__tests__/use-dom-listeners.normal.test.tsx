@@ -42,6 +42,32 @@ test("外れると、集めたリスナーはイベントを受け取らなく�
   expect(received).toEqual([]);
 });
 
+test("集めたリスナーが複数あっても、外れるとどれも受け取らなくなる", () => {
+  const received: string[] = [];
+  function Harness() {
+    const collect = useCallback(
+      () => [
+        DomListener.createOnDocument("keydown", (event) => {
+          received.push(`keydown:${event.key}`);
+        }),
+        DomListener.createOnWindow("blur", () => {
+          received.push("blur");
+        }),
+      ],
+      [],
+    );
+    useDomListeners(collect);
+    return <div />;
+  }
+  const { unmount } = render(<Harness />);
+  unmount();
+
+  fireEvent.keyDown(document, { key: "x" });
+  fireEvent.blur(window);
+
+  expect(received).toEqual([]);
+});
+
 test("手続きが変わると、前のリスナーは受け取らず新しいリスナーだけが受け取る", () => {
   const received: string[] = [];
   const { rerender } = render(

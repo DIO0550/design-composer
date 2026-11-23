@@ -7,9 +7,9 @@ test("document に張ったリスナーはイベントを受け取り、外す�
     received.push(event.key);
   });
 
-  listener.attach();
+  const unsubscribe = listener();
   globalThis.document.dispatchEvent(new KeyboardEvent("keydown", { key: "a" }));
-  listener.detach();
+  unsubscribe();
   globalThis.document.dispatchEvent(new KeyboardEvent("keydown", { key: "b" }));
 
   expect(received).toEqual(["a"]);
@@ -21,9 +21,9 @@ test("window に張ったリスナーはイベントを受け取り、外すと�
     received.push("blur");
   });
 
-  listener.attach();
+  const unsubscribe = listener();
   globalThis.window.dispatchEvent(new FocusEvent("blur"));
-  listener.detach();
+  unsubscribe();
   globalThis.window.dispatchEvent(new FocusEvent("blur"));
 
   expect(received).toEqual(["blur"]);
@@ -35,11 +35,11 @@ test("要素に張ったリスナーは既定動作を止められる", () => {
     event.preventDefault(),
   );
 
-  listener.attach();
+  const unsubscribe = listener();
   const notCanceled = surface.dispatchEvent(
     new WheelEvent("wheel", { cancelable: true }),
   );
-  listener.detach();
+  unsubscribe();
 
   expect(notCanceled).toBe(false);
 });
@@ -51,9 +51,9 @@ test("要素から外したリスナーは、イベントを受け取らなく�
     received.push("wheel");
   });
 
-  listener.attach();
+  const unsubscribe = listener();
   surface.dispatchEvent(new WheelEvent("wheel"));
-  listener.detach();
+  unsubscribe();
   surface.dispatchEvent(new WheelEvent("wheel"));
 
   expect(received).toEqual(["wheel"]);

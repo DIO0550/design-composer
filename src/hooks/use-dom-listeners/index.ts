@@ -1,5 +1,7 @@
-import { useEffect } from "react";
+import { useCallback } from "react";
+import { useSubscription } from "@/hooks/use-subscription";
 import type { DomListener } from "@/libs/dom-event";
+import { Option } from "@/utils/Option";
 
 /**
  * `collect` が返すリスナーを描画のあとに張り、`collect` が変わるたび・外れるときに外す。
@@ -10,15 +12,17 @@ import type { DomListener } from "@/libs/dom-event";
  *   なら `useCallback` で安定させる
  */
 export function useDomListeners(collect: () => readonly DomListener[]): void {
-  useEffect(() => {
+  const subscribe = useCallback(() => {
     const listeners = collect();
-    for (const listener of listeners) {
-      listener.attach();
-    }
-    return () => {
-      for (const listener of listeners) {
-        listener.detach();
+
+    const unsubscribes = listeners.map((listener) => listener());
+
+    const unsubscribe = () => {
+      for (const unsubscribeListener of unsubscribes) {
+        unsubscribeListener();
       }
     };
+    return Option.some(unsubscribe);
   }, [collect]);
+  useSubscription(subscribe);
 }

@@ -12,7 +12,7 @@
       "files": ["src/**/*.ts", "src/**/*.tsx"],
       "rules": {
         "no-restricted-imports": ["error", { "paths": [
-          { "name": "react", "importNames": ["useEffect", "useLayoutEffect", "useInsertionEffect"], "message": "effect は src/hooks の use-dom-listeners / use-subscription / use-remeasure を通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）" },
+          { "name": "react", "importNames": ["useEffect", "useLayoutEffect", "useInsertionEffect"], "message": "effect は src/hooks の用途別フックを通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）" },
           { "name": "react", "importNames": ["default"], "message": "React は名前付きで import する（default の React.useEffect が effect の禁止をすり抜けるため）" }
         ] }]
       }
@@ -141,15 +141,14 @@
           { "group": ["**/services/**", "@/services/**", "@/services"], "message": "components/hooks/utils/types はドメイン知識(services)を import できません" },
           { "group": ["**/features/**", "@/features/**", "@/features"], "message": "components/hooks/utils/types はドメイン知識(features)を import できません" }
         ], "paths": [
-          { "name": "react", "importNames": ["useEffect", "useLayoutEffect", "useInsertionEffect"], "message": "effect は src/hooks の use-dom-listeners / use-subscription / use-remeasure を通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）" },
+          { "name": "react", "importNames": ["useEffect", "useLayoutEffect", "useInsertionEffect"], "message": "effect は src/hooks の用途別フックを通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）" },
           { "name": "react", "importNames": ["default"], "message": "React は名前付きで import する（default の React.useEffect が effect の禁止をすり抜けるため）" }
         ] }]
       }
     },
     {
-      // effect を import してよいのはここだけ。同じ規則の後ろの override がオプションを丸ごと置き換えるので、patterns だけを持たせて paths を外す
+      // effect を import してよいのはここだけ。patterns だけを持たせる理由は .claude/hooks/README.md（#1444 の項）
       "files": [
-        "src/hooks/use-dom-listeners/index.ts",
         "src/hooks/use-subscription/index.ts",
         "src/hooks/use-remeasure/index.ts"
       ],
@@ -170,7 +169,7 @@
           { "group": ["**/components/**", "@/components/**", "@/components"], "message": "libs は components を import できません" },
           { "group": ["**/hooks/**", "@/hooks/**", "@/hooks"], "message": "libs は hooks を import できません" }
         ], "paths": [
-          { "name": "react", "importNames": ["useEffect", "useLayoutEffect", "useInsertionEffect"], "message": "effect は src/hooks の use-dom-listeners / use-subscription / use-remeasure を通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）" },
+          { "name": "react", "importNames": ["useEffect", "useLayoutEffect", "useInsertionEffect"], "message": "effect は src/hooks の用途別フックを通して使う（rules/hooks.md「useEffect: 最終手段として扱う」）" },
           { "name": "react", "importNames": ["default"], "message": "React は名前付きで import する（default の React.useEffect が effect の禁止をすり抜けるため）" }
         ] }]
       }
