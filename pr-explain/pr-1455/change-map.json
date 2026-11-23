@@ -1,0 +1,1768 @@
+{
+  "version": 2,
+  "pr": 1455,
+  "headBranch": "claude/fervent-bohr-zs1bfi",
+  "baseBranch": "main",
+  "mergeBase": "8b845921be4df678cd7ce9824f36f40bee4cce1f",
+  "head": "e75d8b4d4bc57e13ee8c3c477dc03ab0cadf562c",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/.commit-template.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 280,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/.pr-template.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 194,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 48,
+          "deletions": 7,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/block-commit-md-heading.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 32,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/block-git-add-all.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 28,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/block-git-during-verification-agent.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/block-protected-branch-edit.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 33,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/canary-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-fixtures.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 34,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/command-literals.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 62,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/commit-md-heading-cases.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 59,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/git-add-all-cases.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 87,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/parent-session-edit-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 9,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 109,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/test-rules-scan.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/post-merge-review.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/pre-push-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/settings.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 11,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/commit/SKILL.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 158,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/commit/references/decision-record.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 161,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/commit/references/examples.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 89,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/harness-record/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/pull-request/SKILL.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 155,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/pull-request/references/pr-template.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 271,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-frontend-report.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-lint-suppressions.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-tauri-version-match.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/detector-precondition.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "AGENTS.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/lib/check-tally.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": "pnpm-lock.yaml",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "43cd815ea6585d3b87f0d982861d00812c1afbba",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-22T15:52:15Z",
+      "subject": "🧪 [Tests]: #1437 コミット系の 3 フックの判定表と骨組みを足す",
+      "body": "- git add -A の拒否・コミット本文の行頭 # の拒否・保護ブランチでの編集の拒否の判定表を 3 本足す（50 / 35 / 19 行）\n- フック 3 本（block-git-add-all.sh / block-commit-md-heading.sh / block-protected-branch-edit.sh）は骨組みだけ置き、何も出さずに exit 0 する\n- 判定表を pre-push と CI（frontend.yml の rules-check）に配線する\n- Bash の呼び出しの入力を組む bash_call_input を cases-fixtures.sh に足し、pre-push-detector-cases.sh の push_payload を置き換える\n\n背景:\nd-market-git の git-workflow-plugin が持っていたコミット系のフックを、プラグインを読み込めない環境でも効くよう .claude/ に取り込む。取り込み元のフックは、コミットメッセージや gh の本文に git add -A や ## と書いただけで止まる形があるため、判定を直して載せる。直したあとの振る舞いを先に判定表で固定する（flow:feature の第 1 工程）。\n\n採用理由:\n期待は deny / pass / miss の 3 種で、止めすぎも deny の行として固定する。骨組みのままだと deny の行だけが落ちる（18 / 18 / 10 件）。保護ブランチの表は bash と git だけで走るので、pre-push で飛ばさない区間に置いた。jq で入力を組む 2 本は jq の区間に置いた。\n\n代替案:\n- 判定表を 1 本にまとめる案は、必要な道具が違い（jq と、bash・git だけ）、pre-push の置き場所が分かれるので採らなかった\n- 新しい表がそれぞれ入力を組む案は、push_payload と同じ jq の組み立てが重複するので採らなかった\n\n影響とトレードオフ:\nこのコミットの時点では pre-push と CI が新しい 3 表で落ちる。次の工程でフックの本体を書いて通す。\n\n参考:\n計画は Issue #1437 のコメント 7081180875（v4）と 7081464064（v5）。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NZQHLFV2MuY769VeU",
+      "files": [
+        {
+          "path": ".claude/hooks/block-commit-md-heading.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,10 @@\n+#!/usr/bin/env bash\n+#\n+# コミット本文の行頭 `#` の禁止: `git commit` を含むコマンドで、本文の行頭（桁 0）が `#` の行を拒否する PreToolUse フック。\n+# 由来: d-market-git / git-workflow-plugin の no-commit-md-heading.sh（1135a0d）\n+#\n+# 方針: 本文の見出しは `<見出し>:` を単独行に置く。\n+#\n+# 入力: stdin に { \"tool_input\": { \"command\": \"...\" } } を含む JSON (Bash ツール呼び出し)\n+# 出力: 違反時に permissionDecision=deny の JSON を返す。問題なければ exit 0。\n+exit 0",
+          "patchLines": 11,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/block-git-add-all.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,10 @@\n+#!/usr/bin/env bash\n+#\n+# 一括ステージングの禁止: `git add -A` / `git add --all` / `git add .` / `git add -a` を拒否する PreToolUse フック。\n+# 由来: d-market-git / git-workflow-plugin の no-git-add-all.sh（1135a0d）\n+#\n+# 方針: ステージするファイルはパスで指定する。\n+#\n+# 入力: stdin に { \"tool_input\": { \"command\": \"...\" } } を含む JSON (Bash ツール呼び出し)\n+# 出力: 違反時に permissionDecision=deny の JSON を返す。問題なければ exit 0。\n+exit 0",
+          "patchLines": 11,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/block-protected-branch-edit.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,11 @@\n+#!/usr/bin/env bash\n+#\n+# 保護ブランチの編集の禁止: 作業ディレクトリのブランチが main / master / production / release / develop / staging\n+# のとき、ファイルの編集を拒否する PreToolUse フック。\n+# 由来: d-market-git / git-workflow-plugin の branch-protection.sh（1135a0d）\n+#\n+# 方針: 編集は作業ブランチで行う。\n+#\n+# 入力: stdin の JSON は見ない（どのツールで呼ぶかは settings.json の matcher が決める）\n+# 出力: 違反時に permissionDecision=deny の JSON を返す。問題なければ exit 0。\n+exit 0",
+          "patchLines": 12,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/cases-fixtures.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 11,
+          "deletions": 3,
+          "patch": "@@ -1,11 +1,12 @@\n #!/usr/bin/env bash\n #\n # フックの判定表(`*-cases.sh`)が共有する、ケースの前提の置き方。落ちる検出器・起動できないコマンド・\n-# 本体が同じテストヘルパーを渡されたパスへ置くものと、サブエージェントの中の呼び出しの入力を組むものと、\n-# フックを一時ディレクトリへ写すもの。\n+# 本体が同じテストヘルパーを渡されたパスへ置くものと、サブエージェントの中の呼び出しの入力と Bash の\n+# 呼び出しの入力を組むものと、フックを一時ディレクトリへ写すもの。\n #\n # 使う側: lib/pre-push-detector-cases.sh / lib/edit-detector-cases.sh / lib/import-rule-cases.sh /\n-# lib/verification-agent-cases.sh / lib/parent-session-edit-cases.sh / lib/issue-flow-kind-cases.sh\n+# lib/verification-agent-cases.sh / lib/parent-session-edit-cases.sh / lib/issue-flow-kind-cases.sh /\n+# lib/git-add-all-cases.sh / lib/commit-md-heading-cases.sh\n #\n # 終了コードと出力の組を実物の検出器から決まった形で作れないので、判定表は検出器をスタブで作る\n # (ここに置くのは判定表どうしが共有する落ちる側。報告の行を出すスタブは報告の綴りが違うので各判定表が持つ)。\n@@ -75,3 +76,10 @@ place_duplicate_helpers() {\n       >\"$folder/setup.ts\"\n   done\n }\n+\n+# Bash の PreToolUse でフックへ渡す JSON を書く(`tool_input.command` だけを載せる)。\n+#\n+# $1 フックへ渡すコマンド\n+bash_call_input() {\n+  jq -n --arg c \"$1\" '{tool_input: {command: $c}}'\n+}",
+          "patchLines": 27,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/commit-md-heading-cases.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 71,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,71 @@\n+#!/usr/bin/env bash\n+#\n+# `block-commit-md-heading.sh` の判定表。Bash の PreToolUse の入力をフックへ流し、コミット本文の行頭 `#` の\n+# 拒否と素通りが期待どおりかを 1 コマンドで確かめる。\n+#\n+# 使い方: bash .claude/hooks/lib/commit-md-heading-cases.sh\n+# 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n+#\n+# 期待は 3 種。deny は止める(止めすぎている形も deny で固定する)、pass は通す、miss は止めない取りこぼし\n+# (通ることを固定する。フックが止めるようになったら NG になり、見る範囲が変わったことが表に出る)。\n+#\n+# ケースをファイルに置くのは、Bash で打って確かめると、deny の行は配線したあとのフック自身に止められるから。\n+#\n+# 表の 1 行は `期待|ケース名|コマンド`(コマンドは最後の列なので `|` を含んでよい)。コマンドの `@@` は改行に、\n+# `⇥` はタブに戻してから渡す。判定は `cases-report.sh` の `hook_verdict_by_permission`。\n+#\n+# 入力を組むのに jq を使う(`cases-fixtures.sh` の `bash_call_input`)ので、jq が無いと deny の行が NG になる。\n+# `harness/githooks/pre-push` は jq がある環境でだけ走らせる。\n+set -uo pipefail\n+\n+lib_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n+. \"$lib_dir/cases-report.sh\"\n+. \"$lib_dir/cases-fixtures.sh\"\n+\n+hook=\"$lib_dir/../block-commit-md-heading.sh\"\n+\n+cases_before=$cases_reported\n+while IFS='|' read -r expected label command; do\n+  command=\"${command//@@/$'\\n'}\"\n+  command=\"${command//⇥/$'\\t'}\"\n+  verdict=\"$(hook_verdict_by_permission \"$hook\" <<<\"$(bash_call_input \"$command\")\")\"\n+  report \"$expected\" \"$(normalize_miss \"$expected\" \"$verdict\")\" \"$label\"\n+done <<'CASES'\n+deny|複数行の -m の行頭 # を止める|git commit -m \"subject@@@@# 背景\"\n+deny|シングルクォートの複数行の -m の行頭 # を止める|git commit -m 'subject@@@@# 背景'\n+deny|git commit -am の複数行の行頭 # を止める|git commit -am \"subject@@@@# 背景\"\n+deny|<<'EOF' の本文の行頭 # を止める|git commit -m \"$(cat <<'EOF'@@subject@@@@# 背景@@EOF@@)\"\n+deny|<<EOF の本文の行頭 # を止める|git commit -m \"$(cat <<EOF@@subject@@@@# 背景@@EOF@@)\"\n+deny|<<\"EOF\" の本文の行頭 # を止める|git commit -m \"$(cat <<\"EOF\"@@subject@@@@# 背景@@EOF@@)\"\n+deny|<< 'EOF'（空白あり）の本文の行頭 # を止める|git commit -m \"$(cat << 'EOF'@@subject@@@@# 背景@@EOF@@)\"\n+deny|<<\\EOF の本文の行頭 # を止める|git commit -F - <<\\EOF@@subject@@@@# 背景@@EOF\n+deny|<<-EOF の本文の桁 0 の # を止める|git commit -F - <<-EOF@@subject@@@@# 背景@@EOF\n+deny|-F - に渡すヒアドキュメントの行頭 # を止める|git commit -F - <<'EOF'@@subject@@@@# 背景@@EOF\n+deny|--amend の本文の行頭 ## を止める|git commit --amend -m \"$(cat <<'EOF'@@subject@@@@## 採用理由@@EOF@@)\"\n+deny|行頭が Issue 番号の本文の行を止める|git commit -m \"$(cat <<'EOF'@@subject@@@@#1437 で決めた@@EOF@@)\"\n+deny|cd の後ろの git commit の本文も止める|cd sub && git commit -m \"$(cat <<'EOF'@@subject@@@@# 背景@@EOF@@)\"\n+deny|\"$(…)\" の後ろに並べた git commit の本文も止める|git tag \"$(date +%s)\" && git commit -m \"subject@@@@# 背景\"\n+deny|2 つ目のヒアドキュメント（git commit の本文）の行頭 # も止める|cat <<'A' >/dev/null@@メモ@@A@@git commit -m \"$(cat <<'EOF'@@subject@@@@# 背景@@EOF@@)\"\n+deny|ヒアドキュメントでファイルへ書いてから -F で渡す本文の行頭 # も止める|cat > /tmp/msg <<'EOF'@@subject@@@@# 背景@@EOF@@git commit -F /tmp/msg\n+deny|（止めすぎ）git commit と同じ入力にある別のヒアドキュメントの行頭 # で止める|gh pr create --body \"$(cat <<'B'@@## 概要@@B@@)\" && git commit -m \"$(cat <<'EOF'@@subject@@@@背景:@@EOF@@)\"\n+deny|（止めすぎ）git commit と同じ入力にあるシェルのコメント行で止める|# 記録をまとめる@@git commit -m \"subject\"\n+pass|<見出し>: の形の見出しは通す|git commit -m \"$(cat <<'EOF'@@subject@@@@背景:@@理由@@EOF@@)\"\n+pass|字下げした # は通す|git commit -m \"$(cat <<'EOF'@@subject@@@@  # 字下げ@@EOF@@)\"\n+pass|件名の途中の #1437 は通す|git commit -m \"✨ [New Feature]: #1437 取り込む\"\n+pass|行の途中の # は通す|git commit -m \"x\" # 見出しではない\n+pass|--amend --no-edit は通す|git commit --amend --no-edit\n+pass|git log --grep の #1437 は通す|git log --grep \"#1437\"\n+pass|gh pr create の本文の ## は通す（本文に git commit とあっても）|gh pr create --title t --body \"$(cat <<'EOF'@@## 概要@@git commit の手順を変えた@@EOF@@)\"\n+pass|gh api のコメント本文の ## は通す（本文に git commit とあっても）|gh api repos/o/r/issues/1/comments -f body=\"$(cat <<'EOF'@@## 計画@@git commit -m で記録する@@EOF@@)\"\n+pass|記録ファイルを書くヒアドキュメントの # は通す（本文に git commit とあっても）|cat > /tmp/pr-1.md <<'EOF'@@# PR 1@@git commit の本文@@EOF\n+pass|引用符の中の git commit は見ない|echo \"git commit\" && cat <<'EOF'@@# メモ@@EOF\n+miss|2 つ目の -m の # は見ない|git commit -m \"subject\" -m \"# 背景\"\n+miss|件名が # で始まる 1 行の -m は見ない|git commit -m \"#1437 subject\"\n+miss|-F <ファイル> の中身は見ない|git commit -F msg.txt\n+miss|git -C <パス> commit は見ない|git -C sub commit -m \"$(cat <<'EOF'@@subject@@@@# 背景@@EOF@@)\"\n+miss|git -c <設定> commit は見ない|git -c user.name=x commit -m \"$(cat <<'EOF'@@subject@@@@# 背景@@EOF@@)\"\n+miss|<<-EOF でタブを除かれて桁 0 になる # は見ない|git commit -F - <<-EOF@@subject@@@@⇥# 背景@@EOF\n+miss|別のヒアドキュメントと並ぶ複数行の -m の行頭 # は見ない|cat <<'A' >/dev/null@@メモ@@A@@git commit -m \"subject@@@@# 背景\"\n+CASES\n+report_cases_ran CASES \"$cases_before\"\n+exit \"$cases_failed\"",
+          "patchLines": 72,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/git-add-all-cases.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 86,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,86 @@\n+#!/usr/bin/env bash\n+#\n+# `block-git-add-all.sh` の判定表。Bash の PreToolUse の入力をフックへ流し、一括ステージングの拒否と\n+# 素通りが期待どおりかを 1 コマンドで確かめる。\n+#\n+# 使い方: bash .claude/hooks/lib/git-add-all-cases.sh\n+# 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n+#\n+# 期待は 3 種。deny は止める(止めすぎている形も deny で固定する)、pass は通す、miss は止めない取りこぼし\n+# (通ることを固定する。フックが止めるようになったら NG になり、見る範囲が変わったことが表に出る)。\n+#\n+# ケースをファイルに置くのは、Bash で打って確かめると、deny の行は配線したあとのフック自身に止められるから。\n+#\n+# 表の 1 行は `期待|ケース名|コマンド`(コマンドは最後の列なので `|` を含んでよい)。コマンドの `@@` は改行に、\n+# `⇥` はタブに戻してから渡す。判定は `cases-report.sh` の `hook_verdict_by_permission`。\n+#\n+# 入力を組むのに jq を使う(`cases-fixtures.sh` の `bash_call_input`)ので、jq が無いと deny の行が NG になる。\n+# `harness/githooks/pre-push` は jq がある環境でだけ走らせる。\n+set -uo pipefail\n+\n+lib_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n+. \"$lib_dir/cases-report.sh\"\n+. \"$lib_dir/cases-fixtures.sh\"\n+\n+hook=\"$lib_dir/../block-git-add-all.sh\"\n+\n+cases_before=$cases_reported\n+while IFS='|' read -r expected label command; do\n+  command=\"${command//@@/$'\\n'}\"\n+  command=\"${command//⇥/$'\\t'}\"\n+  verdict=\"$(hook_verdict_by_permission \"$hook\" <<<\"$(bash_call_input \"$command\")\")\"\n+  report \"$expected\" \"$(normalize_miss \"$expected\" \"$verdict\")\" \"$label\"\n+done <<'CASES'\n+deny|git add -A を止める|git add -A\n+deny|git add --all を止める|git add --all\n+deny|git add . を止める|git add .\n+deny|git add -a を止める（取り込み元のまま）|git add -a\n+deny|git add -- . を止める|git add -- .\n+deny|-A が最初の引数でない git add -v -A を止める|git add -v -A\n+deny|-A を束ねた git add -fA を止める|git add -fA\n+deny|パスの後ろに . を並べた git add src/a.ts . を止める|git add src/a.ts .\n+deny|パスを付けた git add -A src/ も止める（取り込み元のまま）|git add -A src/\n+deny|前置きの env を付けた git add -A を止める|env FOO=1 git add -A\n+deny|; の直前の git add . を止める|git add .; git status\n+deny|&& の後ろの git add -A を止める|git add src/a.ts && git add -A\n+deny|改行の後ろの git add -A を止める|git status@@git add -A\n+deny|\"$(…)\" の後ろに並べた git add -A を止める|git commit -m \"$(date)\" && git add -A && git commit -m \"x\"\n+deny|語の途中のアポストロフィの後ろの git add -A を止める|echo \"don't\" && git add -A\n+deny|\"$(…)\" の中の git add -A を止める|out=\"$(git add -A 2>&1)\"\n+deny|\"`…`\" の中の git add -A を止める|out=\"`git add -A 2>&1`\"\n+deny|<<-EOF のタブで字下げした閉じの後ろの git add -A を止める|git commit -F - <<-EOF@@⇥subject@@⇥EOF@@git add -A\n+pass|個別のパスの git add は通す|git add src/a.ts\n+pass|git add -u は通す|git add -u\n+pass|git add -p は通す|git add -p src/a.ts\n+pass|git add -N は通す|git add -N src/app/probe.ts\n+pass|-- の後ろが個別のパスなら通す|git add -- src/a.ts\n+pass|./ で始まるパスは通す|git add ./src\n+pass|ドットで始まるパスは通す|git add .claude/hooks/x.sh\n+pass|git commit -am は通す（追跡済みだけを載せる git add -u と同じ）|git commit -am \"x\"\n+pass|&& の後ろの ls -A は通す|git add src/a.ts && ls -A\n+pass|ダブルクォートの中の git add -A は通す|git commit -m \"git add -A は使わない\"\n+pass|シングルクォートの中の git add -A は通す|git commit -m 'git add -A は使わない'\n+pass|grep の引数の git add -A は通す|grep -rn \"git add -A\" .\n+pass|README の動作確認の JSON の中の git add -A は通す|echo '{\"session_id\":\"probe\",\"tool_input\":{\"command\":\"git add -A\"}}' | bash .claude/hooks/block-git-during-verification-agent.sh\n+pass|<<'EOF' のヒアドキュメントの本文は通す|git commit -m \"$(cat <<'EOF'@@subject@@@@git add -A は使わない@@EOF@@)\"\n+pass|<<EOF のヒアドキュメントの本文は通す|git commit -F - <<EOF@@subject@@@@git add -A は使わない@@EOF\n+pass|<<\"EOF\" のヒアドキュメントの本文は通す|git commit -F - <<\"EOF\"@@subject@@@@git add -A は使わない@@EOF\n+pass|<< 'EOF'（空白あり）のヒアドキュメントの本文は通す|git commit -F - << 'EOF'@@subject@@@@git add -A は使わない@@EOF\n+pass|<<-EOF のヒアドキュメントの本文は通す|git commit -F - <<-EOF@@⇥subject@@@@⇥git add -A は使わない@@⇥EOF\n+pass|<<\\EOF のヒアドキュメントの本文は通す|git commit -F - <<\\EOF@@subject@@@@git add -A は使わない@@EOF\n+pass|= の直後のダブルクォートの中の git add -A は通す|gh api repos/o/r/issues/1/comments -f body=\"git add -A は使わない\"\n+pass|行の継続の後ろの行頭のダブルクォートの中の git add -A は通す|grep -rn \\@@\"git add -A\" .\n+pass|複数行にまたがる -m の中の git add -A は通す|git commit -m \"subject@@@@git add -A は使わない\"\n+pass|改行の後ろの ls -A は通す|git add src/a.ts@@ls -A\n+pass|空白で字下げした EOF ではヒアドキュメントを閉じない|git commit -F - <<'EOF'@@subject@@  EOF@@git add -A は使わない@@EOF\n+miss|git -C <パス> add -A は見ない|git -C src add -A\n+miss|git -c <設定> add -A は見ない|git -c core.autocrlf=false add -A\n+miss|git add ./ は見ない|git add ./\n+miss|git add :/ は見ない|git add :/\n+miss|git add * は見ない|git add *\n+miss|引用符で囲んだ git add \".\" は見ない|git add \".\"\n+miss|git stage -A は見ない|git stage -A\n+miss|bash -c の中の git add -A は見ない|bash -c \"git add -A\"\n+CASES\n+report_cases_ran CASES \"$cases_before\"\n+exit \"$cases_failed\"",
+          "patchLines": 87,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 9,
+          "patch": "@@ -35,13 +35,6 @@ trap 'rm -rf \"$work\"' EXIT\n source \"$lib_dir/cases-report.sh\"\n source \"$lib_dir/cases-fixtures.sh\"\n \n-# フックへ渡す JSON を書く。\n-#\n-# $1 フックへ渡すコマンド\n-push_payload() {\n-  jq -n --arg c \"$1\" '{tool_input: {command: $c}}'\n-}\n-\n # 1 ケースを判定して報告し、置いたものを消す(後ろのケースへ残さない)。\n #\n # $1 期待\n@@ -56,7 +49,7 @@ check() {\n   mkdir -p \"$work/src\"\n   [ \"$fixture\" = \"duplicate\" ] && place_duplicate_helpers \"$work/src\"\n   prefix=\"$(broken_command_path_prefix python3 \"$python3_state\" \"$work\")\"\n-  output=\"$(push_payload \"$command\" | CLAUDE_PROJECT_DIR=\"$work\" PATH=\"${prefix}${PATH}\" bash \"$hook\")\"\n+  output=\"$(bash_call_input \"$command\" | CLAUDE_PROJECT_DIR=\"$work\" PATH=\"${prefix}${PATH}\" bash \"$hook\")\"\n   decision=\"pass\"\n   if printf '%s' \"$output\" | jq -e '.hookSpecificOutput.permissionDecision == \"deny\"' >/dev/null 2>&1; then\n     decision=\"deny\"\n@@ -89,7 +82,7 @@ check_violations() {\n   local expected=\"$1\" label=\"$2\" command=\"$3\" stub=\"$4\" python3_state=\"${5:-ok}\"\n   local output reason decision prefix\n   prefix=\"$(broken_command_path_prefix python3 \"$python3_state\" \"$work\")\"\n-  output=\"$(push_payload \"$command\" | CLAUDE_PROJECT_DIR=\"$work\" PATH=\"${prefix}${PATH}\" \\\n+  output=\"$(bash_call_input \"$command\" | CLAUDE_PROJECT_DIR=\"$work\" PATH=\"${prefix}${PATH}\" \\\n     bash -c 'set -euo pipefail; source \"$1\"; deny_on_violations \"$2\" \"判定表\" \"直してください\"' _ \\\n     \"$lib_dir/pre-push-detector.sh\" \"$work/stubs/$stub.py\" 2>/dev/null)\"\n   reason=\"$(printf '%s' \"$output\" | jq -r '.hookSpecificOutput.permissionDecisionReason // empty' 2>/dev/null)\"",
+          "patchLines": 32,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 110,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,110 @@\n+#!/usr/bin/env bash\n+#\n+# `block-protected-branch-edit.sh` の判定表。一時リポジトリでブランチと作業ディレクトリを変えながら\n+# 編集ツールの PreToolUse の入力をフックへ流し、保護ブランチの編集の拒否と素通りが期待どおりかを\n+# 1 コマンドで確かめる。\n+#\n+# 使い方: bash .claude/hooks/lib/protected-branch-edit-cases.sh\n+# 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n+#\n+# 期待は 3 種。deny は止める(止めすぎている形も deny で固定する)、pass は通す、miss は止めない取りこぼし\n+# (通ることを固定する。フックが止めるようになったら NG になり、見る範囲が変わったことが表に出る)。\n+#\n+# ケースを一時リポジトリに置くのは、本物のリポジトリのブランチを切り替えずに保護ブランチの上を作るため。\n+# 「git の外」は `$work/outside` で、フックを呼ぶたびに `GIT_CEILING_DIRECTORIES=$work` を付けて\n+# 一時ディレクトリより上のリポジトリを探させない。\n+#\n+# 表の 1 行は `期待|リポジトリの形|作業ディレクトリ|入力|ケース名`。リポジトリの形は `prepare_repo`、入力は\n+# `edit_call_input` の引数。判定は `cases-report.sh` の `hook_verdict_by_permission`。\n+#\n+# bash と git だけで走る(jq を使わない)。コミットには user と `commit.gpgsign=false` をその場で渡す\n+# (CI のランナーには user が無く、署名を求める環境もあるため)。\n+set -uo pipefail\n+\n+lib_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n+. \"$lib_dir/cases-report.sh\"\n+\n+hook=\"$lib_dir/../block-protected-branch-edit.sh\"\n+work=\"$(mktemp -d)\"\n+trap 'rm -rf \"$work\"' EXIT\n+mkdir \"$work/outside\"\n+\n+# 呼び出し元から渡った GIT_DIR などが、一時リポジトリへの git の操作に効かないよう外す。\n+unset GIT_DIR GIT_WORK_TREE GIT_INDEX_FILE\n+\n+# 一時リポジトリで git を走らせる。\n+#\n+# $@ git のサブコマンドと引数\n+repo_git() {\n+  git -C \"$work/repo\" -c user.name=cases -c user.email=cases@example.invalid -c commit.gpgsign=false \"$@\"\n+}\n+\n+# main に空コミットを 2 つ積んだ一時リポジトリを作り直す。\n+repo_with_two_commits() {\n+  rm -rf \"$work/repo\"\n+  git init -q -b main \"$work/repo\"\n+  repo_git commit -q --allow-empty -m a\n+  repo_git commit -q --allow-empty -m b\n+}\n+\n+# 一時リポジトリを表の形に作り直す。\n+#\n+# $1 リポジトリの形(`unborn` はコミットの無い main、`branch:<名前>` は 2 コミットの main から切ったブランチ\n+#    (`branch:main` は main のまま)、`detached-tip` は main の先端の detached HEAD、`detached-shared-tip` は\n+#    作業ブランチも並ぶ main の先端の detached HEAD、`detached-parent` は main~1 の detached HEAD、\n+#    `detached-orphan` は main の先端で detach してコミットを 1 つ積んだもの)\n+prepare_repo() {\n+  case \"$1\" in\n+    unborn)\n+      rm -rf \"$work/repo\"\n+      git init -q -b main \"$work/repo\"\n+      ;;\n+    branch:main) repo_with_two_commits ;;\n+    branch:*) repo_with_two_commits && repo_git checkout -q -b \"${1#branch:}\" ;;\n+    detached-tip) repo_with_two_commits && repo_git checkout -q --detach main ;;\n+    detached-shared-tip) repo_with_two_commits && repo_git branch claude/x && repo_git checkout -q --detach main ;;\n+    detached-parent) repo_with_two_commits && repo_git checkout -q --detach main~1 ;;\n+    detached-orphan) repo_with_two_commits && repo_git checkout -q --detach main && repo_git commit -q --allow-empty -m c ;;\n+  esac\n+}\n+\n+# 編集ツールの PreToolUse の入力を書く。\n+#\n+# $1 入力の形(`Edit` は一時リポジトリの中の Edit、`Edit-outside` はリポジトリの外の Edit、\n+#    `NotebookEdit` は一時リポジトリの中の NotebookEdit)\n+edit_call_input() {\n+  case \"$1\" in\n+    Edit) printf '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"%s/repo/a.ts\"}}' \"$work\" ;;\n+    Edit-outside) printf '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"%s/a.ts\"}}' \"$work\" ;;\n+    NotebookEdit) printf '{\"tool_name\":\"NotebookEdit\",\"tool_input\":{\"notebook_path\":\"%s/repo/a.ipynb\"}}' \"$work\" ;;\n+  esac\n+}\n+\n+cases_before=$cases_reported\n+while IFS='|' read -r expected shape cwd tool label; do\n+  prepare_repo \"$shape\"\n+  verdict=\"$(cd \"$work/$cwd\" && GIT_CEILING_DIRECTORIES=\"$work\" hook_verdict_by_permission \"$hook\" <<<\"$(edit_call_input \"$tool\")\")\"\n+  report \"$expected\" \"$(normalize_miss \"$expected\" \"$verdict\")\" \"$label\"\n+done <<'CASES'\n+deny|branch:main|repo|Edit|main で編集すると止める\n+deny|unborn|repo|Edit|コミットの無い main（git init 直後）でも止める\n+deny|branch:master|repo|Edit|master で編集すると止める\n+deny|branch:production|repo|Edit|production で編集すると止める\n+deny|branch:release|repo|Edit|release で編集すると止める\n+deny|branch:develop|repo|Edit|develop で編集すると止める\n+deny|branch:staging|repo|Edit|staging で編集すると止める\n+deny|branch:main|repo|NotebookEdit|ツール名で絞らない（NotebookEdit の入力でも main なら止める）\n+deny|detached-tip|repo|Edit|main の先端の detached HEAD（他の参照が並ばない）でも止める\n+deny|branch:main|repo|Edit-outside|（止めすぎ）作業ディレクトリが main のリポジトリなら、編集先がリポジトリの外でも止める\n+pass|branch:claude/x|repo|Edit|claude/x のような作業ブランチは通す\n+pass|branch:main-fix|repo|Edit|main で始まる別名のブランチ main-fix は通す\n+pass|branch:mainline|repo|Edit|main で始まる別名のブランチ mainline は通す\n+pass|branch:feature/main|repo|Edit|main で終わるブランチ feature/main は通す\n+pass|detached-parent|repo|Edit|main~1 の detached HEAD は通す\n+pass|detached-orphan|repo|Edit|どのブランチにも含まれない detached HEAD は通す\n+pass|branch:main|outside|Edit-outside|作業ディレクトリも編集先も git の外なら通す\n+miss|branch:main|outside|Edit|作業ディレクトリが git の外なら、編集先が main のリポジトリの中でも見ない\n+miss|detached-shared-tip|repo|Edit|main の先端に作業ブランチも並ぶ detached HEAD は見ない\n+CASES\n+report_cases_ran CASES \"$cases_before\"\n+exit \"$cases_failed\"",
+          "patchLines": 111,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "patch": "@@ -200,6 +200,16 @@ jobs:\n       - name: 親セッションの編集の判定表\n         run: bash .claude/hooks/lib/parent-session-edit-cases.sh\n \n+      - name: git add -A の拒否の判定表\n+        run: bash .claude/hooks/lib/git-add-all-cases.sh\n+\n+      # `#` の前に空白がある名前は、引用符で囲まないと YAML が ` #` から後ろをコメントとして捨てる。\n+      - name: \"コミット本文の行頭 # の拒否の判定表\"\n+        run: bash .claude/hooks/lib/commit-md-heading-cases.sh\n+\n+      - name: 保護ブランチの編集の拒否の判定表\n+        run: bash .claude/hooks/lib/protected-branch-edit-cases.sh\n+\n       - name: 判定の読み取りと報告と種別の照合の判定表\n         run: bash .claude/hooks/lib/cases-report-cases.sh\n ",
+          "patchLines": 17,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 2,
+          "patch": "@@ -100,11 +100,14 @@ run_check \"編集時の検査フックの判定表\" bash .claude/hooks/lib/edit-\n resume_checks\n \n # gh を差し替えて走る .github/scripts/ の判定表(sticky コメントを貼る・差し替える共通スクリプトと、\n-# PR が閉じる Issue の検査)。どちらも jq を使うので、jq が無い環境では判定が変わっていなくても\n-# NG を出す。python3 は使わないので上の区間とは分ける。\n+# PR が閉じる Issue の検査)と、jq で入力を組む層 3 の部品(一括 add・行頭 `#` の拒否)の判定表。\n+# どれも jq を使うので、jq が無い環境では判定が変わっていなくても NG を出す。python3 は使わないので\n+# 上の区間とは分ける。\n command -v jq >/dev/null 2>&1 || skip_following_checks \"jq が無い\"\n run_check \"sticky コメントの投稿・差し替えの判定表\" bash .github/scripts/upsert-sticky-comment-cases.sh\n run_check \"PR が閉じる Issue の検査の判定表\" bash .github/scripts/check-pr-closing-issue-cases.sh\n+run_check \"git add -A の拒否の判定表\" bash .claude/hooks/lib/git-add-all-cases.sh\n+run_check \"コミット本文の行頭 # の拒否の判定表\" bash .claude/hooks/lib/commit-md-heading-cases.sh\n resume_checks\n \n # 作業ツリーを書き換えるサブエージェントの実行中フラグ(層 3 の部品)の判定表。bash だけで走るので飛ばさない。\n@@ -113,6 +116,9 @@ run_check \"作業ツリーを書き換えるサブエージェントの実行中\n # implementation-flow の中の親セッションの編集の拒否(層 3 の部品)の判定表。bash だけで走るので飛ばさない。\n run_check \"親セッションの編集の判定表\" bash .claude/hooks/lib/parent-session-edit-cases.sh\n \n+# 保護ブランチの編集の拒否(層 3 の部品)の判定表。bash と git だけで走るので飛ばさない。\n+run_check \"保護ブランチの編集の拒否の判定表\" bash .claude/hooks/lib/protected-branch-edit-cases.sh\n+\n # 上の判定表が共有する、判定の読み取りと報告と検出器の種別の照合そのものの判定表。bash だけで走るので飛ばさない。\n run_check \"判定の読み取りと報告と種別の照合の判定表\" bash .claude/hooks/lib/cases-report-cases.sh\n ",
+          "patchLines": 27,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f5676a1732bca1aa94f1df1b61bcf2cf4146a5f8",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-22T16:08:10Z",
+      "subject": "✨ [New Feature]: #1437 commit / pull-request スキルとコミット系の 3 フックを .claude/ に取り込む",
+      "body": "- d-market-git の git-workflow-plugin（1135a0d、2.4.0）から commit / pull-request スキルを写し、プラグインのルートへの参照・スタック節・PR 作成後の監視節を外した\n- フック 3 本（一括 add・コミット本文の行頭 #・保護ブランチでの編集の拒否）の本体を書き、heredoc の本文と引用符の中を除く lib/command-literals.sh を足した\n- .claude/.commit-template.yml と .claude/.pr-template.yml を置き、decision_record.mode をどちらも detailed、PR の base_branch を main にした\n- settings.json で git-workflow-plugin / workflow-automation-plugin を false にし、d-market-workflow の 2 プラグインとマーケットプレイスを外し、3 フックを配線した\n- AGENTS.md と implementation-flow の「PR 本文は差分の説明」を、PR 本文にも判断を書く形に直した（行数は変えない）\n- implementation-flow にコミットの区切りの優先、harness-record に記録 PR の Issue 連携の例外を 1 行ずつ足した\n- .claude/hooks/README.md と harness/githooks/README.md に配線・残る穴・肩代わり・層・本数を足した\n\n背景:\ndesign-composer 用のオートメーションが d-market-git / d-market-workflow のプラグインに依存していたが、プラグインのフックが起動しない環境があった。プラグインに頼らず、リポジトリの .claude/ だけでコミット・PR のルールとフックが効くようにする。\n\n採用理由:\nフックは取り込み元のまま写さず、止めすぎる形（コミットメッセージや gh の本文に git add -A や ## と書いただけで止まる）を直した。取りこぼしは広げず、例外は bash -c \"git add -A\" の 1 形だけにした。プラグインは消さずに false にした。公式ドキュメントでは、どのソースも触れていないプラグインには下位の設定の値が効くため、消すだけでは利用者側の true が効き続ける。\n\n代替案:\n- 取り込み元のまま写す案は、止めすぎが一括 add で 6 形、行頭 # で 4 形あるので採らなかった\n- 既存の hook-input.sh の extract、hook-canary.sh の分割器、issue-flow-kind-violations.py の字句解析を共有する案は、引用符で値が切れる・2048 字で打ち切る・python3 に依存するため採らなかった\n- スタック節と base_branch: auto を残す案は、下の PR が閉じる Issue を持てず pr-closing-issue.yml で落ちるため採らなかった\n\n影響とトレードオフ:\ngit / gh の自動許可（allow-plugin-commands.sh）は取り込まないので、通常の許可確認に戻る。クラウドで .claude/ 自体が読まれない件は #1443、行頭 # の pre-push / CI 検査は #1441 に分けた。3 本が実際に発火するかは、この環境では確かめられないため、PR 本文の手順で人が確かめる。\n\n参考:\n計画は Issue #1437 のコメント 7081180875（v4）と 7081464064（v5）。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NZQHLFV2MuY769VeU",
+      "files": [
+        {
+          "path": ".claude/.commit-template.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 280,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,280 @@\n+format: \"<emoji> [<tag>]: #<issue> <subject>\"\n+\n+types:\n+  basic:\n+    - emoji: \"🎉\"\n+      tag: \"Initial Commit\"\n+      description: \"最初のコミット\"\n+    - emoji: \"✨\"\n+      tag: \"New Feature\"\n+      description: \"新機能\"\n+    - emoji: \"🐛\"\n+      tag: \"Bug Fix\"\n+      description: \"バグ修正\"\n+    - emoji: \"🚑\"\n+      tag: \"Hotfix\"\n+      description: \"ホットフィックス\"\n+    - emoji: \"🩹\"\n+      tag: \"Quick Fix\"\n+      description: \"簡単な修正\"\n+    - emoji: \"♻️\"\n+      tag: \"Refactoring\"\n+      description: \"リファクタリング\"\n+    - emoji: \"🎨\"\n+      tag: \"Structure\"\n+      description: \"コード構造改善\"\n+    - emoji: \"🔥\"\n+      tag: \"Remove\"\n+      description: \"削除\"\n+    - emoji: \"🚚\"\n+      tag: \"Move\"\n+      description: \"ファイル移動/リネーム\"\n+    - emoji: \"🚧\"\n+      tag: \"WIP\"\n+      description: \"作業中\"\n+    - emoji: \"💥\"\n+      tag: \"Breaking\"\n+      description: \"破壊的変更\"\n+\n+  ui_style:\n+    - emoji: \"💄\"\n+      tag: \"UI/UX\"\n+      description: \"UI/UX\"\n+    - emoji: \"♿\"\n+      tag: \"Accessibility\"\n+      description: \"アクセシビリティ\"\n+    - emoji: \"💫\"\n+      tag: \"Animation\"\n+      description: \"アニメーション\"\n+    - emoji: \"📱\"\n+      tag: \"Responsive\"\n+      description: \"レスポンシブ\"\n+    - emoji: \"🍱\"\n+      tag: \"Assets\"\n+      description: \"アセット追加\"\n+\n+  performance_quality:\n+    - emoji: \"🚀\"\n+      tag: \"Performance\"\n+      description: \"パフォーマンス\"\n+    - emoji: \"🧪\"\n+      tag: \"Tests\"\n+      description: \"テスト\"\n+    - emoji: \"✅\"\n+      tag: \"Tests Pass\"\n+      description: \"テスト通過\"\n+    - emoji: \"🔒\"\n+      tag: \"Security\"\n+      description: \"セキュリティ\"\n+    - emoji: \"🏷️\"\n+      tag: \"Types\"\n+      description: \"型定義\"\n+    - emoji: \"🦺\"\n+      tag: \"Validation\"\n+      description: \"バリデーション\"\n+\n+  docs_config:\n+    - emoji: \"📝\"\n+      tag: \"Doc\"\n+      description: \"ドキュメント\"\n+    - emoji: \"🔧\"\n+      tag: \"Config\"\n+      description: \"設定ファイル\"\n+    - emoji: \"🔐\"\n+      tag: \"Env\"\n+      description: \"環境変数\"\n+\n+  dependencies:\n+    - emoji: \"➕\"\n+      tag: \"Add Dep\"\n+      description: \"依存関係追加\"\n+    - emoji: \"➖\"\n+      tag: \"Remove Dep\"\n+      description: \"依存関係削除\"\n+    - emoji: \"⬆️\"\n+      tag: \"Upgrade Dep\"\n+      description: \"依存関係更新\"\n+    - emoji: \"⬇️\"\n+      tag: \"Downgrade Dep\"\n+      description: \"依存関係ダウングレード\"\n+\n+  infra_cicd:\n+    - emoji: \"👷\"\n+      tag: \"CI\"\n+      description: \"CI/CD\"\n+    - emoji: \"🐳\"\n+      tag: \"Docker\"\n+      description: \"Docker\"\n+    - emoji: \"🧱\"\n+      tag: \"Infra\"\n+      description: \"インフラ\"\n+    - emoji: \"📦\"\n+      tag: \"Release\"\n+      description: \"リリース\"\n+    - emoji: \"🚢\"\n+      tag: \"Deploy\"\n+      description: \"デプロイ\"\n+\n+  git:\n+    - emoji: \"🔀\"\n+      tag: \"Merge\"\n+      description: \"マージ\"\n+    - emoji: \"⏪\"\n+      tag: \"Revert\"\n+      description: \"リバート\"\n+\n+  data_db:\n+    - emoji: \"🗃️\"\n+      tag: \"DB\"\n+      description: \"データベース\"\n+    - emoji: \"🌱\"\n+      tag: \"Seed\"\n+      description: \"シードデータ\"\n+\n+  code_quality:\n+    - emoji: \"✏️\"\n+      tag: \"Typo\"\n+      description: \"タイポ修正\"\n+    - emoji: \"💡\"\n+      tag: \"Comment\"\n+      description: \"コメント追加\"\n+    - emoji: \"🔊\"\n+      tag: \"Log\"\n+      description: \"ログ追加\"\n+    - emoji: \"🔇\"\n+      tag: \"Remove Log\"\n+      description: \"ログ削除\"\n+    - emoji: \"⚰️\"\n+      tag: \"Dead Code\"\n+      description: \"デッドコード削除\"\n+    - emoji: \"🚨\"\n+      tag: \"Lint\"\n+      description: \"Lint修正\"\n+\n+  other:\n+    - emoji: \"🌐\"\n+      tag: \"i18n\"\n+      description: \"国際化\"\n+    - emoji: \"🔨\"\n+      tag: \"Chore\"\n+      description: \"雑務\"\n+    - emoji: \"⚗️\"\n+      tag: \"Experiment\"\n+      description: \"実験\"\n+    - emoji: \"🛂\"\n+      tag: \"Auth\"\n+      description: \"認可/権限\"\n+    - emoji: \"🧑‍💻\"\n+      tag: \"DX\"\n+      description: \"DX改善\"\n+    - emoji: \"🤡\"\n+      tag: \"Mock\"\n+      description: \"モック\"\n+\n+decision_record:\n+  # コミット本文に変更内容と意思決定（背景・採用理由・代替案・影響とトレードオフ）をどこまで書くか\n+  #   off      : 本文を書かない（subjectのみ）\n+  #   minimal  : 変更内容 + 採用理由\n+  #   standard : 変更内容 + 背景 / 採用理由 / 影響とトレードオフ\n+  #   detailed : standard + 代替案 + 参考\n+  mode: \"detailed\"\n+\n+  # 本文の書き出し（off を除く全 mode 共通）:\n+  # subject 直後に「何をしたか」の要約を箇条書きで書く。見出しは付けない\n+  summary:\n+    style: \"bullet\"\n+    heading: \"\"\n+\n+  # 該当する変更は mode を1段階上げる（standard -> detailed）\n+  escalate_when:\n+    - \"アーキテクチャ・設計方針の変更\"\n+    - \"破壊的変更\"\n+    - \"外部に公開するAPI・仕様の変更\"\n+    - \"パフォーマンス・セキュリティ上のトレードオフを伴う変更\"\n+    - \"非自明な回避策(workaround)の導入\"\n+    - \"依存関係の追加・削除\"\n+\n+  # 該当する変更は mode を1段階下げる（standard -> minimal）\n+  skip_when:\n+    - \"タイポ修正\"\n+    - \"フォーマッタ・Lintの自動修正\"\n+    - \"生成物・スナップショットの更新\"\n+    - \"WIPコミット\"\n+\n+  # mode ごとに出力するセクション（sections の key を並べる）\n+  modes:\n+    \"off\": []   # YAML 1.1 では off が真偽値になるためクォートする\n+    \"minimal\": [\"why\"]\n+    \"standard\": [\"background\", \"why\", \"impact\"]\n+    \"detailed\": [\"background\", \"why\", \"alternatives\", \"impact\", \"refs\"]\n+\n+  sections:\n+    - key: \"background\"\n+      title: \"背景\"\n+      prompt: \"この変更が必要になった経緯・課題・制約。diffから読み取れない前提を書く\"\n+    - key: \"why\"\n+      title: \"採用理由\"\n+      prompt: \"その方法を採用した理由。「何をしたか」は変更内容に任せ、「なぜそうしたか」を書く\"\n+    - key: \"alternatives\"\n+      title: \"代替案\"\n+      prompt: \"検討したが採用しなかった案と却下理由。再検討しうる条件があれば併記する\"\n+    - key: \"impact\"\n+      title: \"影響とトレードオフ\"\n+      prompt: \"既存挙動・互換性・運用への影響、受け入れたトレードオフ\"\n+    - key: \"refs\"\n+      title: \"参考\"\n+      prompt: \"Issue・PR・設計ドキュメント・外部資料へのリンク\"\n+\n+  format:\n+    # 見出しは \"<title>:\" を単独行に置く。\n+    # 行頭 '#' はエディタ経由の編集時にgitがコメント行として除去しうるため使わない\n+    heading_style: \"<title>:\"\n+    wrap_width: 72\n+    subject_max_length: 72\n+\n+rules:\n+  granularity: \"1コミット = 1つの最小単位の変更\"\n+  max_lines: 50\n+  independence: \"コミット単体で意味をなす\"\n+  build: \"各コミットでビルドが通る\"\n+  forbidden_commands:\n+    - \"git add .\"\n+    - \"git add --all\"\n+    - \"git add -A\"\n+  forbidden_messages:\n+    - \"修正\"\n+    - \"対応\"\n+    - \"調整\"\n+    - \"更新\"\n+    - \"fix\"\n+    - \"update\"\n+\n+examples:\n+  - subject: \"✨ [New Feature]: #123 ユーザ検索にロール絞り込みフィルタを追加\"\n+    mode: \"standard\"\n+    body: |\n+      - GET /api/users に role クエリパラメータを追加\n+      - 検索フォームにロール絞り込みのセレクトボックスを追加\n+\n+      背景:\n+      ユーザ一覧が数千件規模になり、目的のユーザに到達できないという\n+      問い合わせが継続していた。\n+\n+      採用理由:\n+      サーバ側での絞り込みを選択。クライアント側で絞ると全件取得が前提になり、\n+      大規模テナントで初期表示が実用外になるため。\n+\n+      影響とトレードオフ:\n+      role 未指定時の挙動は従来通りで、既存クライアントへの影響はない。\n+  - subject: \"🐛 [Bug Fix]: #456 Firefox環境でのプロフィール画像アップロード失敗を修正\"\n+    mode: \"minimal\"\n+    body: |\n+      - アップロード時のContent-Typeヘッダの明示指定を削除\n+\n+      採用理由:\n+      FormDataにContent-Typeを明示していたためboundaryが欠落していた。\n+      ヘッダ指定を外してブラウザに生成させる方式に統一した。\n+  - subject: \"♻️ [Refactoring]: #45 #67 認証ロジックをAuthServiceに集約\"\n+    mode: \"standard\"\n+  - subject: \"✏️ [Typo]: READMEのインストール手順の誤字を修正\"\n+    mode: \"off\"",
+          "patchLines": 281,
+          "truncated": false
+        },
+        {
+          "path": ".claude/.pr-template.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 194,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,194 @@\n+title_format: \"<emoji> [<tag>]: #<issue> <subject>\"\n+\n+base_branch: \"main\"  # 1 Issue = 1 PR で main へ入れる。分岐元の自動検出は、古いローカルの main や自分のリモート追跡ブランチを拾うため使わない\n+\n+types:\n+  basic:\n+    - emoji: \"🐛\"\n+      tag: \"Bug Fix\"\n+      description: \"バグ修正\"\n+    - emoji: \"✨\"\n+      tag: \"New Feature\"\n+      description: \"新機能\"\n+    - emoji: \"♻️\"\n+      tag: \"Refactoring\"\n+      description: \"リファクタリング\"\n+    - emoji: \"🎨\"\n+      tag: \"UI/UX\"\n+      description: \"UI/UX改善\"\n+    - emoji: \"🚀\"\n+      tag: \"Performance\"\n+      description: \"パフォーマンス改善\"\n+    - emoji: \"🧪\"\n+      tag: \"Tests\"\n+      description: \"テスト追加/修正\"\n+    - emoji: \"📝\"\n+      tag: \"Doc\"\n+      description: \"ドキュメント更新\"\n+    - emoji: \"🔧\"\n+      tag: \"Config\"\n+      description: \"設定変更\"\n+    - emoji: \"🔥\"\n+      tag: \"Remove\"\n+      description: \"削除\"\n+    - emoji: \"💥\"\n+      tag: \"Breaking\"\n+      description: \"破壊的変更\"\n+\n+body_sections:\n+  - key: \"summary\"\n+    title: \"概要\"\n+    required: true\n+    prompt: \"このPRで何を変更したかを1-3行で記載\"\n+  - key: \"change_type\"\n+    title: \"変更の種類\"\n+    required: true\n+    prompt: \"types から該当するものを選択\"\n+  - key: \"details_added\"\n+    title: \"追加した内容\"\n+    required: false\n+    prompt: \"新規追加した機能やファイル\"\n+  - key: \"details_changed\"\n+    title: \"変更した内容\"\n+    required: true\n+    prompt: \"既存機能への変更点\"\n+  - key: \"details_removed\"\n+    title: \"削除した内容\"\n+    required: false\n+    prompt: \"削除した機能やファイル\"\n+  - key: \"decisions\"\n+    title: \"意思決定と経緯\"\n+    required: \"by_decision_record\"  # 出力可否は decision_record.mode が決める（off なら省略）\n+    prompt: >\n+      なぜその方針を選んだかを記載する。\n+      git log <base_branch>..HEAD --format=%B で各コミット本文の意思決定を集め、\n+      PR全体としての方針判断に束ね直す（コミット本文の丸写しはしない）。\n+      出力する内容は decision_record.mode に従う。\n+      代替案は必ず却下理由とセットで書き、トレードオフは何を犠牲にしたかを書く。\n+  - key: \"diagrams\"\n+    title: \"システム図\"\n+    required: false\n+    prompt: >\n+      変更内容を視覚的に表すシステム図を生成する。\n+      原則として Mermaid flowchart（四角＋矢印）で表現する。\n+      状態遷移・API通信・DBスキーマ・依存関係のいずれも、まず flowchart で描く。\n+      flowchart で表現しにくい複雑なレイアウトや複数図の統合は ASCII art にフォールバックする。\n+      専用図（stateDiagram-v2 / sequenceDiagram / erDiagram / graph）は、\n+      flowchart でも ASCII でも本質を伝えきれない極めて特殊なケースのみ使用する。\n+      判断が曖昧・複合的な場合は必ず flowchart を選ぶ。\n+      変更箇所はstyle・note・[NEW]注釈で強調する。\n+      .specs/のimplementation-plan.mdが存在する場合は参考にする。\n+      図解不要な場合はセクション自体を省略する。\n+    notation:\n+      primary: \"mermaid\"\n+      fallback: \"ascii\"\n+    diagram_types:\n+      - type: \"flowchart\"\n+        trigger: \"デフォルト。すべての変更をまず flowchart で表現する（処理フロー・状態遷移・API通信・DBスキーマ・依存関係を含む）\"\n+      - type: \"stateDiagram-v2\"\n+        trigger: \"flowchart でも ASCII でも状態遷移が伝わらない極めて特殊なケースのみ\"\n+      - type: \"sequenceDiagram\"\n+        trigger: \"flowchart / ASCII で時系列のやり取りを表現しきれない極めて特殊なケースのみ\"\n+      - type: \"erDiagram\"\n+        trigger: \"flowchart / ASCII で関係性を表現しきれない複雑な DB スキーマ変更のみ\"\n+      - type: \"graph\"\n+        trigger: \"flowchart で代替できない依存関係表現が必要な極めて特殊なケースのみ\"\n+  - key: \"issues\"\n+    title: \"関連Issue\"\n+    required: true\n+    prompt: \"Closes/Fixes/Refs などのキーワードで記載\"\n+  - key: \"tests\"\n+    title: \"テスト\"\n+    required: true\n+    prompt: \"実行したテストと結果を記載\"\n+  - key: \"review_points\"\n+    title: \"レビューポイント\"\n+    required: false\n+    prompt: \"レビュアーに重点的に見てほしい点\"\n+\n+decision_record:\n+  # PR本文の「意思決定と経緯」セクションをどこまで書くか\n+  #   off      : セクションを出力しない\n+  #   minimal  : 「なぜこの方針か」を2-3行\n+  #   standard : 背景 / なぜこの方針か / 影響とトレードオフ\n+  #   detailed : standard + 検討した代替案 + 今回見送ったこと + 参考\n+  mode: \"detailed\"\n+\n+  # 該当するPRは mode を1段階上げる（standard -> detailed）\n+  escalate_when:\n+    - \"アーキテクチャ・設計方針の変更\"\n+    - \"破壊的変更\"\n+    - \"外部に公開するAPI・仕様の変更\"\n+    - \"パフォーマンス・セキュリティ上のトレードオフを伴う変更\"\n+    - \"依存関係の追加・削除\"\n+\n+  # 各コミット本文に記録された意思決定の収集元\n+  source: \"git log <base_branch>..HEAD --format=%B\"\n+\n+  # mode ごとに出力する小見出し（subsections の key を並べる）\n+  modes:\n+    \"off\": []   # YAML 1.1 では off が真偽値になるためクォートする\n+    \"minimal\": [\"why\"]\n+    \"standard\": [\"background\", \"why\", \"impact\"]\n+    \"detailed\": [\"background\", \"why\", \"alternatives\", \"impact\", \"deferred\", \"refs\"]\n+\n+  # 小見出しの定義（body_sections とは別レイヤー。decisions セクションの内部構造）\n+  subsections:\n+    - key: \"background\"\n+      title: \"背景\"\n+      prompt: \"この変更が必要になった経緯・課題・制約\"\n+    - key: \"why\"\n+      title: \"なぜこの方針か\"\n+      prompt: \"PR全体として採用した方針とその理由\"\n+    - key: \"alternatives\"\n+      title: \"検討した代替案\"\n+      prompt: \"採用しなかった案と却下理由。再検討しうる条件があれば併記する\"\n+    - key: \"impact\"\n+      title: \"影響とトレードオフ\"\n+      prompt: \"既存挙動・互換性・運用への影響、受け入れたトレードオフ\"\n+    - key: \"deferred\"\n+      title: \"今回見送ったこと\"\n+      prompt: \"スコープ外にした項目と理由。後続Issueがあれば番号を併記する\"\n+    - key: \"refs\"\n+      title: \"参考\"\n+      prompt: \"Issue・設計ドキュメント・外部資料へのリンク\"\n+\n+rules:\n+  issue_link:\n+    required: true\n+    close_keywords:\n+      - \"Closes\"\n+      - \"Fixes\"\n+    reference_keywords:\n+      - \"Refs\"\n+      - \"Relates to\"\n+  title:\n+    include_type: true\n+    include_issue: true\n+    max_length: 72\n+  quality_gate:\n+    require_summary: true\n+    require_test_result: true\n+    require_review_points_when_complex: true\n+  forbidden:\n+    vague_titles:\n+      - \"修正\"\n+      - \"対応\"\n+      - \"調整\"\n+      - \"更新\"\n+      - \"fix\"\n+      - \"update\"\n+\n+checklist:\n+  - \"セルフレビューを実施した\"\n+  - \"意思決定と経緯を記載した（decision_record.mode が off 以外の場合）\"\n+  - \"必要なテストを実施した\"\n+  - \"必要なドキュメントを更新した（必要時）\"\n+  - \"関連IssueをPRにリンクした\"\n+  - \"破壊的変更がある場合は明記した\"\n+\n+examples:\n+  - title: \"✨ [New Feature]: #123 ユーザ検索にロール絞り込みを追加\"\n+    summary: \"ユーザ一覧画面にロールフィルタを追加し、検索条件を保存するように変更。\"\n+  - title: \"🐛 [Bug Fix]: #456 Safariで画像アップロードが失敗する不具合を修正\"\n+    summary: \"FormData生成処理のcontent-type指定を修正し、Safariでも正常に送信できるようにした。\"",
+          "patchLines": 195,
+          "truncated": false
+        },
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 48,
+          "deletions": 7,
+          "patch": "@@ -1,6 +1,6 @@\n # .claude/hooks — 実装規約の強制フック\n \n-Claude Code で `rules/` 配下の実装規約を**強制**するためのフックスクリプト置き場。[d-market-typescript の typescript-rules-plugin](https://github.com/DIO0550/d-market) の hooks から、このリポジトリの規約に合致するものを移植・適応した。\n+Claude Code で `rules/` 配下の実装規約を**強制**するためのフックスクリプト置き場。[d-market-typescript の typescript-rules-plugin](https://github.com/DIO0550/d-market) の hooks から、このリポジトリの規約に合致するものを移植・適応した。git 操作の 3 本（`block-git-add-all.sh` / `block-commit-md-heading.sh` / `block-protected-branch-edit.sh`）は、[d-market-git](https://github.com/DIO0550/d-market-git) の git-workflow-plugin（`1135a0d`、2.4.0）の `no-git-add-all.sh` / `no-commit-md-heading.sh` / `branch-protection.sh` から移植し、止めすぎる形を直した。\n \n ## 強制している規約\n \n@@ -28,10 +28,14 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `block-git-during-verification-agent.sh` | `PreToolUse`（Bash） | **作業ツリーを書き換えるサブエージェント実行中の git 操作を拒否**。マーカーがある間は `git add` / `commit` / `push` を deny し、ミューテーション実測や実装途中の書き換えがコミットへ混入する事故を防ぐ。古いマーカーは無視する（種類ごとの有効期間と理由はフック本文。拒否文にマーカーのディレクトリを出す） |\n | `block-parent-session-edit.sh` | `PreToolUse`（Edit/Write） | **`implementation-flow` 中の親セッションによる編集を拒否**（`implementation-flow`「役割の分担」）。入力に `agent_id` がない（親の）Edit / Write で、リポジトリ内のファイルを指し、発火ログの最後の区切りが flow 内なら deny する（区切りになる起動と通す入力はフック冒頭を参照） |\n | `block-issue-without-flow-kind.sh` | `PreToolUse`（Bash/MCP） | **作業の種類を決めていない Issue 作成を拒否**（`implementation-flow` フェーズ 1「種類の確定」の手順 4）。作成とみなす形・通す条件・行の書式は `lib/issue-flow-kind-violations.py` の docstring と定数を参照。python3 が使えなければ通し、検出器が異常終了したら deny する |\n+| `block-git-add-all.sh` | `PreToolUse`（Bash） | **一括ステージング禁止**（対応する規範は `commit` スキル「禁止事項」）。`git add -A` / `--all` / `.` / `-a` を拒否する。ヒアドキュメントの本文と引用符の中（コマンド置換を含まないもの）は見ない |\n+| `block-commit-md-heading.sh` | `PreToolUse`（Bash） | **コミット本文の行頭 `#` 禁止**（対応する規範は `commit` スキルの本文の「書式」）。引用符の外に `git commit` があれば、ヒアドキュメントの本文（無ければコマンド全体）の行頭 `#` を拒否する |\n+| `block-protected-branch-edit.sh` | `PreToolUse`（Edit/Write/MultiEdit/NotebookEdit） | **保護ブランチでの編集禁止**。フックの作業ディレクトリのブランチが main / master / production / release / develop / staging なら拒否する。入力は読まず、どのツールで止めるかは matcher が決める |\n \n ## 移植元から見送ったもの\n \n - `require-skill-before-edit.sh` — typescript-rules-plugin 固有のスキルに依存するスキルゲートのため\n+- `allow-plugin-commands.sh`（git-workflow-plugin）— `gh` / `git` で始まるコマンドに allow を返し、`&&` `||` `;`・改行での連結と、決まった形以外のパイプ（`git` は末尾の `| head` / `| tail` 一段だけ）を拒否するフック。取り込まないので `git` / `gh` は通常の許可確認に戻り、「1 回の Bash 呼び出し = 1 コマンド」（`commit` / `pull-request` スキル「コマンド実行規約」）は文章だけで守る（#1437 で人が判断）\n \n ### 見送りを取り消したもの\n \n@@ -58,9 +62,9 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査名> <直し方>` は走査ルートを渡さず（検出器の既定を使用）、`[種別]` 行で違反を読み、異常終了時は「検査できなかった」の deny を返す（判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有）。`deny_on_all_src_failure`（引数同じ）は `--all src` で呼び終了コードで判定する（報告が `[` で始まらない検出器向け） |\n | `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時検査フックの共通処理。`.github/scripts/lib/detector-report.sh` の `detector_report` で検出器を走らせ、異常終了時は `print_edit_unchecked_context <イベント名> <検査名> <検出器>` で `permissionDecision` なしの `additionalContext`（「検査できていません」）を返し編集は止めない。PostToolUse の違反報告も `print_additional_context` で共通化し、python3 の疎通は `detector-precondition.sh` の `python3_usable` で確認する |\n | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring を参照 |\n-| `lib/cases-report.sh` | `lib/*-cases.sh`・`.github/scripts/*-cases.sh`・`harness/records/count-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` の各判定表（19 本） | 判定表が共有する 5 機能を提供する: (1) 判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category` / `hook_verdict_by_permission`）、(2) 結果報告（関数 `report`・変数 `cases_failed`）、(3) 検出器種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）、(4) 判定表末尾文の照合（`last_statement` / `report_exits_with_cases_failed`）、(5) 1 件以上走ったかの照合（関数 `report_cases_ran`・変数 `cases_reported`）。ケースの並べ方と検出器の呼び方は各判定表が持つ |\n+| `lib/cases-report.sh` | `lib/*-cases.sh`・`.github/scripts/*-cases.sh`・`harness/records/count-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` の各判定表（22 本） | 判定表が共有する 5 機能を提供する: (1) 判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category` / `hook_verdict_by_permission`）、(2) 結果報告（関数 `report`・変数 `cases_failed`）、(3) 検出器種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）、(4) 判定表末尾文の照合（`last_statement` / `report_exits_with_cases_failed`）、(5) 1 件以上走ったかの照合（関数 `report_cases_ran`・変数 `cases_reported`）。ケースの並べ方と検出器の呼び方は各判定表が持つ |\n | `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `lib/cases-report.sh` 自身の判定表。種別照合・`report` の出力と `cases_failed`・`decide*` / `hook_verdict_by_permission` の判定（pass / deny / broken / miss）・各判定表の末尾が `exit \"$cases_failed\"` であること・`report_cases_ran` の挙動を検証する（詳細は冒頭コメントとケース名）。食い違いがあれば exit 1 |\n-| `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh` / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh` / `lib/issue-flow-kind-cases.sh` | 判定表が共有する前提の組み立て関数。落ちる検出器スタブ（`place_failing_detector`）・起動不能なコマンド（`broken_command_path_prefix`）・同一本体のテストヘルパー（`place_duplicate_helpers`）・サブエージェント呼び出し入力フィールド（`subagent_call_fields`）・フックの一時ディレクトリへの写し（`copy_repo_files`）を提供する |\n+| `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh` / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh` / `lib/issue-flow-kind-cases.sh` / `lib/git-add-all-cases.sh` / `lib/commit-md-heading-cases.sh` | 判定表が共有する前提の組み立て関数。落ちる検出器スタブ（`place_failing_detector`）・起動不能なコマンド（`broken_command_path_prefix`）・同一本体のテストヘルパー（`place_duplicate_helpers`）・サブエージェント呼び出し入力フィールド（`subagent_call_fields`）・フックの一時ディレクトリへの写し（`copy_repo_files`）・Bash の呼び出しの入力（`bash_call_input`。jq で組む）を提供する |\n | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `import-rule-violations.py` の判定表。種別・件数・全種別の網羅・`scan()` と docstring の並び一致・スタブ検出器の broken 判定を検証する。食い違いがあれば exit 1 |\n | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `named-path-violations.py` の判定表。deny / pass / miss と、検出器種別の並びと docstring の一致を検証する。食い違いがあれば exit 1 |\n | `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `lib/pre-push-detector.sh` の判定表。`deny_on_all_src_failure`（一時ディレクトリの `pre-push-test-helper-duplication.sh`）と `deny_on_violations`（スタブ検出器）で、deny（違反 / 検査できなかった）と pass を検証する。食い違いがあれば exit 1 |\n@@ -75,6 +79,10 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/parent-session-edit-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | 実物の `record-firings.sh` に発火ログを書かせたうえで `block-parent-session-edit.sh` へ Edit / Write を流し、親セッション編集の拒否と素通りを検証する（詳細は各ケース名）。食い違いがあれば exit 1 |\n | `lib/issue-flow-kind-violations.py` | `block-issue-without-flow-kind.sh` | Issue を作る呼び出しが作業の種類を決めているかを見る。Bash は bash と同じ規則で字句に分けてから読む。種別の一覧と意味、行の書式は検出器の docstring と定数を参照 |\n | `lib/issue-flow-kind-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `issue-flow-kind-violations.py` と `block-issue-without-flow-kind.sh` の判定表。検出器の表は python3 を 1 回だけ起動して検出器を import し、ケースごとに判定の関数を呼ぶ。フックの表はフックを一時ディレクトリへ複製し、検出器を CLI として走らせて deny / pass と拒否文の並びを検証する。食い違いがあれば exit 1 |\n+| `lib/command-literals.sh` | `block-git-add-all.sh` / `block-commit-md-heading.sh` | コマンド文字列から、すべてのヒアドキュメントの本文を出す `heredoc_bodies` と、本文と引用符の中を除いて 1 行にする `command_line_outside_literals`。awk（POSIX の機能だけ）と sed で近似し、字句解析は持たない |\n+| `lib/git-add-all-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `block-git-add-all.sh` の判定表。deny（止めすぎも含む）/ pass / miss を検証する。食い違いがあれば exit 1 |\n+| `lib/commit-md-heading-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `block-commit-md-heading.sh` の判定表。deny（止めすぎも含む）/ pass / miss を検証する。食い違いがあれば exit 1 |\n+| `lib/protected-branch-edit-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `block-protected-branch-edit.sh` の判定表。一時リポジトリでブランチ・detached HEAD・作業ディレクトリを変えて deny / pass / miss を検証する。jq を使わない。食い違いがあれば exit 1 |\n \n ## 強制力の序列 — フックが発火しない実行環境がある\n \n@@ -93,7 +101,7 @@ Biome の format 差分を含む状態で push が通り CI で落ちた回が\n \n ### カバー範囲と残る穴\n \n-git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の表で CI の代替が「**無し**」の行は、フックが発火しない環境では効かず、git イベントに対応物もないため移設できない。\n+git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の表で CI の代替が「**無し**」の行は、フックが発火しない環境では効かない。多くは git イベントに対応物もないため移設できないが、`block-commit-md-heading.sh` は本文がコミットに残るので移せる（#1441）。\n \n | 効かなくなるもの | CI の代替 |\n | --- | --- |\n@@ -106,6 +114,9 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | `record-firings.sh`（発火ログ） | **無し**。`harness-record` の計測は、セッション見出しのないログを「計測対象外」と扱う設計のため誤ったゼロにはならない（ただし Skill ツールを通らない起動では見出しがあっても発火行が書かれない → 下表「区切りがログに残らない起動」）。一方、同じログを読む `block-parent-session-edit.sh` は区切りがないと素通りするため、こちらが不発だと親の編集拒否も効かなくなる |\n | `block-parent-session-edit.sh`（セッション中の行為の禁止） | **無し**。親とサブエージェントのどちらが編集したかはコミットに残らない。発火する環境でも残る穴は下表 |\n | `block-issue-without-flow-kind.sh`（セッション中の行為の禁止） | **無し**。Issue の作成は push と関係なく起き、リポジトリに痕跡が残らない。発火する環境でも残る穴は下の 2 つ目の表 |\n+| `block-git-add-all.sh`（セッション中の行為の禁止） | **無し**。どのコマンドでステージしたかはコミットに残らない。発火する環境でも残る穴は下の 3 つ目の表 |\n+| `block-commit-md-heading.sh`（コミット本文の検査） | **無し**。本文はコミットに残るので push 前・CI へ移せる（#1441 で扱う） |\n+| `block-protected-branch-edit.sh`（セッション中の行為の禁止） | **無し**。GitHub の `main` もブランチ保護を掛けていない（`protected: false`。2026-11-22 に確認） |\n \n `block-parent-session-edit.sh` が発火する環境でも残る穴は 5 つある。\n \n@@ -130,9 +141,23 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | プラグインの作成 | `issues-workflow-plugin` のスキルが作る Issue も止まる（`flow:*` を付けない形のため）。拒否文の案内に従ってラベルか行を足して作り直す |\n | MCP の発火 | `mcp__github__issue_write` で PreToolUse が発火するかは、本物のセッションで確かめるまで未検証 |\n \n+`block-git-add-all.sh` / `block-commit-md-heading.sh` / `block-protected-branch-edit.sh` が発火する環境でも残る穴は次のとおり。取りこぼす形は判定表（`lib/git-add-all-cases.sh` / `lib/commit-md-heading-cases.sh` / `lib/protected-branch-edit-cases.sh`）が `miss` で、止めすぎる形は `deny` で固定している。\n+\n+| 残る穴 | 内容 |\n+| --- | --- |\n+| 一括 add の取りこぼし（8 形） | `git -C <パス>` / `git -c <設定>` の後ろ、`git add ./` / `git add :/` / `git add *`、引用符で囲んだ `git add \".\"`、`git stage -A`、`bash -c \"…\"` の中。取りこぼしを狭める変更は移植の範囲外とし、`bash -c` の中は引用符の中を見ない引き換えに受け入れた |\n+| 行頭 `#` の取りこぼし（7 形） | 2 つ目の `-m`、件名が `#` で始まる 1 行の `-m`、`-F <ファイル>` の中身、`git -C` / `git -c` の後ろ、`<<-` でタブを除かれて桁 0 になる `#`、別のヒアドキュメントと並ぶ複数行の `-m` |\n+| 行頭 `#` の止めすぎ | 引用符の外に `git commit` があれば、同じ入力の別のヒアドキュメント（`gh pr create` の本文など）やシェルのコメント行の行頭 `#` でも止める |\n+| 保護ブランチを見る場所 | 編集先ではなくフックの作業ディレクトリで見る（リポジトリの外を編集しても止める。作業ディレクトリが外なら、リポジトリの中を編集しても見ない） |\n+| detached HEAD | `git describe --contains --all HEAD` の名前で見る。保護ブランチの先端に作業ブランチも並んでいると、その名前が返って見ない |\n+| Bash 経由の書き換え | `sed -i` やリダイレクトでの書き換えは、保護ブランチの上でも見ない（matcher が編集ツールだけのため） |\n+| jq が無い環境 | `block-git-add-all.sh` と `block-commit-md-heading.sh` は jq でコマンドを取り出すので、jq が無いと素通りする（`block-protected-branch-edit.sh` は jq を使わない） |\n+\n+クラウドの実行環境では `.claude/` 自体が読まれないことがある（#1443）。`pull-request` スキルの `gh pr create` / `gh pr edit` はクラウドでは GraphQL の 403 で失敗するが、取り込み元のまま写した。`.claude/settings.json` で `false` にしたのは d-market-git の 2 つ（`git-workflow-plugin` / `workflow-automation-plugin`）だけで、共有のプロジェクト設定に書いている。利用者のローカル設定（`settings.local.json`）・`--settings`・managed で有効にすると、プラグインのフックも走る。\n+\n ### 「代替不能」が実際に不発だったとき、手動で肩代わりする\n \n-`block-npx.sh` / `block-git-during-verification-agent.sh` / `block-parent-session-edit.sh` / `block-issue-without-flow-kind.sh` は上表のとおり CI の代替が**無し**。カナリア（次項）で不発が確定したら「記録のみ」で終わらせず、そのフックが止めるはずだった操作を手動で確認する（不発のままミューテーションがコミットへ混入した回と、任意の `npx` 実行が素通りした回がある）。\n+`block-npx.sh` / `block-git-during-verification-agent.sh` / `block-parent-session-edit.sh` / `block-issue-without-flow-kind.sh` / `block-git-add-all.sh` / `block-commit-md-heading.sh` / `block-protected-branch-edit.sh` は上表のとおり CI の代替が**無し**。カナリア（次項）で不発が確定したら「記録のみ」で終わらせず、そのフックが止めるはずだった操作を手動で確認する（不発のままミューテーションがコミットへ混入した回と、任意の `npx` 実行が素通りした回がある）。\n \n | 不発したフック | 手動で確認すること |\n | --- | --- |\n@@ -140,6 +165,9 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | `block-git-during-verification-agent.sh` | 作業ツリーを書き換えるサブエージェントの実行中に作られたコミットの diff を、そのエージェントが返したはずの内容と照合する（意図しない変更の混入がないか） |\n | `block-parent-session-edit.sh` | このセッションの親の Edit / Write 履歴を見直し、`implementation-flow` 中にリポジトリ内のファイルを編集していないか確認する |\n | `block-issue-without-flow-kind.sh` | このセッションで作った Issue に、`flow:*` ラベル 1 つか、本文の提案の行・通さない行があるか確認する。無ければ `implementation-flow` フェーズ 1「種類の確定」の手順 4 で決めて付ける |\n+| `block-git-add-all.sh` | このセッションで作ったコミットを `git show --stat <コミット>` で見て、意図しないファイル（`.env`・生成物など）が入っていないか確認する |\n+| `block-commit-md-heading.sh` | `git log origin/main..HEAD --format=%B | grep -n '^#'` が何も出さないこと |\n+| `block-protected-branch-edit.sh` | `git branch --show-current` が保護ブランチでなく、`git log origin/main..main` が何も出さないこと |\n \n `session-url-notice.sh` の不発は対応不要（上表のとおり、情報が 1 つ欠けるだけでガードは破れない）。\n \n@@ -166,6 +194,9 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | `lib/verification-agent-cases.sh` | あり | あり |\n | `lib/parent-session-edit-cases.sh` | あり | あり |\n | `lib/cases-report-cases.sh` | あり | あり |\n+| `lib/git-add-all-cases.sh` | あり | あり（`jq` がある環境のみ） |\n+| `lib/commit-md-heading-cases.sh` | あり | あり（`jq` がある環境のみ） |\n+| `lib/protected-branch-edit-cases.sh` | あり | あり |\n | `.github/scripts/check-added-cases.sh` | あり（`lint-suppress` ジョブ） | あり（`python3` がある環境のみ） |\n | `.github/scripts/check-pr-closing-issue-cases.sh` | あり | あり（`jq` がある環境のみ） |\n | `.github/scripts/check-duplicate-issue-pr-cases.sh` | あり | **無し（残る穴）** |\n@@ -177,9 +208,9 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | `.github/scripts/pr-explain-core-cases.sh` | あり | あり（`python3` と Node 20 以上がある環境のみ） |\n | `harness/githooks/lib/check-tally-cases.sh` | あり | あり |\n \n-- **層 3 の部品を検査する 6 本（`canary-cases.sh` / `verification-agent-cases.sh` / `parent-session-edit-cases.sh` / `pre-push-detector-cases.sh` / `edit-detector-cases.sh` / `issue-flow-kind-cases.sh`）も層 2・層 1 で走らせる。** ゲートが見ているのは「リポジトリ内のスクリプト判定が変わっていないか」であり、使用層とは独立している。フェーズ 7 はカナリア出力で不発を判定し、フェーズ 5・6 は検証エージェント実行中の git ブロックを前提にしているため、判定が黙って変わると手順が破綻する。また `lib/pre-push-detector.sh` と `lib/edit-detector.sh` は壊れても git hooks や CI が検出器を直接呼ぶため緑のまま残る。`edit-detector-cases.sh` は対象フック 3 本ごと一時ディレクトリへ複製して検証する。`issue-flow-kind-violations.py` を呼ぶ層は層 3 しか無く、字句への分け方が退行しても判定表のほかに落ちるものが無い\n+- **層 3 の部品を検査する 9 本（`canary-cases.sh` / `verification-agent-cases.sh` / `parent-session-edit-cases.sh` / `pre-push-detector-cases.sh` / `edit-detector-cases.sh` / `issue-flow-kind-cases.sh` / `git-add-all-cases.sh` / `commit-md-heading-cases.sh` / `protected-branch-edit-cases.sh`）も層 2・層 1 で走らせる。** ゲートが見ているのは「リポジトリ内のスクリプト判定が変わっていないか」であり、使用層とは独立している。フェーズ 7 はカナリア出力で不発を判定し、フェーズ 5・6 は検証エージェント実行中の git ブロックを前提にしているため、判定が黙って変わると手順が破綻する。また `lib/pre-push-detector.sh` と `lib/edit-detector.sh` は壊れても git hooks や CI が検出器を直接呼ぶため緑のまま残る。`edit-detector-cases.sh` は対象フック 3 本ごと一時ディレクトリへ複製して検証する。`issue-flow-kind-violations.py` を呼ぶ層は層 3 しか無く、字句への分け方が退行しても判定表のほかに落ちるものが無い。git 操作の 3 本は移植元の判定を直して載せたので、判定表のほかに退行を捕まえるものがない\n - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。** 対象の `check-added-*` と同じジョブに置き、`python3` と git だけで完結させる\n-- **層 2 に載せる判断基準は、`pre-push` 全体の所要時間への影響。** `pre-push` 全体は 73.0 秒（実測・`node_modules` あり）。各判定表の実測時間は次のとおり: `check-pr-closing-issue-cases.sh` 0.8 秒（5xx 再試行待ちを差し替え口で 0 化、#1034）・`lib/canary-cases.sh` 1.0 秒（ともに全体 105.8 秒の別環境実測）、解説ページ 5 本合計 16.2 秒（地図 3.4・置き場 5.6［再試行待ち 0 化］・解説の検査 4.3・枠の検査 2.8・核 0.1）、`check-tally-cases.sh` 0.1 秒未満、`lib/import-rule-cases.sh` 2.2 秒、`lib/edit-detector-cases.sh` 1.5 秒、`upsert-sticky-comment-cases.sh` 0.9 秒（再試行待ち 0 化）、`lib/issue-flow-kind-cases.sh` 1.4 秒（検出器の表は python3 を 1 回だけ起動して回す。ケースごとに起動した形は 8.0 秒）\n+- **層 2 に載せる判断基準は、`pre-push` 全体の所要時間への影響。** `pre-push` 全体は 73.0 秒（実測・`node_modules` あり）。各判定表の実測時間は次のとおり: `check-pr-closing-issue-cases.sh` 0.8 秒（5xx 再試行待ちを差し替え口で 0 化、#1034）・`lib/canary-cases.sh` 1.0 秒（ともに全体 105.8 秒の別環境実測）、解説ページ 5 本合計 16.2 秒（地図 3.4・置き場 5.6［再試行待ち 0 化］・解説の検査 4.3・枠の検査 2.8・核 0.1）、`check-tally-cases.sh` 0.1 秒未満、`lib/import-rule-cases.sh` 2.2 秒、`lib/edit-detector-cases.sh` 1.5 秒、`upsert-sticky-comment-cases.sh` 0.9 秒（再試行待ち 0 化）、`lib/issue-flow-kind-cases.sh` 1.4 秒（検出器の表は python3 を 1 回だけ起動して回す。ケースごとに起動した形は 8.0 秒）、`lib/git-add-all-cases.sh` 0.6 秒・`lib/commit-md-heading-cases.sh` 0.6 秒・`lib/protected-branch-edit-cases.sh` 0.5 秒（3 回の中央値）\n - **`check-duplicate-issue-pr-cases.sh` は層 1 のみ。** 問い合わせの再試行待ちで 22.0 秒（実測）かかり基準に収まらないため、`check-duplicate-issue-pr.sh` を触ったときは手動で走らせる（「動作確認」）。待ちを 0 にできるかは #1377 で扱う\n - 層 3（`pre-push-*.sh`）には足さない。層 1・層 2 に置く以上、守る範囲が増えないため\n \n@@ -427,6 +458,14 @@ echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"gh issue create -t x -b y --l\n bash .claude/hooks/lib/issue-flow-kind-cases.sh; echo \"exit=$?\"\n ```\n \n+```bash\n+# git 操作の 3 本の判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる\n+# deny の行を Bash で直接打つと、配線したあとのフック自身に止められるので、確かめるときは判定表を走らせる\n+bash .claude/hooks/lib/git-add-all-cases.sh; echo \"exit=$?\"\n+bash .claude/hooks/lib/commit-md-heading-cases.sh; echo \"exit=$?\"\n+bash .claude/hooks/lib/protected-branch-edit-cases.sh; echo \"exit=$?\"\n+```\n+\n ```bash\n # カナリアの判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる\n bash .claude/hooks/lib/canary-cases.sh; echo \"exit=$?\"\n@@ -654,6 +693,8 @@ echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"git merge origin/main\"},\"tool\n | スキル | 内容 |\n | --- | --- |\n | `.claude/skills/implementation-flow/` | 実装の手順（計画・サブエージェントによる検証・Issue への記録・マージ後の追記） |\n+| `.claude/skills/commit/` | コミットメッセージの書き方と分割（`block-git-add-all.sh` / `block-commit-md-heading.sh` が対応する規範） |\n+| `.claude/skills/pull-request/` | PR 本文の書き方（`.claude/.pr-template.yml` に従う） |\n | `.claude/skills/harness-record/` | マージ後の評価記録（`harness/records/` へ 1 ファイル） |\n | `.claude/skills/harness-growth/` | 記録の集計と、規約 / フックの改善 |\n ",
+          "patchLines": 146,
+          "truncated": false
+        },
+        {
+          "path": ".claude/hooks/block-commit-md-heading.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 0,
+          "patch": "@@ -7,4 +7,26 @@\n #\n # 入力: stdin に { \"tool_input\": { \"command\": \"...\" } } を含む JSON (Bash ツール呼び出し)\n # 出力: 違反時に permissionDecision=deny の JSON を返す。問題なければ exit 0。\n+set -uo pipefail\n+\n+hook_dir=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd)\" || exit 0\n+. \"$hook_dir/lib/command-literals.sh\" || exit 0\n+\n+command=\"$(jq -r '.tool_input.command // empty')\" || exit 0\n+[ -n \"$command\" ] || exit 0\n+\n+command_line_outside_literals \"$command\" | grep -qE '\\bgit[[:space:]]+commit\\b' || exit 0\n+\n+message_text=\"$(heredoc_bodies \"$command\")\"\n+[ -n \"$message_text\" ] || message_text=\"$command\"\n+offending=\"$(printf '%s\\n' \"$message_text\" | grep -n '^#' | head -3)\"\n+[ -n \"$offending\" ] || exit 0\n+\n+jq -n --arg lines \"$offending\" '{\n+  hookSpecificOutput: {\n+    hookEventName: \"PreToolUse\",\n+    permissionDecision: \"deny\",\n+    permissionDecisionReason: (\"コミットメッセージ本文に行頭 `#` の Markdown 見出しが含まれています。\\n\\n検出された行:\\n\" + $lines + \"\\n\\n理由:\\n- git は core.commentChar（既定 `#`）で始まる行をコメントとして除去します\\n- `git commit -m` の時点では残りますが、後で `git commit --amend` や `git rebase --reword` をエディタ経由で行うと、その時点で該当行が黙って消えます\\n- 意思決定をコミット本文に残す運用では、この欠落は記録の喪失になります\\n\\n対処:\\n- 見出しは `<見出し>:` を単独行に置いてください（例: `背景:` `採用理由:`）\\n- 見出し文字列は commit テンプレートの `decision_record.sections[].title` に揃えてください\\n- どうしても行頭 `#` が必要な場合は、その行を1文字以上インデントしてください（桁0でなければ除去されません）\")\n+  }\n+}'\n exit 0",
+          "patchLines": 27,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/block-git-add-all.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 0,
+          "patch": "@@ -7,4 +7,22 @@\n #\n # 入力: stdin に { \"tool_input\": { \"command\": \"...\" } } を含む JSON (Bash ツール呼び出し)\n # 出力: 違反時に permissionDecision=deny の JSON を返す。問題なければ exit 0。\n+set -uo pipefail\n+\n+hook_dir=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd)\" || exit 0\n+. \"$hook_dir/lib/command-literals.sh\" || exit 0\n+\n+command=\"$(jq -r '.tool_input.command // empty')\" || exit 0\n+[ -n \"$command\" ] || exit 0\n+\n+bulk_add_pattern='\\bgit\\s+add\\b[^;&|]*(\\s-[a-zA-Z]*A[a-zA-Z]*\\b|\\s--all\\b|\\s\\.(\\s|;|$)|\\s-a\\b)'\n+command_line_outside_literals \"$command\" | grep -qE \"$bulk_add_pattern\" || exit 0\n+\n+jq -n '{\n+  hookSpecificOutput: {\n+    hookEventName: \"PreToolUse\",\n+    permissionDecision: \"deny\",\n+    permissionDecisionReason: \"`git add -A` / `git add --all` / `git add .` の使用は禁止されています。\\n\\n理由:\\n- 一括ステージングは意図しないファイル（.env, credentials, 大容量バイナリ等）をコミットに含めるリスクがあります\\n- セキュリティ上の問題やリポジトリの肥大化を防ぐため、ファイルは個別に指定してください\\n\\n推奨手順:\\n1. `git status` で変更ファイルを確認\\n2. `git add <ファイル名>` で必要なファイルのみを個別にステージング\\n3. 複数ファイルの場合: `git add file1.txt file2.txt` またはディレクトリ指定 `git add src/`\"\n+  }\n+}'\n exit 0",
+          "patchLines": 23,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/block-protected-branch-edit.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 0,
+          "patch": "@@ -8,4 +8,26 @@\n #\n # 入力: stdin の JSON は見ない（どのツールで呼ぶかは settings.json の matcher が決める）\n # 出力: 違反時に permissionDecision=deny の JSON を返す。問題なければ exit 0。\n+#\n+# ツール名を見ないのは、編集ツールの一覧を matcher とここの 2 か所で持たないため。取り込み元はここにも一覧を\n+# 持っていて、そちらには NotebookEdit が無かった。入力を読まないので jq も使わない。\n+#\n+# detached HEAD では `git describe --contains --all` の名前が保護ブランチと一致するときだけ止める。`main~1` の\n+# ような祖先まで止めると、bisect や過去のコミットを見るための checkout の最中の編集まで止まる。\n+set -uo pipefail\n+\n+cat >/dev/null\n+\n+protected_branches=(main master production release develop staging)\n+\n+branch=\"$(git branch --show-current 2>/dev/null)\" || exit 0\n+[ -n \"$branch\" ] || branch=\"$(git describe --contains --all HEAD 2>/dev/null)\"\n+\n+for protected_branch in \"${protected_branches[@]}\"; do\n+  [ \"$branch\" = \"$protected_branch\" ] || continue\n+  printf -v protected_list '%s, ' \"${protected_branches[@]}\"\n+  reason=\"保護されたブランチ'${branch}'での編集は禁止されています。\\\\n\\\\n実装ルール:\\\\n- 保護されたブランチ（${protected_list%, }）への直接的な変更は禁止です\\\\n- 機能開発や修正は必ず別ブランチで行ってください\\\\n- 作業完了後、プルリクエスト経由でマージしてください\\\\n\\\\n推奨手順:\\\\n1. 新しいブランチを作成: git checkout -b feature/your-feature-name\\\\n2. 変更を実装\\\\n3. プルリクエストを作成してレビューを受ける\"\n+  printf '{\\n  \"hookSpecificOutput\": {\\n    \"hookEventName\": \"PreToolUse\",\\n    \"permissionDecision\": \"deny\",\\n    \"permissionDecisionReason\": \"%s\"\\n  }\\n}\\n' \"$reason\"\n+  exit 0\n+done\n exit 0",
+          "patchLines": 27,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/command-literals.sh",
+          "status": "A",
+          "oldPath": null,
+          "additions": 54,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,54 @@\n+#!/usr/bin/env bash\n+#\n+# Bash の PreToolUse で渡るコマンド文字列から、ヒアドキュメントの本文と引用符の中身（コマンドとして\n+# 走らない文字列）を分けて取り出す `heredoc_bodies` と `command_line_outside_literals`。source して呼ぶ。\n+# 使う側は `.claude/hooks/README.md`「配線」の `lib/command-literals.sh` の行。\n+#\n+# シェルの字句解析は持たず、awk（POSIX の機能だけ。mawk でも動かす）と sed の行単位の置換で近似する。\n+# 見ない形（`bash -c \"…\"` の中、引用符で囲んだ引数など）は、使う側の判定表に miss の行として並ぶ。\n+#\n+# `lib/hook-input.sh` の `extract` では読まない。最初の `\\\"` で値が切れ、改行のエスケープも戻さない。\n+# `hook-canary.sh` の分割器も共有しない。長さの 2 乗で伸びて 2048 字で打ち切り、ヒアドキュメントも読まない。\n+# `lib/issue-flow-kind-violations.py` の字句解析は python3 に依存し、無い環境での通し方を決め直すことになる。\n+\n+# ヒアドキュメントの区切りを開きの行ごとに読み、本文の行を除く（mode=body のときは本文の行だけを出す）awk。\n+#\n+# 区切りを最初の 1 つだけで読むと、2 つ目以降のヒアドキュメントが閉じずに後ろを丸ごと本文と読む。\n+# 閉じの行の字下げはタブだけを許す。`<<-` が取り除くのはタブだけで、空白で字下げした区切りでは閉じない。\n+_command_literals_heredoc_awk='\n+  function delimiter_of(line,   s) {\n+    if (!match(line, /<<-?[[:space:]]*[\\\\'\"'\"'\"]?[A-Za-z_][A-Za-z_0-9]*/)) return \"\"\n+    s = substr(line, RSTART + 2, RLENGTH - 2)\n+    sub(/^-?[[:space:]]*[\\\\'\"'\"'\"]?/, \"\", s)\n+    return s\n+  }\n+  inside && $0 ~ (\"^\\t*\" delimiter \"[[:space:]]*$\") { inside = 0; next }\n+  inside { if (mode == \"body\") print; next }\n+  {\n+    delimiter = delimiter_of($0)\n+    if (delimiter != \"\") inside = 1\n+    if (mode != \"body\") print\n+  }'\n+\n+# コマンド文字列の中の、すべてのヒアドキュメントの本文の行を出す。\n+#\n+# $1 コマンド文字列\n+# 出力: 本文の行（開きの行と閉じの行は含まない）。ヒアドキュメントが無ければ何も出さない\n+heredoc_bodies() {\n+  printf '%s\\n' \"$1\" | awk -v mode=body \"$_command_literals_heredoc_awk\"\n+}\n+\n+# コマンド文字列から、ヒアドキュメントの本文と閉じの行・引用符の中身を除き、1 行にしたものを出す。\n+#\n+# 改行は `;` にして 1 行にする。sed は行ごとに置換するので、複数行にまたがる引用符を消すには 1 行にする必要があり、\n+# 空白ではなく `;` にするのは改行をコマンドの区切りとして残すため。\n+# 開きの引用符として扱うのは、行頭・空白・`;`・`=` の直後にあるものだけ。語の途中のアポストロフィ（`don't`）や\n+# `\"$(…)\"` の閉じの `\"` を開きと読むと、次の引用符までの間にあるコマンドまで消してしまう。\n+# `$` やバッククォートを含む `\"…\"` は消さない。コマンド置換は引用符の中でも実行される。\n+#\n+# $1 コマンド文字列\n+# 出力: 引用符の外の部分を `;` でつないだ 1 行\n+command_line_outside_literals() {\n+  printf '%s\\n' \"$1\" | awk -v mode=outline \"$_command_literals_heredoc_awk\" | tr '\\n' ';' \\\n+    | sed -E \"s/(^|[[:space:];=])'[^']*'/\\1/g; s/(^|[[:space:];=])\\\"[^\\\"\\$\\`]*\\\"/\\1/g\"\n+}",
+          "patchLines": 55,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/settings.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 20,
+          "deletions": 11,
+          "patch": "@@ -16,9 +16,9 @@\n     \"react-rules-plugin@d-market-react\": true,\n     \"spec-plugin@d-market-spec\": true,\n     \"spec-based-code-review-plugin@d-market-spec\": true,\n-    \"git-workflow-plugin@d-market-git\": true,\n+    \"git-workflow-plugin@d-market-git\": false,\n     \"spec-to-issues-plugin@d-market-git\": true,\n-    \"workflow-automation-plugin@d-market-git\": true,\n+    \"workflow-automation-plugin@d-market-git\": false,\n     \"doc-gen-plugin@d-market-doc-gen\": true,\n     \"statusline-plugin@d-market-statusline\": true,\n     \"skill-creator@d-market-skill\": true,\n@@ -28,9 +28,7 @@\n     \"rust-rules-plugin@d-market-rust\": true,\n     \"rust-hooks-plugin@d-market-rust\": true,\n     \"typescript-lsp@claude-plugins-official\": true,\n-    \"rust-analyzer-lsp@claude-plugins-official\": true,\n-    \"code-intent-layering-guard@d-market-workflow\": true,\n-    \"discord-notifier@d-market-workflow\": true\n+    \"rust-analyzer-lsp@claude-plugins-official\": true\n   },\n   \"extraKnownMarketplaces\": {\n     \"d-market-typescript\": {\n@@ -85,12 +83,6 @@\n         \"source\": \"github\",\n         \"repo\": \"DIO0550/d-market-rust\"\n       }\n-    },\n-    \"d-market-workflow\": {\n-      \"source\": {\n-        \"source\": \"git\",\n-        \"url\": \"https://github.com/DIO0550/d-market-workflow.git\"\n-      }\n     }\n   },\n   \"hooks\": {\n@@ -124,6 +116,14 @@\n             \"type\": \"command\",\n             \"command\": \"bash \\\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-git-during-verification-agent.sh\\\"\"\n           },\n+          {\n+            \"type\": \"command\",\n+            \"command\": \"bash \\\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-git-add-all.sh\\\"\"\n+          },\n+          {\n+            \"type\": \"command\",\n+            \"command\": \"bash \\\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-commit-md-heading.sh\\\"\"\n+          },\n           {\n             \"type\": \"command\",\n             \"command\": \"bash \\\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/pre-push-typecheck.sh\\\"\"\n@@ -171,6 +171,15 @@\n           }\n         ]\n       },\n+      {\n+        \"matcher\": \"Edit|Write|MultiEdit|NotebookEdit\",\n+        \"hooks\": [\n+          {\n+            \"type\": \"command\",\n+            \"command\": \"bash \\\"${CLAUDE_PROJECT_DIR:-.}/.claude/hooks/block-protected-branch-edit.sh\\\"\"\n+          }\n+        ]\n+      },\n       {\n         \"matcher\": \"Bash|mcp__github__issue_write\",\n         \"hooks\": [",
+          "patchLines": 67,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/commit/SKILL.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 158,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,158 @@\n+---\n+name: commit\n+description: コミットルールスキル。コミットメッセージの書き方、意思決定を残す本文の書き方、分割ルール、禁止事項（git add -A 等）を定義。git commit を実行する前に必ず参照する（ユーザー指示の有無を問わない）。絵文字付きタイプ、Issue連携、細かい分割を遵守。\n+allowed-tools: Bash(git add *), Bash(git commit *), Bash(git status), Bash(git diff *), Read, Glob\n+---\n+\n+# コミットルール\n+\n+コミットメッセージと分割のルールを定義するスキル。\n+\n+## テンプレート参照\n+\n+以下の順で探し、最初に見つかったものを使う。以降これを **コミットテンプレート** と呼ぶ。\n+\n+1. プロジェクト直下 `.claude/.commit-template.yml`\n+2. 無ければ本スキルの既定ルール（`decision_record.mode` は `standard`）\n+\n+## コミットメッセージ形式\n+\n+```\n+<emoji> [<tag>]: #<Issue番号> <subject>\n+\n+<変更内容と意思決定の記録（本文）>\n+```\n+\n+### よく使うタイプ\n+\n+| タイプ | フォーマット | | タイプ | フォーマット |\n+|:-|:-|:-|:-|:-|\n+| 新機能 | `✨ [New Feature]:` | | テスト | `🧪 [Tests]:` |\n+| バグ修正 | `🐛 [Bug Fix]:` | | パフォーマンス | `🚀 [Performance]:` |\n+| リファクタリング | `♻️ [Refactoring]:` | | 削除 | `🔥 [Remove]:` |\n+| ドキュメント | `📝 [Doc]:` | | 移動/リネーム | `🚚 [Move]:` |\n+| 設定ファイル | `🔧 [Config]:` | | CI/CD | `👷 [CI]:` |\n+| 雑務 | `🔨 [Chore]:` | | 破壊的変更 | `💥 [Breaking]:` |\n+\n+上記で表せない変更は、全タイプ（初回コミット・ホットフィックス・UI/UX・アクセシビリティ・セキュリティ・型定義・依存関係・Docker・DB・Lint・i18n 等）を定義したコミットテンプレートの `types` から選ぶ。\n+\n+### Issue連携\n+\n+関連Issueがある場合はsubject行にIssue番号を記載する。複数可。\n+\n+```\n+✨ [New Feature]: #123 ユーザ検索にロール絞り込みフィルタを追加\n+♻️ [Refactoring]: #45 #67 認証ロジックをAuthServiceに集約\n+```\n+\n+## 本文 — 変更内容と意思決定の記録\n+\n+### 方針\n+\n+本文は **変更内容の要約** で始める。subject 直後に **何をしたか** を箇条書きで書き、`git log` だけで変更の全体像を掴めるようにする。この要約に見出しは付けない（subject 直後の箇条書きは慣習的に変更の要約であり、見出しは冗長になるため）。diff の逐語訳ではなく、変更の趣旨がわかる粒度でよい。\n+\n+続けて意思決定を書く。実装プランや設計メモを別ファイルに残すと、完了後は検索ノイズになり、仕様変更のたびに更新の要否が曖昧になって陳腐化する。**意思決定は変更差分と不可分なので、コミット本文に書く。** 差分と1対1で結びつき、`git log --grep` で検索でき、完了後の掃除も要らない。意思決定のセクションに書くのは **なぜ**（必要になった理由・その方法を選んだ理由・却下した案・犠牲にしたもの）。「何をしたか」は変更内容に任せ、繰り返さない。\n+\n+**本文は長くてよい。** ただし本文を厚く書くことは、コミットを大きくしてよい理由にはならない（1コミット = 1変更は維持する）。\n+\n+### 詳細度の決定\n+\n+1. コミットテンプレートの `decision_record.mode` を読む（既定 `standard`）\n+2. `escalate_when` に該当すれば1段階上げる（設計方針の変更・破壊的変更・公開APIの変更・非自明な回避策・依存関係の増減など）\n+3. `skip_when` に該当すれば1段階下げる（タイポ・フォーマッタの自動修正・生成物の更新・WIPなど）\n+4. 確定した mode の `modes` に並ぶセクションを、`sections[].title` の見出しで出力する\n+\n+| mode | 既定のセクション |\n+|:-|:-|\n+| `off` | 本文なし |\n+| `minimal` | 採用理由 |\n+| `standard` | 背景 / 採用理由 / 影響とトレードオフ |\n+| `detailed` | + 代替案 / 参考 |\n+\n+`off` を除く全 mode で、セクションの前に見出しなしの変更内容の要約（箇条書き）を置く。\n+\n+### 書式\n+\n+```\n+✨ [New Feature]: #123 ユーザ検索にロール絞り込みフィルタを追加\n+\n+- GET /api/users に role クエリパラメータを追加\n+- 検索フォームにロール絞り込みのセレクトボックスを追加\n+\n+背景:\n+検索結果が多すぎて目的のユーザに到達できないという問い合わせが継続していた。\n+\n+採用理由:\n+サーバ側での絞り込みを選択。クライアント側で絞ると全件取得が前提になり、\n+大規模テナントで初期表示が実用外になるため。\n+```\n+\n+- subject と本文の間は空行1行\n+- 見出しは `<見出し>:` を単独行に置く。**行頭 `#` は使わない**（git がコメント行として除去し、本文が黙って欠落するため）\n+- 本文は72桁前後で折り返す\n+- 見出し文字列はテンプレートの `sections[].title` に揃える（`git log --grep` の検索性が表記の統一に依存するため）\n+\n+mode別の記述例・NG例・履歴の追い方は `references/decision-record.md` を参照。\n+\n+## 分割ルール\n+\n+### 基本方針\n+\n+- **1コミット = 1つの最小単位の変更**\n+- **小さすぎても構わない。大きいより小さいコミットを優先**\n+\n+### 必須の分割ケース\n+\n+以下は必ず分割:\n+\n+- 複数機能の同時実装\n+- バグ修正と新機能の同時実装\n+- リファクタリングと機能追加の同時実装\n+- 異なる目的の複数ファイル変更\n+- テストコードと実装コードの同時変更\n+- ドキュメント更新と機能実装の同時実施\n+\n+### 粒度の目安\n+\n+- **最小単位**: 1関数、1コンポーネント、1設定変更\n+- **変更行数**: 50行以下を目安\n+- **理解しやすさ**: メッセージだけで変更内容が理解できる\n+- **独立性**: コミット単体で意味をなす\n+- **ビルド状態**: 各コミットでビルドが通る\n+\n+## コマンド実行規約\n+\n+- **1回のBash呼び出し = 1コマンド**（`&&`, `||`, `;` による複合化禁止）\n+- コミットメッセージは **heredoc** で渡す（ファイル書き出し `-F` は使わない）:\n+  ```bash\n+  git commit -m \"$(cat <<'EOF'\n+  <subject>\n+\n+  <本文（上記「書式」に従う）>\n+  EOF\n+  )\"\n+  ```\n+\n+## 禁止事項\n+\n+### 禁止コマンド\n+\n+`git add .` / `git add --all` / `git add -A` は使用禁止。意図しないファイル（.env 等）の混入を防ぐため、ファイルは個別に指定する。\n+\n+### 禁止メッセージ\n+\n+以下のような曖昧なメッセージは禁止:\n+\n+- 修正 / ちょっと修正 / 細かい修正 / 微調整\n+- 対応 / 対応しました / レビュー指摘対応\n+- リファクタ（対象不明瞭）\n+- 調整 / 更新 / 変更 / 追加 だけ\n+- fix / update / change / modify だけ\n+\n+### 良い書き方\n+\n+1. 何を（対象）\n+2. どうした（操作）\n+3. なぜ（目的/意図）\n+\n+1・2 は subject に、3 は本文に書く。subject の NG→OK 例は `references/examples.md` を参照。",
+          "patchLines": 159,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/commit/references/decision-record.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 161,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,161 @@\n+# 変更内容と意思決定の記録（コミット本文）\n+\n+コミット本文に変更内容と意思決定を残すための記述例集。詳細度は `.commit-template.yml` の `decision_record.mode` で制御する。\n+\n+## なぜコミット本文なのか\n+\n+| 記録先 | 問題 |\n+|:-|:-|\n+| `plans/` などのプランファイル | 完了後も検索に引っかかりノイズになる。仕様変更時に直すか否かが曖昧で陳腐化する |\n+| `plans/archive/` への退避 | 退避の手間が増えるだけで、検索ノイズ・陳腐化は解決しない |\n+| **コミット本文** | 差分と 1 対 1。追記のみで陳腐化しない。`git log` で検索できる。掃除不要 |\n+\n+## mode 別の記述例\n+\n+### off\n+\n+本文なし。subject のみ。\n+\n+```\n+✏️ [Typo]: READMEのインストール手順の誤字を修正\n+```\n+\n+### minimal\n+\n+変更内容（見出しなしの箇条書き）+ 採用理由。採用理由は 1〜3 行。\n+\n+```\n+🩹 [Quick Fix]: ログ出力のタイムスタンプをUTC固定に変更\n+\n+- ロガー初期化のタイムゾーン設定をUTC固定に変更\n+\n+採用理由:\n+CIとローカルでログの時刻がずれて突き合わせできなかったため、\n+実行環境のTZに依存しないUTC固定にした。\n+```\n+\n+### standard（デフォルト）\n+\n+変更内容（見出しなしの箇条書き）+ 背景 / 採用理由 / 影響とトレードオフ。\n+\n+```\n+♻️ [Refactoring]: #45 認証トークンの検証をAuthTokenVerifierに集約\n+\n+- ミドルウェア・APIハンドラ・バッチのトークン検証をAuthTokenVerifierに集約\n+- 検証失敗を真偽値ではなく例外型で返すよう変更\n+\n+背景:\n+トークン検証がミドルウェア・APIハンドラ・バッチの3箇所に複製されており、\n+有効期限のリーウェイ設定だけが1箇所で古いまま残っていた。\n+\n+採用理由:\n+共通関数への切り出しではなくクラスに集約した。検証には公開鍵のキャッシュと\n+いう状態が伴い、関数のままでは呼び出し側でキャッシュを持ち回る必要があった\n+ため。\n+\n+影響とトレードオフ:\n+検証の失敗理由が例外型で返るようになり、呼び出し側のcatchが型で分岐できる。\n+既存の真偽値を返すAPIは残していないので、外部から直接呼んでいる箇所があれば\n+コンパイルエラーになる（リポジトリ内は全て移行済み）。\n+```\n+\n+### detailed\n+\n+変更内容（見出しなしの箇条書き）+ 背景 / 採用理由 / 代替案 / 影響とトレードオフ / 参考。\n+\n+```\n+✨ [New Feature]: #210 セッションストアをRedisに移行\n+\n+- セッションストアをインメモリからRedisに移行\n+- セッションTTLをRedisのキー有効期限で管理するよう変更\n+\n+背景:\n+アプリを複数インスタンスに水平展開したが、セッションがインメモリのため\n+ログイン直後にリクエストが別インスタンスへ振られるとログアウト扱いになる。\n+ロードバランサのスティッキーセッションで暫定回避していたが、デプロイの\n+ローリング更新のたびに全ユーザがログアウトしていた。\n+\n+採用理由:\n+外部ストアとしてRedisを採用した。既にレートリミット用途で運用実績があり、\n+新規のミドルウェアを増やさずに済むため。TTLをセッション有効期限に対応\n+させられる点も要件に合う。\n+\n+代替案:\n+- DB（PostgreSQL）にセッションテーブルを持つ: 追加ミドルウェアは不要だが、\n+  リクエストごとの読み書きが接続プールを圧迫する。ピーク時のプール枯渇が\n+  既に別件で発生しているため却下\n+- JWTでステートレス化: ストア自体が不要になるが、即時失効の要件\n+  （管理者による強制ログアウト）を満たせないため却下。失効リストを持つと\n+  結局ストアが必要になる\n+- スティッキーセッション継続: ローリング更新時のログアウトが解決しないため却下\n+\n+影響とトレードオフ:\n+Redisが単一障害点になる。停止時はログインが全面的に不可となるため、\n+可用性はマネージドサービスのフェイルオーバーに依存する形になった。\n+セッション読み取りに1リクエストあたり約1msのネットワーク往復が加わる。\n+既存セッションは移行せず、デプロイ時に全ユーザが1度ログアウトする。\n+\n+参考:\n+Refs #210\n+Relates to #187\n+```\n+\n+## NG 例\n+\n+### 意思決定セクションで「何をしたか」を繰り返している\n+\n+「何をしたか」は冒頭の変更内容（箇条書き）に書く。背景・採用理由で言い換えても情報が増えない。\n+\n+```\n+- validateUser関数を追加\n+\n+背景:\n+UserService.tsを変更した。\n+\n+採用理由:\n+validateUser関数を追加し、既存の処理から呼び出すようにした。\n+```\n+\n+**修正:** 背景には変更が必要になった経緯を、採用理由にはなぜ切り出す必要があったのか（重複していた／テストできなかった等）・なぜその形（関数／クラス／別モジュール）を選んだのかを書く。\n+\n+### 却下理由のない代替案\n+\n+「検討した」だけでは、次に同じ案を検討する人の判断材料にならない。\n+\n+```\n+代替案:\n+- GraphQLの採用\n+- BFFの新設\n+```\n+\n+**修正:** 各案に却下理由を必ず添える。将来再検討しうる条件があればそれも書く（例: 「クライアントが3つを超えたら再検討」）。\n+\n+### トレードオフを書かずに利点だけ並べる\n+\n+```\n+影響とトレードオフ:\n+パフォーマンスが向上し、コードも読みやすくなった。\n+```\n+\n+**修正:** 何を犠牲にしたかを書く。犠牲が本当にないなら、影響範囲（互換性・運用・移行）を具体的に書く。\n+\n+## 判断基準\n+\n+迷った場合は以下を基準にする。\n+\n+> 「半年後にこの変更を revert しようとした人が、`git log` だけで\n+> 『なぜこうなっているか』『revert して壊れるものは何か』を判断できるか？」\n+\n+判断できないなら本文が足りていない。\n+\n+## 履歴の追い方\n+\n+```bash\n+git log --grep=\"代替案\"                # 代替案を検討したコミットを探す\n+git log --grep=\"採用理由\" -p               # 判断理由と差分を並べて読む\n+git log -S\"AuthTokenVerifier\"          # ある識別子が増減したコミットを探す\n+git log --follow -p -- <file>          # ファイルの変遷を判断理由込みで追う\n+git log --format=%B <base>..HEAD       # PR作成時にブランチ内の判断を集める\n+```\n+\n+見出し文字列は `decision_record.sections[].title` に揃えて表記ゆれを作らないこと。`--grep` の検索性はそこに依存している。",
+          "patchLines": 162,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/commit/references/examples.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 89,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,89 @@\n+# コミットメッセージ例\n+\n+## NG → OK 書き換え例\n+\n+### 新機能\n+\n+**NG:**\n+```\n+✨ [New Feature]: 機能追加\n+```\n+\n+**OK:**\n+```\n+✨ [New Feature]: ユーザ検索にロール絞り込みフィルタを追加\n+\n+- GET /api/users に role クエリパラメータを追加\n+- 検索フォームにロール絞り込みのセレクトボックスを追加\n+\n+背景:\n+ユーザ一覧が数千件規模になり、目的のユーザに到達できないという\n+問い合わせが継続していた。\n+\n+採用理由:\n+サーバ側での絞り込みを選択。クライアント側で絞ると全件取得が前提になり、\n+大規模テナントで初期表示が実用外になるため。\n+```\n+\n+### バグ修正\n+\n+**NG:**\n+```\n+🐛 [Bug fix]: 修正\n+```\n+\n+**OK:**\n+```\n+🐛 [Bug fix]: Firefox環境でのプロフィール画像アップロード失敗をFormDataのboundary設定漏れで修正\n+```\n+\n+### リファクタリング\n+\n+**NG:**\n+```\n+♻️ [Refactoring]: リファクタ\n+```\n+\n+**OK:**\n+```\n+♻️ [Refactoring]: userServiceの重複バリデーション処理をvalidateUser()に集約しテスト追加\n+```\n+\n+### ドキュメント\n+\n+**NG:**\n+```\n+📖 [Doc]: README更新\n+```\n+\n+**OK:**\n+```\n+📖 [Doc]: 開発環境セットアップ手順にNode 20要件とキャッシュクリア手順を追記\n+```\n+\n+## Issue連携の例\n+\n+### Issue番号を含める場合\n+\n+```\n+✨ [New Feature]: #123 ブロックボタンをランキングページに追加\n+\n+ユーザーをブロックしてコンテンツを非表示にできる機能。\n+```\n+\n+### 複数Issueに関連する場合\n+\n+```\n+♻️ [Refactoring]: #45 #67 認証ロジックをAuthServiceに集約\n+```\n+\n+## 判断基準\n+\n+迷った場合は以下を基準に:\n+\n+> 「このコミットをrevertする判断を、ログだけ見て30秒でできるか？」\n+\n+できなければメッセージを具体化する。subject を具体化しても足りない場合は、\n+本文（変更内容と意思決定の記録）に理由を書く。\n+\n+本文の記述例・mode 別の分量の目安は `decision-record.md` を参照。",
+          "patchLines": 90,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/harness-record/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -97,6 +97,7 @@ ls \"${TMPDIR:-/tmp}\"/design-composer-firings-*.log\n - **指摘が 0 件の回でも PR を出す**（記録を残すこと自体が目的）\n - `rules/`・フック・スキルには触れず、差分は `harness/records/` の新規 1 ファイルだけにする\n - **記録 PR には Issue を立てず、`Closes` も書かない**（`AGENTS.md`「着手した Issue は、その回で閉じる」の例外）。この例外は `.github/scripts/check-pr-closing-issue.sh` が「`harness/records/` 配下の新規 1 ファイルのみ」を条件に許可しているため、2 ファイル以上必要になった場合は検査条件も合わせて直す\n+- `pull-request` スキルの Issue 連携（Issue のリンク必須・`Closes`）は記録 PR には当てない\n \n ---\n ",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "patch": "@@ -15,7 +15,7 @@ description: \"design-composer の実装を ゴールの確定 → タスクの\n | 4 | 計画の検証 | `plan-reviewer` の指摘と、それへの対応 |\n | 5 | 実装 | コードとテスト |\n | 6 | 実装の検証 | 観点別のレビューエージェントの指摘と、それへの対応 |\n-| 7 | PR | 差分を説明する PR |\n+| 7 | PR | 差分と判断を説明する PR |\n | 8 | マージ後の追記 | 閉じた Issue へのコメントと、続きの Issue |\n \n **検証の観点はこのファイルに書かない。** 観点は `.claude/agents/` の `plan-reviewer.md` と観点別の `*-reviewer.md` で定義する（検証の観点を親のコンテキストに通さないための分割）。\n@@ -207,7 +207,7 @@ diff_text | grep -ciE 'UI 案|Design Composer\\.html'   # ui-reviewer の語\n ## フェーズ 7: PR\n \n - **PR を出す前に、フェーズ 1「種類の確定」の手順 1 でラベルを読み直す。** 変わっていたらフェーズ 1 へ戻る（手順 6）\n-- **PR 本文は差分の説明に絞る**（判断の履歴は Issue 側にある）\n+- **PR 本文は pull-request スキルで書く。** 意思決定の書き方は .claude/.pr-template.yml の decision_record に従い、材料にはコミット本文に加えて Issue の計画・却下案を使う（Issue からは省かない → AGENTS.md「実装の進め方」）\n - **本文に `Closes #<Issue 番号>` を書く**（`AGENTS.md`「着手した Issue は、その回で閉じる」。閉じる Issue がない PR は `.github/workflows/pr-closing-issue.yml` が落とす）\n - CI（lint / typecheck / test / 視覚差分）を通す。push 前検査や CI が落ちた場合、修正は種類（と工程）と一緒に `implementer` へ渡す（判断を伴わない自動修正コマンドだけは親が走らせてよい →「役割の分担」）\n - **PR を出したら `pr-explain` スキルで解説（`explain.json`）を書く。** 振る舞いが変わる push をしたら書き直す（`.claude/skills/pr-explain/`）\n@@ -262,6 +262,7 @@ pnpm visual:capture -- --storybook-dir storybook-static --out visual-actual  # \n - **検証は必ず別のエージェントに投げる。** 自分で書いた計画やコードを自分で検証しても同じ前提のまま読むため、抜けが同じ位置に残る\n - **検証エージェントに実装させない。** 指摘だけを返させ、採否は親が判断し、修正は別に起動する `implementer` に任せる\n - **`implementer` から返ったら、`git status --porcelain` を「計画のファイル表と渡した指摘の対象」と突き合わせる。** 一致したら commit して作業ツリーの基準にする（push はフェーズ 7。2 工程に分ける種類の第 1 工程ではフェーズ 5 の狭い範囲で突き合わせる）\n+- **implementation-flow の中でのコミットの区切りはこの手順（工程と `implementer` から返るたび）が決め、`commit` スキルの分割ルールより優先する。** 件名と本文の書き方は `commit` スキルに従う\n - **それ以外のエージェントから返ったら、指摘を読む前に作業ツリーが基準のまま（`git status --porcelain` が空）か確認する。** 定義に「変更しない」と書いてあっても書き換える場合があるため、戻さずに指摘対応へ進むと `implementer` の変更と混ざってコミットに載る\n - **修正は `SendMessage` で続けず、新しい Agent 呼び出しで `implementer` に渡す。** 実行中マーカーを作るフックの matcher は `Task|Agent` であり、`SendMessage` には反応しないため（`.claude/settings.json`）\n - **作業ツリーを書き換えるサブエージェントは、他のツール呼び出しを同じメッセージに並べず単独・フォアグラウンドで起動し、完了を受け取るまで `git add` / `commit` / `push` を挟まない。** ミューテーション実測や実装の途中にコミットすると、その瞬間の書き換えが紛れ込む。`block-git-during-verification-agent.sh` がマーカーのある間の git 操作を止める（対象は `.claude/hooks/README.md`）が、マーカーが残るのはフォアグラウンドにある間だけ。`run_in_background: true` を明示した起動は `track-verification-agent-activity.sh` が拒否するものの、フォアグラウンド起動でも 120 秒を超えると約 120 秒でバックグラウンドへ移され、移された後はマーカーが消える（フック冒頭参照）。単独起動にするのは、バックグラウンド移行後に並列呼び出しが実行中に走りうるのを防ぐため（実測記録は `harness/case-law/process.md`）",
+          "patchLines": 26,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/pull-request/SKILL.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 155,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,155 @@\n+---\n+name: pull-request\n+description: プルリクエスト作成スキル。PRテンプレートに基づいた説明文の作成、変更種類の分類、意思決定と経緯の記載、チェックリストの確認を支援。「PR作成」「プルリクエスト」「レビュー依頼」などのリクエスト時に使用。\n+allowed-tools: Bash(git *), Bash(gh pr *), Read, Glob\n+---\n+\n+# プルリクエスト作成\n+\n+PRテンプレートに沿ったプルリクエスト説明文の作成を支援するスキル。\n+\n+## テンプレート参照順序\n+\n+PR本文を作成する際は、以下の順でテンプレートを参照する。\n+\n+1. プロジェクト直下 `.claude/.pr-template.yml`\n+2. `references/pr-template.md`（フォールバック）\n+\n+YAMLテンプレートが見つかった場合は、その `title_format` / `types` / `body_sections` / `rules` / `checklist` に従ってPRタイトルと本文を生成する。\n+\n+以降このスキルで **PRテンプレート** と書いたものは、上記の順で解決した YAML を指す。\n+\n+## ベースブランチの決定\n+\n+PRテンプレートの `base_branch`（このリポジトリは `main`）を `--base` に渡す。\n+\n+## コマンド実行規約\n+\n+- **1回のBash呼び出し = 1コマンド**（`&&`, `||`, `;` による複合化禁止）\n+- PRタイトル・本文は **heredoc** で渡す（ファイル書き出し `--body-file` は使わない）:\n+  ```bash\n+  gh pr create --base <base_branch> --title \"PRタイトル\" --body \"$(cat <<'EOF'\n+  ## 概要\n+  - 変更内容\n+\n+  ## テスト計画\n+  - テスト項目\n+  EOF\n+  )\"\n+  ```\n+\n+## 基本構成\n+\n+1. **概要**: 変更の簡潔な説明\n+2. **変更の種類**: タイプ分類（絵文字付き）\n+3. **詳細な変更内容**: 追加・変更・削除の一覧\n+4. **意思決定と経緯**: なぜその方針を選んだか（テンプレートで有効時）\n+5. **システム図**: 変更の視覚的な図解（テンプレートで有効時）\n+6. **関連Issue**: Linked issues と連携キーワード\n+7. **テスト**: 実施したテストと結果\n+8. **レビューポイント**: 注目してほしい箇所\n+\n+## 意思決定と経緯\n+\n+PR 本文には「何を変えたか」だけでなく「なぜその判断をしたか」を残す。設計メモを別ファイルに残すと完了後に陳腐化するため、判断は変更と不可分な場所（コミット本文と PR 本文）に置く。\n+\n+### 収集方法\n+\n+各コミットの本文には `commit` スキルの `decision_record` に従って意思決定が書かれている。PR 作成時はこれを集めて再構成する。\n+\n+```bash\n+git log <base_branch>..HEAD --format=%B\n+```\n+\n+- コミット本文の丸写しはしない。コミット単位の判断を **PR 全体としての方針判断** に束ね直す\n+- コミット本文に判断が無い場合は、diff とブランチの経緯から補って書く\n+\n+### 詳細度（mode）\n+\n+PRテンプレートの `decision_record.mode` で制御する。テンプレート未作成時のデフォルトは `standard`。\n+\n+| mode | 出力する内容 |\n+|:-|:-|\n+| `off` | 意思決定セクションを出力しない |\n+| `minimal` | なぜこの方針かを 2-3 行 |\n+| `standard` | 背景 / なぜこの方針か / 影響とトレードオフ |\n+| `detailed` | standard + 検討した代替案 / 今回見送ったこと / 参考 |\n+\n+`decision_record.escalate_when`（アーキテクチャ変更・破壊的変更・公開 API の変更など）に該当する PR は mode を 1 段階上げる。\n+\n+### 書式\n+\n+PR 本文は Markdown としてレンダリングされるため、`##` 見出しを使ってよい（行頭 `#` を避けるのはコミット本文側のルール）。\n+\n+- 代替案は必ず **却下理由** とセットで書く。理由の無い列挙はレビュアーの判断材料にならない\n+- トレードオフは「何を犠牲にしたか」を書く。利点だけを並べない\n+- 今回見送った項目は、後続 Issue 番号があれば併記する\n+\n+## システム図\n+\n+テンプレートの `body_sections` で `diagrams` が有効な場合、変更内容に応じたシステム図をPR本文に含める。\n+\n+### 図の種類と選択基準（優先度順）\n+\n+原則として優先度の高い記法から順に検討する。上位で表現できるなら下位には降りない。\n+\n+| 優先度 | 記法 | 使う場面 |\n+|:-|:-|:-|\n+| 1 | Mermaid `flowchart` | **デフォルト。** すべての変更（処理フロー・状態遷移・API通信・DBスキーマ・依存関係を含む）をまず四角＋矢印で表現する |\n+| 2 | ASCII art | flowchart では表現しにくい複雑なレイアウト・複数図の統合 |\n+| 3 | Mermaid `stateDiagram-v2` / `sequenceDiagram` / `erDiagram` / `graph` | flowchart でも ASCII でも本質を伝えきれない、極めて特殊なケースのみ |\n+\n+### 記法の使い分け\n+\n+1. **まず `flowchart` で描けないか検討する** — GitHub でネイティブにレンダリングされ、四角＋矢印で直感的\n+2. flowchart に収まらない複雑なレイアウトや複数図の統合は ASCII art\n+3. 専用図（状態マシン図・シーケンス図・ER図・依存関係図）は flowchart / ASCII の両方で本質を伝えきれない極めて特殊なケースのみの最終手段\n+\n+### 生成ルール\n+\n+1. **差分ベース**: `git diff` の内容から図に含める要素を判断する\n+2. **flowchart 優先**: 判断が曖昧・複合的・専用図と flowchart の両方で表現可能な場合は、常に `flowchart` を選ぶ\n+3. **変更箇所を強調**: 追加された状態・遷移・ノードは視覚的に区別する（Mermaidの `style` やノート、ASCII artの `[NEW]` 注釈など）\n+4. **簡潔さ優先**: 変更に関連する部分のみ図示し、無関係な全体像は含めない\n+5. **spec連携**: 対応する `.specs/` の `implementation-plan.md` が存在する場合は、そこに含まれるシステム図を参考にしつつ、実際の差分に基づいて更新・簡略化する\n+\n+## 変更タイプ\n+\n+| タイプ | 絵文字 |\n+|:-|:-|\n+| バグ修正 | 🐛 |\n+| 新機能 | ✨ |\n+| リファクタリング | ♻️ |\n+| UI/UX改善 | 🎨 |\n+| パフォーマンス改善 | 🐎 |\n+| テスト | 🚨 |\n+| ドキュメント | 📖 |\n+| 設定変更 | 🔧 |\n+| 削除 | 🗑️ |\n+\n+## Issue連携\n+\n+### 連携キーワード\n+\n+- **閉じる**: `Closes #123` または `Fixes #123`\n+- **参照のみ**: `Refs #123` または `Relates to #123`\n+\n+### 必須事項\n+\n+- GitHub PR画面の「Development」セクションでIssueをLink\n+- 本文にも連携キーワードを記載\n+\n+## チェックリスト\n+\n+PR作成前の確認事項:\n+\n+- [ ] コードレビューの準備完了\n+- [ ] テスト正常実行\n+- [ ] ドキュメント更新（必要に応じて）\n+- [ ] 適切なコミットメッセージ\n+- [ ] IssueがPRにLinked\n+- [ ] セルフレビュー実施\n+- [ ] 意思決定と経緯を記載（`decision_record.mode` が `off` 以外の場合）\n+- [ ] 破壊的変更の明記（該当時）\n+\n+デフォルトテンプレートは `references/pr-template.md` を参照。",
+          "patchLines": 156,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/pull-request/references/pr-template.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 271,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,271 @@\n+# プルリクエストテンプレート\n+\n+## 概要\n+\n+<!-- このプルリクエストで何を変更したかを簡潔に説明してください -->\n+\n+## 変更内容\n+\n+### 🎯 変更の種類\n+\n+<!-- 該当するものにチェックを入れてください -->\n+\n+- [ ] 🐛 バグ修正 (Bug fix)\n+- [ ] ✨ 新機能 (New feature)\n+- [ ] ♻️ リファクタリング (Refactoring)\n+- [ ] 🎨 UI/UX 改善 (UI/UX improvement)\n+- [ ] 🐎 パフォーマンス改善 (Performance improvement)\n+- [ ] 🚨 テスト追加/修正 (Tests)\n+- [ ] 📖 ドキュメント更新 (Documentation)\n+- [ ] 🔧 設定変更 (Configuration)\n+- [ ] 🗑️ 削除 (Removal)\n+\n+### 📝 詳細な変更内容\n+\n+<!-- 以下の形式で変更内容を記載してください -->\n+\n+#### 追加された機能・修正\n+\n+-\n+\n+#### 変更されたファイル\n+\n+-\n+\n+#### 削除されたファイル・機能\n+\n+-\n+\n+## 🧭 意思決定と経緯\n+\n+<!--\n+テンプレート(.pr-template.yml)の decision_record.mode に従って記載する。\n+mode が off の場合はセクションごと削除する。\n+各コミット本文の意思決定は以下で集められる:\n+  git log <base_branch>..HEAD --format=%B\n+コミット本文の丸写しではなく、PR全体としての方針判断に束ね直すこと。\n+-->\n+\n+### 背景\n+\n+<!-- この変更が必要になった経緯・課題・制約（mode: standard 以上） -->\n+\n+-\n+\n+### なぜこの方針か\n+\n+<!-- PR全体として採用した方針とその理由（mode: minimal 以上） -->\n+\n+-\n+\n+### 検討した代替案\n+\n+<!-- 採用しなかった案と却下理由をセットで記載（mode: detailed）\n+     却下理由のない列挙はレビュアーの判断材料にならないため必ず添えること -->\n+\n+- 案:\n+  - 却下理由:\n+\n+### 影響とトレードオフ\n+\n+<!-- 既存挙動・互換性・運用への影響と、受け入れたトレードオフ（mode: standard 以上）\n+     利点だけを並べず「何を犠牲にしたか」を書くこと -->\n+\n+-\n+\n+### 今回見送ったこと\n+\n+<!-- スコープ外にした項目と理由。後続Issueがあれば番号を併記（mode: detailed） -->\n+\n+-\n+\n+## 📊 システム図\n+\n+<!-- テンプレート(.pr-template.yml)で diagrams が有効な場合のみ記載。無効の場合はセクションごと削除 -->\n+\n+### 状態マシン / フロー図\n+\n+```\n+{ここに状態マシン図またはフロー図を記述すること}\n+{すべての状態・遷移条件・分岐を含めること}\n+{変更箇所には [NEW] や [CHANGED] で注釈をつけること}\n+```\n+\n+<!--\n+例 (Mermaid flowchart — デフォルトはこれ):\n+\n+```mermaid\n+flowchart TD\n+    Start([注文作成]) --> Draft[Draft]\n+    Draft -->|確認| Pending[Pending]\n+    Draft -->|キャンセル| Cancelled[Cancelled]:::new\n+    Pending -->|決済完了| Paid[Paid]\n+    Pending -->|キャンセル| Cancelled\n+    Paid -->|発送| Shipped[Shipped]\n+    Shipped -->|配達完了| Delivered[Delivered]\n+    Delivered --> End([終了])\n+    Cancelled --> End\n+\n+    classDef new fill:#ffe4b5,stroke:#d97706,stroke-width:2px\n+```\n+\n+例 (ASCII art — flowchart で収まらない場合のフォールバック):\n+\n+```\n+                 ┌─────────┐\n+                 │  Draft  │\n+                 └────┬────┘\n+                      │ 確認\n+          キャンセル   │\n+     ┌────────────────┤\n+     │                ▼\n+     │          ┌──────────┐\n+     │          │ Pending  │\n+     │          └────┬─────┘\n+     │               │\n+     │    ┌──────────┤\n+     │    │ キャンセル │ 決済完了\n+     ▼    ▼          ▼\n+┌───────────┐  ┌──────────┐\n+│ Cancelled │  │   Paid   │\n+│   [NEW]   │  └────┬─────┘\n+└───────────┘       │ 発送\n+                    ▼\n+              ┌──────────┐\n+              │ Shipped  │\n+              └────┬─────┘\n+                   │ 配達完了\n+                   ▼\n+              ┌───────────┐\n+              │ Delivered │\n+              └───────────┘\n+```\n+-->\n+\n+### データフロー\n+\n+```\n+{ここにデータフロー図を記述すること}\n+{コンポーネント間のデータの流れを含めること}\n+{変更箇所には [NEW] や [CHANGED] で注釈をつけること}\n+```\n+\n+<!--\n+例:\n+\n+```\n+Client (POST /orders/:id/cancel)\n+    ↓\n+OrderController.cancel()\n+    ↓\n+OrderService.cancel()\n+    ├─→ OrderRepository.updateStatus(id, 'cancelled')  [NEW]\n+    │       ↓\n+    │   Database (orders テーブル)\n+    │\n+    └─→ NotificationService.sendCancelEmail()  [NEW]\n+            ↓\n+        Email送信 (ユーザーへキャンセル通知)\n+```\n+-->\n+\n+## 📋 関連 Issue\n+\n+<!-- 関連するIssueがある場合は記載してください -->\n+\n+- GitHub の PR 画面「Development」セクションで、関連する Issue を必ず Link してください（Linked issues）。\n+- 本文にも連携キーワードを記載してください:\n+  - 閉じる場合: `Closes #<番号>` または `Fixes #<番号>`\n+  - 参照のみ: `Refs #<番号>` または `Relates to #<番号>`\n+\n+例:\n+\n+- Closes #123\n+- Refs #456\n+\n+## 🧪 テスト\n+\n+### テスト実行方法\n+\n+```bash\n+# テストコマンドを記載\n+```\n+\n+### テスト項目\n+\n+<!-- 実施したテストについてチェックしてください -->\n+\n+- [ ] 単体テスト (Unit tests)\n+- [ ] 統合テスト (Integration tests)\n+- [ ] E2E テスト (End-to-end tests)\n+- [ ] 手動テスト (Manual testing)\n+\n+### テスト結果\n+\n+<!-- テスト結果を記載してください -->\n+\n+## 📸 スクリーンショット/動画\n+\n+<!-- UI変更がある場合は、Before/Afterのスクリーンショットや動画を添付してください -->\n+\n+### Before\n+\n+<!-- 変更前のスクリーンショット -->\n+\n+### After\n+\n+<!-- 変更後のスクリーンショット -->\n+\n+## 🔍 レビューポイント\n+\n+<!-- レビュアーに特に注目してもらいたい点を記載してください -->\n+\n+-\n+-\n+-\n+\n+## ⚠️ 破壊的変更\n+\n+<!-- 破壊的変更がある場合はチェックして詳細を記載してください -->\n+\n+- [ ] この変更は既存の API に破壊的変更を含みます\n+\n+### 破壊的変更の詳細\n+\n+<!-- 破壊的変更がある場合、その詳細と移行方法を記載してください -->\n+\n+## 📚 追加情報\n+\n+### 参考資料\n+\n+<!-- 参考にした資料やドキュメントがある場合は記載してください -->\n+\n+-\n+\n+### 注意事項\n+\n+<!-- レビュアーや今後のメンテナンスで注意すべき点があれば記載してください -->\n+\n+-\n+\n+## ✅ チェックリスト\n+\n+<!-- プルリクエストを出す前に以下をチェックしてください -->\n+\n+- [ ] コードレビューの準備ができている\n+- [ ] テストが正常に実行される\n+- [ ] ドキュメントが更新されている（必要に応じて）\n+- [ ] コミットメッセージが適切な形式で書かれている\n+- [ ] 関連する Issue が PR の「Development」に Linked されている\n+- [ ] PR 本文に `Closes #` / `Fixes #` / `Refs #` などで Issue が記載されている\n+- [ ] セルフレビューを実施した\n+- [ ] 意思決定と経緯を記載した（`decision_record.mode` が `off` 以外の場合）\n+- [ ] 破壊的変更がある場合は明記されている\n+\n+## 🤝 レビュアーへのお願い\n+\n+<!-- レビュアーに対する特別なお願いがあれば記載してください -->\n+\n+-\n+-\n+",
+          "patchLines": 272,
+          "truncated": false
+        },
+        {
+          "path": "AGENTS.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -45,7 +45,7 @@\n ゴールの確定 → タスクの分割 → 計画 → **計画の検証（`plan-reviewer`）** → 実装 → **実装の検証（観点別の `*-reviewer`）** → PR → マージ後の追記、までを 1 セットとする。\n \n - 検証の観点は `.claude/agents/` のサブエージェントが定義する（検証時にだけ必要な情報を常時ロードへ入れないため）\n-- **計画・却下した案・その理由はすべて Issue に追記する**（PR 本文は差分の説明、Issue は判断の履歴。採用案だけ残すと、同じ案が再浮上した際に前回の却下理由が失われる）\n+- **計画・却下した案・その理由はすべて Issue に追記する**（Issue は判断の履歴。PR 本文に書いても Issue からは省かない。採用案だけ残すと、同じ案が再浮上した際に前回の却下理由が失われる）\n - マージ後は `harness-record` スキル（`.claude/skills/harness-record/`）で評価を記録する\n \n ## タスクの分割",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -17,13 +17,13 @@ DevContainer の `postCreateCommand`（`.devcontainer/devcontainer.json`）に\n \n ## 何が走るか\n \n-### `pre-push` が呼ぶ検査一覧（計 34 本）\n+### `pre-push` が呼ぶ検査一覧（計 37 本）\n \n | カテゴリ | 検査 | 呼んでいるもの |\n | --- | --- | --- |\n | 型・lint・規約検査（9 本） | 型 / lint / format / doc コメント / テスト規約 / import 規約 / story の title / 名指ししたパス / テストヘルパーの重複 | `pnpm run typecheck`・`pnpm run lint`・`pnpm exec biome check`・`.claude/hooks/lib/missing-doc-comments.py`・`.claude/hooks/lib/test-rules-scan.sh`・`.claude/hooks/lib/import-rule-violations.py`・`.claude/hooks/lib/story-title-violations.py`・`.claude/hooks/lib/named-path-violations.py`・`.claude/hooks/lib/duplicate-test-helpers.py --all src` |\n | 差分ベース検査と判定表（3 本） | 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加分の検査の判定表 | `.github/scripts/check-added-lint-suppressions.sh`・`.github/scripts/check-added-test-helper-duplication.sh`・`.github/scripts/check-added-cases.sh` |\n-| 検出器・フックの判定表（12 本） | import 規約 / story の title / 名指ししたパス / doc コメント / テストヘルパーの重複 / Issue の作業の種類 / カナリア / push 前検査フック / 編集時検査フック / 作業ツリーを書き換えるサブエージェントの実行中フラグ / 親セッションの編集 / 判定の読み取り・報告・種別照合 | `.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.claude/hooks/lib/issue-flow-kind-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/parent-session-edit-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh` |\n+| 検出器・フックの判定表（15 本） | import 規約 / story の title / 名指ししたパス / doc コメント / テストヘルパーの重複 / Issue の作業の種類 / カナリア / push 前検査フック / 編集時検査フック / 作業ツリーを書き換えるサブエージェントの実行中フラグ / 親セッションの編集 / git add -A の拒否 / コミット本文の行頭 `#` の拒否 / 保護ブランチの編集の拒否 / 判定の読み取り・報告・種別照合 | `.claude/hooks/lib/import-rule-cases.sh`・`.claude/hooks/lib/story-title-cases.sh`・`.claude/hooks/lib/named-path-cases.sh`・`.claude/hooks/lib/missing-doc-comments-cases.sh`・`.claude/hooks/lib/duplicate-test-helpers-cases.sh`・`.claude/hooks/lib/issue-flow-kind-cases.sh`・`.claude/hooks/lib/canary-cases.sh`・`.claude/hooks/lib/pre-push-detector-cases.sh`・`.claude/hooks/lib/edit-detector-cases.sh`・`.claude/hooks/lib/verification-agent-cases.sh`・`.claude/hooks/lib/parent-session-edit-cases.sh`・`.claude/hooks/lib/git-add-all-cases.sh`・`.claude/hooks/lib/commit-md-heading-cases.sh`・`.claude/hooks/lib/protected-branch-edit-cases.sh`・`.claude/hooks/lib/cases-report-cases.sh` |\n | PR 解説ページの判定表（5 本） | 変更の地図 / 解説ページの置き場 / 解説の検査 / 解説ページの枠の検査 / 解説ページの核 | `.github/scripts/build-pr-change-map-cases.sh`・`.github/scripts/pr-explain-pages-cases.sh`・`.github/scripts/build-pr-explain-cases.sh`・`.github/scripts/check-pr-explain-template-cases.sh`・`.github/scripts/pr-explain-core-cases.sh` |\n | PR 運用・記録・集計（5 本） | 行数のラチェット / 集計の判定表 / sticky コメントの投稿・差し替えの判定表 / PR が閉じる Issue の検査の判定表 / `pre-push` の結果行の判定表 | `harness/records/count.sh --ratchet`・`harness/records/count-cases.sh`・`.github/scripts/upsert-sticky-comment-cases.sh`・`.github/scripts/check-pr-closing-issue-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` |\n \n@@ -40,7 +40,7 @@ DevContainer の `postCreateCommand`（`.devcontainer/devcontainer.json`）に\n - **検査本体は `.claude/hooks/lib/` と共有する。** Claude Code のフックは同じスクリプトを走らせる即時フィードバック版とし、二重管理を避ける\n - **`check-added-*` の 2 本とその共有部品は `.github/scripts/` に置く。** base との差分で判定する CI と同じスクリプトをそのまま呼ぶ。[その判定表](../../.github/scripts/check-added-cases.sh)と共有ライブラリ（前提チェックの `.github/scripts/lib/detector-precondition.sh`、異常終了を判別する `.github/scripts/lib/detector-report.sh`、追加行番号を取り出す `.github/scripts/lib/added-lines.sh`）も同じ場所に置く。前提チェックと異常終了判別は層 3 の `.claude/hooks/lib/pre-push-detector.sh` と `.claude/hooks/lib/edit-detector.sh` からも参照し、層ごとの判定のぶれを防ぐ\n - **PR 解説ページの判定表 5 本も `.github/scripts/` に置く。** 対象が `pr-explain.yml`・`pr-explain-list.yml` と `pr-explain` スキルから呼ばれるスクリプトと同じ場所にあるため\n-- **行数のラチェット（`count.sh --ratchet`）と判定表（上の表の各 `*-cases.sh` 計 22 本）は、`.claude/hooks/` 側の `pre-push-*.sh` に対応物を持たない。** 判定表をどの層へ置くかと層 3 へ足さない理由は `.claude/hooks/README.md`「カバー範囲と残る穴」を参照\n+- **行数のラチェット（`count.sh --ratchet`）と判定表（上の表の各 `*-cases.sh` 計 25 本）は、`.claude/hooks/` 側の `pre-push-*.sh` に対応物を持たない。** 判定表をどの層へ置くかと層 3 へ足さない理由は `.claude/hooks/README.md`「カバー範囲と残る穴」を参照\n \n ### 道具がない環境でのスキップ条件\n \n@@ -51,7 +51,7 @@ DevContainer の `postCreateCommand`（`.devcontainer/devcontainer.json`）に\n | `pnpm` または `node_modules` | 型 / lint / format |\n | `python3`（起動できないものが PATH にある場合を含む） | doc コメント（と判定表） / import 規約（と判定表） / story の title（と判定表） / 名指ししたパス（と判定表） / テストヘルパーの重複（と判定表） / Issue の作業の種類の判定表 / 追加された lint 抑制 / 追加されたテストヘルパーの重複 / 追加分の検査の判定表 / 変更の地図・解説ページの置き場・解説の検査・解説ページの枠の検査の判定表 |\n | `python3`（同上）または `jq` | カナリアの判定表 / push 前検査フックの判定表 / 編集時検査フックの判定表 |\n-| `jq` | sticky コメントの投稿・差し替えの判定表 / PR が閉じる Issue の検査の判定表 |\n+| `jq` | sticky コメントの投稿・差し替えの判定表 / PR が閉じる Issue の検査の判定表 / git add -A の拒否の判定表 / コミット本文の行頭 `#` の拒否の判定表 |\n | `python3`（同上）または `node`（起動できないもの・Node 20 未満が PATH にある場合を含む） | 解説ページの核の判定表 |\n \n **飛ばしたことを出力に「飛ばします」と残し、最後の行の件数にも数える。** 通常の成功と同じ出力だと、検査が本当に走った証拠にならないため。",
+          "patchLines": 34,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "1129116a0f29f5df7d7bfc6d55c51dfde4b46409",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T00:39:56Z",
+      "subject": "🐛 [Bug Fix]: #1437 実装の検証で挙がったすり抜け・重複・許可の範囲・命名を直す",
+      "body": "- here-string（<<<）をヒアドキュメントの開きと読まないようにし、その次の行の git add -A と行頭 # を止める\n- 一括 add で、. の直後が ) や & や | でも止める\n- 判定表に deny を 6 行、直さない取りこぼしを miss として 2 行足す\n- 判定表 2 本のループと共通の doc を cases-fixtures.sh の report_bash_call_cases にまとめる。期待の 3 種の説明は normalize_miss の doc の 1 か所にだけ置く\n- README とフックの doc から、miss の件数・一覧と保護ブランチの並びを外し、判定表とフックの配列を指す形にする\n- pull-request スキルの allowed-tools を、本文が使う git log / git diff / gh pr create だけに絞る。README に、スキルによる事前許可の範囲を書き添える\n- 名前を直す: 閉じの行の判定を closes_heredoc に出す、awk の mode を outline から command に、message_text を scanned_text に\n- README の GraphQL 403 に出どころを書き、awk / sed の異常終了で素通りすることを残る穴に足す\n\n背景:\nフェーズ 6 の実装の検証（8 エージェント）で、重大・高は無く、中・低の指摘が挙がった。採否は Issue #1437 のコメント 7088370431。\n\n採用理由:\nすり抜けのうち安く直せるもの（<<<、. の直後の記号）はこの PR で直し、近似の外側は miss の行で固定した。字句の扱いの根本は、既存の python の字句解析器へ寄せるのが筋なので #1454 に分けた。README に件数や一覧を写すと、表と食い違ったまま気づけないため、正本を指す形にした。\n\n代替案:\n- detached-orphan を detached-off-branch に改名する案は採らなかった。名前が第 1 工程の表 C の既存の行に出ていて、改名するとその行を書き換えることになるため\n- テンプレートが無いときの既定値への切り替えを外す案は採らなかった。テンプレートは同梱していて普段は通らない経路であり、取り込み元との差分を増やさないため\n- awk / sed の異常終了で止める（deny する）案は、#1454 で字句解析器を差し替えるときに扱う\n\n影響とトレードオフ:\n判定表 2 本は表の行だけを持つ形になり、第 1 工程の行は 1 行も変えていない（行の集合と ok の集合を前後で比べた）。そのため git diff --numstat 43cd815 HEAD の削除列は、この 2 本で 0 にならない。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NZQHLFV2MuY769VeU",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 6,
+          "patch": "@@ -30,12 +30,12 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `block-issue-without-flow-kind.sh` | `PreToolUse`（Bash/MCP） | **作業の種類を決めていない Issue 作成を拒否**（`implementation-flow` フェーズ 1「種類の確定」の手順 4）。作成とみなす形・通す条件・行の書式は `lib/issue-flow-kind-violations.py` の docstring と定数を参照。python3 が使えなければ通し、検出器が異常終了したら deny する |\n | `block-git-add-all.sh` | `PreToolUse`（Bash） | **一括ステージング禁止**（対応する規範は `commit` スキル「禁止事項」）。`git add -A` / `--all` / `.` / `-a` を拒否する。ヒアドキュメントの本文と引用符の中（コマンド置換を含まないもの）は見ない |\n | `block-commit-md-heading.sh` | `PreToolUse`（Bash） | **コミット本文の行頭 `#` 禁止**（対応する規範は `commit` スキルの本文の「書式」）。引用符の外に `git commit` があれば、ヒアドキュメントの本文（無ければコマンド全体）の行頭 `#` を拒否する |\n-| `block-protected-branch-edit.sh` | `PreToolUse`（Edit/Write/MultiEdit/NotebookEdit） | **保護ブランチでの編集禁止**。フックの作業ディレクトリのブランチが main / master / production / release / develop / staging なら拒否する。入力は読まず、どのツールで止めるかは matcher が決める |\n+| `block-protected-branch-edit.sh` | `PreToolUse`（Edit/Write/MultiEdit/NotebookEdit） | **保護ブランチでの編集禁止**。フックの作業ディレクトリのブランチが保護ブランチ（一覧はフックの `protected_branches`）なら拒否する。入力は読まず、どのツールで止めるかは matcher が決める |\n \n ## 移植元から見送ったもの\n \n - `require-skill-before-edit.sh` — typescript-rules-plugin 固有のスキルに依存するスキルゲートのため\n-- `allow-plugin-commands.sh`（git-workflow-plugin）— `gh` / `git` で始まるコマンドに allow を返し、`&&` `||` `;`・改行での連結と、決まった形以外のパイプ（`git` は末尾の `| head` / `| tail` 一段だけ）を拒否するフック。取り込まないので `git` / `gh` は通常の許可確認に戻り、「1 回の Bash 呼び出し = 1 コマンド」（`commit` / `pull-request` スキル「コマンド実行規約」）は文章だけで守る（#1437 で人が判断）\n+- `allow-plugin-commands.sh`（git-workflow-plugin）— `gh` / `git` で始まるコマンドに allow を返し、`&&` `||` `;`・改行での連結と、決まった形以外のパイプ（`git` は末尾の `| head` / `| tail` 一段だけ）を拒否するフック。取り込まないので `git` / `gh` は通常の許可確認に戻る（スキルの `allowed-tools` が事前に許可する分は除く。`commit` スキルは `git add` / `git commit` / `git status` / `git diff`、`pull-request` スキルは `git log` / `git diff` / `gh pr create`）。「1 回の Bash 呼び出し = 1 コマンド」（`commit` / `pull-request` スキル「コマンド実行規約」）は文章だけで守る（#1437 で人が判断）\n \n ### 見送りを取り消したもの\n \n@@ -64,7 +64,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring を参照 |\n | `lib/cases-report.sh` | `lib/*-cases.sh`・`.github/scripts/*-cases.sh`・`harness/records/count-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` の各判定表（22 本） | 判定表が共有する 5 機能を提供する: (1) 判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category` / `hook_verdict_by_permission`）、(2) 結果報告（関数 `report`・変数 `cases_failed`）、(3) 検出器種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）、(4) 判定表末尾文の照合（`last_statement` / `report_exits_with_cases_failed`）、(5) 1 件以上走ったかの照合（関数 `report_cases_ran`・変数 `cases_reported`）。ケースの並べ方と検出器の呼び方は各判定表が持つ |\n | `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `lib/cases-report.sh` 自身の判定表。種別照合・`report` の出力と `cases_failed`・`decide*` / `hook_verdict_by_permission` の判定（pass / deny / broken / miss）・各判定表の末尾が `exit \"$cases_failed\"` であること・`report_cases_ran` の挙動を検証する（詳細は冒頭コメントとケース名）。食い違いがあれば exit 1 |\n-| `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh` / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh` / `lib/issue-flow-kind-cases.sh` / `lib/git-add-all-cases.sh` / `lib/commit-md-heading-cases.sh` | 判定表が共有する前提の組み立て関数。落ちる検出器スタブ（`place_failing_detector`）・起動不能なコマンド（`broken_command_path_prefix`）・同一本体のテストヘルパー（`place_duplicate_helpers`）・サブエージェント呼び出し入力フィールド（`subagent_call_fields`）・フックの一時ディレクトリへの写し（`copy_repo_files`）・Bash の呼び出しの入力（`bash_call_input`。jq で組む）を提供する |\n+| `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh` / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh` / `lib/issue-flow-kind-cases.sh` / `lib/git-add-all-cases.sh` / `lib/commit-md-heading-cases.sh` | 判定表が共有する前提の組み立て関数。落ちる検出器スタブ（`place_failing_detector`）・起動不能なコマンド（`broken_command_path_prefix`）・同一本体のテストヘルパー（`place_duplicate_helpers`）・サブエージェント呼び出し入力フィールド（`subagent_call_fields`）・フックの一時ディレクトリへの写し（`copy_repo_files`）・Bash の呼び出しの入力（`bash_call_input`。jq で組む）・Bash の呼び出しの判定表をフックへ流して報告する関数（`report_bash_call_cases`）を提供する |\n | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `import-rule-violations.py` の判定表。種別・件数・全種別の網羅・`scan()` と docstring の並び一致・スタブ検出器の broken 判定を検証する。食い違いがあれば exit 1 |\n | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `named-path-violations.py` の判定表。deny / pass / miss と、検出器種別の並びと docstring の一致を検証する。食い違いがあれば exit 1 |\n | `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `lib/pre-push-detector.sh` の判定表。`deny_on_all_src_failure`（一時ディレクトリの `pre-push-test-helper-duplication.sh`）と `deny_on_violations`（スタブ検出器）で、deny（違反 / 検査できなかった）と pass を検証する。食い違いがあれば exit 1 |\n@@ -145,15 +145,15 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n \n | 残る穴 | 内容 |\n | --- | --- |\n-| 一括 add の取りこぼし（8 形） | `git -C <パス>` / `git -c <設定>` の後ろ、`git add ./` / `git add :/` / `git add *`、引用符で囲んだ `git add \".\"`、`git stage -A`、`bash -c \"…\"` の中。取りこぼしを狭める変更は移植の範囲外とし、`bash -c` の中は引用符の中を見ない引き換えに受け入れた |\n-| 行頭 `#` の取りこぼし（7 形） | 2 つ目の `-m`、件名が `#` で始まる 1 行の `-m`、`-F <ファイル>` の中身、`git -C` / `git -c` の後ろ、`<<-` でタブを除かれて桁 0 になる `#`、別のヒアドキュメントと並ぶ複数行の `-m` |\n+| 一括 add・行頭 `#` の取りこぼし | 取りこぼす形は判定表 `lib/git-add-all-cases.sh` / `lib/commit-md-heading-cases.sh` の `miss` の行。取りこぼしを狭める変更は移植の範囲外とし、`bash -c` の中は引用符の中を見ない引き換えに受け入れた |\n | 行頭 `#` の止めすぎ | 引用符の外に `git commit` があれば、同じ入力の別のヒアドキュメント（`gh pr create` の本文など）やシェルのコメント行の行頭 `#` でも止める |\n | 保護ブランチを見る場所 | 編集先ではなくフックの作業ディレクトリで見る（リポジトリの外を編集しても止める。作業ディレクトリが外なら、リポジトリの中を編集しても見ない） |\n | detached HEAD | `git describe --contains --all HEAD` の名前で見る。保護ブランチの先端に作業ブランチも並んでいると、その名前が返って見ない |\n | Bash 経由の書き換え | `sed -i` やリダイレクトでの書き換えは、保護ブランチの上でも見ない（matcher が編集ツールだけのため） |\n | jq が無い環境 | `block-git-add-all.sh` と `block-commit-md-heading.sh` は jq でコマンドを取り出すので、jq が無いと素通りする（`block-protected-branch-edit.sh` は jq を使わない） |\n+| awk / sed の異常終了 | `block-git-add-all.sh` と `block-commit-md-heading.sh` は、`lib/command-literals.sh` の awk / sed が異常終了しても素通りする（判定表を走らせれば deny の行が NG になる） |\n \n-クラウドの実行環境では `.claude/` 自体が読まれないことがある（#1443）。`pull-request` スキルの `gh pr create` / `gh pr edit` はクラウドでは GraphQL の 403 で失敗するが、取り込み元のまま写した。`.claude/settings.json` で `false` にしたのは d-market-git の 2 つ（`git-workflow-plugin` / `workflow-automation-plugin`）だけで、共有のプロジェクト設定に書いている。利用者のローカル設定（`settings.local.json`）・`--settings`・managed で有効にすると、プラグインのフックも走る。\n+クラウドの実行環境では `.claude/` 自体が読まれないことがある（#1443）。`pull-request` スキルの `gh pr create` / `gh pr edit` はクラウドでは GraphQL の 403 で失敗するが、取り込み元のまま写した。出どころは #1437 のルーティンのセッションの停止コメント（Q4）と、2026-11-22 にクラウドのセッションで `gh api graphql` が `HTTP 403`（\"GitHub GraphQL is not available from Claude Code sessions\"）を返したことで、`gh pr create` 自体は走らせていない。`.claude/settings.json` で `false` にしたのは d-market-git の 2 つ（`git-workflow-plugin` / `workflow-automation-plugin`）だけで、共有のプロジェクト設定に書いている。利用者のローカル設定（`settings.local.json`）・`--settings`・managed で有効にすると、プラグインのフックも走る。\n \n ### 「代替不能」が実際に不発だったとき、手動で肩代わりする\n ",
+          "patchLines": 43,
+          "truncated": false
+        },
+        {
+          "path": ".claude/hooks/block-commit-md-heading.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 4,
+          "patch": "@@ -17,16 +17,16 @@ command=\"$(jq -r '.tool_input.command // empty')\" || exit 0\n \n command_line_outside_literals \"$command\" | grep -qE '\\bgit[[:space:]]+commit\\b' || exit 0\n \n-message_text=\"$(heredoc_bodies \"$command\")\"\n-[ -n \"$message_text\" ] || message_text=\"$command\"\n-offending=\"$(printf '%s\\n' \"$message_text\" | grep -n '^#' | head -3)\"\n+scanned_text=\"$(heredoc_bodies \"$command\")\"\n+[ -n \"$scanned_text\" ] || scanned_text=\"$command\"\n+offending=\"$(printf '%s\\n' \"$scanned_text\" | grep -n '^#' | head -3)\"\n [ -n \"$offending\" ] || exit 0\n \n jq -n --arg lines \"$offending\" '{\n   hookSpecificOutput: {\n     hookEventName: \"PreToolUse\",\n     permissionDecision: \"deny\",\n-    permissionDecisionReason: (\"コミットメッセージ本文に行頭 `#` の Markdown 見出しが含まれています。\\n\\n検出された行:\\n\" + $lines + \"\\n\\n理由:\\n- git は core.commentChar（既定 `#`）で始まる行をコメントとして除去します\\n- `git commit -m` の時点では残りますが、後で `git commit --amend` や `git rebase --reword` をエディタ経由で行うと、その時点で該当行が黙って消えます\\n- 意思決定をコミット本文に残す運用では、この欠落は記録の喪失になります\\n\\n対処:\\n- 見出しは `<見出し>:` を単独行に置いてください（例: `背景:` `採用理由:`）\\n- 見出し文字列は commit テンプレートの `decision_record.sections[].title` に揃えてください\\n- どうしても行頭 `#` が必要な場合は、その行を1文字以上インデントしてください（桁0でなければ除去されません）\")\n+    permissionDecisionReason: (\"コミットメッセージ本文に行頭 `#` の行が含まれています。\\n\\n検出された行:\\n\" + $lines + \"\\n\\n理由:\\n- git は core.commentChar（既定 `#`）で始まる行をコメントとして除去します\\n- `git commit -m` の時点では残りますが、後で `git commit --amend` や `git rebase --reword` をエディタ経由で行うと、その時点で該当行が黙って消えます\\n- 意思決定をコミット本文に残す運用では、この欠落は記録の喪失になります\\n\\n対処:\\n- 見出しは `<見出し>:` を単独行に置いてください（例: `背景:` `採用理由:`）\\n- 見出し文字列は commit テンプレートの `decision_record.sections[].title` に揃えてください\\n- どうしても行頭 `#` が必要な場合は、その行を1文字以上インデントしてください（桁0でなければ除去されません）\")\n   }\n }'\n exit 0",
+          "patchLines": 21,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/block-git-add-all.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -15,7 +15,7 @@ hook_dir=\"$(cd \"$(dirname \"${BASH_SOURCE[0]}\")\" && pwd)\" || exit 0\n command=\"$(jq -r '.tool_input.command // empty')\" || exit 0\n [ -n \"$command\" ] || exit 0\n \n-bulk_add_pattern='\\bgit\\s+add\\b[^;&|]*(\\s-[a-zA-Z]*A[a-zA-Z]*\\b|\\s--all\\b|\\s\\.(\\s|;|$)|\\s-a\\b)'\n+bulk_add_pattern='\\bgit\\s+add\\b[^;&|]*(\\s-[a-zA-Z]*A[a-zA-Z]*\\b|\\s--all\\b|\\s\\.(\\s|[;&|)]|$)|\\s-a\\b)'\n command_line_outside_literals \"$command\" | grep -qE \"$bulk_add_pattern\" || exit 0\n \n jq -n '{",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/block-protected-branch-edit.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 4,
+          "patch": "@@ -1,7 +1,7 @@\n #!/usr/bin/env bash\n #\n-# 保護ブランチの編集の禁止: 作業ディレクトリのブランチが main / master / production / release / develop / staging\n-# のとき、ファイルの編集を拒否する PreToolUse フック。\n+# 保護ブランチの編集の禁止: 作業ディレクトリのブランチが保護ブランチ（一覧は下の `protected_branches`）のとき、\n+# ファイルの編集を拒否する PreToolUse フック。\n # 由来: d-market-git / git-workflow-plugin の branch-protection.sh（1135a0d）\n #\n # 方針: 編集は作業ブランチで行う。\n@@ -9,8 +9,7 @@\n # 入力: stdin の JSON は見ない（どのツールで呼ぶかは settings.json の matcher が決める）\n # 出力: 違反時に permissionDecision=deny の JSON を返す。問題なければ exit 0。\n #\n-# ツール名を見ないのは、編集ツールの一覧を matcher とここの 2 か所で持たないため。取り込み元はここにも一覧を\n-# 持っていて、そちらには NotebookEdit が無かった。入力を読まないので jq も使わない。\n+# ツール名を見ないのは、編集ツールの一覧を matcher の 1 か所で持つため。入力を読まないので jq も使わない。\n #\n # detached HEAD では `git describe --contains --all` の名前が保護ブランチと一致するときだけ止める。`main~1` の\n # ような祖先まで止めると、bisect や過去のコミットを見るための checkout の最中の編集まで止まる。",
+          "patchLines": 20,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/cases-fixtures.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 24,
+          "deletions": 1,
+          "patch": "@@ -2,7 +2,7 @@\n #\n # フックの判定表(`*-cases.sh`)が共有する、ケースの前提の置き方。落ちる検出器・起動できないコマンド・\n # 本体が同じテストヘルパーを渡されたパスへ置くものと、サブエージェントの中の呼び出しの入力と Bash の\n-# 呼び出しの入力を組むものと、フックを一時ディレクトリへ写すもの。\n+# 呼び出しの入力を組むものと、フックを一時ディレクトリへ写すものと、Bash の呼び出しの判定表をフックへ流すもの。\n #\n # 使う側: lib/pre-push-detector-cases.sh / lib/edit-detector-cases.sh / lib/import-rule-cases.sh /\n # lib/verification-agent-cases.sh / lib/parent-session-edit-cases.sh / lib/issue-flow-kind-cases.sh /\n@@ -83,3 +83,26 @@ place_duplicate_helpers() {\n bash_call_input() {\n   jq -n --arg c \"$1\" '{tool_input: {command: $c}}'\n }\n+\n+# 標準入力の判定表を 1 行ずつ Bash の PreToolUse の入力にして PreToolUse フックへ流し、`report` で報告する。\n+# `cases-report.sh` を source した判定表から呼ぶ。\n+#\n+# 表の 1 行は `期待|ケース名|コマンド`(コマンドは最後の列なので `|` を含んでよい)。期待の種類は `cases-report.sh` の\n+# `normalize_miss`。コマンドの `@@` は改行に、`⇥` はタブに戻してから渡す。判定は `cases-report.sh` の\n+# `hook_verdict_by_permission`。\n+#\n+# ケースをファイルに置くのは、Bash で打って確かめると、deny の行は配線したあとのフック自身に止められるから。\n+#\n+# 入力を組むのに jq を使う(`bash_call_input`)ので、jq が無いと deny の行が NG になる。\n+# `harness/githooks/pre-push` は jq がある環境でだけ走らせる。\n+#\n+# $1 フックのパス\n+report_bash_call_cases() {\n+  local hook=\"$1\" expected label command verdict\n+  while IFS='|' read -r expected label command; do\n+    command=\"${command//@@/$'\\n'}\"\n+    command=\"${command//⇥/$'\\t'}\"\n+    verdict=\"$(hook_verdict_by_permission \"$hook\" <<<\"$(bash_call_input \"$command\")\")\"\n+    report \"$expected\" \"$(normalize_miss \"$expected\" \"$verdict\")\" \"$label\"\n+  done\n+}",
+          "patchLines": 36,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -93,6 +93,9 @@ all_in_category() {\n \n # 意図した取りこぼしは pass になるのが正解なので、表の綴りへ戻す。\n #\n+# 表の期待は 3 種。deny は止める(止めすぎている形も deny で固定する)、pass は通す、miss は止めない取りこぼし\n+# (通ることを固定する。フックが止めるようになったら NG になり、見る範囲が変わったことが表に出る)。\n+#\n # $1 表に書かれた期待\n # $2 `decide` が返した判定\n normalize_miss() {",
+          "patchLines": 10,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/command-literals.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 8,
+          "patch": "@@ -5,29 +5,36 @@\n # 使う側は `.claude/hooks/README.md`「配線」の `lib/command-literals.sh` の行。\n #\n # シェルの字句解析は持たず、awk（POSIX の機能だけ。mawk でも動かす）と sed の行単位の置換で近似する。\n-# 見ない形（`bash -c \"…\"` の中、引用符で囲んだ引数など）は、使う側の判定表に miss の行として並ぶ。\n+# 見ない形（`bash -c \"…\"` の中、引用符の中の `<<EOF` という字面より後ろ、引用符で囲まない `<<EOF` の本文の中の\n+# コマンド置換など）は、使う側の判定表（`git-add-all-cases.sh` / `commit-md-heading-cases.sh`）に miss の行として並ぶ。\n #\n # `lib/hook-input.sh` の `extract` では読まない。最初の `\\\"` で値が切れ、改行のエスケープも戻さない。\n # `hook-canary.sh` の分割器も共有しない。長さの 2 乗で伸びて 2048 字で打ち切り、ヒアドキュメントも読まない。\n # `lib/issue-flow-kind-violations.py` の字句解析は python3 に依存し、無い環境での通し方を決め直すことになる。\n \n-# ヒアドキュメントの区切りを開きの行ごとに読み、本文の行を除く（mode=body のときは本文の行だけを出す）awk。\n+# ヒアドキュメントの区切りを開きの行ごとに読み、本文の行を除く（mode=body のときは本文の行だけを出し、\n+# mode=command のときは本文の外の行だけを出す）awk。\n #\n # 区切りを最初の 1 つだけで読むと、2 つ目以降のヒアドキュメントが閉じずに後ろを丸ごと本文と読む。\n+# 開きは `<<` の直前と直後が `<` でないものだけ。here-string の `<<<` を開きと読むと、閉じが来ずに後ろを丸ごと本文と読む。\n # 閉じの行の字下げはタブだけを許す。`<<-` が取り除くのはタブだけで、空白で字下げした区切りでは閉じない。\n+# 閉じは本文の中（`inside`）でだけ探す。本文の外にある区切りと同じ語だけの行を、閉じの行として捨てないため。\n _command_literals_heredoc_awk='\n   function delimiter_of(line,   s) {\n-    if (!match(line, /<<-?[[:space:]]*[\\\\'\"'\"'\"]?[A-Za-z_][A-Za-z_0-9]*/)) return \"\"\n-    s = substr(line, RSTART + 2, RLENGTH - 2)\n-    sub(/^-?[[:space:]]*[\\\\'\"'\"'\"]?/, \"\", s)\n+    if (!match(line, /(^|[^<])<<-?[[:space:]]*[\\\\'\"'\"'\"]?[A-Za-z_][A-Za-z_0-9]*/)) return \"\"\n+    s = substr(line, RSTART, RLENGTH)\n+    sub(/^[^<]?<<-?[[:space:]]*[\\\\'\"'\"'\"]?/, \"\", s)\n     return s\n   }\n-  inside && $0 ~ (\"^\\t*\" delimiter \"[[:space:]]*$\") { inside = 0; next }\n+  function closes_heredoc(line) {\n+    return line ~ (\"^\\t*\" delimiter \"[[:space:]]*$\")\n+  }\n+  inside && closes_heredoc($0) { inside = 0; next }\n   inside { if (mode == \"body\") print; next }\n   {\n     delimiter = delimiter_of($0)\n     if (delimiter != \"\") inside = 1\n-    if (mode != \"body\") print\n+    if (mode == \"command\") print\n   }'\n \n # コマンド文字列の中の、すべてのヒアドキュメントの本文の行を出す。\n@@ -49,6 +56,6 @@ heredoc_bodies() {\n # $1 コマンド文字列\n # 出力: 引用符の外の部分を `;` でつないだ 1 行\n command_line_outside_literals() {\n-  printf '%s\\n' \"$1\" | awk -v mode=outline \"$_command_literals_heredoc_awk\" | tr '\\n' ';' \\\n+  printf '%s\\n' \"$1\" | awk -v mode=command \"$_command_literals_heredoc_awk\" | tr '\\n' ';' \\\n     | sed -E \"s/(^|[[:space:];=])'[^']*'/\\1/g; s/(^|[[:space:];=])\\\"[^\\\"\\$\\`]*\\\"/\\1/g\"\n }",
+          "patchLines": 52,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/commit-md-heading-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 16,
+          "patch": "@@ -6,16 +6,7 @@\n # 使い方: bash .claude/hooks/lib/commit-md-heading-cases.sh\n # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n #\n-# 期待は 3 種。deny は止める(止めすぎている形も deny で固定する)、pass は通す、miss は止めない取りこぼし\n-# (通ることを固定する。フックが止めるようになったら NG になり、見る範囲が変わったことが表に出る)。\n-#\n-# ケースをファイルに置くのは、Bash で打って確かめると、deny の行は配線したあとのフック自身に止められるから。\n-#\n-# 表の 1 行は `期待|ケース名|コマンド`(コマンドは最後の列なので `|` を含んでよい)。コマンドの `@@` は改行に、\n-# `⇥` はタブに戻してから渡す。判定は `cases-report.sh` の `hook_verdict_by_permission`。\n-#\n-# 入力を組むのに jq を使う(`cases-fixtures.sh` の `bash_call_input`)ので、jq が無いと deny の行が NG になる。\n-# `harness/githooks/pre-push` は jq がある環境でだけ走らせる。\n+# 表の書き方・期待の種類・jq への依存は `cases-fixtures.sh` の `report_bash_call_cases`。\n set -uo pipefail\n \n lib_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n@@ -25,12 +16,7 @@ lib_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n hook=\"$lib_dir/../block-commit-md-heading.sh\"\n \n cases_before=$cases_reported\n-while IFS='|' read -r expected label command; do\n-  command=\"${command//@@/$'\\n'}\"\n-  command=\"${command//⇥/$'\\t'}\"\n-  verdict=\"$(hook_verdict_by_permission \"$hook\" <<<\"$(bash_call_input \"$command\")\")\"\n-  report \"$expected\" \"$(normalize_miss \"$expected\" \"$verdict\")\" \"$label\"\n-done <<'CASES'\n+report_bash_call_cases \"$hook\" <<'CASES'\n deny|複数行の -m の行頭 # を止める|git commit -m \"subject@@@@# 背景\"\n deny|シングルクォートの複数行の -m の行頭 # を止める|git commit -m 'subject@@@@# 背景'\n deny|git commit -am の複数行の行頭 # を止める|git commit -am \"subject@@@@# 背景\"\n@@ -47,6 +33,7 @@ deny|cd の後ろの git commit の本文も止める|cd sub && git commit -m \"$\n deny|\"$(…)\" の後ろに並べた git commit の本文も止める|git tag \"$(date +%s)\" && git commit -m \"subject@@@@# 背景\"\n deny|2 つ目のヒアドキュメント（git commit の本文）の行頭 # も止める|cat <<'A' >/dev/null@@メモ@@A@@git commit -m \"$(cat <<'EOF'@@subject@@@@# 背景@@EOF@@)\"\n deny|ヒアドキュメントでファイルへ書いてから -F で渡す本文の行頭 # も止める|cat > /tmp/msg <<'EOF'@@subject@@@@# 背景@@EOF@@git commit -F /tmp/msg\n+deny|here-string（<<<）の次の行の git commit の本文の行頭 # を止める|cat <<<x@@git commit -m \"s@@@@# h\"\n deny|（止めすぎ）git commit と同じ入力にある別のヒアドキュメントの行頭 # で止める|gh pr create --body \"$(cat <<'B'@@## 概要@@B@@)\" && git commit -m \"$(cat <<'EOF'@@subject@@@@背景:@@EOF@@)\"\n deny|（止めすぎ）git commit と同じ入力にあるシェルのコメント行で止める|# 記録をまとめる@@git commit -m \"subject\"\n pass|<見出し>: の形の見出しは通す|git commit -m \"$(cat <<'EOF'@@subject@@@@背景:@@理由@@EOF@@)\"",
+          "patchLines": 40,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/git-add-all-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 16,
+          "patch": "@@ -6,16 +6,7 @@\n # 使い方: bash .claude/hooks/lib/git-add-all-cases.sh\n # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n #\n-# 期待は 3 種。deny は止める(止めすぎている形も deny で固定する)、pass は通す、miss は止めない取りこぼし\n-# (通ることを固定する。フックが止めるようになったら NG になり、見る範囲が変わったことが表に出る)。\n-#\n-# ケースをファイルに置くのは、Bash で打って確かめると、deny の行は配線したあとのフック自身に止められるから。\n-#\n-# 表の 1 行は `期待|ケース名|コマンド`(コマンドは最後の列なので `|` を含んでよい)。コマンドの `@@` は改行に、\n-# `⇥` はタブに戻してから渡す。判定は `cases-report.sh` の `hook_verdict_by_permission`。\n-#\n-# 入力を組むのに jq を使う(`cases-fixtures.sh` の `bash_call_input`)ので、jq が無いと deny の行が NG になる。\n-# `harness/githooks/pre-push` は jq がある環境でだけ走らせる。\n+# 表の書き方・期待の種類・jq への依存は `cases-fixtures.sh` の `report_bash_call_cases`。\n set -uo pipefail\n \n lib_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n@@ -25,12 +16,7 @@ lib_dir=\"$(cd \"$(dirname \"$0\")\" && pwd)\"\n hook=\"$lib_dir/../block-git-add-all.sh\"\n \n cases_before=$cases_reported\n-while IFS='|' read -r expected label command; do\n-  command=\"${command//@@/$'\\n'}\"\n-  command=\"${command//⇥/$'\\t'}\"\n-  verdict=\"$(hook_verdict_by_permission \"$hook\" <<<\"$(bash_call_input \"$command\")\")\"\n-  report \"$expected\" \"$(normalize_miss \"$expected\" \"$verdict\")\" \"$label\"\n-done <<'CASES'\n+report_bash_call_cases \"$hook\" <<'CASES'\n deny|git add -A を止める|git add -A\n deny|git add --all を止める|git add --all\n deny|git add . を止める|git add .\n@@ -49,6 +35,11 @@ deny|語の途中のアポストロフィの後ろの git add -A を止める|ec\n deny|\"$(…)\" の中の git add -A を止める|out=\"$(git add -A 2>&1)\"\n deny|\"`…`\" の中の git add -A を止める|out=\"`git add -A 2>&1`\"\n deny|<<-EOF のタブで字下げした閉じの後ろの git add -A を止める|git commit -F - <<-EOF@@⇥subject@@⇥EOF@@git add -A\n+deny|here-string（<<<）の次の行の git add -A を止める|cat <<<x@@git add -A\n+deny|引用符で囲んだ here-string（<<<\"…\"）の次の行の git add -A を止める|grep foo <<<\"bar\"@@git add -A\n+deny|サブシェルの閉じ括弧の直前の git add . を止める|(cd sub && git add .)\n+deny|&& の直前に空白を挟まない git add . を止める|git add .&& git commit -m x\n+deny|パイプの直前に空白を挟まない git add . を止める|git add .|cat\n pass|個別のパスの git add は通す|git add src/a.ts\n pass|git add -u は通す|git add -u\n pass|git add -p は通す|git add -p src/a.ts\n@@ -81,6 +72,8 @@ miss|git add * は見ない|git add *\n miss|引用符で囲んだ git add \".\" は見ない|git add \".\"\n miss|git stage -A は見ない|git stage -A\n miss|bash -c の中の git add -A は見ない|bash -c \"git add -A\"\n+miss|引用符の中の <<EOF という字面をヒアドキュメントの開きと読み、次の行の git add -A は見ない|echo \"書き方は <<EOF で渡す\"@@git add -A\n+miss|引用符で囲まない <<EOF の本文の中のコマンド置換 $(git add -A) は見ない|cat <<EOF@@$(git add -A)@@EOF\n CASES\n report_cases_ran CASES \"$cases_before\"\n exit \"$cases_failed\"",
+          "patchLines": 53,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 2,
+          "patch": "@@ -7,8 +7,7 @@\n # 使い方: bash .claude/hooks/lib/protected-branch-edit-cases.sh\n # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。\n #\n-# 期待は 3 種。deny は止める(止めすぎている形も deny で固定する)、pass は通す、miss は止めない取りこぼし\n-# (通ることを固定する。フックが止めるようになったら NG になり、見る範囲が変わったことが表に出る)。\n+# 期待の種類は `cases-report.sh` の `normalize_miss`。\n #\n # ケースを一時リポジトリに置くのは、本物のリポジトリのブランチを切り替えずに保護ブランチの上を作るため。\n # 「git の外」は `$work/outside` で、フックを呼ぶたびに `GIT_CEILING_DIRECTORIES=$work` を付けて",
+          "patchLines": 10,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/skills/harness-record/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 2,
+          "patch": "@@ -96,8 +96,7 @@ ls \"${TMPDIR:-/tmp}\"/design-composer-firings-*.log\n - PR 本文には記録した分類の一覧を書く\n - **指摘が 0 件の回でも PR を出す**（記録を残すこと自体が目的）\n - `rules/`・フック・スキルには触れず、差分は `harness/records/` の新規 1 ファイルだけにする\n-- **記録 PR には Issue を立てず、`Closes` も書かない**（`AGENTS.md`「着手した Issue は、その回で閉じる」の例外）。この例外は `.github/scripts/check-pr-closing-issue.sh` が「`harness/records/` 配下の新規 1 ファイルのみ」を条件に許可しているため、2 ファイル以上必要になった場合は検査条件も合わせて直す\n-- `pull-request` スキルの Issue 連携（Issue のリンク必須・`Closes`）は記録 PR には当てない\n+- **記録 PR には Issue を立てず、`Closes` も書かない**（`AGENTS.md`「着手した Issue は、その回で閉じる」の例外。`pull-request` スキルの Issue 連携（Issue のリンク必須・`Closes`）も当てない）。この例外は `.github/scripts/check-pr-closing-issue.sh` が「`harness/records/` 配下の新規 1 ファイルのみ」を条件に許可しているため、2 ファイル以上必要になった場合は検査条件も合わせて直す\n \n ---\n ",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -207,7 +207,7 @@ diff_text | grep -ciE 'UI 案|Design Composer\\.html'   # ui-reviewer の語\n ## フェーズ 7: PR\n \n - **PR を出す前に、フェーズ 1「種類の確定」の手順 1 でラベルを読み直す。** 変わっていたらフェーズ 1 へ戻る（手順 6）\n-- **PR 本文は pull-request スキルで書く。** 意思決定の書き方は .claude/.pr-template.yml の decision_record に従い、材料にはコミット本文に加えて Issue の計画・却下案を使う（Issue からは省かない → AGENTS.md「実装の進め方」）\n+- **PR 本文は `pull-request` スキルで書く。** 意思決定の書き方は `.claude/.pr-template.yml` の `decision_record` に従い、材料にはコミット本文に加えて Issue の計画・却下案を使う（Issue からは省かない → `AGENTS.md`「実装の進め方」）\n - **本文に `Closes #<Issue 番号>` を書く**（`AGENTS.md`「着手した Issue は、その回で閉じる」。閉じる Issue がない PR は `.github/workflows/pr-closing-issue.yml` が落とす）\n - CI（lint / typecheck / test / 視覚差分）を通す。push 前検査や CI が落ちた場合、修正は種類（と工程）と一緒に `implementer` へ渡す（判断を伴わない自動修正コマンドだけは親が走らせてよい →「役割の分担」）\n - **PR を出したら `pr-explain` スキルで解説（`explain.json`）を書く。** 振る舞いが変わる push をしたら書き直す（`.claude/skills/pr-explain/`）",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/pull-request/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -1,7 +1,7 @@\n ---\n name: pull-request\n description: プルリクエスト作成スキル。PRテンプレートに基づいた説明文の作成、変更種類の分類、意思決定と経緯の記載、チェックリストの確認を支援。「PR作成」「プルリクエスト」「レビュー依頼」などのリクエスト時に使用。\n-allowed-tools: Bash(git *), Bash(gh pr *), Read, Glob\n+allowed-tools: Bash(git log *), Bash(git diff *), Bash(gh pr create *), Read, Glob\n ---\n \n # プルリクエスト作成\n@@ -21,7 +21,7 @@ YAMLテンプレートが見つかった場合は、その `title_format` / `typ\n \n ## ベースブランチの決定\n \n-PRテンプレートの `base_branch`（このリポジトリは `main`）を `--base` に渡す。\n+PRテンプレートの `base_branch` を `--base` に渡す。\n \n ## コマンド実行規約\n ",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "b98622875639113795b8bc23b8f7991229d0880a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T00:43:06Z",
+      "subject": "📝 [Doc]: #1437 README の gh pr edit と command-literals.sh の却下理由を実物に合わせる",
+      "body": "- README のクラウドの残る穴から、pull-request スキルが使わない gh pr edit を外す\n- command-literals.sh の Why not（python の字句解析を使わない理由）を、切り出しの手間と #1454 への分割に直す\n\n背景:\nフェーズ 6 の修正の後に implementer が気づいた 2 点。pull-request スキルは gh pr edit を使わず、allowed-tools も許していない。python3 への依存は、既存の前例（detector-precondition.sh の python3_usable、ts_sources.py）で解消済みで、理由にならなかった。\n\n採用理由:\nコメントは実装と一致させる（rules/coding.md）。変わりうる行数は根拠に書かない。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NZQHLFV2MuY769VeU",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -153,7 +153,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | jq が無い環境 | `block-git-add-all.sh` と `block-commit-md-heading.sh` は jq でコマンドを取り出すので、jq が無いと素通りする（`block-protected-branch-edit.sh` は jq を使わない） |\n | awk / sed の異常終了 | `block-git-add-all.sh` と `block-commit-md-heading.sh` は、`lib/command-literals.sh` の awk / sed が異常終了しても素通りする（判定表を走らせれば deny の行が NG になる） |\n \n-クラウドの実行環境では `.claude/` 自体が読まれないことがある（#1443）。`pull-request` スキルの `gh pr create` / `gh pr edit` はクラウドでは GraphQL の 403 で失敗するが、取り込み元のまま写した。出どころは #1437 のルーティンのセッションの停止コメント（Q4）と、2026-11-22 にクラウドのセッションで `gh api graphql` が `HTTP 403`（\"GitHub GraphQL is not available from Claude Code sessions\"）を返したことで、`gh pr create` 自体は走らせていない。`.claude/settings.json` で `false` にしたのは d-market-git の 2 つ（`git-workflow-plugin` / `workflow-automation-plugin`）だけで、共有のプロジェクト設定に書いている。利用者のローカル設定（`settings.local.json`）・`--settings`・managed で有効にすると、プラグインのフックも走る。\n+クラウドの実行環境では `.claude/` 自体が読まれないことがある（#1443）。`pull-request` スキルの `gh pr create` はクラウドでは GraphQL の 403 で失敗するが、取り込み元のまま写した。出どころは #1437 のルーティンのセッションの停止コメント（Q4）と、2026-11-22 にクラウドのセッションで `gh api graphql` が `HTTP 403`（\"GitHub GraphQL is not available from Claude Code sessions\"）を返したことで、`gh pr create` 自体は走らせていない。`.claude/settings.json` で `false` にしたのは d-market-git の 2 つ（`git-workflow-plugin` / `workflow-automation-plugin`）だけで、共有のプロジェクト設定に書いている。利用者のローカル設定（`settings.local.json`）・`--settings`・managed で有効にすると、プラグインのフックも走る。\n \n ### 「代替不能」が実際に不発だったとき、手動で肩代わりする\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".claude/hooks/lib/command-literals.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -10,7 +10,7 @@\n #\n # `lib/hook-input.sh` の `extract` では読まない。最初の `\\\"` で値が切れ、改行のエスケープも戻さない。\n # `hook-canary.sh` の分割器も共有しない。長さの 2 乗で伸びて 2048 字で打ち切り、ヒアドキュメントも読まない。\n-# `lib/issue-flow-kind-violations.py` の字句解析は python3 に依存し、無い環境での通し方を決め直すことになる。\n+# `lib/issue-flow-kind-violations.py` の字句解析は、検出器から共有モジュールへ切り出す手間があり、取り込みとは独立してマージできるので #1454 に分けた。\n \n # ヒアドキュメントの区切りを開きの行ごとに読み、本文の行を除く（mode=body のときは本文の行だけを出し、\n # mode=command のときは本文の外の行だけを出す）awk。",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "e75d8b4d4bc57e13ee8c3c477dc03ab0cadf562c",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T01:02:14Z",
+      "subject": "🧪 [Tests]: #1437 壊しても落ちなかった判断を守る判定表の行を足し、閉じの末尾の空白を bash に揃える",
+      "body": "- 表 A に 8 行足す: . の後ろが空白の一括 add、閉じのシングルクォートがあるアポストロフィ、= の直後と行継続の後ろのシングルクォート、2 つ目のヒアドキュメントの後ろ、パイプの後ろ、エスケープした \\\" に挟まれた形\n- 表 B に 1 行足す: 末尾に空白がある EOF では閉じず、後ろの本文の行頭 # を止める\n- ヒアドキュメントの閉じの行で末尾の空白を許さないようにする（bash は EOF のあとに空白があると閉じない）\n- inside のコメントを、2 つのフックの判定には差が出ないことが分かる形にする\n- 保護ブランチのフックの doc に、拒否文に \" と \\ を入れないことを書く\n\n背景:\ntest-reviewer が実装を壊して確かめたところ、7 つの判断はどの判定表の行も落とさなかった。採否は Issue #1437 のコメント 7088713751。\n\n採用理由:\n足した行はどれも、守るはずの壊し方を実装に入れると NG になることを確かめてから置いた。閉じの判定は、行を足して RED を確かめたあとに bash と同じ動きに直した。\n\n代替案:\n- 拒否文の JSON を jq で読んで妥当性を確かめる案は採らなかった。既存のフック（block-git-during-verification-agent.sh）も同じ組み方で、この PR だけで変える理由がないため。doc に制約を書くにとどめた\n\n影響とトレードオフ:\n既存の行は書き換えていない（追加だけ）。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NZQHLFV2MuY769VeU",
+      "files": [
+        {
+          "path": ".claude/hooks/block-protected-branch-edit.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -10,6 +10,7 @@\n # 出力: 違反時に permissionDecision=deny の JSON を返す。問題なければ exit 0。\n #\n # ツール名を見ないのは、編集ツールの一覧を matcher の 1 か所で持つため。入力を読まないので jq も使わない。\n+# 出力の JSON は jq ではなく printf で組むので、拒否文に `\"` と `\\` を入れない（改行は `\\\\n` と書く）。\n #\n # detached HEAD では `git describe --contains --all` の名前が保護ブランチと一致するときだけ止める。`main~1` の\n # ような祖先まで止めると、bisect や過去のコミットを見るための checkout の最中の編集まで止まる。",
+          "patchLines": 8,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/command-literals.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 2,
+          "patch": "@@ -18,7 +18,8 @@\n # 区切りを最初の 1 つだけで読むと、2 つ目以降のヒアドキュメントが閉じずに後ろを丸ごと本文と読む。\n # 開きは `<<` の直前と直後が `<` でないものだけ。here-string の `<<<` を開きと読むと、閉じが来ずに後ろを丸ごと本文と読む。\n # 閉じの行の字下げはタブだけを許す。`<<-` が取り除くのはタブだけで、空白で字下げした区切りでは閉じない。\n-# 閉じは本文の中（`inside`）でだけ探す。本文の外にある区切りと同じ語だけの行を、閉じの行として捨てないため。\n+# 閉じの行の末尾の空白も許さない。bash は `EOF ` のように後ろに空白が残る区切りでは閉じない。\n+# 閉じを本文の中（`inside`）でだけ探すのは、本文の外の区切りと同じ語だけの行を捨てないため（2 つのフックの判定には差が出ない）。\n _command_literals_heredoc_awk='\n   function delimiter_of(line,   s) {\n     if (!match(line, /(^|[^<])<<-?[[:space:]]*[\\\\'\"'\"'\"]?[A-Za-z_][A-Za-z_0-9]*/)) return \"\"\n@@ -27,7 +28,7 @@ _command_literals_heredoc_awk='\n     return s\n   }\n   function closes_heredoc(line) {\n-    return line ~ (\"^\\t*\" delimiter \"[[:space:]]*$\")\n+    return line ~ (\"^\\t*\" delimiter \"$\")\n   }\n   inside && closes_heredoc($0) { inside = 0; next }\n   inside { if (mode == \"body\") print; next }",
+          "patchLines": 19,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/commit-md-heading-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -34,6 +34,7 @@ deny|\"$(…)\" の後ろに並べた git commit の本文も止める|git tag \"$(\n deny|2 つ目のヒアドキュメント（git commit の本文）の行頭 # も止める|cat <<'A' >/dev/null@@メモ@@A@@git commit -m \"$(cat <<'EOF'@@subject@@@@# 背景@@EOF@@)\"\n deny|ヒアドキュメントでファイルへ書いてから -F で渡す本文の行頭 # も止める|cat > /tmp/msg <<'EOF'@@subject@@@@# 背景@@EOF@@git commit -F /tmp/msg\n deny|here-string（<<<）の次の行の git commit の本文の行頭 # を止める|cat <<<x@@git commit -m \"s@@@@# h\"\n+deny|末尾に空白がある EOF ではヒアドキュメントを閉じず、後ろの本文の行頭 # を止める|git commit -F - <<'EOF'@@subject@@EOF @@# 背景@@EOF\n deny|（止めすぎ）git commit と同じ入力にある別のヒアドキュメントの行頭 # で止める|gh pr create --body \"$(cat <<'B'@@## 概要@@B@@)\" && git commit -m \"$(cat <<'EOF'@@subject@@@@背景:@@EOF@@)\"\n deny|（止めすぎ）git commit と同じ入力にあるシェルのコメント行で止める|# 記録をまとめる@@git commit -m \"subject\"\n pass|<見出し>: の形の見出しは通す|git commit -m \"$(cat <<'EOF'@@subject@@@@背景:@@理由@@EOF@@)\"",
+          "patchLines": 8,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/git-add-all-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 0,
+          "patch": "@@ -40,6 +40,12 @@ deny|引用符で囲んだ here-string（<<<\"…\"）の次の行の git add -A \n deny|サブシェルの閉じ括弧の直前の git add . を止める|(cd sub && git add .)\n deny|&& の直前に空白を挟まない git add . を止める|git add .&& git commit -m x\n deny|パイプの直前に空白を挟まない git add . を止める|git add .|cat\n+deny|. の後ろに空白を挟んで && を並べた git add . を止める|git add . && git commit -m x\n+deny|. の後ろに空白を挟んでパスを並べた git add . src/a.ts を止める|git add . src/a.ts\n+deny|語の途中のアポストロフィの後ろの git add -A を、後ろにシングルクォートがあっても止める|echo \"don't\" && git add -A && git commit -m 'x'\n+deny|1 つ目のヒアドキュメントの後ろの、2 つ目のヒアドキュメントを閉じた後の git add -A を止める|cat <<'A' >/dev/null@@x@@A@@cat <<'B'@@y@@B@@git add -A\n+deny|パイプの後ろに並べた git add -A を止める|echo x | cat && git add -A\n+deny|エスケープした \\\" に挟まれた git add -A を止める|echo \\\"x && git add -A && echo \\\"\n pass|個別のパスの git add は通す|git add src/a.ts\n pass|git add -u は通す|git add -u\n pass|git add -p は通す|git add -p src/a.ts\n@@ -60,7 +66,9 @@ pass|<< 'EOF'（空白あり）のヒアドキュメントの本文は通す|git\n pass|<<-EOF のヒアドキュメントの本文は通す|git commit -F - <<-EOF@@⇥subject@@@@⇥git add -A は使わない@@⇥EOF\n pass|<<\\EOF のヒアドキュメントの本文は通す|git commit -F - <<\\EOF@@subject@@@@git add -A は使わない@@EOF\n pass|= の直後のダブルクォートの中の git add -A は通す|gh api repos/o/r/issues/1/comments -f body=\"git add -A は使わない\"\n+pass|= の直後のシングルクォートの中の git add -A は通す|gh api repos/o/r/issues/1/comments -f body='git add -A は使わない'\n pass|行の継続の後ろの行頭のダブルクォートの中の git add -A は通す|grep -rn \\@@\"git add -A\" .\n+pass|行の継続の後ろの行頭のシングルクォートの中の git add -A は通す|grep -rn \\@@'git add -A' .\n pass|複数行にまたがる -m の中の git add -A は通す|git commit -m \"subject@@@@git add -A は使わない\"\n pass|改行の後ろの ls -A は通す|git add src/a.ts@@ls -A\n pass|空白で字下げした EOF ではヒアドキュメントを閉じない|git commit -F - <<'EOF'@@subject@@  EOF@@git add -A は使わない@@EOF",
+          "patchLines": 23,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/block-commit-md-heading.sh",
+      "to": ".claude/hooks/lib/command-literals.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/block-git-add-all.sh",
+      "to": ".claude/hooks/lib/command-literals.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/cases-report-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/commit-md-heading-cases.sh",
+      "to": ".claude/hooks/block-commit-md-heading.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/commit-md-heading-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/commit-md-heading-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/edit-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/git-add-all-cases.sh",
+      "to": ".claude/hooks/block-git-add-all.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/git-add-all-cases.sh",
+      "to": ".claude/hooks/block-git-during-verification-agent.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/git-add-all-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/git-add-all-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/import-rule-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "to": ".claude/hooks/lib/pre-push-detector.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "to": ".claude/hooks/pre-push-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+      "to": ".claude/hooks/block-protected-branch-edit.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "added"
+    },
+    {
+      "from": ".claude/hooks/lib/story-title-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/verification-agent-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/verification-agent-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": ".claude/skills/harness-record/SKILL.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": ".claude/skills/implementation-flow/SKILL.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/session-url-notice.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map.py",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-explain-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-closing-issue.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-explain-template-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-core-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/pr-explain-pages-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/commit-md-heading-cases.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/git-add-all-cases.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-frontend-report.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-tauri-version-match.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "pnpm-lock.yaml",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": "harness/githooks/pre-push",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/git-add-all-cases.sh",
+      "status": "added"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+      "status": "added"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/lib/detector-precondition.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    }
+  ]
+}
