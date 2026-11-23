@@ -40,6 +40,12 @@ deny|引用符で囲んだ here-string（<<<"…"）の次の行の git add -A �
 deny|サブシェルの閉じ括弧の直前の git add . を止める|(cd sub && git add .)
 deny|&& の直前に空白を挟まない git add . を止める|git add .&& git commit -m x
 deny|パイプの直前に空白を挟まない git add . を止める|git add .|cat
+deny|. の後ろに空白を挟んで && を並べた git add . を止める|git add . && git commit -m x
+deny|. の後ろに空白を挟んでパスを並べた git add . src/a.ts を止める|git add . src/a.ts
+deny|語の途中のアポストロフィの後ろの git add -A を、後ろにシングルクォートがあっても止める|echo "don't" && git add -A && git commit -m 'x'
+deny|1 つ目のヒアドキュメントの後ろの、2 つ目のヒアドキュメントを閉じた後の git add -A を止める|cat <<'A' >/dev/null@@x@@A@@cat <<'B'@@y@@B@@git add -A
+deny|パイプの後ろに並べた git add -A を止める|echo x | cat && git add -A
+deny|エスケープした \" に挟まれた git add -A を止める|echo \"x && git add -A && echo \"
 pass|個別のパスの git add は通す|git add src/a.ts
 pass|git add -u は通す|git add -u
 pass|git add -p は通す|git add -p src/a.ts
@@ -60,7 +66,9 @@ pass|<< 'EOF'（空白あり）のヒアドキュメントの本文は通す|git
 pass|<<-EOF のヒアドキュメントの本文は通す|git commit -F - <<-EOF@@⇥subject@@@@⇥git add -A は使わない@@⇥EOF
 pass|<<\EOF のヒアドキュメントの本文は通す|git commit -F - <<\EOF@@subject@@@@git add -A は使わない@@EOF
 pass|= の直後のダブルクォートの中の git add -A は通す|gh api repos/o/r/issues/1/comments -f body="git add -A は使わない"
+pass|= の直後のシングルクォートの中の git add -A は通す|gh api repos/o/r/issues/1/comments -f body='git add -A は使わない'
 pass|行の継続の後ろの行頭のダブルクォートの中の git add -A は通す|grep -rn \@@"git add -A" .
+pass|行の継続の後ろの行頭のシングルクォートの中の git add -A は通す|grep -rn \@@'git add -A' .
 pass|複数行にまたがる -m の中の git add -A は通す|git commit -m "subject@@@@git add -A は使わない"
 pass|改行の後ろの ls -A は通す|git add src/a.ts@@ls -A
 pass|空白で字下げした EOF ではヒアドキュメントを閉じない|git commit -F - <<'EOF'@@subject@@  EOF@@git add -A は使わない@@EOF

@@ -34,6 +34,7 @@ deny|"$(…)" の後ろに並べた git commit の本文も止める|git tag "$(
 deny|2 つ目のヒアドキュメント（git commit の本文）の行頭 # も止める|cat <<'A' >/dev/null@@メモ@@A@@git commit -m "$(cat <<'EOF'@@subject@@@@# 背景@@EOF@@)"
 deny|ヒアドキュメントでファイルへ書いてから -F で渡す本文の行頭 # も止める|cat > /tmp/msg <<'EOF'@@subject@@@@# 背景@@EOF@@git commit -F /tmp/msg
 deny|here-string（<<<）の次の行の git commit の本文の行頭 # を止める|cat <<<x@@git commit -m "s@@@@# h"
+deny|末尾に空白がある EOF ではヒアドキュメントを閉じず、後ろの本文の行頭 # を止める|git commit -F - <<'EOF'@@subject@@EOF @@# 背景@@EOF
 deny|（止めすぎ）git commit と同じ入力にある別のヒアドキュメントの行頭 # で止める|gh pr create --body "$(cat <<'B'@@## 概要@@B@@)" && git commit -m "$(cat <<'EOF'@@subject@@@@背景:@@EOF@@)"
 deny|（止めすぎ）git commit と同じ入力にあるシェルのコメント行で止める|# 記録をまとめる@@git commit -m "subject"
 pass|<見出し>: の形の見出しは通す|git commit -m "$(cat <<'EOF'@@subject@@@@背景:@@理由@@EOF@@)"

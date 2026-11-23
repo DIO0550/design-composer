@@ -18,7 +18,8 @@
 # 区切りを最初の 1 つだけで読むと、2 つ目以降のヒアドキュメントが閉じずに後ろを丸ごと本文と読む。
 # 開きは `<<` の直前と直後が `<` でないものだけ。here-string の `<<<` を開きと読むと、閉じが来ずに後ろを丸ごと本文と読む。
 # 閉じの行の字下げはタブだけを許す。`<<-` が取り除くのはタブだけで、空白で字下げした区切りでは閉じない。
-# 閉じは本文の中（`inside`）でだけ探す。本文の外にある区切りと同じ語だけの行を、閉じの行として捨てないため。
+# 閉じの行の末尾の空白も許さない。bash は `EOF ` のように後ろに空白が残る区切りでは閉じない。
+# 閉じを本文の中（`inside`）でだけ探すのは、本文の外の区切りと同じ語だけの行を捨てないため（2 つのフックの判定には差が出ない）。
 _command_literals_heredoc_awk='
   function delimiter_of(line,   s) {
     if (!match(line, /(^|[^<])<<-?[[:space:]]*[\\'"'"'"]?[A-Za-z_][A-Za-z_0-9]*/)) return ""
@@ -27,7 +28,7 @@ _command_literals_heredoc_awk='
     return s
   }
   function closes_heredoc(line) {
-    return line ~ ("^\t*" delimiter "[[:space:]]*$")
+    return line ~ ("^\t*" delimiter "$")
   }
   inside && closes_heredoc($0) { inside = 0; next }
   inside { if (mode == "body") print; next }

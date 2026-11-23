@@ -10,6 +10,7 @@
 # 出力: 違反時に permissionDecision=deny の JSON を返す。問題なければ exit 0。
 #
 # ツール名を見ないのは、編集ツールの一覧を matcher の 1 か所で持つため。入力を読まないので jq も使わない。
+# 出力の JSON は jq ではなく printf で組むので、拒否文に `"` と `\` を入れない（改行は `\\n` と書く）。
 #
 # detached HEAD では `git describe --contains --all` の名前が保護ブランチと一致するときだけ止める。`main~1` の
 # ような祖先まで止めると、bisect や過去のコミットを見るための checkout の最中の編集まで止まる。
