@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1456,
+      "title": "📝 [Doc]: PR #1455 の記録を harness/records に残す"
+    },
+    {
       "pr": 1455,
       "title": "✨ [New Feature]: #1437 commit / pull-request スキルとコミット系の 3 フックを .claude/ に取り込む"
     },
