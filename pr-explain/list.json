@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1458,
+      "title": "✨ [New Feature]: #1438 Epic・実装・バグ・調査の Issue テンプレートを足す"
+    },
+    {
       "pr": 1456,
       "title": "📝 [Doc]: PR #1455 の記録を harness/records に残す"
     },
