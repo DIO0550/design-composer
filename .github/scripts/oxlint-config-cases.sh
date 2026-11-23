@@ -15,13 +15,20 @@
 # ケースごとに起動すると、起動の時間がケースの数だけ積もる。
 #
 # 判定は、そのケースのファイルに `[Error/` の行があれば 1、無ければ 0 として、規則の名前の見出しと
-# `decide` で突き合わせる。**規則の診断が警告だけなら broken にする**(`error` を `warn` に下げる・`off` を
-# 外して警告が出る、の退行を落とす)。oxlint の終了コードが 0 / 1 以外か、1 なのに `[Error/` の行が 1 つも
-# 無いときは、設定を読めていないので全ケースを broken にする(設定が壊れると、診断の行を出さずに exit 1 で
-# 終わる)。
+# `decide` で突き合わせる。`[Error/` の有無はファイル単位で見るので、**1 ファイルで 1 規則だけを確かめる
+# この表に限り、規則の診断が警告だけなら broken になる**(`error` を `warn` に下げる・`off` を外して警告が
+# 出る、の退行を落とす)。
+#
+# その前に、oxlint の出力全体を同じ `decide` に掛ける。broken なら出力から規則ごとの判定ができないので、
+# 終了コードと出力を 1 回だけ標準エラーへ出し、全ケースを broken にする。設定が壊れたとき(診断の行を
+# 出さずに exit 1 で終わる)と oxlint が無いとき(exit 127)は、その一例。
+#
+# 表が見る規則は `no-restricted-imports` と jest の `no-restricted-jest-methods` / `no-hooks` と、
+# `require-to-throw-message` の `off` だけ。`curly` / `max-depth` / `max-lines` / `react/forbid-elements` は
+# 見ない。
 #
 # 表は `期待|規則|ケース名|置くパス|中身` の 1 行 1 ケース。規則は oxlint の unix 形式の出力で末尾の括弧に
-# 入る名前(`no-restricted-imports` / `no-restricted-jest-methods` / `no-hooks` / `require-to-throw-message`)。
+# 入る名前。
 # 置くパスに `{ext}` があれば `ts` `tsx` `mts` `cts` の 4 ケースに展開し、ケース名に ` (.mts)` などを付ける。
 # 中身は `printf '%b'` で書く(`\n` が改行になる)。
 #
@@ -29,8 +36,8 @@
 # | --- | --- |
 # | `deny` | その規則の error として報告してほしい |
 # | `pass` | 報告してはいけない(誤検知したら信用を失う側) |
-# | `miss` | **意図した取りこぼし。** 規則が見ない書き方。`pass` と分けてあるのは、並べると次に読む人がバグと
-#            読んで、取りこぼしにした理由ごと消しにいくため |
+# | `miss` | **意図した取りこぼし。** 規則が見ない書き方(`pass` と分ける理由は `.claude/hooks/lib/cases-report.sh`
+#            の `normalize_miss`) |
 set -uo pipefail
 
 scripts_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -121,17 +128,10 @@ deny|no-restricted-jest-methods|domains のテストで vi.stubEnv を使うと�
 deny|no-restricted-jest-methods|domains のテストで vi.importMock を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nexport const m = vi.importMock("./m");
 deny|no-restricted-jest-methods|domains のテストで vi.mockObject を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nexport const m = vi.mockObject({});
 deny|no-restricted-jest-methods|domains のテストで vi.useFakeTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nvi.useFakeTimers();
-deny|no-restricted-jest-methods|domains のテストで vi.useRealTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nvi.useRealTimers();
 deny|no-restricted-jest-methods|domains のテストで vi.setSystemTime を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nvi.setSystemTime(0);
-deny|no-restricted-jest-methods|domains のテストで vi.advanceTimersByTime を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nvi.advanceTimersByTime(1);
-deny|no-restricted-jest-methods|domains のテストで vi.advanceTimersByTimeAsync を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nexport const p = vi.advanceTimersByTimeAsync(1);
-deny|no-restricted-jest-methods|domains のテストで vi.advanceTimersToNextTimer を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nvi.advanceTimersToNextTimer();
-deny|no-restricted-jest-methods|domains のテストで vi.runAllTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nvi.runAllTimers();
-deny|no-restricted-jest-methods|domains のテストで vi.runAllTimersAsync を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nexport const p = vi.runAllTimersAsync();
-deny|no-restricted-jest-methods|domains のテストで vi.runOnlyPendingTimers を使うと止まる|src/domains/dcmp/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nvi.runOnlyPendingTimers();
 pass|no-restricted-jest-methods|feature のテストでは vi.fn を使える|src/features/probe/__tests__/probe.normal.test.{ext}|import { vi } from "vitest";\nexport const f = vi.fn();
 pass|no-restricted-jest-methods|hooks のテストでは vi.fn を使える|src/hooks/use-probe/__tests__/use-probe.normal.test.ts|import { vi } from "vitest";\nexport const f = vi.fn();
-pass|no-restricted-jest-methods|feature のテストでは時刻を偽物に差し替えられる|src/features/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nvi.useFakeTimers();\nvi.setSystemTime(0);
+pass|no-restricted-jest-methods|feature のテストではフェイクタイマーで時刻を差し替えられる|src/features/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nvi.useFakeTimers();\nvi.setSystemTime(0);
 miss|no-restricted-jest-methods|名前空間で import した vi の mock は見ない|src/features/probe/__tests__/probe.normal.test.ts|import * as V from "vitest";\nV.vi.mock("./m");
 miss|no-restricted-jest-methods|分割代入で取り出した mock は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { vi } from "vitest";\nconst { mock } = vi;\nmock("./m");
 deny|no-hooks|テストで beforeEach を使うと止まる|src/features/probe/__tests__/probe.normal.test.{ext}|import { beforeEach } from "vitest";\nbeforeEach(() => {});
@@ -164,26 +164,27 @@ while IFS='|' read -r expected rule label path body; do
   done
 done <<<"$cases"
 
+# oxlint の unix 形式の出力で、error の診断の行に当たる正規表現。
+error_line='\[Error/'
+
 output="$(cd "$work" && "$oxlint_bin" -f unix . 2>&1)"
 status=$?
 
-# 設定を読めていないなら、どのケースのファイルにも診断が無く、規則ごとの判定ができない。
-config_unread=""
-case "$status" in
-  0) ;;
-  1) grep -q '\[Error/' <<<"$output" || config_unread=1 ;;
-  *) config_unread=1 ;;
-esac
+output_unjudgeable=""
+if [ "$(decide "$output" "$status" "$error_line")" = "broken" ]; then
+  output_unjudgeable=1
+  printf 'oxlint の出力から判定できない(終了コード %s)。出力:\n%s\n' "$status" "$output" >&2
+fi
 
 cases_before=$cases_reported
 for index in "${!case_prefix[@]}"; do
-  if [ -n "$config_unread" ]; then
+  if [ -n "$output_unjudgeable" ]; then
     report "${case_expected[$index]}" broken "${case_label[$index]}"
     continue
   fi
   lines="$(awk -v p="${case_prefix[$index]}" 'index($0, p) == 1' <<<"$output")"
   has_error=0
-  grep -q '\[Error/' <<<"$lines" && has_error=1
+  grep -qE "$error_line" <<<"$lines" && has_error=1
   decision="$(decide "$lines" "$has_error" "\\(${case_rule[$index]}\\)\\]\$")"
   report "${case_expected[$index]}" "$(normalize_miss "${case_expected[$index]}" "$decision")" "${case_label[$index]}"
 done
