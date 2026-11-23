@@ -41,7 +41,7 @@ body:
     id: split
     attributes:
       label: 分割の判断
-      description: 親や元の Issue から分けたなら、その理由とリンク。分けるかどうかを着手してから決めるなら空のままでよい
+      description: この Issue を子に分けるなら、その軸と理由。分けないなら、その理由。作る時点で決まっていなければ空でよく、決めたら書き足す
   - type: textarea
     id: out-of-scope
     attributes:

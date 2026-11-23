@@ -1,4 +1,4 @@
-name: Epic（親 Issue）
+name: Epic（最初から子に分けて進める親 Issue）
 description: 独立してマージできる子 Issue に分けて進める作業をまとめる親 Issue
 title: "[Epic] "
 labels:
