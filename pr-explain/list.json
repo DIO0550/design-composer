@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1447,
+      "title": "✨ Issue の作業の種類の検出器が通す作成を、実物の gh で確かめる判定表を足す（棚卸し: harness）"
+    },
+    {
       "pr": 1442,
       "title": "📝 PR #1436 の振り返りを harness/records に記録"
     },
