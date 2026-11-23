@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1455,
+      "title": "✨ [New Feature]: #1437 commit / pull-request スキルとコミット系の 3 フックを .claude/ に取り込む"
+    },
+    {
       "pr": 1447,
       "title": "✨ Issue の作業の種類の検出器が通す作成を、実物の gh で確かめる判定表を足す（棚卸し: harness）"
     },
