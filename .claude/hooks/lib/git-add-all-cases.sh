@@ -6,16 +6,7 @@
 # 使い方: bash .claude/hooks/lib/git-add-all-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
-# 期待は 3 種。deny は止める(止めすぎている形も deny で固定する)、pass は通す、miss は止めない取りこぼし
-# (通ることを固定する。フックが止めるようになったら NG になり、見る範囲が変わったことが表に出る)。
-#
-# ケースをファイルに置くのは、Bash で打って確かめると、deny の行は配線したあとのフック自身に止められるから。
-#
-# 表の 1 行は `期待|ケース名|コマンド`(コマンドは最後の列なので `|` を含んでよい)。コマンドの `@@` は改行に、
-# `⇥` はタブに戻してから渡す。判定は `cases-report.sh` の `hook_verdict_by_permission`。
-#
-# 入力を組むのに jq を使う(`cases-fixtures.sh` の `bash_call_input`)ので、jq が無いと deny の行が NG になる。
-# `harness/githooks/pre-push` は jq がある環境でだけ走らせる。
+# 表の書き方・期待の種類・jq への依存は `cases-fixtures.sh` の `report_bash_call_cases`。
 set -uo pipefail
 
 lib_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -25,12 +16,7 @@ lib_dir="$(cd "$(dirname "$0")" && pwd)"
 hook="$lib_dir/../block-git-add-all.sh"
 
 cases_before=$cases_reported
-while IFS='|' read -r expected label command; do
-  command="${command//@@/$'\n'}"
-  command="${command//⇥/$'\t'}"
-  verdict="$(hook_verdict_by_permission "$hook" <<<"$(bash_call_input "$command")")"
-  report "$expected" "$(normalize_miss "$expected" "$verdict")" "$label"
-done <<'CASES'
+report_bash_call_cases "$hook" <<'CASES'
 deny|git add -A を止める|git add -A
 deny|git add --all を止める|git add --all
 deny|git add . を止める|git add .
@@ -49,6 +35,11 @@ deny|語の途中のアポストロフィの後ろの git add -A を止める|ec
 deny|"$(…)" の中の git add -A を止める|out="$(git add -A 2>&1)"
 deny|"`…`" の中の git add -A を止める|out="`git add -A 2>&1`"
 deny|<<-EOF のタブで字下げした閉じの後ろの git add -A を止める|git commit -F - <<-EOF@@⇥subject@@⇥EOF@@git add -A
+deny|here-string（<<<）の次の行の git add -A を止める|cat <<<x@@git add -A
+deny|引用符で囲んだ here-string（<<<"…"）の次の行の git add -A を止める|grep foo <<<"bar"@@git add -A
+deny|サブシェルの閉じ括弧の直前の git add . を止める|(cd sub && git add .)
+deny|&& の直前に空白を挟まない git add . を止める|git add .&& git commit -m x
+deny|パイプの直前に空白を挟まない git add . を止める|git add .|cat
 pass|個別のパスの git add は通す|git add src/a.ts
 pass|git add -u は通す|git add -u
 pass|git add -p は通す|git add -p src/a.ts
@@ -81,6 +72,8 @@ miss|git add * は見ない|git add *
 miss|引用符で囲んだ git add "." は見ない|git add "."
 miss|git stage -A は見ない|git stage -A
 miss|bash -c の中の git add -A は見ない|bash -c "git add -A"
+miss|引用符の中の <<EOF という字面をヒアドキュメントの開きと読み、次の行の git add -A は見ない|echo "書き方は <<EOF で渡す"@@git add -A
+miss|引用符で囲まない <<EOF の本文の中のコマンド置換 $(git add -A) は見ない|cat <<EOF@@$(git add -A)@@EOF
 CASES
 report_cases_ran CASES "$cases_before"
 exit "$cases_failed"

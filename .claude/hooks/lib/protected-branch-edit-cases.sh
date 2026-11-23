@@ -7,8 +7,7 @@
 # 使い方: bash .claude/hooks/lib/protected-branch-edit-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
-# 期待は 3 種。deny は止める(止めすぎている形も deny で固定する)、pass は通す、miss は止めない取りこぼし
-# (通ることを固定する。フックが止めるようになったら NG になり、見る範囲が変わったことが表に出る)。
+# 期待の種類は `cases-report.sh` の `normalize_miss`。
 #
 # ケースを一時リポジトリに置くのは、本物のリポジトリのブランチを切り替えずに保護ブランチの上を作るため。
 # 「git の外」は `$work/outside` で、フックを呼ぶたびに `GIT_CEILING_DIRECTORIES=$work` を付けて

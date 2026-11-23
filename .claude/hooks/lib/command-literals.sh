@@ -5,29 +5,36 @@
 # 使う側は `.claude/hooks/README.md`「配線」の `lib/command-literals.sh` の行。
 #
 # シェルの字句解析は持たず、awk（POSIX の機能だけ。mawk でも動かす）と sed の行単位の置換で近似する。
-# 見ない形（`bash -c "…"` の中、引用符で囲んだ引数など）は、使う側の判定表に miss の行として並ぶ。
+# 見ない形（`bash -c "…"` の中、引用符の中の `<<EOF` という字面より後ろ、引用符で囲まない `<<EOF` の本文の中の
+# コマンド置換など）は、使う側の判定表（`git-add-all-cases.sh` / `commit-md-heading-cases.sh`）に miss の行として並ぶ。
 #
 # `lib/hook-input.sh` の `extract` では読まない。最初の `\"` で値が切れ、改行のエスケープも戻さない。
 # `hook-canary.sh` の分割器も共有しない。長さの 2 乗で伸びて 2048 字で打ち切り、ヒアドキュメントも読まない。
 # `lib/issue-flow-kind-violations.py` の字句解析は python3 に依存し、無い環境での通し方を決め直すことになる。
 
-# ヒアドキュメントの区切りを開きの行ごとに読み、本文の行を除く（mode=body のときは本文の行だけを出す）awk。
+# ヒアドキュメントの区切りを開きの行ごとに読み、本文の行を除く（mode=body のときは本文の行だけを出し、
+# mode=command のときは本文の外の行だけを出す）awk。
 #
 # 区切りを最初の 1 つだけで読むと、2 つ目以降のヒアドキュメントが閉じずに後ろを丸ごと本文と読む。
+# 開きは `<<` の直前と直後が `<` でないものだけ。here-string の `<<<` を開きと読むと、閉じが来ずに後ろを丸ごと本文と読む。
 # 閉じの行の字下げはタブだけを許す。`<<-` が取り除くのはタブだけで、空白で字下げした区切りでは閉じない。
+# 閉じは本文の中（`inside`）でだけ探す。本文の外にある区切りと同じ語だけの行を、閉じの行として捨てないため。
 _command_literals_heredoc_awk='
   function delimiter_of(line,   s) {
-    if (!match(line, /<<-?[[:space:]]*[\\'"'"'"]?[A-Za-z_][A-Za-z_0-9]*/)) return ""
-    s = substr(line, RSTART + 2, RLENGTH - 2)
-    sub(/^-?[[:space:]]*[\\'"'"'"]?/, "", s)
+    if (!match(line, /(^|[^<])<<-?[[:space:]]*[\\'"'"'"]?[A-Za-z_][A-Za-z_0-9]*/)) return ""
+    s = substr(line, RSTART, RLENGTH)
+    sub(/^[^<]?<<-?[[:space:]]*[\\'"'"'"]?/, "", s)
     return s
   }
-  inside && $0 ~ ("^\t*" delimiter "[[:space:]]*$") { inside = 0; next }
+  function closes_heredoc(line) {
+    return line ~ ("^\t*" delimiter "[[:space:]]*$")
+  }
+  inside && closes_heredoc($0) { inside = 0; next }
   inside { if (mode == "body") print; next }
   {
     delimiter = delimiter_of($0)
     if (delimiter != "") inside = 1
-    if (mode != "body") print
+    if (mode == "command") print
   }'
 
 # コマンド文字列の中の、すべてのヒアドキュメントの本文の行を出す。
@@ -49,6 +56,6 @@ heredoc_bodies() {
 # $1 コマンド文字列
 # 出力: 引用符の外の部分を `;` でつないだ 1 行
 command_line_outside_literals() {
-  printf '%s\n' "$1" | awk -v mode=outline "$_command_literals_heredoc_awk" | tr '\n' ';' \
+  printf '%s\n' "$1" | awk -v mode=command "$_command_literals_heredoc_awk" | tr '\n' ';' \
     | sed -E "s/(^|[[:space:];=])'[^']*'/\1/g; s/(^|[[:space:];=])\"[^\"\$\`]*\"/\1/g"
 }

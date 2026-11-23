@@ -15,7 +15,7 @@ hook_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" || exit 0
 command="$(jq -r '.tool_input.command // empty')" || exit 0
 [ -n "$command" ] || exit 0
 
-bulk_add_pattern='\bgit\s+add\b[^;&|]*(\s-[a-zA-Z]*A[a-zA-Z]*\b|\s--all\b|\s\.(\s|;|$)|\s-a\b)'
+bulk_add_pattern='\bgit\s+add\b[^;&|]*(\s-[a-zA-Z]*A[a-zA-Z]*\b|\s--all\b|\s\.(\s|[;&|)]|$)|\s-a\b)'
 command_line_outside_literals "$command" | grep -qE "$bulk_add_pattern" || exit 0
 
 jq -n '{

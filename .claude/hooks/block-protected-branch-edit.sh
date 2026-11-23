@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
-# 保護ブランチの編集の禁止: 作業ディレクトリのブランチが main / master / production / release / develop / staging
-# のとき、ファイルの編集を拒否する PreToolUse フック。
+# 保護ブランチの編集の禁止: 作業ディレクトリのブランチが保護ブランチ（一覧は下の `protected_branches`）のとき、
+# ファイルの編集を拒否する PreToolUse フック。
 # 由来: d-market-git / git-workflow-plugin の branch-protection.sh（1135a0d）
 #
 # 方針: 編集は作業ブランチで行う。
@@ -9,8 +9,7 @@
 # 入力: stdin の JSON は見ない（どのツールで呼ぶかは settings.json の matcher が決める）
 # 出力: 違反時に permissionDecision=deny の JSON を返す。問題なければ exit 0。
 #
-# ツール名を見ないのは、編集ツールの一覧を matcher とここの 2 か所で持たないため。取り込み元はここにも一覧を
-# 持っていて、そちらには NotebookEdit が無かった。入力を読まないので jq も使わない。
+# ツール名を見ないのは、編集ツールの一覧を matcher の 1 か所で持つため。入力を読まないので jq も使わない。
 #
 # detached HEAD では `git describe --contains --all` の名前が保護ブランチと一致するときだけ止める。`main~1` の
 # ような祖先まで止めると、bisect や過去のコミットを見るための checkout の最中の編集まで止まる。

@@ -1,7 +1,7 @@
 ---
 name: pull-request
 description: プルリクエスト作成スキル。PRテンプレートに基づいた説明文の作成、変更種類の分類、意思決定と経緯の記載、チェックリストの確認を支援。「PR作成」「プルリクエスト」「レビュー依頼」などのリクエスト時に使用。
-allowed-tools: Bash(git *), Bash(gh pr *), Read, Glob
+allowed-tools: Bash(git log *), Bash(git diff *), Bash(gh pr create *), Read, Glob
 ---
 
 # プルリクエスト作成
@@ -21,7 +21,7 @@ YAMLテンプレートが見つかった場合は、その `title_format` / `typ
 
 ## ベースブランチの決定
 
-PRテンプレートの `base_branch`（このリポジトリは `main`）を `--base` に渡す。
+PRテンプレートの `base_branch` を `--base` に渡す。
 
 ## コマンド実行規約
 

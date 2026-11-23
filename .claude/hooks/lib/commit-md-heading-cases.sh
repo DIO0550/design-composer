@@ -6,16 +6,7 @@
 # 使い方: bash .claude/hooks/lib/commit-md-heading-cases.sh
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら判定が変わっている。
 #
-# 期待は 3 種。deny は止める(止めすぎている形も deny で固定する)、pass は通す、miss は止めない取りこぼし
-# (通ることを固定する。フックが止めるようになったら NG になり、見る範囲が変わったことが表に出る)。
-#
-# ケースをファイルに置くのは、Bash で打って確かめると、deny の行は配線したあとのフック自身に止められるから。
-#
-# 表の 1 行は `期待|ケース名|コマンド`(コマンドは最後の列なので `|` を含んでよい)。コマンドの `@@` は改行に、
-# `⇥` はタブに戻してから渡す。判定は `cases-report.sh` の `hook_verdict_by_permission`。
-#
-# 入力を組むのに jq を使う(`cases-fixtures.sh` の `bash_call_input`)ので、jq が無いと deny の行が NG になる。
-# `harness/githooks/pre-push` は jq がある環境でだけ走らせる。
+# 表の書き方・期待の種類・jq への依存は `cases-fixtures.sh` の `report_bash_call_cases`。
 set -uo pipefail
 
 lib_dir="$(cd "$(dirname "$0")" && pwd)"
@@ -25,12 +16,7 @@ lib_dir="$(cd "$(dirname "$0")" && pwd)"
 hook="$lib_dir/../block-commit-md-heading.sh"
 
 cases_before=$cases_reported
-while IFS='|' read -r expected label command; do
-  command="${command//@@/$'\n'}"
-  command="${command//⇥/$'\t'}"
-  verdict="$(hook_verdict_by_permission "$hook" <<<"$(bash_call_input "$command")")"
-  report "$expected" "$(normalize_miss "$expected" "$verdict")" "$label"
-done <<'CASES'
+report_bash_call_cases "$hook" <<'CASES'
 deny|複数行の -m の行頭 # を止める|git commit -m "subject@@@@# 背景"
 deny|シングルクォートの複数行の -m の行頭 # を止める|git commit -m 'subject@@@@# 背景'
 deny|git commit -am の複数行の行頭 # を止める|git commit -am "subject@@@@# 背景"
@@ -47,6 +33,7 @@ deny|cd の後ろの git commit の本文も止める|cd sub && git commit -m "$
 deny|"$(…)" の後ろに並べた git commit の本文も止める|git tag "$(date +%s)" && git commit -m "subject@@@@# 背景"
 deny|2 つ目のヒアドキュメント（git commit の本文）の行頭 # も止める|cat <<'A' >/dev/null@@メモ@@A@@git commit -m "$(cat <<'EOF'@@subject@@@@# 背景@@EOF@@)"
 deny|ヒアドキュメントでファイルへ書いてから -F で渡す本文の行頭 # も止める|cat > /tmp/msg <<'EOF'@@subject@@@@# 背景@@EOF@@git commit -F /tmp/msg
+deny|here-string（<<<）の次の行の git commit の本文の行頭 # を止める|cat <<<x@@git commit -m "s@@@@# h"
 deny|（止めすぎ）git commit と同じ入力にある別のヒアドキュメントの行頭 # で止める|gh pr create --body "$(cat <<'B'@@## 概要@@B@@)" && git commit -m "$(cat <<'EOF'@@subject@@@@背景:@@EOF@@)"
 deny|（止めすぎ）git commit と同じ入力にあるシェルのコメント行で止める|# 記録をまとめる@@git commit -m "subject"
 pass|<見出し>: の形の見出しは通す|git commit -m "$(cat <<'EOF'@@subject@@@@背景:@@理由@@EOF@@)"

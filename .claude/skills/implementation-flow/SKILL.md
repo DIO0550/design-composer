@@ -207,7 +207,7 @@ diff_text | grep -ciE 'UI 案|Design Composer\.html'   # ui-reviewer の語
 ## フェーズ 7: PR
 
 - **PR を出す前に、フェーズ 1「種類の確定」の手順 1 でラベルを読み直す。** 変わっていたらフェーズ 1 へ戻る（手順 6）
-- **PR 本文は pull-request スキルで書く。** 意思決定の書き方は .claude/.pr-template.yml の decision_record に従い、材料にはコミット本文に加えて Issue の計画・却下案を使う（Issue からは省かない → AGENTS.md「実装の進め方」）
+- **PR 本文は `pull-request` スキルで書く。** 意思決定の書き方は `.claude/.pr-template.yml` の `decision_record` に従い、材料にはコミット本文に加えて Issue の計画・却下案を使う（Issue からは省かない → `AGENTS.md`「実装の進め方」）
 - **本文に `Closes #<Issue 番号>` を書く**（`AGENTS.md`「着手した Issue は、その回で閉じる」。閉じる Issue がない PR は `.github/workflows/pr-closing-issue.yml` が落とす）
 - CI（lint / typecheck / test / 視覚差分）を通す。push 前検査や CI が落ちた場合、修正は種類（と工程）と一緒に `implementer` へ渡す（判断を伴わない自動修正コマンドだけは親が走らせてよい →「役割の分担」）
 - **PR を出したら `pr-explain` スキルで解説（`explain.json`）を書く。** 振る舞いが変わる push をしたら書き直す（`.claude/skills/pr-explain/`）

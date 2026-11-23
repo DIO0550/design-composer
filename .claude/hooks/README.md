@@ -30,12 +30,12 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `block-issue-without-flow-kind.sh` | `PreToolUse`（Bash/MCP） | **作業の種類を決めていない Issue 作成を拒否**（`implementation-flow` フェーズ 1「種類の確定」の手順 4）。作成とみなす形・通す条件・行の書式は `lib/issue-flow-kind-violations.py` の docstring と定数を参照。python3 が使えなければ通し、検出器が異常終了したら deny する |
 | `block-git-add-all.sh` | `PreToolUse`（Bash） | **一括ステージング禁止**（対応する規範は `commit` スキル「禁止事項」）。`git add -A` / `--all` / `.` / `-a` を拒否する。ヒアドキュメントの本文と引用符の中（コマンド置換を含まないもの）は見ない |
 | `block-commit-md-heading.sh` | `PreToolUse`（Bash） | **コミット本文の行頭 `#` 禁止**（対応する規範は `commit` スキルの本文の「書式」）。引用符の外に `git commit` があれば、ヒアドキュメントの本文（無ければコマンド全体）の行頭 `#` を拒否する |
-| `block-protected-branch-edit.sh` | `PreToolUse`（Edit/Write/MultiEdit/NotebookEdit） | **保護ブランチでの編集禁止**。フックの作業ディレクトリのブランチが main / master / production / release / develop / staging なら拒否する。入力は読まず、どのツールで止めるかは matcher が決める |
+| `block-protected-branch-edit.sh` | `PreToolUse`（Edit/Write/MultiEdit/NotebookEdit） | **保護ブランチでの編集禁止**。フックの作業ディレクトリのブランチが保護ブランチ（一覧はフックの `protected_branches`）なら拒否する。入力は読まず、どのツールで止めるかは matcher が決める |
 
 ## 移植元から見送ったもの
 
 - `require-skill-before-edit.sh` — typescript-rules-plugin 固有のスキルに依存するスキルゲートのため
-- `allow-plugin-commands.sh`（git-workflow-plugin）— `gh` / `git` で始まるコマンドに allow を返し、`&&` `||` `;`・改行での連結と、決まった形以外のパイプ（`git` は末尾の `| head` / `| tail` 一段だけ）を拒否するフック。取り込まないので `git` / `gh` は通常の許可確認に戻り、「1 回の Bash 呼び出し = 1 コマンド」（`commit` / `pull-request` スキル「コマンド実行規約」）は文章だけで守る（#1437 で人が判断）
+- `allow-plugin-commands.sh`（git-workflow-plugin）— `gh` / `git` で始まるコマンドに allow を返し、`&&` `||` `;`・改行での連結と、決まった形以外のパイプ（`git` は末尾の `| head` / `| tail` 一段だけ）を拒否するフック。取り込まないので `git` / `gh` は通常の許可確認に戻る（スキルの `allowed-tools` が事前に許可する分は除く。`commit` スキルは `git add` / `git commit` / `git status` / `git diff`、`pull-request` スキルは `git log` / `git diff` / `gh pr create`）。「1 回の Bash 呼び出し = 1 コマンド」（`commit` / `pull-request` スキル「コマンド実行規約」）は文章だけで守る（#1437 で人が判断）
 
 ### 見送りを取り消したもの
 
@@ -64,7 +64,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring を参照 |
 | `lib/cases-report.sh` | `lib/*-cases.sh`・`.github/scripts/*-cases.sh`・`harness/records/count-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` の各判定表（22 本） | 判定表が共有する 5 機能を提供する: (1) 判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category` / `hook_verdict_by_permission`）、(2) 結果報告（関数 `report`・変数 `cases_failed`）、(3) 検出器種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）、(4) 判定表末尾文の照合（`last_statement` / `report_exits_with_cases_failed`）、(5) 1 件以上走ったかの照合（関数 `report_cases_ran`・変数 `cases_reported`）。ケースの並べ方と検出器の呼び方は各判定表が持つ |
 | `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `lib/cases-report.sh` 自身の判定表。種別照合・`report` の出力と `cases_failed`・`decide*` / `hook_verdict_by_permission` の判定（pass / deny / broken / miss）・各判定表の末尾が `exit "$cases_failed"` であること・`report_cases_ran` の挙動を検証する（詳細は冒頭コメントとケース名）。食い違いがあれば exit 1 |
-| `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh` / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh` / `lib/issue-flow-kind-cases.sh` / `lib/git-add-all-cases.sh` / `lib/commit-md-heading-cases.sh` | 判定表が共有する前提の組み立て関数。落ちる検出器スタブ（`place_failing_detector`）・起動不能なコマンド（`broken_command_path_prefix`）・同一本体のテストヘルパー（`place_duplicate_helpers`）・サブエージェント呼び出し入力フィールド（`subagent_call_fields`）・フックの一時ディレクトリへの写し（`copy_repo_files`）・Bash の呼び出しの入力（`bash_call_input`。jq で組む）を提供する |
+| `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh` / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh` / `lib/issue-flow-kind-cases.sh` / `lib/git-add-all-cases.sh` / `lib/commit-md-heading-cases.sh` | 判定表が共有する前提の組み立て関数。落ちる検出器スタブ（`place_failing_detector`）・起動不能なコマンド（`broken_command_path_prefix`）・同一本体のテストヘルパー（`place_duplicate_helpers`）・サブエージェント呼び出し入力フィールド（`subagent_call_fields`）・フックの一時ディレクトリへの写し（`copy_repo_files`）・Bash の呼び出しの入力（`bash_call_input`。jq で組む）・Bash の呼び出しの判定表をフックへ流して報告する関数（`report_bash_call_cases`）を提供する |
 | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `import-rule-violations.py` の判定表。種別・件数・全種別の網羅・`scan()` と docstring の並び一致・スタブ検出器の broken 判定を検証する。食い違いがあれば exit 1 |
 | `lib/named-path-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `named-path-violations.py` の判定表。deny / pass / miss と、検出器種別の並びと docstring の一致を検証する。食い違いがあれば exit 1 |
 | `lib/pre-push-detector-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `lib/pre-push-detector.sh` の判定表。`deny_on_all_src_failure`（一時ディレクトリの `pre-push-test-helper-duplication.sh`）と `deny_on_violations`（スタブ検出器）で、deny（違反 / 検査できなかった）と pass を検証する。食い違いがあれば exit 1 |
@@ -145,15 +145,15 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 
 | 残る穴 | 内容 |
 | --- | --- |
-| 一括 add の取りこぼし（8 形） | `git -C <パス>` / `git -c <設定>` の後ろ、`git add ./` / `git add :/` / `git add *`、引用符で囲んだ `git add "."`、`git stage -A`、`bash -c "…"` の中。取りこぼしを狭める変更は移植の範囲外とし、`bash -c` の中は引用符の中を見ない引き換えに受け入れた |
-| 行頭 `#` の取りこぼし（7 形） | 2 つ目の `-m`、件名が `#` で始まる 1 行の `-m`、`-F <ファイル>` の中身、`git -C` / `git -c` の後ろ、`<<-` でタブを除かれて桁 0 になる `#`、別のヒアドキュメントと並ぶ複数行の `-m` |
+| 一括 add・行頭 `#` の取りこぼし | 取りこぼす形は判定表 `lib/git-add-all-cases.sh` / `lib/commit-md-heading-cases.sh` の `miss` の行。取りこぼしを狭める変更は移植の範囲外とし、`bash -c` の中は引用符の中を見ない引き換えに受け入れた |
 | 行頭 `#` の止めすぎ | 引用符の外に `git commit` があれば、同じ入力の別のヒアドキュメント（`gh pr create` の本文など）やシェルのコメント行の行頭 `#` でも止める |
 | 保護ブランチを見る場所 | 編集先ではなくフックの作業ディレクトリで見る（リポジトリの外を編集しても止める。作業ディレクトリが外なら、リポジトリの中を編集しても見ない） |
 | detached HEAD | `git describe --contains --all HEAD` の名前で見る。保護ブランチの先端に作業ブランチも並んでいると、その名前が返って見ない |
 | Bash 経由の書き換え | `sed -i` やリダイレクトでの書き換えは、保護ブランチの上でも見ない（matcher が編集ツールだけのため） |
 | jq が無い環境 | `block-git-add-all.sh` と `block-commit-md-heading.sh` は jq でコマンドを取り出すので、jq が無いと素通りする（`block-protected-branch-edit.sh` は jq を使わない） |
+| awk / sed の異常終了 | `block-git-add-all.sh` と `block-commit-md-heading.sh` は、`lib/command-literals.sh` の awk / sed が異常終了しても素通りする（判定表を走らせれば deny の行が NG になる） |
 
-クラウドの実行環境では `.claude/` 自体が読まれないことがある（#1443）。`pull-request` スキルの `gh pr create` / `gh pr edit` はクラウドでは GraphQL の 403 で失敗するが、取り込み元のまま写した。`.claude/settings.json` で `false` にしたのは d-market-git の 2 つ（`git-workflow-plugin` / `workflow-automation-plugin`）だけで、共有のプロジェクト設定に書いている。利用者のローカル設定（`settings.local.json`）・`--settings`・managed で有効にすると、プラグインのフックも走る。
+クラウドの実行環境では `.claude/` 自体が読まれないことがある（#1443）。`pull-request` スキルの `gh pr create` / `gh pr edit` はクラウドでは GraphQL の 403 で失敗するが、取り込み元のまま写した。出どころは #1437 のルーティンのセッションの停止コメント（Q4）と、2026-11-22 にクラウドのセッションで `gh api graphql` が `HTTP 403`（"GitHub GraphQL is not available from Claude Code sessions"）を返したことで、`gh pr create` 自体は走らせていない。`.claude/settings.json` で `false` にしたのは d-market-git の 2 つ（`git-workflow-plugin` / `workflow-automation-plugin`）だけで、共有のプロジェクト設定に書いている。利用者のローカル設定（`settings.local.json`）・`--settings`・managed で有効にすると、プラグインのフックも走る。
 
 ### 「代替不能」が実際に不発だったとき、手動で肩代わりする
 
