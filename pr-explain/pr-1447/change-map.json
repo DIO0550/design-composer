@@ -3,8 +3,8 @@
   "pr": 1447,
   "headBranch": "claude/affectionate-hypatia-e6brs1",
   "baseBranch": "main",
-  "mergeBase": "8b845921be4df678cd7ce9824f36f40bee4cce1f",
-  "head": "a82fb3cbdda823f8235168fa4b9d2eeb7684f012",
+  "mergeBase": "4b8813f1bd74348629ca5c97686d8bf506c3ce12",
+  "head": "101787fef233be5ae472c96943855cf22d993296",
   "groups": [
     {
       "label": "ハーネス",
@@ -39,6 +39,10 @@
           "changed": false
         },
         {
+          "path": ".claude/hooks/lib/commit-md-heading-cases.sh",
+          "changed": false
+        },
+        {
           "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
           "changed": false
         },
@@ -48,6 +52,10 @@
         },
         {
           "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/git-add-all-cases.sh",
           "changed": false
         },
         {
@@ -111,6 +119,10 @@
         },
         {
           "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/protected-branch-edit-cases.sh",
           "changed": false
         },
         {
@@ -346,6 +358,15 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "101787fef233be5ae472c96943855cf22d993296",
+      "merge": true,
+      "author": "Claude",
+      "date": "2026-11-23T02:08:38Z",
+      "subject": "🔀 [Merge]: #1446 main を取り込み、.claude/hooks/README.md の衝突を解く",
+      "body": "- 配線の表の cases-report.sh の行: 判定表の本数を 23 本にした（このブランチ 20 本、main 22 本。main 側に #1455 の 3 本が入っているため、合わせると 23 本）\n- 配線の表の末尾: このブランチの 2 行（issue-flow-kind-real-gh-cases.sh / issue-flow-kind-fixtures.sh）と、main の 4 行（command-literals.sh と判定表 3 本）を両方残した\n\n背景:\nmain に #1455（commit / pull-request スキルとコミット系の 3 フックの取り込み）がマージされ、同じ表の同じ行と末尾にぶつかった。\n\n採用理由:\n本数は、cases-report.sh を参照する *-cases.sh を git grep で数えた。ベース 19 本、このブランチ 20 本、main 22 本は README の既存の数と一致し、マージ後は 23 本になる。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2NZQHLFV2MuY769VeU",
+      "files": []
     }
   ],
   "dependencies": [
@@ -421,6 +442,11 @@
     },
     {
       "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/commit-md-heading-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
       "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
       "status": "kept"
     },
@@ -432,6 +458,11 @@
     {
       "from": ".github/workflows/frontend.yml",
       "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/git-add-all-cases.sh",
       "status": "kept"
     },
     {
@@ -482,6 +513,11 @@
     {
       "from": ".github/workflows/frontend.yml",
       "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/protected-branch-edit-cases.sh",
       "status": "kept"
     },
     {
