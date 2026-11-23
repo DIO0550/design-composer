@@ -4,7 +4,7 @@
   "headBranch": "claude/practical-curie-jhny3j",
   "baseBranch": "main",
   "mergeBase": "c48828ca33b8d199d3e5f85888f9a8e0c7083854",
-  "head": "d7cace759a35b5ead975ebd14c8c6bd0a84cdbd2",
+  "head": "6ba5cc061570ffbf8c82558aea37974746bb029a",
   "groups": [
     {
       "label": "features / editor/features/canvas",
@@ -241,7 +241,7 @@
           "path": ".github/scripts/oxlint-config-cases.sh",
           "status": "A",
           "oldPath": null,
-          "additions": 225,
+          "additions": 233,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -330,8 +330,8 @@
           "path": "rules/testing.md",
           "status": "M",
           "oldPath": null,
-          "additions": 2,
-          "deletions": 4,
+          "additions": 3,
+          "deletions": 5,
           "changed": true,
           "target": null
         }
@@ -641,6 +641,56 @@
               "new": null
             }
           ]
+        }
+      ]
+    },
+    {
+      "sha": "8b4c45c82a96828ee774906f2ebf5a8baa026784",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T07:56:53Z",
+      "subject": "🧪 [Tests]: #1445 oxlint の判定表で重大度を対象規則の診断行から決める",
+      "body": "- 対象規則の見出しに当たらない行が 1 行でもあれば broken にする\n- has_error は [Error/ と規則の見出しが同じ行にあるかで決める\n- 対象規則の警告と別の規則の error が混ざる自己検査を足す\n\n背景:\nPR 1465 のレビュー（Devin）で、対象規則が warn・別の規則が error の\nケースを deny と読む穴が実物の oxlint で再現された。no-hooks を warn に\n下げ、同じケースに no-restricted-imports の error を出すと 169 行すべて\nok になった。\n\n採用理由:\n表は 1 ファイル 1 規則の前提なので、その前提を判定で強制し、重大度は\n対象規則の行だけで見る。フェーズ 6 では前提をコメントに書くに留めたが、\n判定で守るほうが退行を落とせる。\n\n代替案:\n別の規則の診断を無視して対象規則の行だけで判定する案は採らなかった。\nプローブに想定外の診断が出たことを黙って通すため。\n\n影響とトレードオフ:\n実物の設定ではケースに出る行は対象規則の Error だけ（実測）なので、\n今の判定は変わらない。自己検査が 1 行増える。\n\n参考:\nhttps://github.com/DIO0550/design-composer/pull/1465\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 16,
+          "deletions": 8,
+          "patch": "@@ -14,11 +14,11 @@\n # 走らせる。** 入れ子の設定はその下のファイルにだけ効くので、1 回の出力をパスの頭でケースへ振り分けられる。\n # ケースごとに起動すると、起動の時間がケースの数だけ積もる。\n #\n-# 判定は、そのケースのファイルに `[Error/` の行があれば 1、無ければ 0 として、規則の名前の見出しと\n-# `decide` で突き合わせる。`[Error/` の有無はファイル単位で見るので、**1 ファイルで 1 規則だけを確かめる\n-# この表に限り、規則の診断が警告だけなら broken になる**(`error` を `warn` に下げる・`off` を外して警告が\n-# 出る、の退行を落とす)。実物の設定ではこの枝に届かないので、表の前で 1 ケース分の判定(`case_verdict`)に\n-# 固定の行を与える自己検査を回す。\n+# 判定は、そのケースのファイルについての行を規則の名前の見出しと `decide` で突き合わせる。表は 1 ファイルで\n+# 1 規則だけを確かめるので、**見出しに当たらない行(別の規則の診断)が 1 行でも混ざれば broken にする。**\n+# 重大度は規則の行に `[Error/` があれば 1、無ければ 0 として渡すので、規則の診断が警告だけなら broken になる\n+# (`error` を `warn` に下げる・`off` を外して警告が出る、の退行を落とす)。実物の設定ではどちらの broken の\n+# 枝にも届かないので、表の前で 1 ケース分の判定(`case_verdict`)に固定の行を与える自己検査を回す。\n #\n # その前に、oxlint の出力全体を同じ `decide` に掛ける。broken なら出力から規則ごとの判定ができないので、\n # 終了コードと出力を 1 回だけ標準エラーへ出し、全ケースを broken にする。設定が壊れたとき(診断の行を\n@@ -88,15 +88,23 @@ error_line='\\[Error/'\n # $2 規則(unix 形式の出力で末尾の括弧に入る名前)\n # $3 そのケースのファイルについての出力の行\n case_verdict() {\n-  local expected=\"$1\" rule=\"$2\" lines=\"$3\" has_error=0\n-  grep -qE \"$error_line\" <<<\"$lines\" && has_error=1\n-  normalize_miss \"$expected\" \"$(decide \"$lines\" \"$has_error\" \"\\\\(${rule}\\\\)\\\\]\\$\")\"\n+  local expected=\"$1\" rule=\"$2\" lines=\"$3\" has_error=0 other_rule_lines\n+  local heading=\"\\\\(${rule}\\\\)\\\\]\\$\"\n+  other_rule_lines=\"$(grep -vE \"$heading\" <<<\"$lines\")\"\n+  if [ -n \"$other_rule_lines\" ]; then\n+    echo \"broken\"\n+    return 0\n+  fi\n+  grep -qE \"${error_line}.*${heading}\" <<<\"$lines\" && has_error=1\n+  normalize_miss \"$expected\" \"$(decide \"$lines\" \"$has_error\" \"$heading\")\"\n }\n \n self_test_head='c1/src/features/probe/__tests__/probe.normal.test.ts:2:1:'\n report broken \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の警告だけなら broken\"\n report deny \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Error/eslint-plugin-jest(no-hooks)]\")\" \"自己検査: 規則の error なら deny\"\n report broken \"$(case_verdict deny no-hooks \"$self_test_head Expected { after 'if' condition. [Error/eslint(curly)]\")\" \"自己検査: 別の規則の error だけなら broken\"\n+report broken \"$(case_verdict deny no-hooks \"$self_test_head Do not use setup or teardown hooks. [Warning/eslint-plugin-jest(no-hooks)]\n+$self_test_head Expected { after 'if' condition. [Error/eslint(curly)]\")\" \"自己検査: 規則の警告と別の規則の error が混ざれば broken\"\n report pass \"$(case_verdict pass no-hooks \"\")\" \"自己検査: 行が無ければ pass\"\n \n # 設定の `files` の glob の拡張子の波括弧を 1 本ずつ、中身を並べ替えて空白区切りの 1 行にする。",
+          "patchLines": 44,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "6ba5cc061570ffbf8c82558aea37974746bb029a",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-23T07:56:53Z",
+      "subject": "📝 [Doc]: #1445 テスト規約に前提の作り方の指針を戻す",
+      "body": "- 「テストは 1 つだけ読めば前提がすべて分かる」の行に、前提は各テスト内に\n  書くか setup()・ファクトリを呼んで作る、を括弧で統合する\n\n背景:\nbeforeEach の行を lint へ移して削ったとき、前提の作り方の指針も一緒に\n消えた。test.beforeEach などは lint が見ない（判定表の miss の行）ので、\nそこをレビューするときの拠り所が規約から無くなっていた（PR 1465 の\nDevin の指摘）。\n\n採用理由:\n禁止は lint が持ち、作り方の指針だけを既存の行へ戻す。行数は増やさない\n（753 / 753）。\n\n代替案:\n削った行をそのまま戻す案は、lint と同じ禁止を文章でも二重に持つため\n採らなかった。\n\n影響とトレードオフ:\n常時ロードの行数は変わらない。\n\n参考:\nhttps://github.com/DIO0550/design-composer/pull/1465\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2QbY5SCHbFtoWMJsT9",
+      "files": [
+        {
+          "path": "rules/testing.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -66,7 +66,7 @@\n Kent C. Dodds の \"Avoid Nesting when you're Testing\" に従う。\n \n - `describe` のネストは禁止（ファイル直下に `test` / `it` をフラットに並べ、グルーピングが必要ならカテゴリファイルを分ける）\n-- テストは 1 つだけ読めば前提がすべて分かる状態にする\n+- テストは 1 つだけ読めば前提がすべて分かる状態にする（前提は各テスト内に書くか、`setup()`・ファクトリを呼んで作る）\n - クリーンアップが必要な場合のみ `afterEach` を許可（リソース解放など、テストの理解に影響しないもの）\n \n ## テスト用ヘルパーの置き場所",
+          "patchLines": 9,
+          "truncated": false
         }
       ]
     }
