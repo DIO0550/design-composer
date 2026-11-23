@@ -58,7 +58,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/pre-push-detector.sh` | `pre-push-import-rules.sh` / `pre-push-story-titles.sh` / `pre-push-named-paths.sh` / `pre-push-doc-comments.sh` / `pre-push-test-helper-duplication.sh` | `git push` のときだけ検出器を走らせ、違反があれば deny の JSON を返す。`deny_on_violations <検出器> <検査名> <直し方>` は走査ルートを渡さず（検出器の既定を使用）、`[種別]` 行で違反を読み、異常終了時は「検査できなかった」の deny を返す（判定は `.github/scripts/lib/detector-report.sh` を `check-added-*` と共有）。`deny_on_all_src_failure`（引数同じ）は `--all src` で呼び終了コードで判定する（報告が `[` で始まらない検出器向け） |
 | `lib/edit-detector.sh` | `block-lint-suppress.sh` / `check-doc-comments.sh` / `check-test-helper-duplication.sh` | 編集時検査フックの共通処理。`.github/scripts/lib/detector-report.sh` の `detector_report` で検出器を走らせ、異常終了時は `print_edit_unchecked_context <イベント名> <検査名> <検出器>` で `permissionDecision` なしの `additionalContext`（「検査できていません」）を返し編集は止めない。PostToolUse の違反報告も `print_additional_context` で共通化し、python3 の疎通は `detector-precondition.sh` の `python3_usable` で確認する |
 | `lib/story-title-violations.py` | `pre-push-story-titles.sh` / `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | story の `title` の違反を報告する。種別の一覧と意味は検出器の docstring を参照 |
-| `lib/cases-report.sh` | `lib/*-cases.sh`・`.github/scripts/*-cases.sh`・`harness/records/count-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` の各判定表（19 本） | 判定表が共有する 5 機能を提供する: (1) 判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category` / `hook_verdict_by_permission`）、(2) 結果報告（関数 `report`・変数 `cases_failed`）、(3) 検出器種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）、(4) 判定表末尾文の照合（`last_statement` / `report_exits_with_cases_failed`）、(5) 1 件以上走ったかの照合（関数 `report_cases_ran`・変数 `cases_reported`）。ケースの並べ方と検出器の呼び方は各判定表が持つ |
+| `lib/cases-report.sh` | `lib/*-cases.sh`・`.github/scripts/*-cases.sh`・`harness/records/count-cases.sh`・`harness/githooks/lib/check-tally-cases.sh` の各判定表（20 本） | 判定表が共有する 5 機能を提供する: (1) 判定の読み取り（`decide` / `decide_by_permission` / `normalize_miss` / `all_in_category` / `hook_verdict_by_permission`）、(2) 結果報告（関数 `report`・変数 `cases_failed`）、(3) 検出器種別の照合（`report_documented_kinds` / `report_covered_kinds` / `kinds_in_categories`）、(4) 判定表末尾文の照合（`last_statement` / `report_exits_with_cases_failed`）、(5) 1 件以上走ったかの照合（関数 `report_cases_ran`・変数 `cases_reported`）。ケースの並べ方と検出器の呼び方は各判定表が持つ |
 | `lib/cases-report-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check` | `lib/cases-report.sh` 自身の判定表。種別照合・`report` の出力と `cases_failed`・`decide*` / `hook_verdict_by_permission` の判定（pass / deny / broken / miss）・各判定表の末尾が `exit "$cases_failed"` であること・`report_cases_ran` の挙動を検証する（詳細は冒頭コメントとケース名）。食い違いがあれば exit 1 |
 | `lib/cases-fixtures.sh` | `lib/pre-push-detector-cases.sh` / `lib/edit-detector-cases.sh` / `lib/import-rule-cases.sh` / `lib/verification-agent-cases.sh` / `lib/parent-session-edit-cases.sh` / `lib/issue-flow-kind-cases.sh` | 判定表が共有する前提の組み立て関数。落ちる検出器スタブ（`place_failing_detector`）・起動不能なコマンド（`broken_command_path_prefix`）・同一本体のテストヘルパー（`place_duplicate_helpers`）・サブエージェント呼び出し入力フィールド（`subagent_call_fields`）・フックの一時ディレクトリへの写し（`copy_repo_files`）を提供する |
 | `lib/import-rule-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `import-rule-violations.py` の判定表。種別・件数・全種別の網羅・`scan()` と docstring の並び一致・スタブ検出器の broken 判定を検証する。食い違いがあれば exit 1 |
@@ -75,6 +75,8 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/parent-session-edit-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | 実物の `record-firings.sh` に発火ログを書かせたうえで `block-parent-session-edit.sh` へ Edit / Write を流し、親セッション編集の拒否と素通りを検証する（詳細は各ケース名）。食い違いがあれば exit 1 |
 | `lib/issue-flow-kind-violations.py` | `block-issue-without-flow-kind.sh` | Issue を作る呼び出しが作業の種類を決めているかを見る。Bash は bash と同じ規則で字句に分けてから読む。種別の一覧と意味、行の書式は検出器の docstring と定数を参照 |
 | `lib/issue-flow-kind-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `issue-flow-kind-violations.py` と `block-issue-without-flow-kind.sh` の判定表。検出器の表は python3 を 1 回だけ起動して検出器を import し、ケースごとに判定の関数を呼ぶ。フックの表はフックを一時ディレクトリへ複製し、検出器を CLI として走らせて deny / pass と拒否文の並びを検証する。食い違いがあれば exit 1 |
+| `lib/issue-flow-kind-real-gh-cases.sh` | `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `issue-flow-kind-violations.py` が通す作成を、実物の bash と gh で走らせる判定表。入力は `issue-flow-kind-cases.sh` の検出器の表（`miss` 以外の `bash` 形）と、それに送るものを変える指定を 1 つ足した形。gh はダミーのサーバーへ向け、検出器が pass なのに自リポジトリへ flow:* も宣言の行も無い作成を送ったら exit 1 |
+| `lib/issue-flow-kind-fixtures.sh` | `lib/issue-flow-kind-cases.sh` / `lib/issue-flow-kind-real-gh-cases.sh` | Issue の作業の種類の判定表 2 本が共有する前提（自リポジトリの origin・提案の行・本文のファイルを置く `place_files`） |
 
 ## 強制力の序列 — フックが発火しない実行環境がある
 
@@ -117,7 +119,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 | 正規化しないパス | `..` を挟んだ絶対パスや symlink 越しのパスは、綴りがルートと前方一致しないとリポジトリ外として通る（パス正規化はしない） |
 | 発火しない起動の形 | フック自体が発火しない起動形態（「発火しているかを確かめる（カナリア）」の実測）では効かない |
 
-`block-issue-without-flow-kind.sh` が発火する環境でも残る穴は次のとおり。取りこぼす形は判定表 `lib/issue-flow-kind-cases.sh` が `miss` で、止めすぎる形・読む位置を誤る形の多くは `deny` で固定している。
+`block-issue-without-flow-kind.sh` が発火する環境でも残る穴は次のとおり。取りこぼす形は判定表 `lib/issue-flow-kind-cases.sh` が `miss` で、止めすぎる形・読む位置を誤る形の多くは `deny` で固定している。 検出器が通す形が gh と bash の実際の送信と食い違っていないかは `lib/issue-flow-kind-real-gh-cases.sh` が実物で見る（止めすぎる向きは見ない）。
 
 | 残る穴 | 内容 |
 | --- | --- |
@@ -160,6 +162,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 | `lib/missing-doc-comments-cases.sh` | あり | あり（`python3` がある環境のみ） |
 | `lib/duplicate-test-helpers-cases.sh` | あり | あり（`python3` がある環境のみ） |
 | `lib/issue-flow-kind-cases.sh` | あり | あり（`python3` がある環境のみ） |
+| `lib/issue-flow-kind-real-gh-cases.sh` | あり | **無し（層 1 のみ）** |
 | `lib/canary-cases.sh` | あり | あり（`python3` と `jq` が揃う環境のみ） |
 | `lib/pre-push-detector-cases.sh` | あり | あり（`python3` と `jq` が揃う環境のみ） |
 | `lib/edit-detector-cases.sh` | あり | あり（`python3` と `jq` が揃う環境のみ） |
@@ -181,6 +184,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 - **`check-added-cases.sh` だけは層 1 のジョブが `rules-check` ではなく `lint-suppress`。** 対象の `check-added-*` と同じジョブに置き、`python3` と git だけで完結させる
 - **層 2 に載せる判断基準は、`pre-push` 全体の所要時間への影響。** `pre-push` 全体は 73.0 秒（実測・`node_modules` あり）。各判定表の実測時間は次のとおり: `check-pr-closing-issue-cases.sh` 0.8 秒（5xx 再試行待ちを差し替え口で 0 化、#1034）・`lib/canary-cases.sh` 1.0 秒（ともに全体 105.8 秒の別環境実測）、解説ページ 5 本合計 16.2 秒（地図 3.4・置き場 5.6［再試行待ち 0 化］・解説の検査 4.3・枠の検査 2.8・核 0.1）、`check-tally-cases.sh` 0.1 秒未満、`lib/import-rule-cases.sh` 2.2 秒、`lib/edit-detector-cases.sh` 1.5 秒、`upsert-sticky-comment-cases.sh` 0.9 秒（再試行待ち 0 化）、`lib/issue-flow-kind-cases.sh` 1.4 秒（検出器の表は python3 を 1 回だけ起動して回す。ケースごとに起動した形は 8.0 秒）
 - **`check-duplicate-issue-pr-cases.sh` は層 1 のみ。** 問い合わせの再試行待ちで 22.0 秒（実測）かかり基準に収まらないため、`check-duplicate-issue-pr.sh` を触ったときは手動で走らせる（「動作確認」）。待ちを 0 にできるかは #1377 で扱う
+- **`issue-flow-kind-real-gh-cases.sh` は層 1 のみ。** 実物の gh を 1 ケースごとに起動するので 11.5 秒（実測）かかり、gh と openssl の無い開発環境もある。`issue-flow-kind-violations.py` か `issue-flow-kind-cases.sh` を触ったときは手動で走らせる（「動作確認」）
 - 層 3（`pre-push-*.sh`）には足さない。層 1・層 2 に置く以上、守る範囲が増えないため
 
 #### 撮影範囲の検査は層 1 と層 4 にしかない
@@ -425,6 +429,9 @@ echo '{"tool_name":"Bash","tool_input":{"command":"gh issue create -t x -b y --l
 
 # Issue の作業の種類の判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる
 bash .claude/hooks/lib/issue-flow-kind-cases.sh; echo "exit=$?"
+
+# 検出器が通す作成を実物の bash と gh で走らせる判定表(gh と openssl が要る)。CI だけが走らせる
+bash .claude/hooks/lib/issue-flow-kind-real-gh-cases.sh; echo "exit=$?"
 ```
 
 ```bash
