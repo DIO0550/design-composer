@@ -105,11 +105,16 @@ def parser():
     cli = argparse.ArgumentParser(description=__doc__)
     sub = cli.add_subparsers(dest="command", required=True)
     for command in ("inventory", "validate"):
-        sub.add_parser(command)
+        parser = sub.add_parser(command)
+        if command == "validate":
+            parser.add_argument("--candidate")
+            parser.add_argument("--base")
     for name in ("prepare", "run"):
         cmd = sub.add_parser(name)
         cmd.add_argument("--out", type=Path, required=True)
         cmd.add_argument("--repeat", default=1, type=int)
+        cmd.add_argument("--candidate")
+        cmd.add_argument("--base")
         if name == "run":
             cmd.add_argument("--adapter", required=True, choices=("replay",))
     collect = sub.add_parser("collect")
