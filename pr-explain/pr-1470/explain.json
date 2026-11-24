@@ -1,0 +1,274 @@
+{
+  "version": 1,
+  "pr": 1470,
+  "sha": "5542e36169a2444a5ecf663bc44a22ced899845e",
+  "issue": 1469,
+  "overview": {
+    "title": "テスト配置の図を消すと、選ぶ名前は変わるか",
+    "lead": "規約の固定コミットから2つの入力を作り、同じ課題を独立セッションへ渡す。初回比較で差が出たのはテストファイル名だった。",
+    "before": [
+      {
+        "text": "削減候補はレビューの履歴と行数から選んでいた。"
+      }
+    ],
+    "after": [
+      {
+        "text": "同じ課題の配置・命名・テスト設計を1条件ずつ比較できる。",
+        "message": "mark"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "規約の例を削った箇所",
+        "text": "候補の6行を一意に照合し、残りの入力を揃える。",
+        "go": {
+          "kind": "file",
+          "path": "harness/evals/experiment.py"
+        }
+      },
+      {
+        "title": "8試行の観測",
+        "text": "通常課題では図を消した2回とも index を選んだ。反例課題では両方とも index を選んだ。",
+        "go": {
+          "kind": "file",
+          "path": "harness/evals/reports/P-001-2026-11-24.md"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "compare",
+      "label": "規約6行の除去",
+      "role": "6行だけが異なる同一課題を繰り返し配り、判定を並べる"
+    },
+    {
+      "id": "verify",
+      "label": "採点記録の再確認",
+      "role": "回答と採点時のハッシュを照合する"
+    }
+  ],
+  "concepts": [
+    {
+      "path": "harness/evals/harness_eval.py",
+      "name": "実験の実行と記録",
+      "role": "試行順を決め、入力・回答・結果を対応付ける。",
+      "feature": "compare"
+    },
+    {
+      "path": "harness/evals/experiment.py",
+      "name": "候補と採点条件",
+      "role": "固定した文章を組み立て、回答を既存スキャンと個別条件で評価する。",
+      "feature": "compare"
+    },
+    {
+      "path": "harness/evals/answer_json.py",
+      "name": "回答の読み取り",
+      "role": "回答を記録できる形式に限定する。",
+      "feature": "verify"
+    },
+    {
+      "path": "harness/evals/reports/P-001-2026-11-24.md",
+      "name": "初回の実測結果",
+      "role": "外部セッションでの反復結果と測定対象を残す。",
+      "feature": "compare"
+    }
+  ],
+  "messages": [
+    {
+      "id": "input",
+      "from": "harness/evals/harness_eval.py",
+      "to": "harness/evals/experiment.py",
+      "kind": "qry",
+      "name": "比較用の入力を組む",
+      "code": "prompt(task, variant)",
+      "via": "call",
+      "payload": "課題と比較する構成",
+      "returns": "固定された規約と課題を含む UTF-8 の入力",
+      "status": "added"
+    },
+    {
+      "id": "mark",
+      "from": "harness/evals/harness_eval.py",
+      "to": "harness/evals/experiment.py",
+      "kind": "qry",
+      "name": "回答を採点する",
+      "code": "grade(task, answer)",
+      "via": "call",
+      "payload": "配置先と入出力例",
+      "returns": "判定と条件別の合否",
+      "status": "added"
+    }
+  ],
+  "flows": [
+    {
+      "id": "trial",
+      "label": "同じ課題で比較する",
+      "gist": "構成ごとの入力を作り、返った回答を同じ条件で採点する。",
+      "beforeSteps": [],
+      "steps": [
+        "input",
+        "mark"
+      ],
+      "stepChanges": [
+        {
+          "status": "added",
+          "afterStep": 1,
+          "afterText": "比較用の入力を組む",
+          "change": "固定された規約と課題を含む UTF-8 の入力"
+        },
+        {
+          "status": "added",
+          "afterStep": 2,
+          "afterText": "回答を採点する",
+          "change": "判定と条件別の合否"
+        }
+      ]
+    }
+  ],
+  "calls": {
+    "gist": "入力の違いと採点の違いを混同しないため、同じ評価器を両構成で使う。",
+    "boxes": [
+      {
+        "id": "run",
+        "name": "collect",
+        "module": "harness/evals/harness_eval.py",
+        "role": "新しい回答を取得して記録する。",
+        "status": "added",
+        "now": "新しい回答を取得して記録する。"
+      },
+      {
+        "id": "grade",
+        "name": "grade",
+        "module": "harness/evals/experiment.py",
+        "role": "対象課題の採点条件を適用する。",
+        "status": "added",
+        "now": "対象課題の採点条件を適用する。"
+      },
+      {
+        "id": "scan",
+        "name": "scan",
+        "module": "harness/evals/experiment.py",
+        "role": "回答のパスに空のファイルを作り、固定コミットのフックで検査する。",
+        "status": "added",
+        "now": "回答のパスに空のファイルを作り、固定コミットのフックで検査する。"
+      }
+    ],
+    "edges": [
+      {
+        "id": "run-grade",
+        "from": "run",
+        "to": "grade",
+        "code": "grade(task, answer)",
+        "status": "added",
+        "now": "実行元に関わらず同じ課題定義で採点する。"
+      },
+      {
+        "id": "grade-scan",
+        "from": "grade",
+        "to": "scan",
+        "code": "scan(submitted)",
+        "status": "added",
+        "now": "対象の場所と拡張子を確認してからスキャンする。"
+      }
+    ]
+  },
+  "commitStories": [
+    {
+      "sha": "544deb2767e435765594a39d8e0155961f6a0593",
+      "phase": "prep",
+      "role": "先に CLI の契約をテストで固定した。",
+      "why": "未実行、回答の取り違え、危険なパスが合格に紛れるのを防ぐ。"
+    },
+    {
+      "sha": "b7be13db7e01e9e9ffdbbd0136f6425d662ea9b1",
+      "phase": "core",
+      "role": "入力の生成、回答の収集、独立した採点を接続した。",
+      "why": "模擬回答と実モデルの比較を別々に集計する。"
+    },
+    {
+      "sha": "e4a945f75d6cd452beacda77d7c13c82284a294b",
+      "phase": "revise",
+      "role": "回答の変更検出を加え、観測結果を記録した。",
+      "why": "後日、回答を入れ替えた状態で古い成功が表示されるのを防ぐ。"
+    },
+    {
+      "sha": "5542e36169a2444a5ecf663bc44a22ced899845e",
+      "phase": "hard",
+      "role": "同じ評価になる回答の変更とファイル名の接頭辞を個別に検査した。",
+      "why": "2つの条件を1か所ずつ取り除いたとき、元のテストは成功していたため。"
+    }
+  ],
+  "suites": [
+    {
+      "id": "smoke",
+      "label": "実験の入出力",
+      "file": "harness/evals/test_smoke.py"
+    }
+  ],
+  "tests": [
+    {
+      "id": "diff",
+      "suite": "smoke",
+      "name": "test_the_two_prompts_for_each_task_differ_only_by_the_directory_example",
+      "techniques": [
+        "regression"
+      ],
+      "why": "入力条件まで変わると結果の差を配置例に結び付けられない。",
+      "given": "2課題それぞれの現行入力と削減入力。",
+      "when": "現行入力から例を1個だけ取り除く。",
+      "then": "各課題で削減入力と一致する。"
+    }
+  ],
+  "impact": {
+    "title": "例を残すか判断するための観測",
+    "lead": "通常課題の合格数は図ありで2件、図なしで0件だった。反例課題では両方とも0件だった。",
+    "changed": {
+      "before": [
+        {
+          "text": "候補を削る前後で回答がどう変わるか計測していなかった。"
+        }
+      ],
+      "after": [
+        {
+          "text": "図を除く場合と残す場合を、同じ課題・同じ評価基準で比べられる。"
+        }
+      ]
+    }
+  },
+  "quiz": [
+    {
+      "kind": "yesno",
+      "id": "why",
+      "title": "既存の検査が通ったとき",
+      "prompt": "既存フックが全件合格なら、今回の6行は削除できるか。",
+      "holds": false,
+      "why": "フックで見ているのはファイル名の形式。今回の独立した基準は、先頭に対象ドメイン名を使ったかも確かめる。",
+      "go": [
+        {
+          "kind": "file",
+          "path": "harness/evals/reports/P-001-2026-11-24.md"
+        }
+      ]
+    }
+  ],
+  "primers": [
+    {
+      "kind": "codebase",
+      "id": "counterbalance",
+      "category": "実験",
+      "label": "順序を入れ替えた反復",
+      "gist": "課題と反復の番号で A と B の実行順を交互に替える。モデルの状態や実行時刻が常に一方の条件だけに重なるのを避けるための工夫。",
+      "occurrences": [
+        {
+          "path": "harness/evals/harness_eval.py",
+          "text": "schedule が各課題に渡す順を決める。"
+        }
+      ],
+      "status": "added",
+      "tests": [
+        "diff"
+      ]
+    }
+  ]
+}
