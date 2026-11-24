@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1477,
+      "title": "📝 [Doc]: PR #1465 の振り返りを harness/records に記録する"
+    },
+    {
       "pr": 1470,
       "title": "✨ [New Feature]: #1469 ハーネスの短縮候補を同じ課題で週ごとに比較する"
     },
