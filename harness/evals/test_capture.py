@@ -59,6 +59,31 @@ class CaptureTest(unittest.TestCase):
         path.write_text("".join(json.dumps(row) + "\n" for row in rows))
         self.assertEqual(self.cli("report", self.out).returncode, 2)
 
+    def test_index_filename_only_fails_the_domain_name_check(self):
+        control, changed = [row for row in self.trials if row["task_id"] == "grid-step"]
+        file = self.file(changed)
+        envelope = json.loads(file.read_text())
+        original = Path(envelope["answer"]["path"])
+        envelope["answer"]["path"] = original.with_name("index.normal.test.ts").as_posix()
+        file.write_text(json.dumps(envelope))
+        self.assertEqual(self.collect().returncode, 1)
+        rows = [json.loads(line) for line in (self.out / "results.jsonl").read_text().splitlines()]
+        by_id = {row["id"]: row for row in rows}
+        self.assertEqual(by_id[control["id"]]["status"], "success")
+        self.assertEqual(by_id[changed["id"]]["status"], "task-failure")
+        self.assertEqual(by_id[changed["id"]]["checks"], dict(
+            placement=True, naming=False, rules=True, expectations=True, coverage=True,
+        ))
+
+    def test_an_equally_valid_answer_cannot_replace_the_scored_answer(self):
+        self.assertEqual(self.collect().returncode, 0)
+        grid = next(row for row in self.trials if row["task_id"] == "grid-step")
+        file = self.file(grid)
+        envelope = json.loads(file.read_text())
+        envelope["answer"]["cases"].append({"input": 16, "expected": 24})
+        file.write_text(json.dumps(envelope))
+        self.assertEqual(self.cli("report", self.out).returncode, 2)
+
 
 if __name__ == "__main__":
     unittest.main()
