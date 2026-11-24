@@ -12,8 +12,27 @@ import sys
 import uuid
 
 from answer_json import decode_answer
-from claude_adapter import ask, empty_metrics, runtime_version
 from experiment import CANDIDATE, ROOT, TASKS, conditions, digest, encoded, grade, prompt, replay
+
+
+MEASUREMENTS = ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens",
+                "output_tokens", "wall_time_ms", "cost_usd", "rework_count")
+
+
+def measurements(raw):
+    """回収者が観測した数値だけを受け取り、省略された項目を未取得とする。"""
+    if not isinstance(raw, dict) or raw.keys() - set(MEASUREMENTS):
+        raise ValueError("metrics の項目を確認してください")
+    result = dict.fromkeys(MEASUREMENTS)
+    for name, value in raw.items():
+        if value is None:
+            continue
+        if type(value) is not int and not (name == "cost_usd" and type(value) is float and math.isfinite(value)):
+            raise ValueError(f"metrics.{name} の数値が不正です")
+        if value < 0:
+            raise ValueError(f"metrics.{name} は0以上にしてください")
+        result[name] = value
+    return result
 
 
 def run_dir(value):
@@ -36,7 +55,7 @@ def schedule(repeats):
                 yield task, variant, trial
 
 
-def prepare(out, repeat, adapter, settings):
+def prepare(out, repeat, adapter):
     if not 1 <= repeat <= 30:
         raise ValueError("反復回数は1〜30を指定してください")
     manifest = conditions()
@@ -50,13 +69,17 @@ def prepare(out, repeat, adapter, settings):
         (out / "prompts" / f"{trial_id}.txt").write_bytes(packet)
         trials.append(dict(id=trial_id, task_id=task, variant=variant, trial=number,
                            prompt_sha256=digest(packet)))
-    manifest.update(version=1, adapter=adapter, repeat=repeat, settings=settings, trials=trials)
+    manifest.update(version=2, adapter=adapter, repeat=repeat, trials=trials)
     write_json(out / "manifest.json", manifest)
     return manifest
 
 
 def checked_manifest(out):
     manifest = json.loads((out / "manifest.json").read_bytes())
+    version = manifest["version"]
+    modes = ("external", "replay", "claude") if version == 1 else ("external", "replay")
+    if version not in (1, 2) or manifest["adapter"] not in modes:
+        raise ValueError("未対応の実験記録です")
     for key, value in conditions().items():
         if manifest.get(key) != value:
             raise ValueError(f"固定した実験定義と一致しません ({key})")
@@ -87,65 +110,53 @@ def parser():
         cmd = sub.add_parser(name)
         cmd.add_argument("--out", type=Path, required=True)
         cmd.add_argument("--repeat", default=1, type=int)
-    cmd.add_argument("--adapter", required=True, choices=("claude", "replay"))
-    cmd.add_argument("--model")
-    cmd.add_argument("--budget-usd", type=float)
-    cmd.add_argument("--timeout", default=90, type=int)
+        if name == "run":
+            cmd.add_argument("--adapter", required=True, choices=("replay",))
     collect = sub.add_parser("collect")
     collect.add_argument("out", type=Path)
-    collect.add_argument("--model", required=True)
-    collect.add_argument("--runtime", required=True)
+    collect.add_argument("--model", help="任意のモデル名")
+    collect.add_argument("--agent", "--runtime", dest="runtime", help="任意のエージェント名")
     sub.add_parser("report").add_argument("out", type=Path)
     return cli
 
 
-def settings(args):
-    if args.adapter == "replay":
-        if args.budget_usd is not None or args.model:
-            raise ValueError("replay にモデルと予算は指定できません")
-        return {"model": "fixture", "runtime": "replay-v1"}
-    if not args.model or not re.fullmatch(r"claude-[a-z0-9.]+(?:-[a-z0-9.]+)+", args.model):
-        raise ValueError("--model に完全な Claude モデル ID を指定してください")
-    if not args.budget_usd or not math.isfinite(args.budget_usd) or args.budget_usd <= 0:
-        raise ValueError("--budget-usd に実験全体の正の予算を指定してください")
-    if not 1 <= args.timeout <= 1800:
-        raise ValueError("--timeout は1〜1800秒で指定してください")
-    return dict(model=args.model, runtime=runtime_version(), budget_usd=args.budget_usd,
-                timeout=args.timeout, max_turns=1)
-
-
-def captured_answer(out, row, *, external):
+def captured_answer(out, row, manifest):
     file = out / "answers" / (row["id"] + ".json")
     if not file.exists():
         return None
-    if external and file.stat().st_size > 256 * 1024:
-        return None, "task-failure", "answer-too-large", empty_metrics()
+    if manifest["adapter"] == "external" and file.stat().st_size > 256 * 1024:
+        return None, "task-failure", "answer-too-large", measurements({})
     try:
         envelope = decode_answer(file.read_bytes())
     except (ValueError, UnicodeError):
-        return None, "task-failure", "answer-json", empty_metrics()
+        return None, "task-failure", "answer-json", measurements({})
     if not isinstance(envelope, dict) or envelope.get("prompt_sha256") != row["prompt_sha256"]:
         raise ValueError("外部回答と配布したプロンプトのハッシュが一致しません")
     if "answer" not in envelope:
-        return None, "task-failure", "answer-json", empty_metrics()
-    return envelope["answer"], None, None, empty_metrics()
+        return None, "task-failure", "answer-json", measurements({})
+    raw_metrics = envelope.get("metrics", {}) if manifest["version"] >= 2 else {}
+    return envelope["answer"], None, None, measurements(raw_metrics)
 
 
-def verify_answer(out, row):
+def verify_answer(out, row, manifest):
     """過去に採点した回答を照合し、変更や欠落のある結果を集計から除く。"""
     mode = row["adapter"]
     status = row["status"]
     if mode == "replay":
+        if measurements(row["metrics"]) != measurements({}):
+            raise ValueError("既知回答の再生に実測値が記録されています")
         answer = replay(row["task_id"])
     elif mode == "claude" and row["answer_sha256"] is None:
         if status not in ("task-failure", "infra-error") or row["checks"] or not row["failure_category"]:
             raise ValueError("回答のない試行の結果が不正です")
         return
     else:
-        reply = captured_answer(out, row, external=mode == "external")
+        reply = captured_answer(out, row, manifest)
         if reply is None:
             raise ValueError("採点済みの回答がありません。元の回答ファイルを復元してください")
-        answer, parse_status, reason, _ = reply
+        answer, parse_status, reason, metrics = reply
+        if mode == "external" and metrics != measurements(row["metrics"]):
+            raise ValueError("採点時の計測値と回答ファイルが一致しません")
         if parse_status is not None:
             if (status, row["failure_category"], row["answer_sha256"], row["checks"]) == (parse_status, reason, None, {}):
                 return
@@ -168,7 +179,7 @@ def stored_rows(out, manifest):
         if (not trial or row["id"] in rows or row["adapter"] != manifest["adapter"]
                 or any(row[k] != v for k, v in trial.items())):
             raise ValueError("試行に対応しない結果、または重複があります")
-        verify_answer(out, row)
+        verify_answer(out, row, manifest)
         rows[row["id"]] = row
     return rows
 
@@ -187,51 +198,38 @@ def collect(out, manifest, model, runtime):
     mode = manifest["adapter"]
     with collection_lock(out):
         rows = stored_rows(out, manifest)
+        if rows:
+            first = next(iter(rows.values()))
+            model = first["model"] if model is None else model
+            runtime = first["runtime"] if runtime is None else runtime
         if any((r["model"], r["runtime"]) != (model, runtime) for r in rows.values()):
             raise ValueError("採点済みの結果とモデルまたはランタイムが異なります")
         if any(r["status"] == "safety-violation" for r in rows.values()):
             return 1
-        config = manifest["settings"]
-        remaining = config.get("budget_usd", 0)
         for trial in manifest["trials"]:
             if trial["id"] in rows:
                 continue
             task = trial["task_id"]
             if mode == "external":
-                reply = captured_answer(out, trial, external=True)
+                reply = captured_answer(out, trial, manifest)
                 if reply is None:
                     continue
                 answer, status, reason, metrics = reply
-            elif mode == "replay":
-                answer, status, reason, metrics = replay(task), None, None, empty_metrics()
-            elif not runtime:
-                answer, status, reason, metrics = None, "infra-error", "cli-unavailable", empty_metrics()
             else:
-                allowance = min(config["budget_usd"] / len(manifest["trials"]), remaining)
-                if allowance <= 0:
-                    break
-                answer, status, reason, metrics = ask(prompt(task, trial["variant"]), model,
-                                                      allowance, config["timeout"])
-                if metrics["cost_usd"] is not None:
-                    remaining -= metrics["cost_usd"]
+                answer, status, reason, metrics = replay(task), None, None, measurements({})
             checks = {}
             has_answer = status is None
             if has_answer:
                 status, checks = grade(task, answer)
                 if status != "success":
                     reason = "answer-checks"
-            if mode == "claude" and has_answer:
-                write_json(out / "answers" / (trial["id"] + ".json"),
-                           dict(prompt_sha256=trial["prompt_sha256"], answer=answer))
             row = dict(trial, adapter=mode, model=model, runtime=runtime, status=status,
                        failure_category=reason, checks=checks, metrics=metrics,
                        answer_sha256=digest(encoded(answer)) if has_answer else None)
             with (out / "results.jsonl").open("ab") as stream:
                 stream.write(encoded(row) + b"\n")
             rows[row["id"]] = row
-            if status == "safety-violation" or (mode == "claude" and (
-                status == "infra-error" or metrics["cost_usd"] is None or reason == "error_max_budget_usd"
-            )):
+            if status == "safety-violation":
                 break
     return report(manifest, rows)
 
@@ -241,7 +239,7 @@ def report(manifest, rows):
     print(f"固定コミット {manifest['source_commit']} / 採点済み {len(rows)}/{len(manifest['trials'])}")
     if rows:
         first = next(iter(rows.values()))
-        print(f"モデル {first['model']} / ランタイム {first['runtime'] or '不明'}")
+        print(f"エージェント {first['runtime'] or '不明'} / モデル {first['model'] or '不明'}")
     print("常時入力の差分 " + str(manifest["context_lines"]["B"] - manifest["context_lines"]["A"]) + " 行")
     print("計測できなかった値は —。smoke は本番の削除採用に使わない。")
     print("| 課題 | 回 | 構成 | 結果 | 未達・理由 | 入力 | cache read | cache create | 出力 | 時間 ms | USD |")
@@ -252,8 +250,7 @@ def report(manifest, rows):
         unmet = [name for name, passed in row.get("checks", {}).items() if not passed]
         values = [trial["task_id"], trial["trial"], trial["variant"], row.get("status", "未実行"),
                   ", ".join(unmet) or row.get("failure_category") or "—"]
-        for key in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens", "output_tokens",
-                    "wall_time_ms", "cost_usd"):
+        for key in MEASUREMENTS[:-1]:
             values.append(metrics[key] if metrics.get(key) is not None else "—")
         print("| " + " | ".join(map(str, values)) + " |")
     for variant in "AB":
@@ -283,9 +280,8 @@ def report(manifest, rows):
 
 def execute(args, out):
     if args.command == "run":
-        config = settings(args)
-        manifest = prepare(out, args.repeat, args.adapter, config)
-        return collect(out, manifest, config["model"], config["runtime"])
+        manifest = prepare(out, args.repeat, "replay")
+        return collect(out, manifest, "fixture", "replay-v1")
     manifest = checked_manifest(out)
     if args.command == "report":
         return report(manifest, stored_rows(out, manifest))
@@ -304,7 +300,7 @@ def main():
         return 0
     out = run_dir(args.out)
     if args.command == "prepare":
-        prepare(out, args.repeat, "external", {})
+        prepare(out, args.repeat, "external")
         print(out / "prompts")
         return 0
     return execute(args, out)
