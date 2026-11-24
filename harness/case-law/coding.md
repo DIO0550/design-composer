@@ -303,6 +303,36 @@ const refErrors = artboard.children.flatMap(/* ... */);
 return [...propErrors, ...childErrors, ...refErrors];
 ```
 
+## `なし` から切り出した形 — 関数の本体を、処理のまとまりごとに空行で区切っていなかった
+
+`structure-reviewer` の「読みやすさの観点」が 4 つの PR で 5 回挙げ、どれも空行を入れて直した(pr-1399 #12 / pr-1417 #19 / pr-1418 #28・#51 / pr-1436 #13)。
+
+```typescript
+// NG: 理由の違う 2 つの早期 return と最後の return が詰まっている(pr-1399)
+if (history.future.length === 0) {
+  return [];
+}
+if (!DesignDocument.isSameContent(history.present, document)) {
+  return [];
+}
+return history.future;
+
+// OK: まとまりごとに 1 行空ける
+if (history.future.length === 0) {
+  return [];
+}
+
+if (!DesignDocument.isSameContent(history.present, document)) {
+  return [];
+}
+
+return history.future;
+```
+
+- **判定の分かれ目:** 本体に**まとまりが 2 つ以上あるか。**「値を求める → 失敗なら返す」の組・組み立て・`return` がそれぞれ 1 つのまとまりで、その境目に空行を置く。理由の違う早期 return は別のまとまり(pr-1399)。組み立ての後の `return` も別のまとまり(pr-1417)
+- **`return` の前に必ず空行、ではない。** `const x = ...;` の次の行で `return` するだけの本体はまとまりが 1 つなので詰めてよい
+- フックにしない理由: main で「`return` の直前が空行でない(ブロックの先頭を除く)」は 530 件、狭めて「早期 return のブロックの直後に空行なしで文が続く」でも 339 件あった。まとまりの切れ目は判断で、行の並びだけでは偽陽性 0 にできない。oxlint 1.58 と Biome 2.4.10 には `padding-line-between-statements` 相当の規則も無い(#1467)
+
 ## 消すコメントの見分け
 
 | 消すもの | 例 |
