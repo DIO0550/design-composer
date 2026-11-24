@@ -1,0 +1,337 @@
+{
+  "manifest": {
+    "adapter": "external",
+    "condition_fingerprint": "9ec91bc9078517dd86b5d80ddec9bde9fbf3affca67310adb915a248abefa59d",
+    "context_lines": {
+      "A": 770,
+      "B": 765
+    },
+    "evaluator_sha256": "dccd44a293ab6c6cbe6b97daed5f12b8f3b6cf74fbb98fa2588f3d0811887911",
+    "evaluator_source_commit": "d199ad2483ca82c1a9d2b9134460d04a2d89105d",
+    "experiment": "P-001-short",
+    "preset": {
+      "hypothesis": "配置例を1行の命名規則にしても、配置、ドメイン名、境界値の選び方を維持できる。",
+      "id": "P-001-short",
+      "remove": "```\n<モジュールフォルダ>/\n  index.ts\n  __tests__/\n    <対象ドメイン名>.<カテゴリ>.test.ts\n```\n",
+      "replace": "テストファイル名は `{対象ドメイン名}.{カテゴリ}.test.ts` とする。\n",
+      "section": "配置と命名",
+      "suite": "test-placement-naming",
+      "target": "rules/testing.md"
+    },
+    "preset_sha256": "b3f9cac7ebe847879e86da9ffa144a2c787e04a1136cba42ed73ec606d83b86d",
+    "repeat": 2,
+    "source_commit": "d199ad2483ca82c1a9d2b9134460d04a2d89105d",
+    "target": "rules/testing.md",
+    "task_sha256": {
+      "grid-step": "e0429389376dfe0a95f42b8bb779e099e4c363f6dafed85d3ddad669e3993b77",
+      "label-limit": "b5f685f6621b840b0cd7bdd13673a858d3491393d7e1e51c1cce643dc7a2a761"
+    },
+    "trials": [
+      {
+        "id": "6d188aa6bddc42a58aab08fa625a413f",
+        "prompt_sha256": "1c7a6d122493922d95703feda0c2d47bede17c37f9733775398e508595088fcd",
+        "task_id": "grid-step",
+        "trial": 1,
+        "variant": "A"
+      },
+      {
+        "id": "3ebe21208e0144789fc8e51d3ad72463",
+        "prompt_sha256": "a29a2eb31d3b42b71d1241d2a61719a1131b0fce43a0865af3a1483a73d32767",
+        "task_id": "grid-step",
+        "trial": 1,
+        "variant": "B"
+      },
+      {
+        "id": "c4a9b83d6feb401ab7a44f762b02b4b5",
+        "prompt_sha256": "832ef31810744bcb2b559859d517eb529844f07275900219908653c6135cfe10",
+        "task_id": "label-limit",
+        "trial": 1,
+        "variant": "B"
+      },
+      {
+        "id": "36ff10431ba64c13a6f73c41af8a826e",
+        "prompt_sha256": "3278c925f643b896f24d5a07ec19092a38538cd25a49f8dd52da6e917f479aa8",
+        "task_id": "label-limit",
+        "trial": 1,
+        "variant": "A"
+      },
+      {
+        "id": "94e7e3a295034e9a9dfc9e993b01252c",
+        "prompt_sha256": "a29a2eb31d3b42b71d1241d2a61719a1131b0fce43a0865af3a1483a73d32767",
+        "task_id": "grid-step",
+        "trial": 2,
+        "variant": "B"
+      },
+      {
+        "id": "efb8ff43cf874dff96a63a589c6ebb5d",
+        "prompt_sha256": "1c7a6d122493922d95703feda0c2d47bede17c37f9733775398e508595088fcd",
+        "task_id": "grid-step",
+        "trial": 2,
+        "variant": "A"
+      },
+      {
+        "id": "a0ff1f2759e34e6db080cbfe9f7b45cf",
+        "prompt_sha256": "3278c925f643b896f24d5a07ec19092a38538cd25a49f8dd52da6e917f479aa8",
+        "task_id": "label-limit",
+        "trial": 2,
+        "variant": "A"
+      },
+      {
+        "id": "dd797c1af43e4b0781f85e292fba102b",
+        "prompt_sha256": "832ef31810744bcb2b559859d517eb529844f07275900219908653c6135cfe10",
+        "task_id": "label-limit",
+        "trial": 2,
+        "variant": "B"
+      }
+    ],
+    "variant_sha256": {
+      "A": "9724cfdd3a61ac19bb15b64615171337fbbf0dedac279816536dadc52447d7d2",
+      "B": "40d1d52a67604616c7ad5f37556331bb898e4ab85f7c93c62de322f05081fa57"
+    },
+    "version": 3
+  },
+  "agent": "Codex Work Mode（独立セッション）",
+  "model": "GPT-6（ビルド未取得）",
+  "answers": {
+    "6d188aa6bddc42a58aab08fa625a413f": {
+      "answer": {
+        "path": "src/domains/canvas/grid-step/__tests__/GridStep.normal.test.ts",
+        "cases": [
+          {
+            "input": 0,
+            "expected": 8
+          },
+          {
+            "input": 16,
+            "expected": 24
+          },
+          {
+            "input": 9,
+            "expected": 16
+          }
+        ]
+      },
+      "answer_sha256": "16baf93d6ee0a495f8182524293c3a2d1d496e1863f11bbe26de2af9fcb89fbf",
+      "status": "task-failure",
+      "checks": {
+        "coverage": true,
+        "expectations": true,
+        "naming": false,
+        "placement": true,
+        "rules": true
+      }
+    },
+    "3ebe21208e0144789fc8e51d3ad72463": {
+      "answer": {
+        "path": "src/domains/canvas/grid-step/__tests__/grid-step.normal.test.ts",
+        "cases": [
+          {
+            "input": 0,
+            "expected": 8
+          },
+          {
+            "input": 8,
+            "expected": 16
+          },
+          {
+            "input": 19,
+            "expected": 24
+          }
+        ]
+      },
+      "answer_sha256": "9a2678adc55428fb51ed3f50d28f36d3d76997fe2014299ffba99a8f4aee9d52",
+      "status": "success",
+      "checks": {
+        "coverage": true,
+        "expectations": true,
+        "naming": true,
+        "placement": true,
+        "rules": true
+      }
+    },
+    "c4a9b83d6feb401ab7a44f762b02b4b5": {
+      "answer": {
+        "path": "src/features/inspector/domains/label-limit/__tests__/index.edge.test.ts",
+        "cases": [
+          {
+            "input": 0,
+            "expected": false
+          },
+          {
+            "input": 1,
+            "expected": true
+          },
+          {
+            "input": 12,
+            "expected": true
+          },
+          {
+            "input": 13,
+            "expected": false
+          }
+        ]
+      },
+      "answer_sha256": "c75b8440cb2cfa26ab845d15d0a84e33a548f8bec62f360a87683f4e6914d084",
+      "status": "task-failure",
+      "checks": {
+        "coverage": true,
+        "expectations": true,
+        "naming": false,
+        "placement": true,
+        "rules": true
+      }
+    },
+    "36ff10431ba64c13a6f73c41af8a826e": {
+      "answer": {
+        "path": "src/features/inspector/domains/label-limit/__tests__/index.edge.test.ts",
+        "cases": [
+          {
+            "input": 0,
+            "expected": false
+          },
+          {
+            "input": 1,
+            "expected": true
+          },
+          {
+            "input": 12,
+            "expected": true
+          },
+          {
+            "input": 13,
+            "expected": false
+          }
+        ]
+      },
+      "answer_sha256": "c75b8440cb2cfa26ab845d15d0a84e33a548f8bec62f360a87683f4e6914d084",
+      "status": "task-failure",
+      "checks": {
+        "coverage": true,
+        "expectations": true,
+        "naming": false,
+        "placement": true,
+        "rules": true
+      }
+    },
+    "94e7e3a295034e9a9dfc9e993b01252c": {
+      "answer": {
+        "path": "src/domains/canvas/grid-step/__tests__/grid-step.normal.test.ts",
+        "cases": [
+          {
+            "input": 0,
+            "expected": 8
+          },
+          {
+            "input": 16,
+            "expected": 24
+          },
+          {
+            "input": 9,
+            "expected": 16
+          }
+        ]
+      },
+      "answer_sha256": "d493bd50d430a2a8b3108b5d825c9875ef0b2969b9ce6242b08905f837437b9b",
+      "status": "success",
+      "checks": {
+        "coverage": true,
+        "expectations": true,
+        "naming": true,
+        "placement": true,
+        "rules": true
+      }
+    },
+    "efb8ff43cf874dff96a63a589c6ebb5d": {
+      "answer": {
+        "path": "src/domains/canvas/grid-step/__tests__/grid-step.normal.test.ts",
+        "cases": [
+          {
+            "input": 0,
+            "expected": 8
+          },
+          {
+            "input": 8,
+            "expected": 16
+          },
+          {
+            "input": 19,
+            "expected": 24
+          }
+        ]
+      },
+      "answer_sha256": "9a2678adc55428fb51ed3f50d28f36d3d76997fe2014299ffba99a8f4aee9d52",
+      "status": "success",
+      "checks": {
+        "coverage": true,
+        "expectations": true,
+        "naming": true,
+        "placement": true,
+        "rules": true
+      }
+    },
+    "a0ff1f2759e34e6db080cbfe9f7b45cf": {
+      "answer": {
+        "path": "src/features/inspector/domains/label-limit/__tests__/index.edge.test.ts",
+        "cases": [
+          {
+            "input": 0,
+            "expected": false
+          },
+          {
+            "input": 1,
+            "expected": true
+          },
+          {
+            "input": 12,
+            "expected": true
+          },
+          {
+            "input": 13,
+            "expected": false
+          }
+        ]
+      },
+      "answer_sha256": "c75b8440cb2cfa26ab845d15d0a84e33a548f8bec62f360a87683f4e6914d084",
+      "status": "task-failure",
+      "checks": {
+        "coverage": true,
+        "expectations": true,
+        "naming": false,
+        "placement": true,
+        "rules": true
+      }
+    },
+    "dd797c1af43e4b0781f85e292fba102b": {
+      "answer": {
+        "path": "src/features/inspector/domains/label-limit/__tests__/index.edge.test.ts",
+        "cases": [
+          {
+            "input": 0,
+            "expected": false
+          },
+          {
+            "input": 1,
+            "expected": true
+          },
+          {
+            "input": 12,
+            "expected": true
+          },
+          {
+            "input": 13,
+            "expected": false
+          }
+        ]
+      },
+      "answer_sha256": "c75b8440cb2cfa26ab845d15d0a84e33a548f8bec62f360a87683f4e6914d084",
+      "status": "task-failure",
+      "checks": {
+        "coverage": true,
+        "expectations": true,
+        "naming": false,
+        "placement": true,
+        "rules": true
+      }
+    }
+  }
+}

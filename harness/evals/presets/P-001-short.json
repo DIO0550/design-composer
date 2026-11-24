@@ -1,0 +1,9 @@
+{
+  "id": "P-001-short",
+  "suite": "test-placement-naming",
+  "target": "rules/testing.md",
+  "section": "配置と命名",
+  "remove": "```\n<モジュールフォルダ>/\n  index.ts\n  __tests__/\n    <対象ドメイン名>.<カテゴリ>.test.ts\n```\n",
+  "replace": "テストファイル名は `{対象ドメイン名}.{カテゴリ}.test.ts` とする。\n",
+  "hypothesis": "配置例を1行の命名規則にしても、配置、ドメイン名、境界値の選び方を維持できる。"
+}
