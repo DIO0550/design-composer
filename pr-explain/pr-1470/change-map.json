@@ -4,7 +4,7 @@
   "headBranch": "feature/1469-harness-pruning-smoke",
   "baseBranch": "main",
   "mergeBase": "d199ad2483ca82c1a9d2b9134460d04a2d89105d",
-  "head": "5542e36169a2444a5ecf663bc44a22ced899845e",
+  "head": "b324ee29b1b013d038a61c4fb6b794f79dd807f6",
   "groups": [
     {
       "label": "ハーネス",
@@ -29,7 +29,7 @@
           "path": "harness/evals/README.md",
           "status": "A",
           "oldPath": null,
-          "additions": 74,
+          "additions": 62,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -39,15 +39,6 @@
           "status": "A",
           "oldPath": null,
           "additions": 15,
-          "deletions": 0,
-          "changed": true,
-          "target": null
-        },
-        {
-          "path": "harness/evals/claude_adapter.py",
-          "status": "A",
-          "oldPath": null,
-          "additions": 92,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -65,7 +56,7 @@
           "path": "harness/evals/harness_eval.py",
           "status": "A",
           "oldPath": null,
-          "additions": 318,
+          "additions": 314,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -83,16 +74,7 @@
           "path": "harness/evals/test_capture.py",
           "status": "A",
           "oldPath": null,
-          "additions": 89,
-          "deletions": 0,
-          "changed": true,
-          "target": null
-        },
-        {
-          "path": "harness/evals/test_claude_adapter.py",
-          "status": "A",
-          "oldPath": null,
-          "additions": 94,
+          "additions": 167,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -308,17 +290,82 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "b324ee29b1b013d038a61c4fb6b794f79dd807f6",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-24T22:01:25+09:00",
+      "subject": "♻️ [Refactoring]: #1469 エージェントを選んで共通の課題と採点器を使えるようにする",
+      "body": "専用 CLI の起動・認証を除去し、課題配布と回答回収を標準の手順にする。任意の実行元と計測値を記録でき、既存の回答も元の条件で再集計できる。",
+      "files": [
+        {
+          "path": "harness/evals/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 30,
+          "patch": "@@ -11,37 +11,15 @@\n \n 初回の結果は [P-001 の実験記録](reports/P-001-2026-11-24.md) にまとめた。\n \n-## 試す\n+## 選んだエージェントで比較する\n \n-リポジトリルートから Python 3.10 以降、Git、Bash、awk が使える Linux/macOS で実行する。試行データにはリポジトリ外の新しいディレクトリを指定する。\n+1回の比較に使うエージェントは実験者が選ぶ。A/B は同じエージェント・設定で実施し、別のエージェントを試すときは別の出力先に記録すると、それぞれの結果を比較できる。\n+\n+リポジトリルートで Python 3.10 以降、Git、Bash、awk が使える Linux/macOS から実行する。試行データはリポジトリ外の新しいディレクトリに保存する。\n \n ```bash\n cli=harness/evals/harness_eval.py\n-python3 \"$cli\" inventory\n-python3 \"$cli\" validate\n runs=$(mktemp -d)\n-python3 \"$cli\" run --adapter replay --out \"$runs/replay\"\n-python3 \"$cli\" report \"$runs/replay\"\n-python3 -m unittest discover -s harness/evals -v\n-```\n-\n-`replay` は既知の正しい回答で保存・採点・集計を確認する。モデルを呼ばずトークン数も計上しない。\n-\n-### Claude Code で測る\n-\n-`--bare`、`--tools`、`--max-budget-usd` 対応の Claude Code と、実験用の `ANTHROPIC_API_KEY` を用意する。`CLAUDE_MODEL_ID` には契約で利用できる完全なモデル ID を指定する。CLI が報告した実モデルと一致するかを試行ごとに確認する。\n-\n-```bash\n-python3 \"$cli\" run --adapter claude --model \"$CLAUDE_MODEL_ID\" \\\n-  --budget-usd 1 --timeout 90 --repeat 1 --out \"$runs/claude\"\n-python3 \"$cli\" report \"$runs/claude\"\n-```\n-\n-予算は実験全体の米ドル建て推定額。4試行なら各呼び出しに全体の1/4以下を割り当てる。CLI の推定額はリクエスト単位で上限を超える場合がある。費用不明・予算上限・環境エラー時は後続の呼び出しを止める。各試行は空の作業場所と HOME を使い、単発1ターンで終わる。モデルにツールを提供せず、Claude Code の自動読込を止め、対象の規約を明示的に入力する。認証の環境変数は上記の実験用キーだけを引き継ぐ。\n-\n-### 外部セッションで回答を集める\n-\n-```bash\n python3 \"$cli\" prepare --out \"$runs/external\"\n ```\n \n@@ -55,20 +33,30 @@ python3 \"$cli\" prepare --out \"$runs/external\"\n    }\n    ```\n \n-3. 同じモデル・ランタイム識別子で回収する。未着の回答を追加して再実行すると、採点済みの試行を保持したまま残りを採点する。\n+3. 回答を採点して集計する。未着の回答を追加して `collect` を再実行すると残りを採点する。\n \n    ```bash\n-   python3 \"$cli\" collect \"$runs/external\" --model \"$MODEL_ID\" --runtime \"$RUNTIME_ID\"\n+   python3 \"$cli\" collect \"$runs/external\"\n    python3 \"$cli\" report \"$runs/external\"\n    ```\n \n-`external` のモデルとランタイムは回収者の申告値。費用・時間・トークンは不明として扱う。各モードは別ディレクトリに記録する。\n+実行元を記録するときは最初の回収で自由記述の `--agent` と `--model` を任意で指定する。未指定は不明として記録し、回収再開時に省略した値は採点済みの記録から引き継ぐ。従来の `--runtime` も `--agent` と同じ意味で使える。\n+\n+計測できた場合は、回収者が回答と同じ JSON のトップレベルに `\"metrics\": {\"input_tokens\": 120, \"wall_time_ms\": 3100, \"cost_usd\": 0}` を追加できる。カウント・時間は0以上の整数、費用は0以上の数値。省略と `null` は未取得、0は実測値を表す。`output_tokens`、`cache_read_input_tokens`、`cache_creation_input_tokens`、`rework_count` も記録できる。\n+\n+### 既知の回答で動作を確認する\n+\n+```bash\n+python3 \"$cli\" run --adapter replay --out \"$runs/replay\"\n+python3 \"$cli\" report \"$runs/replay\"\n+python3 -m unittest discover -s harness/evals -v\n+```\n \n ## 結果の読み方\n \n - 1反復で2課題 × 2構成の4試行。課題・反復ごとに A/B の先行順を交替する。 `--repeat N` で同一条件を反復できる。\n - 入口・全8規約・既存スキャンと付属 awk を固定コミット `d199ad2483ca82c1a9d2b9134460d04a2d89105d` から読む。浅い clone に履歴がない場合はそのコミットを取得する。`manifest.json` にコミット、課題・規約・評価器・配布物のハッシュ、実行条件を記録する。\n - 回答はパスと入出力例のデータとして扱う。パスは対象モジュールと照合し、使い捨ての空ファイルで元のテスト規約スキャンを実行する。期待値と境界の網羅は固定した振る舞いから採点する。生成コードの実行や GitHub 操作は発生しない。\n-- `results.jsonl` の各行にチェック別の結果・失敗理由・計測値を保持する。同じ評価器の版で `report` を実行すると、保存した回答のハッシュと採点を照合し、課題別・反復別の結果と B−A の差が得られる。入力・cache read・cache create は別欄で、未取得値は「—」。成功率の分母には要件未達・時間切れ・安全性違反を含める。環境エラーと未実行は別に表示する。\n+- `results.jsonl` の各行にチェック別の結果・失敗理由・計測値を保持する。同じ評価器の版で `report` を実行すると、保存した回答のハッシュ・採点・申告した計測値を照合し、課題別・反復別の結果と B−A の差が得られる。入力・cache read・cache create は別欄で、未取得値は「—」。成功率の分母には要件未達・安全性違反を含める。環境エラーと未実行は別に表示する。\n - 全試行の品質判定が成功すれば終了値は0。計測値だけの欠損は「—」と表示する。未実行の試行・品質失敗・環境エラーがあれば終了値は非ゼロとなる。試行外へのパスを回答した場合は安全性違反を記録して停止する。失敗をやり直す実験には新しい出力先を使う。\n - この smoke は単発のテスト設計課題。実装・修正ループ・通常セッションの自動読込・フック発火・本番 PR の品質は測定対象外。判定は**保留**とし、本番の規約削除は追加課題、独立した holdout と実運用に近い条件での確認後に判断する。",
+          "patchLines": 77,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/claude_adapter.py",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 92,
+          "patch": null,
+          "patchLines": 0,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/harness_eval.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 57,
+          "deletions": 61,
+          "patch": "@@ -12,10 +12,29 @@ import sys\n import uuid\n \n from answer_json import decode_answer\n-from claude_adapter import ask, empty_metrics, runtime_version\n from experiment import CANDIDATE, ROOT, TASKS, conditions, digest, encoded, grade, prompt, replay\n \n \n+MEASUREMENTS = (\"input_tokens\", \"cache_read_input_tokens\", \"cache_creation_input_tokens\",\n+                \"output_tokens\", \"wall_time_ms\", \"cost_usd\", \"rework_count\")\n+\n+\n+def measurements(raw):\n+    \"\"\"回収者が観測した数値だけを受け取り、省略された項目を未取得とする。\"\"\"\n+    if not isinstance(raw, dict) or raw.keys() - set(MEASUREMENTS):\n+        raise ValueError(\"metrics の項目を確認してください\")\n+    result = dict.fromkeys(MEASUREMENTS)\n+    for name, value in raw.items():\n+        if value is None:\n+            continue\n+        if type(value) is not int and not (name == \"cost_usd\" and type(value) is float and math.isfinite(value)):\n+            raise ValueError(f\"metrics.{name} の数値が不正です\")\n+        if value < 0:\n+            raise ValueError(f\"metrics.{name} は0以上にしてください\")\n+        result[name] = value\n+    return result\n+\n+\n def run_dir(value):\n     directory = Path(value).resolve()\n     if directory == ROOT or ROOT in directory.parents:\n@@ -36,7 +55,7 @@ def schedule(repeats):\n                 yield task, variant, trial\n \n \n-def prepare(out, repeat, adapter, settings):\n+def prepare(out, repeat, adapter):\n     if not 1 <= repeat <= 30:\n         raise ValueError(\"反復回数は1〜30を指定してください\")\n     manifest = conditions()\n@@ -50,13 +69,17 @@ def prepare(out, repeat, adapter, settings):\n         (out / \"prompts\" / f\"{trial_id}.txt\").write_bytes(packet)\n         trials.append(dict(id=trial_id, task_id=task, variant=variant, trial=number,\n                            prompt_sha256=digest(packet)))\n-    manifest.update(version=1, adapter=adapter, repeat=repeat, settings=settings, trials=trials)\n+    manifest.update(version=2, adapter=adapter, repeat=repeat, trials=trials)\n     write_json(out / \"manifest.json\", manifest)\n     return manifest\n \n \n def checked_manifest(out):\n     manifest = json.loads((out / \"manifest.json\").read_bytes())\n+    version = manifest[\"version\"]\n+    modes = (\"external\", \"replay\", \"claude\") if version == 1 else (\"external\", \"replay\")\n+    if version not in (1, 2) or manifest[\"adapter\"] not in modes:\n+        raise ValueError(\"未対応の実験記録です\")\n     for key, value in conditions().items():\n         if manifest.get(key) != value:\n             raise ValueError(f\"固定した実験定義と一致しません ({key})\")\n@@ -87,65 +110,53 @@ def parser():\n         cmd = sub.add_parser(name)\n         cmd.add_argument(\"--out\", type=Path, required=True)\n         cmd.add_argument(\"--repeat\", default=1, type=int)\n-    cmd.add_argument(\"--adapter\", required=True, choices=(\"claude\", \"replay\"))\n-    cmd.add_argument(\"--model\")\n-    cmd.add_argument(\"--budget-usd\", type=float)\n-    cmd.add_argument(\"--timeout\", default=90, type=int)\n+        if name == \"run\":\n+            cmd.add_argument(\"--adapter\", required=True, choices=(\"replay\",))\n     collect = sub.add_parser(\"collect\")\n     collect.add_argument(\"out\", type=Path)\n-    collect.add_argument(\"--model\", required=True)\n-    collect.add_argument(\"--runtime\", required=True)\n+    collect.add_argument(\"--model\", help=\"任意のモデル名\")\n+    collect.add_argument(\"--agent\", \"--runtime\", dest=\"runtime\", help=\"任意のエージェント名\")\n     sub.add_parser(\"report\").add_argument(\"out\", type=Path)\n     return cli\n \n \n-def settings(args):\n-    if args.adapter == \"replay\":\n-        if args.budget_usd is not None or args.model:\n-            raise ValueError(\"replay にモデルと予算は指定できません\")\n-        return {\"model\": \"fixture\", \"runtime\": \"replay-v1\"}\n-    if not args.model or not re.fullmatch(r\"claude-[a-z0-9.]+(?:-[a-z0-9.]+)+\", args.model):\n-        raise ValueError(\"--model に完全な Claude モデル ID を指定してください\")\n-    if not args.budget_usd or not math.isfinite(args.budget_usd) or args.budget_usd <= 0:\n-        raise ValueError(\"--budget-usd に実験全体の正の予算を指定してください\")\n-    if not 1 <= args.timeout <= 1800:\n-        raise ValueError(\"--timeout は1〜1800秒で指定してください\")\n-    return dict(model=args.model, runtime=runtime_version(), budget_usd=args.budget_usd,\n-                timeout=args.timeout, max_turns=1)\n-\n-\n-def captured_answer(out, row, *, external):\n+def captured_answer(out, row, manifest):\n     file = out / \"answers\" / (row[\"id\"] + \".json\")\n     if not file.exists():\n         return None\n-    if external and file.stat().st_size > 256 * 1024:\n-        return None, \"task-failure\", \"answer-too-large\", empty_metrics()\n+    if manifest[\"adapter\"] == \"external\" and file.stat().st_size > 256 * 1024:\n+        return None, \"task-failure\", \"answer-too-large\", measurements({})\n     try:\n         envelope = decode_answer(file.read_bytes())\n     except (ValueError, UnicodeError):\n-        return None, \"task-failure\", \"answer-json\", empty_metrics()\n+        return None, \"task-failure\", \"answer-json\", measurements({})\n     if not isinstance(envelope, dict) or envelope.get(\"prompt_sha256\") != row[\"prompt_sha256\"]:\n         raise ValueError(\"外部回答と配布したプロンプトのハッシュが一致しません\")\n     if \"answer\" not in envelope:\n-        return None, \"task-failure\", \"answer-json\", empty_metrics()\n-    return envelope[\"answer\"], None, None, empty_metrics()\n+        return None, \"task-failure\", \"answer-json\", measurements({})\n+    raw_metrics = envelope.get(\"metrics\", {}) if manifest[\"version\"] >= 2 else {}\n+    return envelope[\"answer\"], None, None, measurements(raw_metrics)\n \n \n-def verify_answer(out, row):\n+def verify_answer(out, row, manifest):\n     \"\"\"過去に採点した回答を照合し、変更や欠落のある結果を集計から除く。\"\"\"\n     mode = row[\"adapter\"]\n     status = row[\"status\"]\n     if mode == \"replay\":\n+        if measurements(row[\"metrics\"]) != measurements({}):\n+            raise ValueError(\"既知回答の再生に実測値が記録されています\")\n         answer = replay(row[\"task_id\"])\n     elif mode == \"claude\" and row[\"answer_sha256\"] is None:\n         if status not in (\"task-failure\", \"infra-error\") or row[\"checks\"] or not row[\"failure_category\"]:\n             raise ValueError(\"回答のない試行の結果が不正です\")\n         return\n     else:\n-        reply = captured_answer(out, row, external=mode == \"external\")\n+        reply = captured_answer(out, row, manifest)\n         if reply is None:\n             raise ValueError(\"採点済みの回答がありません。元の回答ファイルを復元してください\")\n-        answer, parse_status, reason, _ = reply\n+        answer, parse_status, reason, metrics = reply\n+        if mode == \"external\" and metrics != measurements(row[\"metrics\"]):\n+            raise ValueError(\"採点時の計測値と回答ファイルが一致しません\")\n         if parse_status is not None:\n             if (status, row[\"failure_category\"], row[\"answer_sha256\"], row[\"checks\"]) == (parse_status, reason, None, {}):\n                 return\n@@ -168,7 +179,7 @@ def stored_rows(out, manifest):\n         if (not trial or row[\"id\"] in rows or row[\"adapter\"] != manifest[\"adapter\"]\n                 or any(row[k] != v for k, v in trial.items())):\n             raise ValueError(\"試行に対応しない結果、または重複があります\")\n-        verify_answer(out, row)\n+        verify_answer(out, row, manifest)\n         rows[row[\"id\"]] = row\n     return rows\n \n@@ -187,51 +198,38 @@ def collect(out, manifest, model, runtime):\n     mode = manifest[\"adapter\"]\n     with collection_lock(out):\n         rows = stored_rows(out, manifest)\n+        if rows:\n+            first = next(iter(rows.values()))\n+            model = first[\"model\"] if model is None else model\n+            runtime = first[\"runtime\"] if runtime is None else runtime\n         if any((r[\"model\"], r[\"runtime\"]) != (model, runtime) for r in rows.values()):\n             raise ValueError(\"採点済みの結果とモデルまたはランタイムが異なります\")\n         if any(r[\"status\"] == \"safety-violation\" for r in rows.values()):\n             return 1\n-        config = manifest[\"settings\"]\n-        remaining = config.get(\"budget_usd\", 0)\n         for trial in manifest[\"trials\"]:\n             if trial[\"id\"] in rows:\n                 continue\n             task = trial[\"task_id\"]\n             if mode == \"external\":\n-                reply = captured_answer(out, trial, external=True)\n+                reply = captured_answer(out, trial, manifest)\n                 if reply is None:\n                     continue\n                 answer, status, reason, metrics = reply\n-            elif mode == \"replay\":\n-                answer, status, reason, metrics = replay(task), None, None, empty_metrics()\n-            elif not runtime:\n-                answer, status, reason, metrics = None, \"infra-error\", \"cli-unavailable\", empty_metrics()\n             else:\n-                allowance = min(config[\"budget_usd\"] / len(manifest[\"trials\"]), remaining)\n-                if allowance <= 0:\n-                    break\n-                answer, status, reason, metrics = ask(prompt(task, trial[\"variant\"]), model,\n-                                                      allowance, config[\"timeout\"])\n-                if metrics[\"cost_usd\"] is not None:\n-                    remaining -= metrics[\"cost_usd\"]\n+                answer, status, reason, metrics = replay(task), None, None, measurements({})\n             checks = {}\n             has_answer = status is None\n             if has_answer:\n                 status, checks = grade(task, answer)\n                 if status != \"success\":\n                     reason = \"answer-checks\"\n-            if mode == \"claude\" and has_answer:\n-                write_json(out / \"answers\" / (trial[\"id\"] + \".json\"),\n-                           dict(prompt_sha256=trial[\"prompt_sha256\"], answer=answer))\n             row = dict(trial, adapter=mode, model=model, runtime=runtime, status=status,\n                        failure_category=reason, checks=checks, metrics=metrics,\n                        answer_sha256=digest(encoded(answer)) if has_answer else None)\n             with (out / \"results.jsonl\").open(\"ab\") as stream:\n                 stream.write(encoded(row) + b\"\\n\")\n             rows[row[\"id\"]] = row\n-            if status == \"safety-violation\" or (mode == \"claude\" and (\n-                status == \"infra-error\" or metrics[\"cost_usd\"] is None or reason == \"error_max_budget_usd\"\n-            )):\n+            if status == \"safety-violation\":\n                 break\n     return report(manifest, rows)\n \n@@ -241,7 +239,7 @@ def report(manifest, rows):\n     print(f\"固定コミット {manifest['source_commit']} / 採点済み {len(rows)}/{len(manifest['trials'])}\")\n     if rows:\n         first = next(iter(rows.values()))\n-        print(f\"モデル {first['model']} / ランタイム {first['runtime'] or '不明'}\")\n+        print(f\"エージェント {first['runtime'] or '不明'} / モデル {first['model'] or '不明'}\")\n     print(\"常時入力の差分 \" + str(manifest[\"context_lines\"][\"B\"] - manifest[\"context_lines\"][\"A\"]) + \" 行\")\n     print(\"計測できなかった値は —。smoke は本番の削除採用に使わない。\")\n     print(\"| 課題 | 回 | 構成 | 結果 | 未達・理由 | 入力 | cache read | cache create | 出力 | 時間 ms | USD |\")\n@@ -252,8 +250,7 @@ def report(manifest, rows):\n         unmet = [name for name, passed in row.get(\"checks\", {}).items() if not passed]\n         values = [trial[\"task_id\"], trial[\"trial\"], trial[\"variant\"], row.get(\"status\", \"未実行\"),\n                   \", \".join(unmet) or row.get(\"failure_category\") or \"—\"]\n-        for key in (\"input_tokens\", \"cache_read_input_tokens\", \"cache_creation_input_tokens\", \"output_tokens\",\n-                    \"wall_time_ms\", \"cost_usd\"):\n+        for key in MEASUREMENTS[:-1]:\n             values.append(metrics[key] if metrics.get(key) is not None else \"—\")\n         print(\"| \" + \" | \".join(map(str, values)) + \" |\")\n     for variant in \"AB\":\n@@ -283,9 +280,8 @@ def report(manifest, rows):\n \n def execute(args, out):\n     if args.command == \"run\":\n-        config = settings(args)\n-        manifest = prepare(out, args.repeat, args.adapter, config)\n-        return collect(out, manifest, config[\"model\"], config[\"runtime\"])\n+        manifest = prepare(out, args.repeat, \"replay\")\n+        return collect(out, manifest, \"fixture\", \"replay-v1\")\n     manifest = checked_manifest(out)\n     if args.command == \"report\":\n         return report(manifest, stored_rows(out, manifest))\n@@ -304,7 +300,7 @@ def main():\n         return 0\n     out = run_dir(args.out)\n     if args.command == \"prepare\":\n-        prepare(out, args.repeat, \"external\", {})\n+        prepare(out, args.repeat, \"external\")\n         print(out / \"prompts\")\n         return 0\n     return execute(args, out)",
+          "patchLines": 251,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/reports/P-001-2026-11-24.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -14,6 +14,6 @@\n ## 実行条件\n \n - 2026-11-24、Codex Work Mode の履歴を共有しない8セッションに、課題と規約を含むパケットを1件ずつ渡した。回答は配置先と入出力例の JSON。外部回答として採点し、モデルは GPT-6 系と記録した。正確なビルド、トークン、時間、料金は未取得。\n-- 1回目は課題順に AB、BA。初回4試行の後、同じ課題を新規セッションで BA、AB の順に反復した。異なる課題での追試や Claude Code の通常の開発フロー、実装・修正後の PR 品質は未評価。\n+- 1回目は課題順に AB、BA。初回4試行の後、同じ課題を新規セッションで BA、AB の順に反復した。異なる課題や他のエージェントでの追試、通常の開発フローで実装・修正した後の PR 品質は未評価。\n - 規約の元コミットは `d199ad2483ca82c1a9d2b9134460d04a2d89105d`。削ったブロックの SHA-256 は `b047ea9b4da1fc14fff4570cbe46e6fffb4a8f5d4a1bbfc6e285087396e14335`。評価器の SHA-256 は `dccd44a293ab6c6cbe6b97daed5f12b8f3b6cf74fbb98fa2588f3d0811887911`。\n - 同じ比較用入力はリポジトリルートで `python3 harness/evals/harness_eval.py prepare --repeat 2 --out \"$runs/external\"` を実行すると生成できる。出力先の準備と外部回答の回収は [実験手順](../README.md) を参照。",
+          "patchLines": 8,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/test_capture.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 78,
+          "deletions": 0,
+          "patch": "@@ -85,5 +85,83 @@ class CaptureTest(unittest.TestCase):\n         self.assertEqual(self.cli(\"report\", self.out).returncode, 2)\n \n \n+    def test_agent_and_model_can_be_omitted(self):\n+        result = self.cli(\"collect\", self.out)\n+        self.assertEqual(result.returncode, 0, result.stderr)\n+        rows = [json.loads(line) for line in (self.out / \"results.jsonl\").read_text().splitlines()]\n+        self.assertTrue(all(row[\"model\"] is None and row[\"runtime\"] is None for row in rows))\n+        self.assertNotIn(b\"None\", self.cli(\"report\", self.out).stdout)\n+\n+    def test_labels_are_free_and_resumed_collection_inherits_them(self):\n+        file = self.file(self.trials[-1])\n+        capture = file.read_bytes()\n+        file.unlink()\n+        partial = self.cli(\"collect\", self.out, \"--agent\", \"My local runner\", \"--model\", \"my/model@abc\")\n+        self.assertEqual(partial.returncode, 1, partial.stderr)\n+        file.write_bytes(capture)\n+        self.assertEqual(self.cli(\"collect\", self.out, \"--agent\", \"Other\").returncode, 2)\n+        self.assertEqual(self.cli(\"collect\", self.out).returncode, 0)\n+        rows = [json.loads(line) for line in (self.out / \"results.jsonl\").read_text().splitlines()]\n+        self.assertEqual({(row[\"runtime\"], row[\"model\"]) for row in rows}, {(\"My local runner\", \"my/model@abc\")})\n+\n+    def test_optional_measurements_keep_zero_missing_and_detect_changes(self):\n+        file = self.file(self.trials[0])\n+        envelope = json.loads(file.read_text())\n+        envelope[\"metrics\"] = {\"input_tokens\": 0, \"cost_usd\": 0.02, \"wall_time_ms\": 10}\n+        file.write_text(json.dumps(envelope))\n+        self.assertEqual(self.collect().returncode, 0)\n+        metrics = json.loads((self.out / \"results.jsonl\").read_text().splitlines()[0])[\"metrics\"]\n+        self.assertEqual(metrics[\"input_tokens\"], 0)\n+        self.assertEqual(metrics[\"cost_usd\"], 0.02)\n+        self.assertEqual(metrics[\"wall_time_ms\"], 10)\n+        self.assertIsNone(metrics[\"output_tokens\"])\n+        envelope[\"metrics\"][\"wall_time_ms\"] = 5\n+        file.write_text(json.dumps(envelope))\n+        self.assertEqual(self.cli(\"report\", self.out).returncode, 2)\n+\n+    def test_invalid_measurements_are_rejected_before_scoring(self):\n+        file = self.file(self.trials[0])\n+        envelope = json.loads(file.read_text())\n+        for metrics in ({\"input_tokens\": True}, {\"output_tokens\": -1}, {\"wall_time_ms\": \"10\"},\n+                        {\"input_tokens\": 1.5}, {\"unknown\": 2}):\n+            with self.subTest(metrics=metrics):\n+                file.write_text(json.dumps(dict(envelope, metrics=metrics)))\n+                self.assertEqual(self.collect().returncode, 2)\n+                self.assertFalse((self.out / \"results.jsonl\").exists())\n+\n+    def test_v1_extra_measurements_remain_unmeasured_on_report_and_resume(self):\n+        manifest_path = self.out / \"manifest.json\"\n+        manifest = json.loads(manifest_path.read_text())\n+        manifest[\"version\"] = 1\n+        manifest_path.write_text(json.dumps(manifest))\n+        pending = self.file(self.trials[-1])\n+        last_envelope = json.loads(pending.read_text())\n+        pending.unlink()\n+        self.assertEqual(self.collect().returncode, 1)\n+\n+        extra = {\"ignored-in-v1\": \"example\", \"input_tokens\": 9}\n+        scored = self.file(self.trials[0])\n+        scored.write_text(json.dumps(dict(json.loads(scored.read_text()), metrics=extra)))\n+        self.assertEqual(self.cli(\"report\", self.out).returncode, 1)\n+        pending.write_text(json.dumps(dict(last_envelope, metrics=extra)))\n+        self.assertEqual(self.cli(\"collect\", self.out).returncode, 0)\n+        self.assertEqual(self.cli(\"report\", self.out).returncode, 0)\n+        rows = [json.loads(line) for line in (self.out / \"results.jsonl\").read_text().splitlines()]\n+        self.assertTrue(all(row[\"metrics\"][\"input_tokens\"] is None for row in rows))\n+\n+    def test_earlier_runtime_error_can_be_reported_without_its_runner(self):\n+        manifest_path = self.out / \"manifest.json\"\n+        manifest = json.loads(manifest_path.read_text())\n+        manifest.update(version=1, adapter=\"claude\")\n+        manifest_path.write_text(json.dumps(manifest))\n+        row = dict(self.trials[0], adapter=\"claude\", model=\"old\", runtime=None, status=\"infra-error\",\n+                   failure_category=\"cli-unavailable\", checks={}, metrics={}, answer_sha256=None)\n+        (self.out / \"results.jsonl\").write_text(json.dumps(row) + \"\\n\")\n+        self.file(row).unlink()\n+        result = self.cli(\"report\", self.out)\n+        self.assertEqual(result.returncode, 1, result.stderr)\n+        self.assertIn(b\"infra-error\", result.stdout)\n+\n+\n if __name__ == \"__main__\":\n     unittest.main()",
+          "patchLines": 84,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/test_claude_adapter.py",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 94,
+          "patch": null,
+          "patchLines": 0,
+          "truncated": false
+        }
+      ]
     }
   ],
   "dependencies": [
     {
       "from": "harness/evals/answer_json.py",
       "to": "harness/evals/experiment.py",
-      "status": "added"
-    },
-    {
-      "from": "harness/evals/claude_adapter.py",
-      "to": "harness/evals/answer_json.py",
       "status": "added"
     },
     {
@@ -353,22 +400,12 @@
     },
     {
       "from": "harness/evals/harness_eval.py",
-      "to": "harness/evals/claude_adapter.py",
-      "status": "added"
-    },
-    {
-      "from": "harness/evals/harness_eval.py",
       "to": "harness/evals/experiment.py",
       "status": "added"
     },
     {
       "from": "harness/evals/test_capture.py",
       "to": "harness/evals/test_smoke.py",
-      "status": "added"
-    },
-    {
-      "from": "harness/evals/test_claude_adapter.py",
-      "to": "harness/evals/harness_eval.py",
       "status": "added"
     },
     {
