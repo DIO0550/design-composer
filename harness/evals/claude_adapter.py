@@ -8,6 +8,8 @@ import subprocess
 import tempfile
 import time
 
+from answer_json import decode_answer
+
 
 TOKEN_FIELDS = ("input_tokens", "output_tokens", "cache_read_input_tokens", "cache_creation_input_tokens")
 
@@ -63,7 +65,7 @@ def ask(packet, model, budget, timeout):
             metrics["wall_time_ms"] = round((time.monotonic() - start) * 1000)
     try:
         event = json.loads(result.stdout)
-    except (ValueError, UnicodeError):
+    except (ValueError, RecursionError):
         return None, "infra-error", "cli-output", metrics
     if not isinstance(event, dict):
         return None, "infra-error", "cli-output", metrics
@@ -84,7 +86,7 @@ def ask(packet, model, budget, timeout):
     if not isinstance(model_usage, dict) or set(model_usage) != {model}:
         return None, "infra-error", "unverified-model", metrics
     try:
-        answer = json.loads(event["result"])
+        answer = decode_answer(event["result"])
     except (KeyError, TypeError, ValueError, UnicodeError):
         return None, "task-failure", "answer-json", metrics
     return answer, None, None, metrics

@@ -11,6 +11,7 @@ import re
 import sys
 import uuid
 
+from answer_json import decode_answer
 from claude_adapter import ask, empty_metrics, runtime_version
 from experiment import CANDIDATE, ROOT, TASKS, conditions, digest, encoded, grade, prompt, replay
 
@@ -113,19 +114,46 @@ def settings(args):
                 timeout=args.timeout, max_turns=1)
 
 
-def external_answer(out, row):
+def captured_answer(out, row, *, external):
     file = out / "answers" / (row["id"] + ".json")
     if not file.exists():
         return None
-    if file.stat().st_size > 256 * 1024:
+    if external and file.stat().st_size > 256 * 1024:
         return None, "task-failure", "answer-too-large", empty_metrics()
     try:
-        envelope = json.loads(file.read_bytes())
+        envelope = decode_answer(file.read_bytes())
     except (ValueError, UnicodeError):
         return None, "task-failure", "answer-json", empty_metrics()
     if not isinstance(envelope, dict) or envelope.get("prompt_sha256") != row["prompt_sha256"]:
         raise ValueError("外部回答と配布したプロンプトのハッシュが一致しません")
-    return envelope.get("answer"), None, None, empty_metrics()
+    if "answer" not in envelope:
+        return None, "task-failure", "answer-json", empty_metrics()
+    return envelope["answer"], None, None, empty_metrics()
+
+
+def verify_answer(out, row):
+    """過去に採点した回答を照合し、変更や欠落のある結果を集計から除く。"""
+    mode = row["adapter"]
+    status = row["status"]
+    if mode == "replay":
+        answer = replay(row["task_id"])
+    elif mode == "claude" and row["answer_sha256"] is None:
+        if status not in ("task-failure", "infra-error") or row["checks"] or not row["failure_category"]:
+            raise ValueError("回答のない試行の結果が不正です")
+        return
+    else:
+        reply = captured_answer(out, row, external=mode == "external")
+        if reply is None:
+            raise ValueError("採点済みの回答がありません。元の回答ファイルを復元してください")
+        answer, parse_status, reason, _ = reply
+        if parse_status is not None:
+            if (status, row["failure_category"], row["answer_sha256"], row["checks"]) == (parse_status, reason, None, {}):
+                return
+            raise ValueError("採点済みの回答と記録が一致しません")
+    if digest(encoded(answer)) != row["answer_sha256"]:
+        raise ValueError("採点済みの回答が変更されました。元の回答ファイルを復元してください")
+    if (status, row["checks"]) != grade(row["task_id"], answer):
+        raise ValueError("保存した採点結果と回答が一致しません")
 
 
 def stored_rows(out, manifest):
@@ -140,6 +168,7 @@ def stored_rows(out, manifest):
         if (not trial or row["id"] in rows or row["adapter"] != manifest["adapter"]
                 or any(row[k] != v for k, v in trial.items())):
             raise ValueError("試行に対応しない結果、または重複があります")
+        verify_answer(out, row)
         rows[row["id"]] = row
     return rows
 
@@ -169,7 +198,7 @@ def collect(out, manifest, model, runtime):
                 continue
             task = trial["task_id"]
             if mode == "external":
-                reply = external_answer(out, trial)
+                reply = captured_answer(out, trial, external=True)
                 if reply is None:
                     continue
                 answer, status, reason, metrics = reply
@@ -186,16 +215,17 @@ def collect(out, manifest, model, runtime):
                 if metrics["cost_usd"] is not None:
                     remaining -= metrics["cost_usd"]
             checks = {}
-            if status is None:
+            has_answer = status is None
+            if has_answer:
                 status, checks = grade(task, answer)
                 if status != "success":
                     reason = "answer-checks"
-            if mode == "claude" and answer is not None:
+            if mode == "claude" and has_answer:
                 write_json(out / "answers" / (trial["id"] + ".json"),
                            dict(prompt_sha256=trial["prompt_sha256"], answer=answer))
             row = dict(trial, adapter=mode, model=model, runtime=runtime, status=status,
                        failure_category=reason, checks=checks, metrics=metrics,
-                       answer_sha256=digest(encoded(answer)) if answer is not None else None)
+                       answer_sha256=digest(encoded(answer)) if has_answer else None)
             with (out / "results.jsonl").open("ab") as stream:
                 stream.write(encoded(row) + b"\n")
             rows[row["id"]] = row

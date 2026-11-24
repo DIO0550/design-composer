@@ -74,6 +74,11 @@ class ClaudeAdapterTest(unittest.TestCase):
         self.assertNotEqual(code, 0)
         self.assertEqual([r["status"] for r in rows], ["task-failure"] * 4)
 
+    def test_a_nonfinite_answer_is_recorded_without_interrupting_the_batch(self):
+        code, rows = self.call('answer["extra"] = float("nan")\nevent["result"] = json.dumps(answer)\nprint(json.dumps(event))')
+        self.assertEqual(code, 1)
+        self.assertEqual([row["failure_category"] for row in rows], ["answer-json"] * 4)
+
     def test_model_substitution_stops_spending_and_preserves_the_incomplete_result(self):
         code, rows = self.call('event["modelUsage"] = {"different": {}}\nprint(json.dumps(event))')
         self.assertNotEqual(code, 0)
