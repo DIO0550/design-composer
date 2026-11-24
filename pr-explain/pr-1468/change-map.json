@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "pr": 1468,
+  "headBranch": "claude/affectionate-hypatia-vkjtm3",
+  "baseBranch": "main",
+  "mergeBase": "d199ad2483ca82c1a9d2b9134460d04a2d89105d",
+  "head": "2b29c521f0506276cfe36dcc22b4d4bdf134b3ea",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/structure-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/case-law/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 30,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "2b29c521f0506276cfe36dcc22b4d4bdf134b3ea",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-24T00:04:27Z",
+      "subject": "📝 [Documentation]: #1467 関数の本体を空行で区切る分かれ目を判例へ切り出す",
+      "body": "- harness/case-law/coding.md に、なし から切り出した形として\n  NG / OK と判定の分かれ目(まとまりが 2 つ以上あるか)を足す\n- structure-reviewer の読みやすさの観点から、その判例を 1 行で参照する\n\n背景:\ncount.sh で なし の再発が最大(3)。--list なし で 2 件以上まとまる形は\n空行の区切り(structure-reviewer が 5 回)だけだった。\n\n採用理由:\nmain で return 直前が空行でない箇所が 530 件、狭めても 339 件あり、\nフックでは偽陽性 0 にできない。oxlint / Biome にも相当の規則が無い。\n前回の なし の介入が観点(pr-1389)だったので、判例に置く。\n\n参考:\n- Issue #1467\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2PsVF4PbPvMg8cynYV",
+      "files": [
+        {
+          "path": ".claude/agents/structure-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -56,7 +56,7 @@ model: inherit\n \n `分類: なし`。\n \n-- **追加・書き換えた関数の本体が、「値を求める → 失敗なら返す」の組・組み立て・`return` ごとに空行で区切られているか。** 空行なしで詰まった本体は、読み手が区切りを目で探すことになる\n+- **追加・書き換えた関数の本体が、「値を求める → 失敗なら返す」の組・組み立て・`return` ごとに空行で区切られているか。** 空行なしで詰まった本体は、読み手が区切りを目で探すことになる（分かれ目は判例 `harness/case-law/coding.md`「関数の本体を、処理のまとまりごとに空行で区切っていなかった」）\n \n ## 入れ子の対話要素とイベント境界の観点\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "harness/case-law/coding.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 30,
+          "deletions": 0,
+          "patch": "@@ -303,6 +303,36 @@ const refErrors = artboard.children.flatMap(/* ... */);\n return [...propErrors, ...childErrors, ...refErrors];\n ```\n \n+## `なし` から切り出した形 — 関数の本体を、処理のまとまりごとに空行で区切っていなかった\n+\n+`structure-reviewer` の「読みやすさの観点」が 4 つの PR で 5 回挙げ、どれも空行を入れて直した(pr-1399 #12 / pr-1417 #19 / pr-1418 #28・#51 / pr-1436 #13)。\n+\n+```typescript\n+// NG: 理由の違う 2 つの早期 return と最後の return が詰まっている(pr-1399)\n+if (history.future.length === 0) {\n+  return [];\n+}\n+if (!DesignDocument.isSameContent(history.present, document)) {\n+  return [];\n+}\n+return history.future;\n+\n+// OK: まとまりごとに 1 行空ける\n+if (history.future.length === 0) {\n+  return [];\n+}\n+\n+if (!DesignDocument.isSameContent(history.present, document)) {\n+  return [];\n+}\n+\n+return history.future;\n+```\n+\n+- **判定の分かれ目:** 本体に**まとまりが 2 つ以上あるか。**「値を求める → 失敗なら返す」の組・組み立て・`return` がそれぞれ 1 つのまとまりで、その境目に空行を置く。理由の違う早期 return は別のまとまり(pr-1399)。組み立ての後の `return` も別のまとまり(pr-1417)\n+- **`return` の前に必ず空行、ではない。** `const x = ...;` の次の行で `return` するだけの本体はまとまりが 1 つなので詰めてよい\n+- フックにしない理由: main で「`return` の直前が空行でない(ブロックの先頭を除く)」は 530 件、狭めて「早期 return のブロックの直後に空行なしで文が続く」でも 339 件あった。まとまりの切れ目は判断で、行の並びだけでは偽陽性 0 にできない。oxlint 1.58 と Biome 2.4.10 には `padding-line-between-statements` 相当の規則も無い(#1467)\n+\n ## 消すコメントの見分け\n \n | 消すもの | 例 |",
+          "patchLines": 37,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
