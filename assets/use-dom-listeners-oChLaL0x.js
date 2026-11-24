@@ -1,1 +1,0 @@
-import{a as e,n as t}from"./chunk-BneVvdWh.js";import{t as n}from"./iframe-C4bHLvb_.js";import{n as r,t as i}from"./Option-PwGEWw_t.js";import{n as a,t as o}from"./use-subscription-CPRtS_o5.js";function s(e){a((0,c.useCallback)(()=>{let t=e().map(e=>e());return i.some(()=>{for(let e of t)e()})},[e]))}var c,l=t((()=>{c=e(n(),1),o(),r()}));export{s as n,l as t};
