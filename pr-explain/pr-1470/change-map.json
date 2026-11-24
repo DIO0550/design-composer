@@ -1,0 +1,380 @@
+{
+  "version": 2,
+  "pr": 1470,
+  "headBranch": "feature/1469-harness-pruning-smoke",
+  "baseBranch": "main",
+  "mergeBase": "d199ad2483ca82c1a9d2b9134460d04a2d89105d",
+  "head": "5542e36169a2444a5ecf663bc44a22ced899845e",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/test-conditionals.awk",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/test-rules-scan.sh",
+          "changed": false
+        },
+        {
+          "path": "AGENTS.md",
+          "changed": false
+        },
+        {
+          "path": "CLAUDE.md",
+          "changed": false
+        },
+        {
+          "path": "harness/evals/README.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 74,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/answer_json.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/claude_adapter.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 92,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/experiment.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 157,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/harness_eval.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 318,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/reports/P-001-2026-11-24.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/test_capture.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 89,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/test_claude_adapter.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 94,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/test_smoke.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 141,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "rules/testing.md",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "544deb2767e435765594a39d8e0155961f6a0593",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-24T21:41:06+09:00",
+      "subject": "🧪 [Tests]: #1469 規約除去実験の観測結果をテストで固定する",
+      "body": "A/B の差分、反例、回答の取り違え、欠損、安全性違反と判定保留を CLI の入出力で検証する。",
+      "files": [
+        {
+          "path": "harness/evals/harness_eval.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 13,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,13 @@\n+\"\"\"常時ロードされる記述の除去実験を実行する。\"\"\"\n+\n+import sys\n+\n+\n+def main():\n+    \"\"\"実験 CLI の終了コードを返す。\"\"\"\n+    print(\"実験コマンドを準備中\", file=sys.stderr)\n+    return 1\n+\n+\n+if __name__ == \"__main__\":\n+    sys.exit(main())",
+          "patchLines": 14,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/test_smoke.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 141,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,141 @@\n+\"\"\"新しい出力先と CLI だけを使って、除去実験の観測結果を検証する。\"\"\"\n+\n+import hashlib\n+import json\n+from pathlib import Path\n+import subprocess\n+import sys\n+import tempfile\n+import unittest\n+\n+\n+CLI = Path(__file__).with_name(\"harness_eval.py\")\n+LAYOUT = \"\"\"```\n+<モジュールフォルダ>/\n+  index.ts\n+  __tests__/\n+    <対象ドメイン名>.<カテゴリ>.test.ts\n+```\n+\"\"\"\n+\n+\n+def answer(task):\n+    \"\"\"境界で異なる答えを持つテスト案を返す。\"\"\"\n+    if task == \"grid-step\":\n+        path = \"src/domains/canvas/grid-step/__tests__/grid-step.normal.test.ts\"\n+        cases = [(8, 16), (5, 8)]\n+    else:\n+        path = \"src/features/inspector/domains/label-limit/__tests__/label-limit.edge.test.ts\"\n+        cases = [(0, False), (1, True), (12, True), (13, False)]\n+    return {\"path\": path, \"cases\": [{\"input\": n, \"expected\": value} for n, value in cases]}\n+\n+\n+class SmokeTest(unittest.TestCase):\n+    def setUp(self):\n+        temp = tempfile.TemporaryDirectory()\n+        self.addCleanup(temp.cleanup)\n+        self.out = Path(temp.name) / \"run\"\n+\n+    def cli(self, *args, success=True):\n+        result = subprocess.run(\n+            [sys.executable, str(CLI), *map(str, args)],\n+            capture_output=True, text=True, timeout=30,\n+        )\n+        if success:\n+            self.assertEqual(result.returncode, 0, result.stderr)\n+        return result\n+\n+    def prepare(self):\n+        self.cli(\"prepare\", \"--out\", self.out)\n+        return json.loads((self.out / \"manifest.json\").read_text())[\"trials\"]\n+\n+    def write_answer(self, row, proposal, digest=None):\n+        envelope = {\"prompt_sha256\": digest or row[\"prompt_sha256\"], \"answer\": proposal}\n+        (self.out / \"answers\" / (row[\"id\"] + \".json\")).write_text(json.dumps(envelope))\n+\n+    def collect(self):\n+        return self.cli(\"collect\", self.out, \"--model\", \"offline-1\",\n+                        \"--runtime\", \"table-fixture\", success=False)\n+\n+    def results(self):\n+        return [json.loads(line) for line in (self.out / \"results.jsonl\").read_text().splitlines()]\n+\n+    def test_inventory_and_validate_identify_the_candidate(self):\n+        self.assertIn(\"P-001\", self.cli(\"inventory\").stdout)\n+        self.assertIn(\"P-001\", self.cli(\"validate\").stdout)\n+\n+    def test_the_two_prompts_for_each_task_differ_only_by_the_directory_example(self):\n+        trials = self.prepare()\n+        self.assertEqual(len(trials), 4)\n+        pairs = {}\n+        for trial in trials:\n+            packet = (self.out / \"prompts\" / (trial[\"id\"] + \".txt\")).read_bytes()\n+            self.assertEqual(hashlib.sha256(packet).hexdigest(), trial[\"prompt_sha256\"])\n+            pairs[trial[\"task_id\"], trial[\"variant\"]] = packet.decode()\n+        for task in (\"grid-step\", \"label-limit\"):\n+            control, pruned = pairs[task, \"A\"], pairs[task, \"B\"]\n+            self.assertEqual(control.count(LAYOUT), 1)\n+            self.assertEqual(pruned, control.replace(LAYOUT, \"\"))\n+\n+    def test_replay_counts_each_task_and_variant_once_per_repeat_and_holds_decision(self):\n+        self.cli(\"run\", \"--adapter\", \"replay\", \"--repeat\", 2, \"--out\", self.out)\n+        rows = self.results()\n+        self.assertCountEqual(\n+            [(r[\"task_id\"], r[\"variant\"], r[\"trial\"]) for r in rows],\n+            [(t, v, n) for t in (\"grid-step\", \"label-limit\") for v in \"AB\" for n in (1, 2)],\n+        )\n+        self.assertTrue(all(r[\"status\"] == \"success\" for r in rows))\n+        self.assertTrue(all(r[\"metrics\"][\"input_tokens\"] is None for r in rows))\n+        report = self.cli(\"report\", self.out).stdout\n+        self.assertIn(\"replay\", report)\n+        self.assertIn(\"保留\", report)\n+        self.assertNotEqual(self.cli(\"run\", \"--adapter\", \"replay\", \"--out\", self.out,\n+                                     success=False).returncode, 0)\n+        self.assertEqual(self.results(), rows)\n+\n+    def test_a_wrong_sibling_wrong_expectation_and_missing_boundary_fail_independently(self):\n+        trials = self.prepare()\n+        for trial in trials:\n+            task, variant = trial[\"task_id\"], trial[\"variant\"]\n+            proposal = answer(task)\n+            if (task, variant) == (\"grid-step\", \"B\"):\n+                proposal[\"cases\"][0][\"expected\"] = 8\n+            if (task, variant) == (\"label-limit\", \"A\"):\n+                proposal[\"cases\"].pop()\n+            if (task, variant) == (\"label-limit\", \"B\"):\n+                proposal[\"path\"] = proposal[\"path\"].replace(\"/inspector/\", \"/palette/\")\n+            self.write_answer(trial, proposal)\n+        self.collect()\n+        status = {(r[\"task_id\"], r[\"variant\"]): r[\"status\"] for r in self.results()}\n+        self.assertEqual(status, {(\"grid-step\", \"A\"): \"success\", (\"grid-step\", \"B\"): \"task-failure\",\n+                                  (\"label-limit\", \"A\"): \"task-failure\", (\"label-limit\", \"B\"): \"task-failure\"})\n+\n+    def test_a_path_outside_the_trial_stops_collection(self):\n+        trials = self.prepare()\n+        sentinel = self.out.parent / \"outside.normal.test.ts\"\n+        for trial in trials:\n+            proposal = answer(trial[\"task_id\"])\n+            proposal[\"path\"] = str(sentinel)\n+            self.write_answer(trial, proposal)\n+        self.assertNotEqual(self.collect().returncode, 0)\n+        self.assertFalse(sentinel.exists())\n+        self.assertEqual([r[\"status\"] for r in self.results()], [\"safety-violation\"])\n+\n+    def test_collect_and_report_distinguish_missing_answers_from_successes(self):\n+        self.prepare()\n+        self.assertNotEqual(self.collect().returncode, 0)\n+        report = self.cli(\"report\", self.out, success=False)\n+        self.assertNotEqual(report.returncode, 0)\n+        self.assertIn(\"保留\", report.stdout + report.stderr)\n+\n+    def test_an_answer_for_another_prompt_is_never_graded_as_success(self):\n+        trials = self.prepare()\n+        for trial in trials:\n+            self.write_answer(trial, answer(trial[\"task_id\"]), digest=\"0\" * 64)\n+        self.assertNotEqual(self.collect().returncode, 0)\n+        if (self.out / \"results.jsonl\").exists():\n+            self.assertNotIn(\"success\", [r[\"status\"] for r in self.results()])\n+\n+\n+if __name__ == \"__main__\":\n+    unittest.main()",
+          "patchLines": 142,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "b7be13db7e01e9e9ffdbbd0136f6425d662ea9b1",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-24T21:41:25+09:00",
+      "subject": "✨ [New Feature]: #1469 テスト配置例の有無を独立した課題で比較する",
+      "body": "固定コミットから比較用プロンプトを作り、配置・命名・入出力例を採点する。Claude、外部セッション、疎通用の応答を区別して記録する。",
+      "files": [
+        {
+          "path": "harness/evals/README.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 70,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,70 @@\n+# P-001 テスト配置例の除去実験\n+\n+`rules/testing.md` の「配置と命名」にあるディレクトリ図を削っても、AI はテストの置き場所を選べるか。A には図を含む規約全文、B にはその6行を除いた同じ文章を渡す。仮説は、前後に残る配置・命名の規範だけでも正しく判断できること。反証は、例えば B でだけ隣の機能のテストフォルダを選ぶこと。\n+\n+| 課題 | 条件 | 採点 |\n+| --- | --- | --- |\n+| grid-step | 単一モジュールの次のグリッド位置 | 配置・命名、グリッド上と間の入力、全期待値 |\n+| label-limit | 同名の隣接モジュールと旧テスト置き場がある | 対象機能への配置・命名、長さの両端とその外側、全期待値 |\n+\n+## 試す\n+\n+リポジトリルートから Python 3.10 以降、Git、Bash、awk が使える Linux/macOS で実行する。試行データにはリポジトリ外の新しいディレクトリを指定する。\n+\n+```bash\n+cli=harness/evals/harness_eval.py\n+python3 \"$cli\" inventory\n+python3 \"$cli\" validate\n+runs=$(mktemp -d)\n+python3 \"$cli\" run --adapter replay --out \"$runs/replay\"\n+python3 \"$cli\" report \"$runs/replay\"\n+python3 -m unittest discover -s harness/evals -v\n+```\n+\n+`replay` は既知の正しい回答で保存・採点・集計を確認する。モデルを呼ばずトークン数も計上しない。\n+\n+### Claude Code で測る\n+\n+`--bare`、`--tools`、`--max-budget-usd` 対応の Claude Code と、実験用の `ANTHROPIC_API_KEY` を用意する。`CLAUDE_MODEL_ID` には契約で利用できる完全なモデル ID を指定する。CLI が報告した実モデルと一致するかを試行ごとに確認する。\n+\n+```bash\n+python3 \"$cli\" run --adapter claude --model \"$CLAUDE_MODEL_ID\" \\\n+  --budget-usd 1 --timeout 90 --repeat 1 --out \"$runs/claude\"\n+python3 \"$cli\" report \"$runs/claude\"\n+```\n+\n+予算は実験全体の米ドル建て推定額。4試行なら各呼び出しに全体の1/4以下を割り当てる。CLI の推定額はリクエスト単位で上限を超える場合がある。費用不明・予算上限・環境エラー時は後続の呼び出しを止める。各試行は空の作業場所と HOME を使い、単発1ターンで終わる。モデルにツールを提供せず、Claude Code の自動読込を止め、対象の規約を明示的に入力する。認証の環境変数は上記の実験用キーだけを引き継ぐ。\n+\n+### 外部セッションで回答を集める\n+\n+```bash\n+python3 \"$cli\" prepare --out \"$runs/external\"\n+```\n+\n+1. `manifest.json` の試行順に、各 `prompts/<id>.txt` の全文だけを同じ条件の新規セッションに渡す。採点器・他の回答・manifest は渡さない。各セッションにツールや過去会話を付けない。\n+2. 各 JSON 回答を `answers/<id>.json` に以下の形で保存する。`prompt_sha256` は配布したファイルの SHA-256。採点前に配布物と回答の対応を照合する。\n+\n+   ```json\n+   {\n+     \"prompt_sha256\": \"<配布したファイルの SHA-256>\",\n+     \"answer\": {\"path\": \"<モデル回答のパス>\", \"cases\": [{\"input\": 0, \"expected\": false}]}\n+   }\n+   ```\n+\n+3. 同じモデル・ランタイム識別子で回収する。未着の回答を追加して再実行すると、採点済みの試行を保持したまま残りを採点する。\n+\n+   ```bash\n+   python3 \"$cli\" collect \"$runs/external\" --model \"$MODEL_ID\" --runtime \"$RUNTIME_ID\"\n+   python3 \"$cli\" report \"$runs/external\"\n+   ```\n+\n+`external` のモデルとランタイムは回収者の申告値。費用・時間・トークンは不明として扱う。各モードは別ディレクトリに記録する。\n+\n+## 結果の読み方\n+\n+- 1反復で2課題 × 2構成の4試行。課題・反復ごとに A/B の先行順を交替する。 `--repeat N` で同一条件を反復できる。\n+- 入口・全8規約・既存スキャンと付属 awk を固定コミット `d199ad2483ca82c1a9d2b9134460d04a2d89105d` から読む。浅い clone に履歴がない場合はそのコミットを取得する。`manifest.json` にコミット、課題・規約・評価器・配布物のハッシュ、実行条件を記録する。\n+- 回答はパスと入出力例のデータとして扱う。パスは対象モジュールと照合し、使い捨ての空ファイルで元のテスト規約スキャンを実行する。期待値と境界の網羅は固定した振る舞いから採点する。生成コードの実行や GitHub 操作は発生しない。\n+- `results.jsonl` の各行にチェック別の結果・失敗理由・計測値を保持する。同じ評価器の版で `report` を実行すると、課題別・反復別の結果と B−A の差が得られる。入力・cache read・cache create は別欄で、未取得値は「—」。成功率の分母には要件未達・時間切れ・安全性違反を含める。環境エラーと未実行は別に表示する。\n+- 全試行成功時の終了値は0。欠測・失敗時は非ゼロで、既に保存した結果は確認できる。試行外へのパスを回答した場合は安全性違反を記録して停止する。失敗をやり直す実験には新しい出力先を使う。\n+- この smoke は単発のテスト設計課題。実装・修正ループ・通常セッションの自動読込・フック発火・本番 PR の品質は測定対象外。判定は**保留**とし、本番の規約削除は追加課題、独立した holdout と実運用に近い条件での確認後に判断する。",
+          "patchLines": 71,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/claude_adapter.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 90,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,90 @@\n+\"\"\"ツールを持たない Claude Code の単発呼び出しと usage の読み取り。\"\"\"\n+\n+import json\n+import math\n+import os\n+import shutil\n+import subprocess\n+import tempfile\n+import time\n+\n+\n+TOKEN_FIELDS = (\"input_tokens\", \"output_tokens\", \"cache_read_input_tokens\", \"cache_creation_input_tokens\")\n+\n+\n+def empty_metrics():\n+    return dict.fromkeys((*TOKEN_FIELDS, \"cost_usd\", \"wall_time_ms\", \"rework_count\"))\n+\n+\n+def environment(home):\n+    env = {key: os.environ[key] for key in (\"PATH\", \"ANTHROPIC_API_KEY\") if key in os.environ}\n+    env.update(HOME=home, TMPDIR=home, CLAUDE_CONFIG_DIR=home, LANG=\"C.UTF-8\",\n+               CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=\"1\", DISABLE_AUTOUPDATER=\"1\")\n+    return env\n+\n+\n+def runtime_version():\n+    exe = shutil.which(\"claude\")\n+    if not exe:\n+        return None\n+    with tempfile.TemporaryDirectory() as tmp:\n+        try:\n+            result = subprocess.run([exe, \"--version\"], cwd=tmp, env=environment(tmp),\n+                                    capture_output=True, text=True, timeout=10)\n+        except (OSError, subprocess.TimeoutExpired):\n+            return None\n+    if result.returncode:\n+        return None\n+    return result.stdout.strip().splitlines()[0][:120] if result.stdout.strip() else None\n+\n+\n+def measurement(value):\n+    if type(value) in (float, int) and math.isfinite(value) and value >= 0:\n+        return value\n+    return None\n+\n+\n+def ask(packet, model, budget, timeout):\n+    metrics = empty_metrics()\n+    cmd = [\"claude\", \"--bare\", \"-p\", \"--tools\", \"\", \"--disallowedTools\", \"mcp__*\",\n+           \"--strict-mcp-config\", \"--mcp-config\", '{\"mcpServers\":{}}',\n+           \"--no-session-persistence\", \"--output-format\", \"json\", \"--max-turns\", \"1\",\n+           \"--max-budget-usd\", str(budget), \"--model\", model]\n+    start = time.monotonic()\n+    with tempfile.TemporaryDirectory() as tmp:\n+        try:\n+            result = subprocess.run(cmd, input=packet, cwd=tmp, env=environment(tmp),\n+                                    capture_output=True, timeout=timeout)\n+        except subprocess.TimeoutExpired:\n+            return None, \"task-failure\", \"timeout\", metrics\n+        except OSError:\n+            return None, \"infra-error\", \"cli-unavailable\", metrics\n+        finally:\n+            metrics[\"wall_time_ms\"] = round((time.monotonic() - start) * 1000)\n+    try:\n+        event = json.loads(result.stdout)\n+    except (ValueError, UnicodeError):\n+        return None, \"infra-error\", \"cli-output\", metrics\n+    if not isinstance(event, dict):\n+        return None, \"infra-error\", \"cli-output\", metrics\n+    usage = event.get(\"usage\")\n+    if isinstance(usage, dict):\n+        for key in TOKEN_FIELDS:\n+            value = usage.get(key)\n+            if type(value) is int and value >= 0:\n+                metrics[key] = value\n+    metrics[\"cost_usd\"] = measurement(event.get(\"total_cost_usd\"))\n+    subtype = event.get(\"subtype\")\n+    if subtype in (\"error_max_budget_usd\", \"error_max_turns\"):\n+        return None, \"task-failure\", subtype, metrics\n+    if (result.returncode or event.get(\"type\") != \"result\" or subtype != \"success\"\n+            or event.get(\"is_error\") is not False):\n+        return None, \"infra-error\", \"cli-error\", metrics\n+    model_usage = event.get(\"modelUsage\")\n+    if not isinstance(model_usage, dict) or set(model_usage) != {model}:\n+        return None, \"infra-error\", \"unverified-model\", metrics\n+    try:\n+        answer = json.loads(event[\"result\"])\n+    except (KeyError, TypeError, ValueError, UnicodeError):\n+        return None, \"task-failure\", \"answer-json\", metrics\n+    return answer, None, None, metrics",
+          "patchLines": 91,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/experiment.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 157,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,157 @@\n+\"\"\"P-001 の固定入力、単一介入、回答から独立した採点条件。\"\"\"\n+\n+import hashlib\n+import json\n+from functools import cache\n+from pathlib import Path, PurePosixPath\n+import re\n+import subprocess\n+import tempfile\n+\n+\n+ROOT = Path(__file__).resolve().parents[2]\n+BASE = \"d199ad2483ca82c1a9d2b9134460d04a2d89105d\"\n+CANDIDATE = \"P-001\"\n+TARGET = \"rules/testing.md\"\n+LAYOUT = \"\"\"```\n+<モジュールフォルダ>/\n+  index.ts\n+  __tests__/\n+    <対象ドメイン名>.<カテゴリ>.test.ts\n+```\n+\"\"\"\n+SCANNER = \".claude/hooks/lib/test-rules-scan.sh\"\n+AWK = \".claude/hooks/lib/test-conditionals.awk\"\n+\n+MODULES = {\n+    \"grid-step\": \"src/domains/canvas/grid-step\",\n+    \"label-limit\": \"src/features/inspector/domains/label-limit\",\n+}\n+TASKS = {\n+    \"grid-step\": \"\"\"仮想モジュール src/domains/canvas/grid-step/index.ts の公開関数 nextGridStep のテストを設計してください。\n+非負整数の座標から、それより厳密に大きい最初の8の倍数を返します。グリッド上とグリッド間の双方を確かめてください。\"\"\",\n+    \"label-limit\": \"\"\"仮想プロジェクトには src/features/palette/domains/label-limit/index.ts と\n+src/features/inspector/domains/label-limit/index.ts があり、テストを集めた旧フォルダ src/features/inspector/__tests__/ もあります。\n+今回の対象はインスペクターのラベル長の検証です。入力は非負整数の文字数で、1文字から12文字までを受理するかを真偽値で返します。\n+両端の受理条件と、それぞれのすぐ外側が拒否されることを確かめてください。\"\"\",\n+}\n+FORMAT = \"\"\"今回の成果物はテスト設計です。リポジトリ規約に合わせ、追加する TypeScript テストファイルのパスを1つと、\n+独立したテスト例を選んでください。JSON オブジェクト {\"path\":\"...\",\"cases\":[{\"input\":整数,\"expected\":期待値},...]} だけを返してください。\n+操作・ファイル作成・外部ツールは必要ありません。\"\"\"\n+REPLAY = {\n+    \"grid-step\": ([8, 5], [16, 8]),\n+    \"label-limit\": ([0, 1, 12, 13], [False, True, True, False]),\n+}\n+\n+\n+def digest(value):\n+    return hashlib.sha256(value).hexdigest()\n+\n+\n+def encoded(value):\n+    return json.dumps(value, ensure_ascii=False, sort_keys=True, allow_nan=False).encode()\n+\n+\n+@cache\n+def source(path):\n+    result = subprocess.run([\"git\", \"-C\", str(ROOT), \"show\", f\"{BASE}:{path}\"], capture_output=True)\n+    if result.returncode:\n+        raise ValueError(f\"固定コミット {BASE} の {path} がありません。履歴を取得してください\")\n+    return result.stdout\n+\n+\n+@cache\n+def contexts():\n+    # 固定コミットの CLAUDE.md は AGENTS.md を指すシンボリックリンク。\n+    if source(\"CLAUDE.md\") != b\"AGENTS.md\":\n+        raise ValueError(\"Claude 入口の参照先が定義と一致しません\")\n+    entry = source(\"AGENTS.md\").decode()\n+    imports = re.findall(r\"^- @(rules/[\\w-]+\\.md) \", entry, re.MULTILINE)\n+    if len(imports) != 8 or len(set(imports)) != 8 or TARGET not in imports:\n+        raise ValueError(\"常時ロードする8件の規約を特定できません\")\n+    parts = [f\"# CLAUDE.md\\n{entry}\"]\n+    for path in imports:\n+        parts.append(f\"# {path}\\n{source(path).decode()}\")\n+    baseline = \"\\n\".join(parts)\n+    if source(TARGET).decode().count(LAYOUT) != 1 or baseline.count(LAYOUT) != 1:\n+        raise ValueError(\"削除候補が一意ではありません\")\n+    return {\"A\": baseline, \"B\": baseline.replace(LAYOUT, \"\")}\n+\n+\n+def prompt(task, variant):\n+    return f\"{contexts()[variant]}\\n---\\n\\n# 今回の課題\\n\\n{TASKS[task]}\\n\\n{FORMAT}\\n\".encode()\n+\n+\n+def conditions():\n+    return {\n+        \"experiment\": CANDIDATE, \"source_commit\": BASE, \"target\": TARGET,\n+        \"removed_sha256\": digest(LAYOUT.encode()),\n+        \"variant_sha256\": {v: digest(s.encode()) for v, s in contexts().items()},\n+        \"context_lines\": {v: len(s.splitlines()) for v, s in contexts().items()},\n+        \"task_sha256\": {t: digest((p + FORMAT).encode()) for t, p in TASKS.items()},\n+        \"evaluator_sha256\": digest(encoded({\n+            \"experiment.py\": digest(Path(__file__).read_bytes()),\n+            SCANNER: digest(source(SCANNER)), AWK: digest(source(AWK)),\n+        })),\n+    }\n+\n+\n+def replay(task):\n+    inputs, expected = REPLAY[task]\n+    return {\"path\": f\"{MODULES[task]}/__tests__/{task}.normal.test.ts\",\n+            \"cases\": [dict(input=i, expected=e) for i, e in zip(inputs, expected)]}\n+\n+\n+def scan(path):\n+    with tempfile.TemporaryDirectory() as tmp:\n+        base = Path(tmp)\n+        for file in (SCANNER, AWK):\n+            (base / Path(file).name).write_bytes(source(file))\n+        workspace = base / \"work\"\n+        file = workspace / path\n+        file.parent.mkdir(parents=True)\n+        file.touch()\n+        # 検査器が /tmp 等の外部設定を探しに行かないようにする。\n+        (workspace / \".test-rules.yml\").write_text(\"{}\\n\")\n+        result = subprocess.run([\"bash\", str(base / Path(SCANNER).name), str(workspace)],\n+                                capture_output=True, timeout=10)\n+        if result.returncode not in (0, 1) or (result.returncode and not result.stdout):\n+            raise ValueError(\"固定スキャンを実行できません\")\n+        return result.returncode == 0\n+\n+\n+def grade(task, answer):\n+    if not isinstance(answer, dict):\n+        return \"task-failure\", {\"answer\": False}\n+    path = answer.get(\"path\")\n+    if not isinstance(path, str) or not path:\n+        return \"task-failure\", {\"path\": False}\n+    parts = path.split(\"/\")\n+    if path.startswith(\"/\") or \"\\\\\" in path or \"..\" in parts or not path.startswith(\"src/\"):\n+        return \"safety-violation\", {\"safe_path\": False}\n+    # スキャン用の空ファイルにはモジュール内の通常ファイル名だけを使う。\n+    submitted = PurePosixPath(path)\n+    placement = str(submitted.parent) == MODULES[task] + \"/__tests__\"\n+    filename = submitted.name\n+    eligible = (len(path) < 512 and len(filename.encode()) < 250\n+                and not any(part in (\"\", \".\") or part.startswith(\".\") for part in parts)\n+                and all(ch.isprintable() for ch in path) and filename.endswith(\".test.ts\"))\n+    naming = eligible and filename.startswith(task + \".\")\n+    rules = scan(submitted) if placement and eligible else False\n+    cases = answer.get(\"cases\")\n+    values = set()\n+    correct = isinstance(cases, list) and 0 < len(cases) <= 128\n+    for case in cases if correct else ():\n+        if not isinstance(case, dict) or type(case.get(\"input\")) is not int or case[\"input\"] < 0:\n+            correct = False\n+            continue\n+        value = case[\"input\"]\n+        values.add(value)\n+        expected = (value // 8 + 1) * 8 if task == \"grid-step\" else 1 <= value <= 12\n+        actual = case.get(\"expected\")\n+        if type(actual) is not type(expected) or actual != expected:\n+            correct = False\n+    coverage = ({x % 8 == 0 for x in values} == {True, False} if task == \"grid-step\"\n+                else {0, 1, 12, 13}.issubset(values))\n+    checks = dict(placement=placement, naming=naming, rules=rules, expectations=correct, coverage=coverage)\n+    return (\"success\" if all(checks.values()) else \"task-failure\"), checks",
+          "patchLines": 158,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/harness_eval.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 279,
+          "deletions": 4,
+          "patch": "@@ -1,13 +1,288 @@\n \"\"\"常時ロードされる記述の除去実験を実行する。\"\"\"\n \n+import argparse\n+from collections import Counter\n+from contextlib import contextmanager\n+import fcntl\n+import json\n+import math\n+from pathlib import Path\n+import re\n import sys\n+import uuid\n+\n+from claude_adapter import ask, empty_metrics, runtime_version\n+from experiment import CANDIDATE, ROOT, TASKS, conditions, digest, encoded, grade, prompt, replay\n+\n+\n+def run_dir(value):\n+    directory = Path(value).resolve()\n+    if directory == ROOT or ROOT in directory.parents:\n+        raise ValueError(\"出力先はリポジトリの外を指定してください\")\n+    return directory\n+\n+\n+def write_json(path, value):\n+    with path.open(\"xb\") as stream:\n+        stream.write(encoded(value) + b\"\\n\")\n+\n+\n+def schedule(repeats):\n+    for trial in range(1, repeats + 1):\n+        for offset, task in enumerate(TASKS):\n+            order = \"AB\" if (trial + offset) % 2 else \"BA\"\n+            for variant in order:\n+                yield task, variant, trial\n+\n+\n+def prepare(out, repeat, adapter, settings):\n+    if not 1 <= repeat <= 30:\n+        raise ValueError(\"反復回数は1〜30を指定してください\")\n+    manifest = conditions()\n+    out.mkdir(mode=0o700)\n+    (out / \"prompts\").mkdir()\n+    (out / \"answers\").mkdir()\n+    trials = []\n+    for task, variant, number in schedule(repeat):\n+        packet = prompt(task, variant)\n+        trial_id = uuid.uuid4().hex\n+        (out / \"prompts\" / f\"{trial_id}.txt\").write_bytes(packet)\n+        trials.append(dict(id=trial_id, task_id=task, variant=variant, trial=number,\n+                           prompt_sha256=digest(packet)))\n+    manifest.update(version=1, adapter=adapter, repeat=repeat, settings=settings, trials=trials)\n+    write_json(out / \"manifest.json\", manifest)\n+    return manifest\n+\n+\n+def checked_manifest(out):\n+    manifest = json.loads((out / \"manifest.json\").read_bytes())\n+    for key, value in conditions().items():\n+        if manifest.get(key) != value:\n+            raise ValueError(f\"固定した実験定義と一致しません ({key})\")\n+    repeats = manifest[\"repeat\"]\n+    if type(repeats) is not int or not 1 <= repeats <= 30:\n+        raise ValueError(\"実験定義の反復回数が不正です\")\n+    trials = manifest[\"trials\"]\n+    ids = set()\n+    for row, (task, variant, number) in zip(trials, schedule(repeats), strict=True):\n+        trial_id = row[\"id\"]\n+        if not re.fullmatch(\"[a-f0-9]{32}\", trial_id) or trial_id in ids:\n+            raise ValueError(\"試行 ID が不正です\")\n+        ids.add(trial_id)\n+        packet = prompt(task, variant)\n+        expected = dict(id=trial_id, task_id=task, variant=variant, trial=number,\n+                        prompt_sha256=digest(packet))\n+        if row != expected or (out / \"prompts\" / f\"{trial_id}.txt\").read_bytes() != packet:\n+            raise ValueError(\"試行の入力・順番が元の実験と一致しません\")\n+    return manifest\n+\n+\n+def parser():\n+    cli = argparse.ArgumentParser(description=__doc__)\n+    sub = cli.add_subparsers(dest=\"command\", required=True)\n+    for command in (\"inventory\", \"validate\"):\n+        sub.add_parser(command)\n+    for name in (\"prepare\", \"run\"):\n+        cmd = sub.add_parser(name)\n+        cmd.add_argument(\"--out\", type=Path, required=True)\n+        cmd.add_argument(\"--repeat\", default=1, type=int)\n+    cmd.add_argument(\"--adapter\", required=True, choices=(\"claude\", \"replay\"))\n+    cmd.add_argument(\"--model\")\n+    cmd.add_argument(\"--budget-usd\", type=float)\n+    cmd.add_argument(\"--timeout\", default=90, type=int)\n+    collect = sub.add_parser(\"collect\")\n+    collect.add_argument(\"out\", type=Path)\n+    collect.add_argument(\"--model\", required=True)\n+    collect.add_argument(\"--runtime\", required=True)\n+    sub.add_parser(\"report\").add_argument(\"out\", type=Path)\n+    return cli\n+\n+\n+def settings(args):\n+    if args.adapter == \"replay\":\n+        if args.budget_usd is not None or args.model:\n+            raise ValueError(\"replay にモデルと予算は指定できません\")\n+        return {\"model\": \"fixture\", \"runtime\": \"replay-v1\"}\n+    if not args.model or not re.fullmatch(r\"claude-[a-z0-9.]+(?:-[a-z0-9.]+)+\", args.model):\n+        raise ValueError(\"--model に完全な Claude モデル ID を指定してください\")\n+    if not args.budget_usd or not math.isfinite(args.budget_usd) or args.budget_usd <= 0:\n+        raise ValueError(\"--budget-usd に実験全体の正の予算を指定してください\")\n+    if not 1 <= args.timeout <= 1800:\n+        raise ValueError(\"--timeout は1〜1800秒で指定してください\")\n+    return dict(model=args.model, runtime=runtime_version(), budget_usd=args.budget_usd,\n+                timeout=args.timeout, max_turns=1)\n+\n+\n+def external_answer(out, row):\n+    file = out / \"answers\" / (row[\"id\"] + \".json\")\n+    if not file.exists():\n+        return None\n+    if file.stat().st_size > 256 * 1024:\n+        return None, \"task-failure\", \"answer-too-large\", empty_metrics()\n+    try:\n+        envelope = json.loads(file.read_bytes())\n+    except (ValueError, UnicodeError):\n+        return None, \"task-failure\", \"answer-json\", empty_metrics()\n+    if not isinstance(envelope, dict) or envelope.get(\"prompt_sha256\") != row[\"prompt_sha256\"]:\n+        raise ValueError(\"外部回答と配布したプロンプトのハッシュが一致しません\")\n+    return envelope.get(\"answer\"), None, None, empty_metrics()\n+\n+\n+def stored_rows(out, manifest):\n+    results = out / \"results.jsonl\"\n+    if not results.exists():\n+        return {}\n+    trials = {row[\"id\"]: row for row in manifest[\"trials\"]}\n+    rows = {}\n+    for line in results.read_bytes().splitlines():\n+        row = json.loads(line)\n+        trial = trials.get(row[\"id\"])\n+        if (not trial or row[\"id\"] in rows or row[\"adapter\"] != manifest[\"adapter\"]\n+                or any(row[k] != v for k, v in trial.items())):\n+            raise ValueError(\"試行に対応しない結果、または重複があります\")\n+        rows[row[\"id\"]] = row\n+    return rows\n+\n+\n+@contextmanager\n+def collection_lock(out):\n+    with (out / \".collect.lock\").open(\"a\") as lock:\n+        try:\n+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)\n+        except BlockingIOError:\n+            raise ValueError(\"この出力先は別の集計が使用中です\") from None\n+        yield\n+\n+\n+def collect(out, manifest, model, runtime):\n+    mode = manifest[\"adapter\"]\n+    with collection_lock(out):\n+        rows = stored_rows(out, manifest)\n+        if any((r[\"model\"], r[\"runtime\"]) != (model, runtime) for r in rows.values()):\n+            raise ValueError(\"採点済みの結果とモデルまたはランタイムが異なります\")\n+        if any(r[\"status\"] == \"safety-violation\" for r in rows.values()):\n+            return 1\n+        config = manifest[\"settings\"]\n+        remaining = config.get(\"budget_usd\", 0)\n+        for trial in manifest[\"trials\"]:\n+            if trial[\"id\"] in rows:\n+                continue\n+            task = trial[\"task_id\"]\n+            if mode == \"external\":\n+                reply = external_answer(out, trial)\n+                if reply is None:\n+                    continue\n+                answer, status, reason, metrics = reply\n+            elif mode == \"replay\":\n+                answer, status, reason, metrics = replay(task), None, None, empty_metrics()\n+            elif not runtime:\n+                answer, status, reason, metrics = None, \"infra-error\", \"cli-unavailable\", empty_metrics()\n+            else:\n+                allowance = min(config[\"budget_usd\"] / len(manifest[\"trials\"]), remaining)\n+                if allowance <= 0:\n+                    break\n+                answer, status, reason, metrics = ask(prompt(task, trial[\"variant\"]), model,\n+                                                      allowance, config[\"timeout\"])\n+                if metrics[\"cost_usd\"] is not None:\n+                    remaining -= metrics[\"cost_usd\"]\n+            checks = {}\n+            if status is None:\n+                status, checks = grade(task, answer)\n+                if status != \"success\":\n+                    reason = \"answer-checks\"\n+            if mode == \"claude\" and answer is not None:\n+                write_json(out / \"answers\" / (trial[\"id\"] + \".json\"),\n+                           dict(prompt_sha256=trial[\"prompt_sha256\"], answer=answer))\n+            row = dict(trial, adapter=mode, model=model, runtime=runtime, status=status,\n+                       failure_category=reason, checks=checks, metrics=metrics,\n+                       answer_sha256=digest(encoded(answer)) if answer is not None else None)\n+            with (out / \"results.jsonl\").open(\"ab\") as stream:\n+                stream.write(encoded(row) + b\"\\n\")\n+            rows[row[\"id\"]] = row\n+            if status == \"safety-violation\" or (mode == \"claude\" and (\n+                status == \"infra-error\" or metrics[\"cost_usd\"] is None or reason == \"error_max_budget_usd\"\n+            )):\n+                break\n+    return report(manifest, rows)\n+\n+\n+def report(manifest, rows):\n+    print(f\"# {CANDIDATE} / {manifest['adapter']} / 判定: 保留\")\n+    print(f\"固定コミット {manifest['source_commit']} / 採点済み {len(rows)}/{len(manifest['trials'])}\")\n+    if rows:\n+        first = next(iter(rows.values()))\n+        print(f\"モデル {first['model']} / ランタイム {first['runtime'] or '不明'}\")\n+    print(\"常時入力の差分 \" + str(manifest[\"context_lines\"][\"B\"] - manifest[\"context_lines\"][\"A\"]) + \" 行\")\n+    print(\"計測できなかった値は —。smoke は本番の削除採用に使わない。\")\n+    print(\"| 課題 | 回 | 構成 | 結果 | 未達・理由 | 入力 | cache read | cache create | 出力 | 時間 ms | USD |\")\n+    print(\"|---|---:|---|---|---|---:|---:|---:|---:|---:|---:|\")\n+    for trial in manifest[\"trials\"]:\n+        row = rows.get(trial[\"id\"], {})\n+        metrics = row.get(\"metrics\", {})\n+        unmet = [name for name, passed in row.get(\"checks\", {}).items() if not passed]\n+        values = [trial[\"task_id\"], trial[\"trial\"], trial[\"variant\"], row.get(\"status\", \"未実行\"),\n+                  \", \".join(unmet) or row.get(\"failure_category\") or \"—\"]\n+        for key in (\"input_tokens\", \"cache_read_input_tokens\", \"cache_creation_input_tokens\", \"output_tokens\",\n+                    \"wall_time_ms\", \"cost_usd\"):\n+            values.append(metrics[key] if metrics.get(key) is not None else \"—\")\n+        print(\"| \" + \" | \".join(map(str, values)) + \" |\")\n+    for variant in \"AB\":\n+        counts = Counter(row[\"status\"] for row in rows.values() if row[\"variant\"] == variant)\n+        valid = counts[\"success\"] + counts[\"task-failure\"] + counts[\"safety-violation\"]\n+        print(f\"{variant} 成功 {counts['success']}/{valid}（有効試行）、環境エラー {counts['infra-error']} 件\")\n+    pairs = {(row[\"task_id\"], row[\"trial\"], row[\"variant\"]): row for row in rows.values()}\n+    print(\"\\n| 課題 | 回 | 成功差 B−A | 入力トークン差 | 実行時間差 ms |\")\n+    print(\"|---|---:|---:|---:|---:|\")\n+    for task in TASKS:\n+        for number in range(1, manifest[\"repeat\"] + 1):\n+            a = pairs.get((task, number, \"A\"), {})\n+            b = pairs.get((task, number, \"B\"), {})\n+            quality = \"—\"\n+            valid = {\"success\", \"task-failure\", \"safety-violation\"}\n+            if a.get(\"status\") in valid and b.get(\"status\") in valid:\n+                quality = int(b[\"status\"] == \"success\") - int(a[\"status\"] == \"success\")\n+            deltas = []\n+            for key in (\"input_tokens\", \"wall_time_ms\"):\n+                before = a.get(\"metrics\", {}).get(key)\n+                after = b.get(\"metrics\", {}).get(key)\n+                deltas.append(\"—\" if before is None or after is None else str(after - before))\n+            print(f\"| {task} | {number} | {quality} | \" + \" | \".join(deltas) + \" |\")\n+    complete = len(rows) == len(manifest[\"trials\"])\n+    return 0 if complete and all(row[\"status\"] == \"success\" for row in rows.values()) else 1\n+\n+\n+def execute(args, out):\n+    if args.command == \"run\":\n+        config = settings(args)\n+        manifest = prepare(out, args.repeat, args.adapter, config)\n+        return collect(out, manifest, config[\"model\"], config[\"runtime\"])\n+    manifest = checked_manifest(out)\n+    if args.command == \"report\":\n+        return report(manifest, stored_rows(out, manifest))\n+    if manifest[\"adapter\"] != \"external\":\n+        raise ValueError(\"collect は prepare で配布した外部回答に使用してください\")\n+    return collect(out, manifest, args.model, args.runtime)\n \n \n def main():\n-    \"\"\"実験 CLI の終了コードを返す。\"\"\"\n-    print(\"実験コマンドを準備中\", file=sys.stderr)\n-    return 1\n+    args = parser().parse_args()\n+    if args.command in (\"inventory\", \"validate\"):\n+        data = conditions()\n+        print(f\"{CANDIDATE}  {data['target']}  配置と命名のディレクトリ例を6行削除\")\n+        if args.command == \"validate\":\n+            print(json.dumps(data, ensure_ascii=False, indent=2))\n+        return 0\n+    out = run_dir(args.out)\n+    if args.command == \"prepare\":\n+        prepare(out, args.repeat, \"external\", {})\n+        print(out / \"prompts\")\n+        return 0\n+    return execute(args, out)\n \n \n if __name__ == \"__main__\":\n-    sys.exit(main())\n+    try:\n+        sys.exit(main())\n+    except (OSError, ValueError, KeyError, TypeError) as err:\n+        print(f\"実験を完了できません: {err}\", file=sys.stderr)\n+        sys.exit(2)",
+          "patchLines": 293,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/test_claude_adapter.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 89,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,89 @@\n+\"\"\"独立した CLI プロセスとの境界を小さな実行ファイルで確認する。\"\"\"\n+\n+import json\n+import os\n+from pathlib import Path\n+import subprocess\n+import sys\n+import tempfile\n+import unittest\n+\n+\n+CLI = Path(__file__).with_name(\"harness_eval.py\")\n+MODEL = \"claude-sonnet-4-5-20250929\"\n+FAKE_CLI = \"\"\"\n+import json\n+import os\n+from pathlib import Path\n+import sys\n+\n+if sys.argv[1:] == [\"--version\"]:\n+    print(\"fixture-cli 1.0\")\n+    sys.exit()\n+options = sys.argv[1:]\n+assert \"--bare\" in options and \"--no-session-persistence\" in options\n+assert options[options.index(\"--tools\") + 1] == \"\"\n+assert options[options.index(\"--disallowedTools\") + 1] == \"mcp__*\"\n+assert \"--strict-mcp-config\" in options\n+assert options[options.index(\"--max-turns\") + 1] == \"1\"\n+assert float(options[options.index(\"--max-budget-usd\") + 1]) == 0.25\n+assert \"GITHUB_TOKEN\" not in os.environ\n+assert Path.home() == Path.cwd() and not list(Path.cwd().iterdir())\n+model = options[options.index(\"--model\") + 1]\n+packet = sys.stdin.read()\n+if \"仮想モジュール src/domains/canvas/grid-step\" in packet:\n+    path = \"src/domains/canvas/grid-step/__tests__/grid-step.example.test.ts\"\n+    cases = [(16, 24), (6, 8)]\n+else:\n+    path = \"src/features/inspector/domains/label-limit/__tests__/label-limit.edge.test.ts\"\n+    cases = [(0, False), (1, True), (12, True), (13, False)]\n+answer = {\"path\": path, \"cases\": [{\"input\": i, \"expected\": e} for i, e in cases]}\n+event = {\"type\": \"result\", \"is_error\": False, \"subtype\": \"success\", \"modelUsage\": {model: {}},\n+         \"usage\": {\"input_tokens\": 25, \"cache_read_input_tokens\": 8, \"output_tokens\": 19},\n+         \"total_cost_usd\": 0.05, \"result\": json.dumps(answer)}\n+\"\"\"\n+\n+\n+class ClaudeAdapterTest(unittest.TestCase):\n+    def call(self, ending):\n+        with tempfile.TemporaryDirectory() as tmp:\n+            root = Path(tmp)\n+            cli = root / \"claude\"\n+            cli.write_text(f\"#!{sys.executable}\\n\" + FAKE_CLI + ending)\n+            cli.chmod(0o755)\n+            out = root / \"output\"\n+            env = dict(os.environ, PATH=tmp + os.pathsep + os.environ[\"PATH\"], GITHUB_TOKEN=\"fixture\")\n+            result = subprocess.run(\n+                [sys.executable, str(CLI), \"run\", \"--adapter\", \"claude\", \"--out\", str(out),\n+                 \"--model\", MODEL, \"--budget-usd\", \"1\"], env=env, capture_output=True, timeout=30,\n+            )\n+            rows = [json.loads(line) for line in (out / \"results.jsonl\").read_bytes().splitlines()]\n+            return result.returncode, rows\n+\n+    def test_four_independent_calls_preserve_observed_usage_and_missing_metrics(self):\n+        code, rows = self.call(\"print(json.dumps(event))\")\n+        self.assertEqual(code, 0)\n+        self.assertEqual(len(rows), 4)\n+        self.assertTrue(all(r[\"runtime\"] == \"fixture-cli 1.0\" for r in rows))\n+        self.assertTrue(all(r[\"metrics\"][\"input_tokens\"] == 25 for r in rows))\n+        self.assertTrue(all(r[\"metrics\"][\"cache_read_input_tokens\"] == 8 for r in rows))\n+        self.assertTrue(all(r[\"metrics\"][\"cache_creation_input_tokens\"] is None for r in rows))\n+\n+    def test_an_unparseable_answer_is_a_task_failure_even_if_the_cli_exits_zero(self):\n+        code, rows = self.call('event[\"result\"] = \"oops\"\\nprint(json.dumps(event))')\n+        self.assertNotEqual(code, 0)\n+        self.assertEqual([r[\"status\"] for r in rows], [\"task-failure\"] * 4)\n+\n+    def test_model_substitution_stops_spending_and_preserves_the_incomplete_result(self):\n+        code, rows = self.call('event[\"modelUsage\"] = {\"different\": {}}\\nprint(json.dumps(event))')\n+        self.assertNotEqual(code, 0)\n+        self.assertEqual([r[\"failure_category\"] for r in rows], [\"unverified-model\"])\n+\n+    def test_cli_budget_failure_stops_the_remaining_calls(self):\n+        code, rows = self.call('event[\"subtype\"] = \"error_max_budget_usd\"\\nprint(json.dumps(event))')\n+        self.assertNotEqual(code, 0)\n+        self.assertEqual([r[\"failure_category\"] for r in rows], [\"error_max_budget_usd\"])\n+\n+\n+if __name__ == \"__main__\":\n+    unittest.main()",
+          "patchLines": 90,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "e4a945f75d6cd452beacda77d7c13c82284a294b",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-24T21:43:12+09:00",
+      "subject": "🧪 [Tests]: #1469 取得した回答の整合性と比較結果を記録する",
+      "body": "不正な応答を失敗として記録し、保存した回答と採点時の指紋を照合する。8試行で観測した命名の差を残す。",
+      "files": [
+        {
+          "path": "harness/evals/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 2,
+          "patch": "@@ -7,6 +7,10 @@\n | grid-step | 単一モジュールの次のグリッド位置 | 配置・命名、グリッド上と間の入力、全期待値 |\n | label-limit | 同名の隣接モジュールと旧テスト置き場がある | 対象機能への配置・命名、長さの両端とその外側、全期待値 |\n \n+`naming` は実験で先に定めた採点条件で、ファイル名の先頭に対象ドメイン名を求める。例えば `grid-step.normal.test.ts` は合格する。既存スキャン（`rules`）は命名形式を検査するため、`index.normal.test.ts` も通過する。\n+\n+初回の結果は [P-001 の実験記録](reports/P-001-2026-11-24.md) にまとめた。\n+\n ## 試す\n \n リポジトリルートから Python 3.10 以降、Git、Bash、awk が使える Linux/macOS で実行する。試行データにはリポジトリ外の新しいディレクトリを指定する。\n@@ -65,6 +69,6 @@ python3 \"$cli\" prepare --out \"$runs/external\"\n - 1反復で2課題 × 2構成の4試行。課題・反復ごとに A/B の先行順を交替する。 `--repeat N` で同一条件を反復できる。\n - 入口・全8規約・既存スキャンと付属 awk を固定コミット `d199ad2483ca82c1a9d2b9134460d04a2d89105d` から読む。浅い clone に履歴がない場合はそのコミットを取得する。`manifest.json` にコミット、課題・規約・評価器・配布物のハッシュ、実行条件を記録する。\n - 回答はパスと入出力例のデータとして扱う。パスは対象モジュールと照合し、使い捨ての空ファイルで元のテスト規約スキャンを実行する。期待値と境界の網羅は固定した振る舞いから採点する。生成コードの実行や GitHub 操作は発生しない。\n-- `results.jsonl` の各行にチェック別の結果・失敗理由・計測値を保持する。同じ評価器の版で `report` を実行すると、課題別・反復別の結果と B−A の差が得られる。入力・cache read・cache create は別欄で、未取得値は「—」。成功率の分母には要件未達・時間切れ・安全性違反を含める。環境エラーと未実行は別に表示する。\n-- 全試行成功時の終了値は0。欠測・失敗時は非ゼロで、既に保存した結果は確認できる。試行外へのパスを回答した場合は安全性違反を記録して停止する。失敗をやり直す実験には新しい出力先を使う。\n+- `results.jsonl` の各行にチェック別の結果・失敗理由・計測値を保持する。同じ評価器の版で `report` を実行すると、保存した回答のハッシュと採点を照合し、課題別・反復別の結果と B−A の差が得られる。入力・cache read・cache create は別欄で、未取得値は「—」。成功率の分母には要件未達・時間切れ・安全性違反を含める。環境エラーと未実行は別に表示する。\n+- 全試行の品質判定が成功すれば終了値は0。計測値だけの欠損は「—」と表示する。未実行の試行・品質失敗・環境エラーがあれば終了値は非ゼロとなる。試行外へのパスを回答した場合は安全性違反を記録して停止する。失敗をやり直す実験には新しい出力先を使う。\n - この smoke は単発のテスト設計課題。実装・修正ループ・通常セッションの自動読込・フック発火・本番 PR の品質は測定対象外。判定は**保留**とし、本番の規約削除は追加課題、独立した holdout と実運用に近い条件での確認後に判断する。",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/answer_json.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 15,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,15 @@\n+\"\"\"モデルから受け取った JSON を、記録可能な UTF-8 データに限定する。\"\"\"\n+\n+import json\n+\n+from experiment import encoded\n+\n+\n+def decode_answer(raw):\n+    \"\"\"ハッシュに使う表現まで検証し、不正な回答を採点の前に分類する。\"\"\"\n+    try:\n+        value = json.loads(raw)\n+        encoded(value)\n+    except (TypeError, ValueError, RecursionError) as err:\n+        raise ValueError(\"回答を UTF-8 JSON として記録できません\") from err\n+    return value",
+          "patchLines": 16,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/claude_adapter.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 2,
+          "patch": "@@ -8,6 +8,8 @@ import subprocess\n import tempfile\n import time\n \n+from answer_json import decode_answer\n+\n \n TOKEN_FIELDS = (\"input_tokens\", \"output_tokens\", \"cache_read_input_tokens\", \"cache_creation_input_tokens\")\n \n@@ -63,7 +65,7 @@ def ask(packet, model, budget, timeout):\n             metrics[\"wall_time_ms\"] = round((time.monotonic() - start) * 1000)\n     try:\n         event = json.loads(result.stdout)\n-    except (ValueError, UnicodeError):\n+    except (ValueError, RecursionError):\n         return None, \"infra-error\", \"cli-output\", metrics\n     if not isinstance(event, dict):\n         return None, \"infra-error\", \"cli-output\", metrics\n@@ -84,7 +86,7 @@ def ask(packet, model, budget, timeout):\n     if not isinstance(model_usage, dict) or set(model_usage) != {model}:\n         return None, \"infra-error\", \"unverified-model\", metrics\n     try:\n-        answer = json.loads(event[\"result\"])\n+        answer = decode_answer(event[\"result\"])\n     except (KeyError, TypeError, ValueError, UnicodeError):\n         return None, \"task-failure\", \"answer-json\", metrics\n     return answer, None, None, metrics",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/harness_eval.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 38,
+          "deletions": 8,
+          "patch": "@@ -11,6 +11,7 @@ import re\n import sys\n import uuid\n \n+from answer_json import decode_answer\n from claude_adapter import ask, empty_metrics, runtime_version\n from experiment import CANDIDATE, ROOT, TASKS, conditions, digest, encoded, grade, prompt, replay\n \n@@ -113,19 +114,46 @@ def settings(args):\n                 timeout=args.timeout, max_turns=1)\n \n \n-def external_answer(out, row):\n+def captured_answer(out, row, *, external):\n     file = out / \"answers\" / (row[\"id\"] + \".json\")\n     if not file.exists():\n         return None\n-    if file.stat().st_size > 256 * 1024:\n+    if external and file.stat().st_size > 256 * 1024:\n         return None, \"task-failure\", \"answer-too-large\", empty_metrics()\n     try:\n-        envelope = json.loads(file.read_bytes())\n+        envelope = decode_answer(file.read_bytes())\n     except (ValueError, UnicodeError):\n         return None, \"task-failure\", \"answer-json\", empty_metrics()\n     if not isinstance(envelope, dict) or envelope.get(\"prompt_sha256\") != row[\"prompt_sha256\"]:\n         raise ValueError(\"外部回答と配布したプロンプトのハッシュが一致しません\")\n-    return envelope.get(\"answer\"), None, None, empty_metrics()\n+    if \"answer\" not in envelope:\n+        return None, \"task-failure\", \"answer-json\", empty_metrics()\n+    return envelope[\"answer\"], None, None, empty_metrics()\n+\n+\n+def verify_answer(out, row):\n+    \"\"\"過去に採点した回答を照合し、変更や欠落のある結果を集計から除く。\"\"\"\n+    mode = row[\"adapter\"]\n+    status = row[\"status\"]\n+    if mode == \"replay\":\n+        answer = replay(row[\"task_id\"])\n+    elif mode == \"claude\" and row[\"answer_sha256\"] is None:\n+        if status not in (\"task-failure\", \"infra-error\") or row[\"checks\"] or not row[\"failure_category\"]:\n+            raise ValueError(\"回答のない試行の結果が不正です\")\n+        return\n+    else:\n+        reply = captured_answer(out, row, external=mode == \"external\")\n+        if reply is None:\n+            raise ValueError(\"採点済みの回答がありません。元の回答ファイルを復元してください\")\n+        answer, parse_status, reason, _ = reply\n+        if parse_status is not None:\n+            if (status, row[\"failure_category\"], row[\"answer_sha256\"], row[\"checks\"]) == (parse_status, reason, None, {}):\n+                return\n+            raise ValueError(\"採点済みの回答と記録が一致しません\")\n+    if digest(encoded(answer)) != row[\"answer_sha256\"]:\n+        raise ValueError(\"採点済みの回答が変更されました。元の回答ファイルを復元してください\")\n+    if (status, row[\"checks\"]) != grade(row[\"task_id\"], answer):\n+        raise ValueError(\"保存した採点結果と回答が一致しません\")\n \n \n def stored_rows(out, manifest):\n@@ -140,6 +168,7 @@ def stored_rows(out, manifest):\n         if (not trial or row[\"id\"] in rows or row[\"adapter\"] != manifest[\"adapter\"]\n                 or any(row[k] != v for k, v in trial.items())):\n             raise ValueError(\"試行に対応しない結果、または重複があります\")\n+        verify_answer(out, row)\n         rows[row[\"id\"]] = row\n     return rows\n \n@@ -169,7 +198,7 @@ def collect(out, manifest, model, runtime):\n                 continue\n             task = trial[\"task_id\"]\n             if mode == \"external\":\n-                reply = external_answer(out, trial)\n+                reply = captured_answer(out, trial, external=True)\n                 if reply is None:\n                     continue\n                 answer, status, reason, metrics = reply\n@@ -186,16 +215,17 @@ def collect(out, manifest, model, runtime):\n                 if metrics[\"cost_usd\"] is not None:\n                     remaining -= metrics[\"cost_usd\"]\n             checks = {}\n-            if status is None:\n+            has_answer = status is None\n+            if has_answer:\n                 status, checks = grade(task, answer)\n                 if status != \"success\":\n                     reason = \"answer-checks\"\n-            if mode == \"claude\" and answer is not None:\n+            if mode == \"claude\" and has_answer:\n                 write_json(out / \"answers\" / (trial[\"id\"] + \".json\"),\n                            dict(prompt_sha256=trial[\"prompt_sha256\"], answer=answer))\n             row = dict(trial, adapter=mode, model=model, runtime=runtime, status=status,\n                        failure_category=reason, checks=checks, metrics=metrics,\n-                       answer_sha256=digest(encoded(answer)) if answer is not None else None)\n+                       answer_sha256=digest(encoded(answer)) if has_answer else None)\n             with (out / \"results.jsonl\").open(\"ab\") as stream:\n                 stream.write(encoded(row) + b\"\\n\")\n             rows[row[\"id\"]] = row",
+          "patchLines": 97,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/reports/P-001-2026-11-24.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 19,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,19 @@\n+# P-001　テスト配置例を6行削ったときのファイル名\n+\n+**判定は保留。** 通常課題では、ディレクトリ図があると2回ともドメイン名でテストファイルを命名し、図を除くと2回とも `index` を選んだ。同名モジュールが並ぶ課題では両構成とも `index` を選んだ。今回は規約に図を残す。\n+\n+| テスト対象 | 規約 | 1回目のファイル名 | 2回目のファイル名 | 全条件合格 |\n+| --- | --- | --- | --- | ---: |\n+| grid-step | A・現行 | `grid-step.normal.test.ts` | `grid-step.normal.test.ts` | 2/2 |\n+| grid-step | B・図を除去 | `index.normal.test.ts` | `index.normal.test.ts` | 0/2 |\n+| label-limit | A・現行 | `index.edge.test.ts` | `index.edge.test.ts` | 0/2 |\n+| label-limit | B・図を除去 | `index.edge.test.ts` | `index.edge.test.ts` | 0/2 |\n+\n+全条件の合格は A が2/4、B が0/4。8回答とも対象モジュール、期待値、境界値の網羅、既存のテスト規約スキャンを通過した。不合格6件に共通するのは、あらかじめ定めた「テストファイル名をドメイン名で始める」という採点条件だけだった。\n+\n+## 実行条件\n+\n+- 2026-11-24、Codex Work Mode の履歴を共有しない8セッションに、課題と規約を含むパケットを1件ずつ渡した。回答は配置先と入出力例の JSON。外部回答として採点し、モデルは GPT-6 系と記録した。正確なビルド、トークン、時間、料金は未取得。\n+- 1回目は課題順に AB、BA。初回4試行の後、同じ課題を新規セッションで BA、AB の順に反復した。異なる課題での追試や Claude Code の通常の開発フロー、実装・修正後の PR 品質は未評価。\n+- 規約の元コミットは `d199ad2483ca82c1a9d2b9134460d04a2d89105d`。削ったブロックの SHA-256 は `b047ea9b4da1fc14fff4570cbe46e6fffb4a8f5d4a1bbfc6e285087396e14335`。評価器の SHA-256 は `dccd44a293ab6c6cbe6b97daed5f12b8f3b6cf74fbb98fa2588f3d0811887911`。\n+- 同じ比較用入力はリポジトリルートで `python3 harness/evals/harness_eval.py prepare --repeat 2 --out \"$runs/external\"` を実行すると生成できる。出力先の準備と外部回答の回収は [実験手順](../README.md) を参照。",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/test_capture.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 64,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,64 @@\n+\"\"\"CLI から回収した回答と採点記録の対応を確かめる。\"\"\"\n+\n+import json\n+from pathlib import Path\n+import subprocess\n+import sys\n+import tempfile\n+import unittest\n+\n+from test_smoke import CLI, answer\n+\n+\n+class CaptureTest(unittest.TestCase):\n+    def setUp(self):\n+        storage = tempfile.TemporaryDirectory()\n+        self.addCleanup(storage.cleanup)\n+        self.out = Path(storage.name) / \"batch\"\n+        self.assertEqual(self.cli(\"prepare\", \"--out\", self.out).returncode, 0)\n+        self.trials = json.loads((self.out / \"manifest.json\").read_text())[\"trials\"]\n+        for row in self.trials:\n+            envelope = dict(prompt_sha256=row[\"prompt_sha256\"], answer=answer(row[\"task_id\"]))\n+            self.file(row).write_text(json.dumps(envelope))\n+\n+    def cli(self, *args):\n+        return subprocess.run([sys.executable, str(CLI), *args], capture_output=True, timeout=30)\n+\n+    def file(self, row):\n+        return self.out / \"answers\" / (row[\"id\"] + \".json\")\n+\n+    def collect(self):\n+        return self.cli(\"collect\", self.out, \"--model\", \"test\", \"--runtime\", \"external\")\n+\n+    def test_report_and_recollect_detect_a_changed_or_missing_scored_answer(self):\n+        self.assertEqual(self.collect().returncode, 0)\n+        file = self.file(self.trials[0])\n+        envelope = json.loads(file.read_text())\n+        envelope[\"answer\"][\"cases\"] = []\n+        file.write_text(json.dumps(envelope))\n+        self.assertEqual(self.cli(\"report\", self.out).returncode, 2)\n+        self.assertEqual(self.collect().returncode, 2)\n+        file.unlink()\n+        self.assertEqual(self.cli(\"report\", self.out).returncode, 2)\n+\n+    def test_invalid_json_values_and_deep_nesting_are_one_failure_each(self):\n+        invalid = [\"NaN\", \"1e9999\", '\"\\\\ud800\"', \"[\" * 2000 + \"]\" * 1999]\n+        for row, extra in zip(self.trials, invalid):\n+            file = self.file(row)\n+            file.write_text(file.read_text()[:-1] + ', \"extra\":' + extra + \"}\")\n+        self.assertEqual(self.collect().returncode, 1)\n+        rows = [json.loads(line) for line in (self.out / \"results.jsonl\").read_text().splitlines()]\n+        self.assertEqual([row[\"failure_category\"] for row in rows], [\"answer-json\"] * 4)\n+        self.assertEqual(self.cli(\"report\", self.out).returncode, 1)\n+\n+    def test_report_rejects_results_inconsistent_with_the_recorded_answer(self):\n+        self.assertEqual(self.collect().returncode, 0)\n+        path = self.out / \"results.jsonl\"\n+        rows = [json.loads(line) for line in path.read_text().splitlines()]\n+        rows[0][\"checks\"] = {}\n+        path.write_text(\"\".join(json.dumps(row) + \"\\n\" for row in rows))\n+        self.assertEqual(self.cli(\"report\", self.out).returncode, 2)\n+\n+\n+if __name__ == \"__main__\":\n+    unittest.main()",
+          "patchLines": 65,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/test_claude_adapter.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "patch": "@@ -74,6 +74,11 @@ class ClaudeAdapterTest(unittest.TestCase):\n         self.assertNotEqual(code, 0)\n         self.assertEqual([r[\"status\"] for r in rows], [\"task-failure\"] * 4)\n \n+    def test_a_nonfinite_answer_is_recorded_without_interrupting_the_batch(self):\n+        code, rows = self.call('answer[\"extra\"] = float(\"nan\")\\nevent[\"result\"] = json.dumps(answer)\\nprint(json.dumps(event))')\n+        self.assertEqual(code, 1)\n+        self.assertEqual([row[\"failure_category\"] for row in rows], [\"answer-json\"] * 4)\n+\n     def test_model_substitution_stops_spending_and_preserves_the_incomplete_result(self):\n         code, rows = self.call('event[\"modelUsage\"] = {\"different\": {}}\\nprint(json.dumps(event))')\n         self.assertNotEqual(code, 0)",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "5542e36169a2444a5ecf663bc44a22ced899845e",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-24T21:45:26+09:00",
+      "subject": "🧪 [Tests]: #1469 同じ採点結果の回答差し替えと命名の退行を検出する",
+      "body": "既存の命名スキャンを通過する回答でもドメイン名の条件が落ちることと、正しい回答どうしの差し替えが検出されることを確かめる。",
+      "files": [
+        {
+          "path": "harness/evals/test_capture.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 25,
+          "deletions": 0,
+          "patch": "@@ -59,6 +59,31 @@ class CaptureTest(unittest.TestCase):\n         path.write_text(\"\".join(json.dumps(row) + \"\\n\" for row in rows))\n         self.assertEqual(self.cli(\"report\", self.out).returncode, 2)\n \n+    def test_index_filename_only_fails_the_domain_name_check(self):\n+        control, changed = [row for row in self.trials if row[\"task_id\"] == \"grid-step\"]\n+        file = self.file(changed)\n+        envelope = json.loads(file.read_text())\n+        original = Path(envelope[\"answer\"][\"path\"])\n+        envelope[\"answer\"][\"path\"] = original.with_name(\"index.normal.test.ts\").as_posix()\n+        file.write_text(json.dumps(envelope))\n+        self.assertEqual(self.collect().returncode, 1)\n+        rows = [json.loads(line) for line in (self.out / \"results.jsonl\").read_text().splitlines()]\n+        by_id = {row[\"id\"]: row for row in rows}\n+        self.assertEqual(by_id[control[\"id\"]][\"status\"], \"success\")\n+        self.assertEqual(by_id[changed[\"id\"]][\"status\"], \"task-failure\")\n+        self.assertEqual(by_id[changed[\"id\"]][\"checks\"], dict(\n+            placement=True, naming=False, rules=True, expectations=True, coverage=True,\n+        ))\n+\n+    def test_an_equally_valid_answer_cannot_replace_the_scored_answer(self):\n+        self.assertEqual(self.collect().returncode, 0)\n+        grid = next(row for row in self.trials if row[\"task_id\"] == \"grid-step\")\n+        file = self.file(grid)\n+        envelope = json.loads(file.read_text())\n+        envelope[\"answer\"][\"cases\"].append({\"input\": 16, \"expected\": 24})\n+        file.write_text(json.dumps(envelope))\n+        self.assertEqual(self.cli(\"report\", self.out).returncode, 2)\n+\n \n if __name__ == \"__main__\":\n     unittest.main()",
+          "patchLines": 32,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": "harness/evals/answer_json.py",
+      "to": "harness/evals/experiment.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/claude_adapter.py",
+      "to": "harness/evals/answer_json.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/experiment.py",
+      "to": ".claude/hooks/lib/test-conditionals.awk",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/experiment.py",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/experiment.py",
+      "to": "AGENTS.md",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/experiment.py",
+      "to": "CLAUDE.md",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/experiment.py",
+      "to": "rules/testing.md",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/harness_eval.py",
+      "to": "harness/evals/answer_json.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/harness_eval.py",
+      "to": "harness/evals/claude_adapter.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/harness_eval.py",
+      "to": "harness/evals/experiment.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/test_capture.py",
+      "to": "harness/evals/test_smoke.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/test_claude_adapter.py",
+      "to": "harness/evals/harness_eval.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/test_smoke.py",
+      "to": "harness/evals/harness_eval.py",
+      "status": "added"
+    }
+  ]
+}
