@@ -4,7 +4,7 @@
   "headBranch": "feature/1469-harness-pruning-smoke",
   "baseBranch": "main",
   "mergeBase": "d199ad2483ca82c1a9d2b9134460d04a2d89105d",
-  "head": "b324ee29b1b013d038a61c4fb6b794f79dd807f6",
+  "head": "aa8335de85b84edb34735b546fa72234bee07508",
   "groups": [
     {
       "label": "ハーネス",
@@ -29,7 +29,7 @@
           "path": "harness/evals/README.md",
           "status": "A",
           "oldPath": null,
-          "additions": 62,
+          "additions": 79,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -56,7 +56,25 @@
           "path": "harness/evals/harness_eval.py",
           "status": "A",
           "oldPath": null,
-          "additions": 314,
+          "additions": 338,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/presets.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 111,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/presets/P-001-short.json",
+          "status": "A",
+          "oldPath": null,
+          "additions": 9,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -71,10 +89,37 @@
           "target": null
         },
         {
+          "path": "harness/evals/reports/P-001-short-2026-11-24.json",
+          "status": "A",
+          "oldPath": null,
+          "additions": 337,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/reports/P-001-short-2026-11-24.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 51,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
           "path": "harness/evals/test_capture.py",
           "status": "A",
           "oldPath": null,
           "additions": 167,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/test_presets.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 173,
           "deletions": 0,
           "changed": true,
           "target": null
@@ -87,6 +132,10 @@
           "deletions": 0,
           "changed": true,
           "target": null
+        },
+        {
+          "path": "rules/naming.md",
+          "changed": false
         },
         {
           "path": "rules/testing.md",
@@ -360,6 +409,116 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "44d66a6e20667e500c57a36497c7aa4aaf565e61",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-24T22:36:09+09:00",
+      "subject": "🧪 [Tests]: #1469 候補ごとの週次比較条件を固定する",
+      "body": "",
+      "files": [
+        {
+          "path": "harness/evals/harness_eval.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 6,
+          "deletions": 1,
+          "patch": "@@ -105,11 +105,16 @@ def parser():\n     cli = argparse.ArgumentParser(description=__doc__)\n     sub = cli.add_subparsers(dest=\"command\", required=True)\n     for command in (\"inventory\", \"validate\"):\n-        sub.add_parser(command)\n+        parser = sub.add_parser(command)\n+        if command == \"validate\":\n+            parser.add_argument(\"--candidate\")\n+            parser.add_argument(\"--base\")\n     for name in (\"prepare\", \"run\"):\n         cmd = sub.add_parser(name)\n         cmd.add_argument(\"--out\", type=Path, required=True)\n         cmd.add_argument(\"--repeat\", default=1, type=int)\n+        cmd.add_argument(\"--candidate\")\n+        cmd.add_argument(\"--base\")\n         if name == \"run\":\n             cmd.add_argument(\"--adapter\", required=True, choices=(\"replay\",))\n     collect = sub.add_parser(\"collect\")",
+          "patchLines": 18,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/test_presets.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 118,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,118 @@\n+\"\"\"候補の差し替えと過去の試行の再読を、独立した検証用リポジトリで確かめる。\"\"\"\n+\n+import json\n+from pathlib import Path\n+import shutil\n+import subprocess\n+import sys\n+import tempfile\n+import unittest\n+\n+from test_smoke import CLI, LAYOUT\n+\n+\n+class PresetTest(unittest.TestCase):\n+    def setUp(self):\n+        tmp = tempfile.TemporaryDirectory()\n+        self.addCleanup(tmp.cleanup)\n+        self.work = Path(tmp.name)\n+        self.repo = self.work / \"repo\"\n+        subprocess.run([\"git\", \"clone\", \"--quiet\", \"--local\", \"--no-checkout\", str(CLI.parents[2]),\n+                        str(self.repo)], check=True)\n+        self.cli_path = self.repo / \"harness/evals/harness_eval.py\"\n+        shutil.copytree(CLI.parent, self.cli_path.parent, ignore=shutil.ignore_patterns(\"__pycache__\"))\n+        self.base = self.git(\"rev-parse\", \"HEAD\")\n+        self.git(\"read-tree\", self.base)\n+        self.git(\"config\", \"user.email\", \"test@example.com\")\n+        self.git(\"config\", \"user.name\", \"Test\")\n+\n+    def git(self, *args):\n+        return subprocess.check_output([\"git\", \"-C\", str(self.repo), *args], text=True).strip()\n+\n+    def cli(self, *args):\n+        return subprocess.run([sys.executable, str(self.cli_path), *map(str, args)], text=True,\n+                              capture_output=True, timeout=30)\n+\n+    def batch(self, label=\"batch\", *, candidate=\"P-001-short\", base=\"HEAD\", replay=False):\n+        directory = self.work / label\n+        command = [\"run\", \"--adapter\", \"replay\"] if replay else [\"prepare\"]\n+        result = self.cli(*command, \"--candidate\", candidate, \"--base\", base, \"--out\", directory)\n+        self.assertEqual(result.returncode, 0, result.stderr)\n+        return directory, json.loads((directory / \"manifest.json\").read_text())\n+\n+    def test_short_preset_changes_only_the_directory_example(self):\n+        out, manifest = self.batch()\n+        self.assertEqual(manifest[\"version\"], 3)\n+        self.assertEqual(manifest[\"source_commit\"], self.base)\n+        self.assertEqual(manifest[\"experiment\"], \"P-001-short\")\n+        self.assertRegex(manifest[\"condition_fingerprint\"], r\"^[0-9a-f]{64}$\")\n+        packets = {(t[\"task_id\"], t[\"variant\"]): (out / \"prompts\" / (t[\"id\"] + \".txt\")).read_text()\n+                   for t in manifest[\"trials\"]}\n+        for task in (\"grid-step\", \"label-limit\"):\n+            old, new = packets[task, \"A\"], packets[task, \"B\"]\n+            self.assertTrue(old.startswith(\"# AGENTS.md\\n\"))\n+            self.assertEqual(old.count(LAYOUT), 1)\n+            before, after = old.split(LAYOUT)\n+            self.assertTrue(new.startswith(before) and new.endswith(after))\n+            replacement = new[len(before):-len(after)].strip()\n+            self.assertTrue(replacement)\n+            self.assertLess(len(replacement.splitlines()), len(LAYOUT.splitlines()))\n+            self.assertIn(\"ドメイン名\", replacement)\n+\n+    def test_irrelevant_changes_keep_the_fingerprint_and_rule_changes_update_it(self):\n+        _, first = self.batch(\"before\")\n+        self.assertEqual(first[\"version\"], 3)\n+        self.git(\"commit\", \"-q\", \"--allow-empty\", \"-m\", \"unrelated\")\n+        _, same = self.batch(\"after\")\n+        self.assertNotEqual(first[\"source_commit\"], same[\"source_commit\"])\n+        self.assertEqual(first[\"condition_fingerprint\"], same[\"condition_fingerprint\"])\n+        target = self.repo / \"rules/testing.md\"\n+        target.parent.mkdir(exist_ok=True)\n+        target.write_text(self.git(\"show\", \"HEAD:rules/testing.md\") + \"\\n追加された規範。\\n\")\n+        self.git(\"add\", \"--\", \"rules/testing.md\")\n+        self.git(\"commit\", \"-q\", \"-m\", \"rules changed\")\n+        _, changed = self.batch(\"changed\")\n+        self.assertNotEqual(first[\"condition_fingerprint\"], changed[\"condition_fingerprint\"])\n+        _, pinned = self.batch(\"pinned\", base=self.base)\n+        self.assertEqual(first[\"condition_fingerprint\"], pinned[\"condition_fingerprint\"])\n+\n+    def test_a_saved_run_uses_its_preset_snapshot_after_catalog_removal(self):\n+        out, manifest = self.batch(replay=True)\n+        self.assertEqual(manifest[\"version\"], 3)\n+        preset = self.cli_path.parent / \"presets/P-001-short.json\"\n+        self.assertEqual(manifest[\"preset\"], json.loads(preset.read_text()))\n+        preset.unlink()\n+        result = self.cli(\"report\", out)\n+        self.assertEqual(result.returncode, 0, result.stderr)\n+        self.assertIn(\"P-001-short\", result.stdout)\n+        manifest[\"condition_fingerprint\"] = \"0\" * 64\n+        (out / \"manifest.json\").write_text(json.dumps(manifest))\n+        self.assertEqual(self.cli(\"report\", out).returncode, 2)\n+\n+    def test_adding_another_preset_requires_only_catalog_data(self):\n+        result = self.cli(\"inventory\")\n+        self.assertIn(\"P-001-short\", result.stdout)\n+        folder = self.cli_path.parent / \"presets\"\n+        alternate = json.loads((folder / \"P-001-short.json\").read_text())\n+        alternate[\"id\"] = \"P-002-test\"\n+        (folder / \"P-002-test.json\").write_text(json.dumps(alternate))\n+        self.assertIn(\"P-002-test\", self.cli(\"inventory\").stdout)\n+        out, manifest = self.batch(candidate=\"P-002-test\", replay=True)\n+        self.assertEqual(manifest[\"experiment\"], \"P-002-test\")\n+        self.assertEqual(self.cli(\"report\", out).returncode, 0)\n+\n+    def test_a_missing_or_repeated_target_is_rejected_before_creating_output(self):\n+        for label, text in ((\"missing\", \"# テスト規約\\n\"), (\"twice\", LAYOUT * 2)):\n+            target = self.repo / \"rules/testing.md\"\n+            target.parent.mkdir(exist_ok=True)\n+            target.write_text(text)\n+            self.git(\"add\", \"--\", \"rules/testing.md\")\n+            self.git(\"commit\", \"-q\", \"-m\", label)\n+            out = self.work / label\n+            result = self.cli(\"prepare\", \"--candidate\", \"P-001-short\", \"--base\", \"HEAD\", \"--out\", out)\n+            self.assertEqual(result.returncode, 2, result.stderr)\n+            self.assertFalse(out.exists())\n+\n+\n+if __name__ == \"__main__\":\n+    unittest.main()",
+          "patchLines": 119,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "aa8335de85b84edb34735b546fa72234bee07508",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-24T22:44:45+09:00",
+      "subject": "✨ [New Feature]: #1469 週ごとの短縮候補を指定して配置と命名を比較する",
+      "body": "",
+      "files": [
+        {
+          "path": "harness/evals/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 22,
+          "deletions": 5,
+          "patch": "@@ -1,6 +1,11 @@\n-# P-001 テスト配置例の除去実験\n+# テスト配置・命名のハーネス比較\n \n-`rules/testing.md` の「配置と命名」にあるディレクトリ図を削っても、AI はテストの置き場所を選べるか。A には図を含む規約全文、B にはその6行を除いた同じ文章を渡す。仮説は、前後に残る配置・命名の規範だけでも正しく判断できること。反証は、例えば B でだけ隣の機能のテストフォルダを選ぶこと。\n+同じ規約と課題を配り、`rules/testing.md`「配置と命名」の説明だけを変えたときの回答を比べる。実験者が各週の候補と規約の基準コミットを選び、A に元の文章、B に候補の置換を適用する。\n+\n+| 候補 | B の差分 | 検証する仮説 |\n+| --- | --- | --- |\n+| P-001 | ディレクトリ例6行を削除 | 周囲の文章で配置と命名を再現できるか |\n+| P-001-short | 同じ例を対象ドメイン名を明記した1行に置換 | ファイル名の手掛かりを残して5行減らせるか |\n \n | 課題 | 条件 | 採点 |\n | --- | --- | --- |\n@@ -9,7 +14,7 @@\n \n `naming` は実験で先に定めた採点条件で、ファイル名の先頭に対象ドメイン名を求める。例えば `grid-step.normal.test.ts` は合格する。既存スキャン（`rules`）は命名形式を検査するため、`index.normal.test.ts` も通過する。\n \n-初回の結果は [P-001 の実験記録](reports/P-001-2026-11-24.md) にまとめた。\n+結果は、[6行を削った実験](reports/P-001-2026-11-24.md) と [1行に短縮した実験](reports/P-001-short-2026-11-24.md) でそれぞれ確認できる。\n \n ## 選んだエージェントで比較する\n \n@@ -20,7 +25,10 @@\n ```bash\n cli=harness/evals/harness_eval.py\n runs=$(mktemp -d)\n-python3 \"$cli\" prepare --out \"$runs/external\"\n+git fetch origin main\n+python3 \"$cli\" inventory\n+python3 \"$cli\" validate --candidate P-001-short --base origin/main\n+python3 \"$cli\" prepare --candidate P-001-short --base origin/main --repeat 2 --out \"$runs/external\"\n ```\n \n 1. `manifest.json` の試行順に、各 `prompts/<id>.txt` の全文だけを同じ条件の新規セッションに渡す。採点器・他の回答・manifest は渡さない。各セッションにツールや過去会話を付けない。\n@@ -52,10 +60,19 @@ python3 \"$cli\" report \"$runs/replay\"\n python3 -m unittest discover -s harness/evals -v\n ```\n \n+## 週ごとの候補を決める\n+\n+- `validate` の `source_commit` は読み込んだ規約の完全なコミット ID。`--base` にその SHA を渡すと、後から同じコミットを使える。追加候補で省略すると手元の `origin/main` を解決する。初回の `P-001` は候補指定を省略しても当時の固定条件で再現できる。\n+- `condition_fingerprint` は実際の A/B 入力・課題と採点条件から求める。一度評価した候補と指紋が同じなら、無関係なコミットが増えても同条件。週次記録で最後に実施した指紋と照合し、必要な追加反復があるときだけ同条件を再試行する。エージェント・モデル・反復数は別の実行条件として記録する。\n+- 同じスイートで別の文を試すときは [P-001-short の定義](presets/P-001-short.json) を `presets/<新しいID>.json` として追加する。`id` はファイル名と揃え、`remove` に元の文、`replace` に置換後の文（削除は空文字列）、`hypothesis` に仮説を書く。この2課題が測る範囲は `rules/testing.md`「配置と命名」。異なる規約を検証する場合は、その課題と採点器を先に設計する。\n+- 追加候補の manifest（v3）はプリセット全体とそのハッシュを保存する。回収・再集計では保存時の定義と SHA を使用する。対象の節で元の文が消えていたり、規約全体に同じ文が複数あったりすると準備は止まる。\n+- A/B は基準コミットの `AGENTS.md` と、そこから箇条書きで参照する `@rules/.../*.md` の本文を記載順に読み込む。1項目に1ファイルを指定し、説明は空白を挟んで続けられる。解釈できない import は準備時に表示する。\n+- A/B で同じ独立した採点を使うため、検査器は `evaluator_source_commit` のスキャンと awk に固定する。規約を読み込むコミットと採点条件をそれぞれ記録する。以前の v1/v2 記録も元の条件で再集計できる。\n+\n ## 結果の読み方\n \n - 1反復で2課題 × 2構成の4試行。課題・反復ごとに A/B の先行順を交替する。 `--repeat N` で同一条件を反復できる。\n-- 入口・全8規約・既存スキャンと付属 awk を固定コミット `d199ad2483ca82c1a9d2b9134460d04a2d89105d` から読む。浅い clone に履歴がない場合はそのコミットを取得する。`manifest.json` にコミット、課題・規約・評価器・配布物のハッシュ、実行条件を記録する。\n+- 初回の P-001 は入口・全8規約・既存スキャンと付属 awk を固定コミット `d199ad2483ca82c1a9d2b9134460d04a2d89105d` から読む。浅い clone に履歴がない場合はそのコミットを取得する。`manifest.json` にコミット、課題・規約・評価器・配布物のハッシュ、実行条件を記録する。\n - 回答はパスと入出力例のデータとして扱う。パスは対象モジュールと照合し、使い捨ての空ファイルで元のテスト規約スキャンを実行する。期待値と境界の網羅は固定した振る舞いから採点する。生成コードの実行や GitHub 操作は発生しない。\n - `results.jsonl` の各行にチェック別の結果・失敗理由・計測値を保持する。同じ評価器の版で `report` を実行すると、保存した回答のハッシュ・採点・申告した計測値を照合し、課題別・反復別の結果と B−A の差が得られる。入力・cache read・cache create は別欄で、未取得値は「—」。成功率の分母には要件未達・安全性違反を含める。環境エラーと未実行は別に表示する。\n - 全試行の品質判定が成功すれば終了値は0。計測値だけの欠損は「—」と表示する。未実行の試行・品質失敗・環境エラーがあれば終了値は非ゼロとなる。試行外へのパスを回答した場合は安全性違反を記録して停止する。失敗をやり直す実験には新しい出力先を使う。",
+          "patchLines": 56,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/harness_eval.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 34,
+          "deletions": 15,
+          "patch": "@@ -11,6 +11,7 @@ import re\n import sys\n import uuid\n \n+from presets import batch_inputs, catalog, read_preset, resolve_base, validate_preset\n from answer_json import decode_answer\n from experiment import CANDIDATE, ROOT, TASKS, conditions, digest, encoded, grade, prompt, replay\n \n@@ -55,21 +56,29 @@ def schedule(repeats):\n                 yield task, variant, trial\n \n \n-def prepare(out, repeat, adapter):\n+def selected_inputs(candidate, base):\n+    if candidate in (None, CANDIDATE):\n+        if base is not None:\n+            raise ValueError(\"基準コミットを変更するには inventory の追加候補を指定してください\")\n+        return conditions(), {(task, v): prompt(task, v) for task in TASKS for v in \"AB\"}\n+    return batch_inputs(read_preset(candidate), resolve_base(base if base is not None else \"origin/main\"))\n+\n+\n+def prepare(out, repeat, adapter, candidate, base):\n     if not 1 <= repeat <= 30:\n         raise ValueError(\"反復回数は1〜30を指定してください\")\n-    manifest = conditions()\n+    manifest, packets = selected_inputs(candidate, base)\n     out.mkdir(mode=0o700)\n     (out / \"prompts\").mkdir()\n     (out / \"answers\").mkdir()\n     trials = []\n     for task, variant, number in schedule(repeat):\n-        packet = prompt(task, variant)\n+        packet = packets[task, variant]\n         trial_id = uuid.uuid4().hex\n         (out / \"prompts\" / f\"{trial_id}.txt\").write_bytes(packet)\n         trials.append(dict(id=trial_id, task_id=task, variant=variant, trial=number,\n                            prompt_sha256=digest(packet)))\n-    manifest.update(version=2, adapter=adapter, repeat=repeat, trials=trials)\n+    manifest.update(version=3 if \"preset\" in manifest else 2, adapter=adapter, repeat=repeat, trials=trials)\n     write_json(out / \"manifest.json\", manifest)\n     return manifest\n \n@@ -78,9 +87,14 @@ def checked_manifest(out):\n     manifest = json.loads((out / \"manifest.json\").read_bytes())\n     version = manifest[\"version\"]\n     modes = (\"external\", \"replay\", \"claude\") if version == 1 else (\"external\", \"replay\")\n-    if version not in (1, 2) or manifest[\"adapter\"] not in modes:\n+    if type(version) is not int or version not in (1, 2, 3) or manifest[\"adapter\"] not in modes:\n         raise ValueError(\"未対応の実験記録です\")\n-    for key, value in conditions().items():\n+    if version == 3:\n+        preset = validate_preset(manifest[\"preset\"], manifest[\"experiment\"])\n+        definition, packets = batch_inputs(preset, manifest[\"source_commit\"])\n+    else:\n+        definition, packets = selected_inputs(None, None)\n+    for key, value in definition.items():\n         if manifest.get(key) != value:\n             raise ValueError(f\"固定した実験定義と一致しません ({key})\")\n     repeats = manifest[\"repeat\"]\n@@ -93,7 +107,7 @@ def checked_manifest(out):\n         if not re.fullmatch(\"[a-f0-9]{32}\", trial_id) or trial_id in ids:\n             raise ValueError(\"試行 ID が不正です\")\n         ids.add(trial_id)\n-        packet = prompt(task, variant)\n+        packet = packets[task, variant]\n         expected = dict(id=trial_id, task_id=task, variant=variant, trial=number,\n                         prompt_sha256=digest(packet))\n         if row != expected or (out / \"prompts\" / f\"{trial_id}.txt\").read_bytes() != packet:\n@@ -240,7 +254,9 @@ def collect(out, manifest, model, runtime):\n \n \n def report(manifest, rows):\n-    print(f\"# {CANDIDATE} / {manifest['adapter']} / 判定: 保留\")\n+    print(f\"# {manifest['experiment']} / {manifest['adapter']} / 判定: 保留\")\n+    if \"condition_fingerprint\" in manifest:\n+        print(f\"比較条件 {manifest['condition_fingerprint']}\")\n     print(f\"固定コミット {manifest['source_commit']} / 採点済み {len(rows)}/{len(manifest['trials'])}\")\n     if rows:\n         first = next(iter(rows.values()))\n@@ -285,7 +301,7 @@ def report(manifest, rows):\n \n def execute(args, out):\n     if args.command == \"run\":\n-        manifest = prepare(out, args.repeat, \"replay\")\n+        manifest = prepare(out, args.repeat, \"replay\", args.candidate, args.base)\n         return collect(out, manifest, \"fixture\", \"replay-v1\")\n     manifest = checked_manifest(out)\n     if args.command == \"report\":\n@@ -297,15 +313,18 @@ def execute(args, out):\n \n def main():\n     args = parser().parse_args()\n-    if args.command in (\"inventory\", \"validate\"):\n-        data = conditions()\n-        print(f\"{CANDIDATE}  {data['target']}  配置と命名のディレクトリ例を6行削除\")\n-        if args.command == \"validate\":\n-            print(json.dumps(data, ensure_ascii=False, indent=2))\n+    if args.command == \"inventory\":\n+        print(f\"{CANDIDATE}  rules/testing.md  配置と命名のディレクトリ例を6行削除\")\n+        for preset in catalog():\n+            print(f\"{preset['id']}  {preset['target']}  {preset['hypothesis']}\")\n+        return 0\n+    if args.command == \"validate\":\n+        data, _ = selected_inputs(args.candidate, args.base)\n+        print(json.dumps(data, ensure_ascii=False, indent=2))\n         return 0\n     out = run_dir(args.out)\n     if args.command == \"prepare\":\n-        prepare(out, args.repeat, \"external\")\n+        prepare(out, args.repeat, \"external\", args.candidate, args.base)\n         print(out / \"prompts\")\n         return 0\n     return execute(args, out)",
+          "patchLines": 113,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/presets.py",
+          "status": "A",
+          "oldPath": null,
+          "additions": 111,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,111 @@\n+\"\"\"テスト配置・命名の候補をコミットの規約に適用し、比較条件を記録する。\"\"\"\n+\n+from functools import cache\n+import json\n+from pathlib import Path\n+import re\n+import subprocess\n+\n+from experiment import BASE, FORMAT, ROOT, TASKS, conditions, digest, encoded\n+\n+\n+CATALOG = Path(__file__).with_name(\"presets\")\n+SUITE = \"test-placement-naming\"\n+ID = re.compile(r\"P-[0-9]+(?:-[a-z0-9]+)*\")\n+IMPORT = re.compile(r\"^[ \\t]*[-+*][ \\t]+@(rules/(?:[\\w-]+/)*[\\w-]+\\.md)(?=$|[ \\t])\")\n+\n+\n+def validate_preset(preset, candidate):\n+    fields = {\"id\", \"suite\", \"target\", \"section\", \"remove\", \"replace\", \"hypothesis\"}\n+    if not isinstance(preset, dict) or set(preset) != fields or not all(isinstance(v, str) for v in preset.values()):\n+        raise ValueError(\"候補のデータ形式が不正です\")\n+    if (not ID.fullmatch(candidate) or preset[\"id\"] != candidate or candidate == \"P-001\"\n+            or preset[\"suite\"] != SUITE or preset[\"target\"] != \"rules/testing.md\"\n+            or preset[\"section\"] != \"配置と命名\"):\n+        raise ValueError(\"候補 ID または対象が配置・命名の評価スイートに対応していません\")\n+    if not preset[\"hypothesis\"].strip() or not preset[\"remove\"].strip() or preset[\"remove\"] == preset[\"replace\"]:\n+        raise ValueError(\"仮説または単一の変更内容が不正です\")\n+    return preset\n+\n+\n+def read_preset(candidate):\n+    if not ID.fullmatch(candidate):\n+        raise ValueError(\"候補 ID が不正です\")\n+    file = CATALOG / (candidate + \".json\")\n+    if not file.is_file():\n+        raise ValueError(f\"候補 {candidate} は inventory にありません\")\n+    return validate_preset(json.loads(file.read_bytes()), candidate)\n+\n+\n+def catalog():\n+    return [read_preset(file.stem) for file in sorted(CATALOG.glob(\"*.json\"))]\n+\n+\n+def resolve_base(ref):\n+    result = subprocess.run([\"git\", \"-C\", str(ROOT), \"rev-parse\", \"--verify\", \"--end-of-options\",\n+                             ref + \"^{commit}\"], capture_output=True, text=True)\n+    if result.returncode:\n+        raise ValueError(f\"基準コミット {ref} を解決できません。履歴を取得するか --base を指定してください\")\n+    return result.stdout.strip()\n+\n+\n+@cache\n+def source_text(commit, path):\n+    result = subprocess.run([\"git\", \"-C\", str(ROOT), \"show\", f\"{commit}:{path}\"], capture_output=True)\n+    if result.returncode:\n+        raise ValueError(f\"{commit} から {path} を読み取れません\")\n+    return result.stdout.decode()\n+\n+\n+def rule_imports(entry):\n+    paths = []\n+    for line in entry.splitlines():\n+        match = IMPORT.match(line)\n+        remainder = line[match.end():] if match else line\n+        if re.search(r\"@rules[/\\\\]|(?<![\\w.])@[\\w./\\\\~-]+\\.md\\b\", remainder):\n+            raise ValueError(f\"AGENTS.md の import を一意に解釈できません: {line}\")\n+        if match:\n+            paths.append(match[1])\n+    return paths\n+\n+\n+def comparison(preset, commit):\n+    \"\"\"A/B の差分は対象の節の一箇所だけに限定する。\"\"\"\n+    if not re.fullmatch(r\"[0-9a-f]{40}\", commit):\n+        raise ValueError(\"保存した基準コミットが完全な SHA ではありません\")\n+    entry = source_text(commit, \"AGENTS.md\")\n+    imports = rule_imports(entry)\n+    target = preset[\"target\"]\n+    if len(set(imports)) != len(imports) or target not in imports:\n+        raise ValueError(\"常時ロードする規約の中で対象を特定できません\")\n+    parts = [f\"# AGENTS.md\\n{entry}\"]\n+    for path in imports:\n+        parts.append(f\"# {path}\\n{source_text(commit, path)}\")\n+    baseline = \"\\n\".join(parts)\n+    # 候補の文が別の節や複数箇所に移ったときは、現行の仮説を再確認する。\n+    sections = re.split(r\"^## (.+)$\", source_text(commit, target), flags=re.MULTILINE)\n+    matches = [body for heading, body in zip(sections[1::2], sections[2::2]) if heading == preset[\"section\"]]\n+    old = preset[\"remove\"]\n+    if len(matches) != 1 or matches[0].count(old) != 1 or baseline.count(old) != 1:\n+        raise ValueError(f\"{target} の「{preset['section']}」で変更箇所が一意に定まりません\")\n+    return {\"A\": baseline, \"B\": baseline.replace(old, preset[\"replace\"], 1)}\n+\n+\n+def batch_inputs(preset, commit):\n+    variants = comparison(preset, commit)\n+    packets = {(task, key): f\"{context}\\n---\\n\\n# 今回の課題\\n\\n{text}\\n\\n{FORMAT}\\n\".encode()\n+               for task, text in TASKS.items() for key, context in variants.items()}\n+    evaluator = conditions()[\"evaluator_sha256\"]\n+    fingerprint = digest(encoded({\n+        \"suite\": preset[\"suite\"], \"evaluator\": evaluator,\n+        \"packets\": {task: [digest(packets[task, k]) for k in \"AB\"] for task in TASKS},\n+    }))\n+    definition = {\n+        \"experiment\": preset[\"id\"], \"target\": preset[\"target\"], \"source_commit\": commit,\n+        \"preset\": preset, \"preset_sha256\": digest(encoded(preset)),\n+        \"evaluator_source_commit\": BASE, \"evaluator_sha256\": evaluator, \"condition_fingerprint\": fingerprint,\n+        \"variant_sha256\": {key: digest(text.encode()) for key, text in variants.items()},\n+        \"task_sha256\": {task: digest((text + FORMAT).encode()) for task, text in TASKS.items()},\n+        \"context_lines\": {key: len(text.splitlines()) for key, text in variants.items()},\n+    }\n+    return definition, packets",
+          "patchLines": 112,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/presets/P-001-short.json",
+          "status": "A",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,9 @@\n+{\n+  \"id\": \"P-001-short\",\n+  \"suite\": \"test-placement-naming\",\n+  \"target\": \"rules/testing.md\",\n+  \"section\": \"配置と命名\",\n+  \"remove\": \"```\\n<モジュールフォルダ>/\\n  index.ts\\n  __tests__/\\n    <対象ドメイン名>.<カテゴリ>.test.ts\\n```\\n\",\n+  \"replace\": \"テストファイル名は `{対象ドメイン名}.{カテゴリ}.test.ts` とする。\\n\",\n+  \"hypothesis\": \"配置例を1行の命名規則にしても、配置、ドメイン名、境界値の選び方を維持できる。\"\n+}",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/reports/P-001-short-2026-11-24.json",
+          "status": "A",
+          "oldPath": null,
+          "additions": 337,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,337 @@\n+{\n+  \"manifest\": {\n+    \"adapter\": \"external\",\n+    \"condition_fingerprint\": \"9ec91bc9078517dd86b5d80ddec9bde9fbf3affca67310adb915a248abefa59d\",\n+    \"context_lines\": {\n+      \"A\": 770,\n+      \"B\": 765\n+    },\n+    \"evaluator_sha256\": \"dccd44a293ab6c6cbe6b97daed5f12b8f3b6cf74fbb98fa2588f3d0811887911\",\n+    \"evaluator_source_commit\": \"d199ad2483ca82c1a9d2b9134460d04a2d89105d\",\n+    \"experiment\": \"P-001-short\",\n+    \"preset\": {\n+      \"hypothesis\": \"配置例を1行の命名規則にしても、配置、ドメイン名、境界値の選び方を維持できる。\",\n+      \"id\": \"P-001-short\",\n+      \"remove\": \"```\\n<モジュールフォルダ>/\\n  index.ts\\n  __tests__/\\n    <対象ドメイン名>.<カテゴリ>.test.ts\\n```\\n\",\n+      \"replace\": \"テストファイル名は `{対象ドメイン名}.{カテゴリ}.test.ts` とする。\\n\",\n+      \"section\": \"配置と命名\",\n+      \"suite\": \"test-placement-naming\",\n+      \"target\": \"rules/testing.md\"\n+    },\n+    \"preset_sha256\": \"b3f9cac7ebe847879e86da9ffa144a2c787e04a1136cba42ed73ec606d83b86d\",\n+    \"repeat\": 2,\n+    \"source_commit\": \"d199ad2483ca82c1a9d2b9134460d04a2d89105d\",\n+    \"target\": \"rules/testing.md\",\n+    \"task_sha256\": {\n+      \"grid-step\": \"e0429389376dfe0a95f42b8bb779e099e4c363f6dafed85d3ddad669e3993b77\",\n+      \"label-limit\": \"b5f685f6621b840b0cd7bdd13673a858d3491393d7e1e51c1cce643dc7a2a761\"\n+    },\n+    \"trials\": [\n+      {\n+        \"id\": \"6d188aa6bddc42a58aab08fa625a413f\",\n+        \"prompt_sha256\": \"1c7a6d122493922d95703feda0c2d47bede17c37f9733775398e508595088fcd\",\n+        \"task_id\": \"grid-step\",\n+        \"trial\": 1,\n+        \"variant\": \"A\"\n+      },\n+      {\n+        \"id\": \"3ebe21208e0144789fc8e51d3ad72463\",\n+        \"prompt_sha256\": \"a29a2eb31d3b42b71d1241d2a61719a1131b0fce43a0865af3a1483a73d32767\",\n+        \"task_id\": \"grid-step\",\n+        \"trial\": 1,\n+        \"variant\": \"B\"\n+      },\n+      {\n+        \"id\": \"c4a9b83d6feb401ab7a44f762b02b4b5\",\n+        \"prompt_sha256\": \"832ef31810744bcb2b559859d517eb529844f07275900219908653c6135cfe10\",\n+        \"task_id\": \"label-limit\",\n+        \"trial\": 1,\n+        \"variant\": \"B\"\n+      },\n+      {\n+        \"id\": \"36ff10431ba64c13a6f73c41af8a826e\",\n+        \"prompt_sha256\": \"3278c925f643b896f24d5a07ec19092a38538cd25a49f8dd52da6e917f479aa8\",\n+        \"task_id\": \"label-limit\",\n+        \"trial\": 1,\n+        \"variant\": \"A\"\n+      },\n+      {\n+        \"id\": \"94e7e3a295034e9a9dfc9e993b01252c\",\n+        \"prompt_sha256\": \"a29a2eb31d3b42b71d1241d2a61719a1131b0fce43a0865af3a1483a73d32767\",\n+        \"task_id\": \"grid-step\",\n+        \"trial\": 2,\n+        \"variant\": \"B\"\n+      },\n+      {\n+        \"id\": \"efb8ff43cf874dff96a63a589c6ebb5d\",\n+        \"prompt_sha256\": \"1c7a6d122493922d95703feda0c2d47bede17c37f9733775398e508595088fcd\",\n+        \"task_id\": \"grid-step\",\n+        \"trial\": 2,\n+        \"variant\": \"A\"\n+      },\n+      {\n+        \"id\": \"a0ff1f2759e34e6db080cbfe9f7b45cf\",\n+        \"prompt_sha256\": \"3278c925f643b896f24d5a07ec19092a38538cd25a49f8dd52da6e917f479aa8\",\n+        \"task_id\": \"label-limit\",\n+        \"trial\": 2,\n+        \"variant\": \"A\"\n+      },\n+      {\n+        \"id\": \"dd797c1af43e4b0781f85e292fba102b\",\n+        \"prompt_sha256\": \"832ef31810744bcb2b559859d517eb529844f07275900219908653c6135cfe10\",\n+        \"task_id\": \"label-limit\",\n+        \"trial\": 2,\n+        \"variant\": \"B\"\n+      }\n+    ],\n+    \"variant_sha256\": {\n+      \"A\": \"9724cfdd3a61ac19bb15b64615171337fbbf0dedac279816536dadc52447d7d2\",\n+      \"B\": \"40d1d52a67604616c7ad5f37556331bb898e4ab85f7c93c62de322f05081fa57\"\n+    },\n+    \"version\": 3\n+  },\n+  \"agent\": \"Codex Work Mode（独立セッション）\",\n+  \"model\": \"GPT-6（ビルド未取得）\",\n+  \"answers\": {\n+    \"6d188aa6bddc42a58aab08fa625a413f\": {\n+      \"answer\": {\n+        \"path\": \"src/domains/canvas/grid-step/__tests__/GridStep.normal.test.ts\",\n+        \"cases\": [\n+          {\n+            \"input\": 0,\n+            \"expected\": 8\n+          },\n+          {\n+            \"input\": 16,\n+            \"expected\": 24\n+          },\n+          {\n+            \"input\": 9,\n+            \"expected\": 16\n+          }\n+        ]\n+      },\n+      \"answer_sha256\": \"16baf93d6ee0a495f8182524293c3a2d1d496e1863f11bbe26de2af9fcb89fbf\",\n+      \"status\": \"task-failure\",\n+      \"checks\": {\n+        \"coverage\": true,\n+        \"expectations\": true,\n+        \"naming\": false,\n+        \"placement\": true,\n+        \"rules\": true\n+      }\n+    },\n+    \"3ebe21208e0144789fc8e51d3ad72463\": {\n+      \"answer\": {\n+        \"path\": \"src/domains/canvas/grid-step/__tests__/grid-step.normal.test.ts\",\n+        \"cases\": [\n+          {\n+            \"input\": 0,\n+            \"expected\": 8\n+          },\n+          {\n+            \"input\": 8,\n+            \"expected\": 16\n+          },\n+          {\n+            \"input\": 19,\n+            \"expected\": 24\n+          }\n+        ]\n+      },\n+      \"answer_sha256\": \"9a2678adc55428fb51ed3f50d28f36d3d76997fe2014299ffba99a8f4aee9d52\",\n+      \"status\": \"success\",\n+      \"checks\": {\n+        \"coverage\": true,\n+        \"expectations\": true,\n+        \"naming\": true,\n+        \"placement\": true,\n+        \"rules\": true\n+      }\n+    },\n+    \"c4a9b83d6feb401ab7a44f762b02b4b5\": {\n+      \"answer\": {\n+        \"path\": \"src/features/inspector/domains/label-limit/__tests__/index.edge.test.ts\",\n+        \"cases\": [\n+          {\n+            \"input\": 0,\n+            \"expected\": false\n+          },\n+          {\n+            \"input\": 1,\n+            \"expected\": true\n+          },\n+          {\n+            \"input\": 12,\n+            \"expected\": true\n+          },\n+          {\n+            \"input\": 13,\n+            \"expected\": false\n+          }\n+        ]\n+      },\n+      \"answer_sha256\": \"c75b8440cb2cfa26ab845d15d0a84e33a548f8bec62f360a87683f4e6914d084\",\n+      \"status\": \"task-failure\",\n+      \"checks\": {\n+        \"coverage\": true,\n+        \"expectations\": true,\n+        \"naming\": false,\n+        \"placement\": true,\n+        \"rules\": true\n+      }\n+    },\n+    \"36ff10431ba64c13a6f73c41af8a826e\": {\n+      \"answer\": {\n+        \"path\": \"src/features/inspector/domains/label-limit/__tests__/index.edge.test.ts\",\n+        \"cases\": [\n+          {\n+            \"input\": 0,\n+            \"expected\": false\n+          },\n+          {\n+            \"input\": 1,\n+            \"expected\": true\n+          },\n+          {\n+            \"input\": 12,\n+            \"expected\": true\n+          },\n+          {\n+            \"input\": 13,\n+            \"expected\": false\n+          }\n+        ]\n+      },\n+      \"answer_sha256\": \"c75b8440cb2cfa26ab845d15d0a84e33a548f8bec62f360a87683f4e6914d084\",\n+      \"status\": \"task-failure\",\n+      \"checks\": {\n+        \"coverage\": true,\n+        \"expectations\": true,\n+        \"naming\": false,\n+        \"placement\": true,\n+        \"rules\": true\n+      }\n+    },\n+    \"94e7e3a295034e9a9dfc9e993b01252c\": {\n+      \"answer\": {\n+        \"path\": \"src/domains/canvas/grid-step/__tests__/grid-step.normal.test.ts\",\n+        \"cases\": [\n+          {\n+            \"input\": 0,\n+            \"expected\": 8\n+          },\n+          {\n+            \"input\": 16,\n+            \"expected\": 24\n+          },\n+          {\n+            \"input\": 9,\n+            \"expected\": 16\n+          }\n+        ]\n+      },\n+      \"answer_sha256\": \"d493bd50d430a2a8b3108b5d825c9875ef0b2969b9ce6242b08905f837437b9b\",\n+      \"status\": \"success\",\n+      \"checks\": {\n+        \"coverage\": true,\n+        \"expectations\": true,\n+        \"naming\": true,\n+        \"placement\": true,\n+        \"rules\": true\n+      }\n+    },\n+    \"efb8ff43cf874dff96a63a589c6ebb5d\": {\n+      \"answer\": {\n+        \"path\": \"src/domains/canvas/grid-step/__tests__/grid-step.normal.test.ts\",\n+        \"cases\": [\n+          {\n+            \"input\": 0,\n+            \"expected\": 8\n+          },\n+          {\n+            \"input\": 8,\n+            \"expected\": 16\n+          },\n+          {\n+            \"input\": 19,\n+            \"expected\": 24\n+          }\n+        ]\n+      },\n+      \"answer_sha256\": \"9a2678adc55428fb51ed3f50d28f36d3d76997fe2014299ffba99a8f4aee9d52\",\n+      \"status\": \"success\",\n+      \"checks\": {\n+        \"coverage\": true,\n+        \"expectations\": true,\n+        \"naming\": true,\n+        \"placement\": true,\n+        \"rules\": true\n+      }\n+    },\n+    \"a0ff1f2759e34e6db080cbfe9f7b45cf\": {\n+      \"answer\": {\n+        \"path\": \"src/features/inspector/domains/label-limit/__tests__/index.edge.test.ts\",\n+        \"cases\": [\n+          {\n+            \"input\": 0,\n+            \"expected\": false\n+          },\n+          {\n+            \"input\": 1,\n+            \"expected\": true\n+          },\n+          {\n+            \"input\": 12,\n+            \"expected\": true\n+          },\n+          {\n+            \"input\": 13,\n+            \"expected\": false\n+          }\n+        ]\n+      },\n+      \"answer_sha256\": \"c75b8440cb2cfa26ab845d15d0a84e33a548f8bec62f360a87683f4e6914d084\",\n+      \"status\": \"task-failure\",\n+      \"checks\": {\n+        \"coverage\": true,\n+        \"expectations\": true,\n+        \"naming\": false,\n+        \"placement\": true,\n+        \"rules\": true\n+      }\n+    },\n+    \"dd797c1af43e4b0781f85e292fba102b\": {\n+      \"answer\": {\n+        \"path\": \"src/features/inspector/domains/label-limit/__tests__/index.edge.test.ts\",\n+        \"cases\": [\n+          {\n+            \"input\": 0,\n+            \"expected\": false\n+          },\n+          {\n+            \"input\": 1,\n+            \"expected\": true\n+          },\n+          {\n+            \"input\": 12,\n+            \"expected\": true\n+          },\n+          {\n+            \"input\": 13,\n+            \"expected\": false\n+          }\n+        ]\n+      },\n+      \"answer_sha256\": \"c75b8440cb2cfa26ab845d15d0a84e33a548f8bec62f360a87683f4e6914d084\",\n+      \"status\": \"task-failure\",\n+      \"checks\": {\n+        \"coverage\": true,\n+        \"expectations\": true,\n+        \"naming\": false,\n+        \"placement\": true,\n+        \"rules\": true\n+      }\n+    }\n+  }\n+}",
+          "patchLines": 338,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/reports/P-001-short-2026-11-24.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 51,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,51 @@\n+# P-001-short　ディレクトリ例を命名規則1行に置き換えた結果\n+\n+**短縮の採用は保留。** 通常課題の合格は現行版の1/2から短縮版の2/2に増えた。同名のモジュールを区別する課題では、両構成とも2回すべてでファイル名を `index.edge.test.ts` とした。短縮版が両方の課題で1回以上通るという事前条件に届かず、未使用の確認課題は実施しなかった。本番の規約には図を残す。[事前に登録した採用条件](https://github.com/DIO0550/design-composer/issues/1469#issuecomment-7133039737)\n+\n+## 何を比べたか\n+\n+A は現行のディレクトリ図6行、B は同じ位置に「テストファイル名は `{対象ドメイン名}.{カテゴリ}.test.ts` とする。」を置いた。課題を除く共通入力は A が770行、B が765行。前回は図を丸ごと削った。前回の実測記録は v1 で、同じ課題・規約は既定の v2 でも再現できる。今回は v3 の入力で A/B の両方を新しく測定した。[前回の P-001](P-001-2026-11-24.md)\n+\n+| 課題 | 構成 | 1回目のファイル名 | 2回目のファイル名 | 全条件合格 |\n+| --- | --- | --- | --- | ---: |\n+| grid-step | A・図 | `GridStep.normal.test.ts` | `grid-step.normal.test.ts` | 1/2 |\n+| grid-step | B・1行 | `grid-step.normal.test.ts` | `grid-step.normal.test.ts` | 2/2 |\n+| label-limit | A・図 | `index.edge.test.ts` | `index.edge.test.ts` | 0/2 |\n+| label-limit | B・1行 | `index.edge.test.ts` | `index.edge.test.ts` | 0/2 |\n+\n+8件すべてで対象モジュールの選択、入出力、境界値、既存スキャンが合格した。全条件の合格は A が1/4件、B が2/4件。不合格の5件では、ドメイン名を小文字の表記どおりファイル名の先頭に使う条件だけが落ちた。両課題を各2回試した範囲での観測である。\n+\n+実行は2026年11月24日、Codex Work Mode の独立した8セッションで行った。継承するモデル設定は共通で、各セッションには1課題と片方の規約を渡した。1回目は課題順に AB・BA、2回目は BA・AB。正確なモデルビルド、時間、トークン、費用は未取得。\n+\n+## 保存した回答から再採点する\n+\n+[実験データ](P-001-short-2026-11-24.json) の `manifest` に基準コミット、置換前後の文、評価器、試行別の入力ハッシュを記録した。`answers` のキーは manifest と共通の試行 ID で、値には返されたパスと全入出力例、回答のハッシュ、採点結果が入っている。\n+\n+リポジトリルートで次を実行すると、同じ入力を生成し、記録した8件を新しい出力先で採点し直せる。\n+\n+```bash\n+cli=harness/evals/harness_eval.py\n+out=$(mktemp -d)/confirm\n+python3 \"$cli\" prepare --candidate P-001-short --repeat 2 \\\n+  --base d199ad2483ca82c1a9d2b9134460d04a2d89105d --out \"$out\"\n+python3 - \"$out\" <<'PY'\n+import hashlib, json, sys\n+from pathlib import Path\n+\n+out = Path(sys.argv[1])\n+record = json.loads(Path(\"harness/evals/reports/P-001-short-2026-11-24.json\").read_text())\n+saved = record[\"manifest\"]\n+fresh = json.loads((out / \"manifest.json\").read_text())\n+assert fresh[\"condition_fingerprint\"] == saved[\"condition_fingerprint\"]\n+for new, old in zip(fresh[\"trials\"], saved[\"trials\"], strict=True):\n+    assert all(new[key] == old[key] for key in (\"task_id\", \"variant\", \"trial\", \"prompt_sha256\"))\n+    sample = record[\"answers\"][old[\"id\"]]\n+    encoded = json.dumps(sample[\"answer\"], ensure_ascii=False, sort_keys=True).encode()\n+    assert hashlib.sha256(encoded).hexdigest() == sample[\"answer_sha256\"]\n+    envelope = {\"prompt_sha256\": new[\"prompt_sha256\"], \"answer\": sample[\"answer\"]}\n+    (out / \"answers\" / (new[\"id\"] + \".json\")).write_text(json.dumps(envelope))\n+PY\n+python3 \"$cli\" collect \"$out\" --agent 'Codex Work Mode（独立セッション）' --model 'GPT-6（ビルド未取得）'\n+```\n+\n+未達の回答を含むので `collect` の期待する終了値は1。8件の採点を終えた時点で、A と B の成功件数、本表の試行別の合否が照合できる。",
+          "patchLines": 52,
+          "truncated": false
+        },
+        {
+          "path": "harness/evals/test_presets.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 57,
+          "deletions": 2,
+          "patch": "@@ -102,10 +102,10 @@ class PresetTest(unittest.TestCase):\n         self.assertEqual(self.cli(\"report\", out).returncode, 0)\n \n     def test_a_missing_or_repeated_target_is_rejected_before_creating_output(self):\n-        for label, text in ((\"missing\", \"# テスト規約\\n\"), (\"twice\", LAYOUT * 2)):\n+        for label, body in ((\"missing\", \"\"), (\"twice\", LAYOUT * 2)):\n             target = self.repo / \"rules/testing.md\"\n             target.parent.mkdir(exist_ok=True)\n-            target.write_text(text)\n+            target.write_text(\"# テスト規約\\n\\n## 配置と命名\\n\\n\" + body)\n             self.git(\"add\", \"--\", \"rules/testing.md\")\n             self.git(\"commit\", \"-q\", \"-m\", label)\n             out = self.work / label\n@@ -113,6 +113,61 @@ class PresetTest(unittest.TestCase):\n             self.assertEqual(result.returncode, 2, result.stderr)\n             self.assertFalse(out.exists())\n \n+    def test_nested_and_tabbed_imports_are_included_and_their_contents_fingerprinted(self):\n+        entry = self.repo / \"AGENTS.md\"\n+        entry.write_text(self.git(\"show\", \"HEAD:AGENTS.md\") + \"\\n\\t*\\t@rules/extra/example.md\\n\")\n+        extra = self.repo / \"rules/extra/example.md\"\n+        extra.parent.mkdir(parents=True)\n+        extra.write_text(\"Additional naming rule.\\n\")\n+        self.git(\"add\", \"--\", \"AGENTS.md\", \"rules/extra/example.md\")\n+        self.git(\"commit\", \"-q\", \"-m\", \"nested import\")\n+        out, before = self.batch(\"extra\")\n+        for packet in (out / \"prompts\").iterdir():\n+            self.assertIn(\"# rules/extra/example.md\\nAdditional naming rule.\\n\", packet.read_text())\n+        extra.write_text(\"Revised naming rule.\\n\")\n+        self.git(\"add\", \"--\", \"rules/extra/example.md\")\n+        self.git(\"commit\", \"-q\", \"-m\", \"change imported body\")\n+        _, after = self.batch(\"changed\")\n+        self.assertNotEqual(before[\"condition_fingerprint\"], after[\"condition_fingerprint\"])\n+\n+    def test_mentions_and_scoped_packages_in_prose_are_not_imports(self):\n+        entry = self.repo / \"AGENTS.md\"\n+        line = \"- Ask @maintainer before changing `@typescript-eslint/parser`.\"\n+        entry.write_text(self.git(\"show\", \"HEAD:AGENTS.md\") + \"\\n\" + line + \"\\n\")\n+        self.git(\"add\", \"--\", \"AGENTS.md\")\n+        self.git(\"commit\", \"-q\", \"-m\", \"document contact and package\")\n+        out, _ = self.batch()\n+        for packet in (out / \"prompts\").iterdir():\n+            self.assertIn(line, packet.read_text())\n+\n+    def test_unsupported_or_ambiguous_imports_reject_the_batch(self):\n+        entry = self.repo / \"AGENTS.md\"\n+        original = self.git(\"show\", \"HEAD:AGENTS.md\")\n+        for i, line in enumerate((\"- @docs/example.md\", \"@rules/naming.md\", \"- @rules/../other.md\",\n+                                  \"- @rules/extra.md @rules/next.md\", \"- more `@rules/example.md`\")):\n+            with self.subTest(line=line):\n+                entry.write_text(original + \"\\n\" + line + \"\\n\")\n+                self.git(\"add\", \"--\", \"AGENTS.md\")\n+                self.git(\"commit\", \"-q\", \"-m\", \"unsupported import\")\n+                out = self.work / f\"bad-{i}\"\n+                result = self.cli(\"prepare\", \"--candidate\", \"P-001-short\", \"--base\", \"HEAD\", \"--out\", out)\n+                self.assertEqual(result.returncode, 2, result.stderr)\n+                self.assertIn(\"import\", result.stderr)\n+                self.assertFalse(out.exists())\n+\n+    def test_manifest_versions_require_an_integer(self):\n+        for stored, invalid in ((2, (True, 2.0)), (3, (3.0,))):\n+            out = self.work / str(stored)\n+            args = [\"--candidate\", \"P-001-short\", \"--base\", \"HEAD\"] if stored == 3 else []\n+            result = self.cli(\"run\", \"--adapter\", \"replay\", \"--out\", out, *args)\n+            self.assertEqual(result.returncode, 0, result.stderr)\n+            path = out / \"manifest.json\"\n+            manifest = json.loads(path.read_bytes())\n+            for version in invalid:\n+                with self.subTest(version=version):\n+                    path.write_text(json.dumps(dict(manifest, version=version)))\n+                    self.assertEqual(self.cli(\"report\", out).returncode, 2)\n+\n \n if __name__ == \"__main__\":\n     unittest.main()",
+          "patchLines": 75,
+          "truncated": false
+        }
+      ]
     }
   ],
   "dependencies": [
@@ -404,8 +563,68 @@
       "status": "added"
     },
     {
+      "from": "harness/evals/harness_eval.py",
+      "to": "harness/evals/presets.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/harness_eval.py",
+      "to": "rules/testing.md",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/presets.py",
+      "to": "AGENTS.md",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/presets.py",
+      "to": "harness/evals/experiment.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/presets.py",
+      "to": "rules/testing.md",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/presets/P-001-short.json",
+      "to": "rules/testing.md",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/reports/P-001-short-2026-11-24.json",
+      "to": "rules/testing.md",
+      "status": "added"
+    },
+    {
       "from": "harness/evals/test_capture.py",
       "to": "harness/evals/test_smoke.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/test_presets.py",
+      "to": "AGENTS.md",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/test_presets.py",
+      "to": "harness/evals/harness_eval.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/test_presets.py",
+      "to": "harness/evals/test_smoke.py",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/test_presets.py",
+      "to": "rules/naming.md",
+      "status": "added"
+    },
+    {
+      "from": "harness/evals/test_presets.py",
+      "to": "rules/testing.md",
       "status": "added"
     },
     {
