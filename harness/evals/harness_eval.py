@@ -11,6 +11,7 @@ import re
 import sys
 import uuid
 
+from presets import batch_inputs, catalog, read_preset, resolve_base, validate_preset
 from answer_json import decode_answer
 from experiment import CANDIDATE, ROOT, TASKS, conditions, digest, encoded, grade, prompt, replay
 
@@ -55,21 +56,29 @@ def schedule(repeats):
                 yield task, variant, trial
 
 
-def prepare(out, repeat, adapter):
+def selected_inputs(candidate, base):
+    if candidate in (None, CANDIDATE):
+        if base is not None:
+            raise ValueError("基準コミットを変更するには inventory の追加候補を指定してください")
+        return conditions(), {(task, v): prompt(task, v) for task in TASKS for v in "AB"}
+    return batch_inputs(read_preset(candidate), resolve_base(base if base is not None else "origin/main"))
+
+
+def prepare(out, repeat, adapter, candidate, base):
     if not 1 <= repeat <= 30:
         raise ValueError("反復回数は1〜30を指定してください")
-    manifest = conditions()
+    manifest, packets = selected_inputs(candidate, base)
     out.mkdir(mode=0o700)
     (out / "prompts").mkdir()
     (out / "answers").mkdir()
     trials = []
     for task, variant, number in schedule(repeat):
-        packet = prompt(task, variant)
+        packet = packets[task, variant]
         trial_id = uuid.uuid4().hex
         (out / "prompts" / f"{trial_id}.txt").write_bytes(packet)
         trials.append(dict(id=trial_id, task_id=task, variant=variant, trial=number,
                            prompt_sha256=digest(packet)))
-    manifest.update(version=2, adapter=adapter, repeat=repeat, trials=trials)
+    manifest.update(version=3 if "preset" in manifest else 2, adapter=adapter, repeat=repeat, trials=trials)
     write_json(out / "manifest.json", manifest)
     return manifest
 
@@ -78,9 +87,14 @@ def checked_manifest(out):
     manifest = json.loads((out / "manifest.json").read_bytes())
     version = manifest["version"]
     modes = ("external", "replay", "claude") if version == 1 else ("external", "replay")
-    if version not in (1, 2) or manifest["adapter"] not in modes:
+    if type(version) is not int or version not in (1, 2, 3) or manifest["adapter"] not in modes:
         raise ValueError("未対応の実験記録です")
-    for key, value in conditions().items():
+    if version == 3:
+        preset = validate_preset(manifest["preset"], manifest["experiment"])
+        definition, packets = batch_inputs(preset, manifest["source_commit"])
+    else:
+        definition, packets = selected_inputs(None, None)
+    for key, value in definition.items():
         if manifest.get(key) != value:
             raise ValueError(f"固定した実験定義と一致しません ({key})")
     repeats = manifest["repeat"]
@@ -93,7 +107,7 @@ def checked_manifest(out):
         if not re.fullmatch("[a-f0-9]{32}", trial_id) or trial_id in ids:
             raise ValueError("試行 ID が不正です")
         ids.add(trial_id)
-        packet = prompt(task, variant)
+        packet = packets[task, variant]
         expected = dict(id=trial_id, task_id=task, variant=variant, trial=number,
                         prompt_sha256=digest(packet))
         if row != expected or (out / "prompts" / f"{trial_id}.txt").read_bytes() != packet:
@@ -240,7 +254,9 @@ def collect(out, manifest, model, runtime):
 
 
 def report(manifest, rows):
-    print(f"# {CANDIDATE} / {manifest['adapter']} / 判定: 保留")
+    print(f"# {manifest['experiment']} / {manifest['adapter']} / 判定: 保留")
+    if "condition_fingerprint" in manifest:
+        print(f"比較条件 {manifest['condition_fingerprint']}")
     print(f"固定コミット {manifest['source_commit']} / 採点済み {len(rows)}/{len(manifest['trials'])}")
     if rows:
         first = next(iter(rows.values()))
@@ -285,7 +301,7 @@ def report(manifest, rows):
 
 def execute(args, out):
     if args.command == "run":
-        manifest = prepare(out, args.repeat, "replay")
+        manifest = prepare(out, args.repeat, "replay", args.candidate, args.base)
         return collect(out, manifest, "fixture", "replay-v1")
     manifest = checked_manifest(out)
     if args.command == "report":
@@ -297,15 +313,18 @@ def execute(args, out):
 
 def main():
     args = parser().parse_args()
-    if args.command in ("inventory", "validate"):
-        data = conditions()
-        print(f"{CANDIDATE}  {data['target']}  配置と命名のディレクトリ例を6行削除")
-        if args.command == "validate":
-            print(json.dumps(data, ensure_ascii=False, indent=2))
+    if args.command == "inventory":
+        print(f"{CANDIDATE}  rules/testing.md  配置と命名のディレクトリ例を6行削除")
+        for preset in catalog():
+            print(f"{preset['id']}  {preset['target']}  {preset['hypothesis']}")
+        return 0
+    if args.command == "validate":
+        data, _ = selected_inputs(args.candidate, args.base)
+        print(json.dumps(data, ensure_ascii=False, indent=2))
         return 0
     out = run_dir(args.out)
     if args.command == "prepare":
-        prepare(out, args.repeat, "external")
+        prepare(out, args.repeat, "external", args.candidate, args.base)
         print(out / "prompts")
         return 0
     return execute(args, out)

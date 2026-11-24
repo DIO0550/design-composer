@@ -102,16 +102,71 @@ class PresetTest(unittest.TestCase):
         self.assertEqual(self.cli("report", out).returncode, 0)
 
     def test_a_missing_or_repeated_target_is_rejected_before_creating_output(self):
-        for label, text in (("missing", "# テスト規約\n"), ("twice", LAYOUT * 2)):
+        for label, body in (("missing", ""), ("twice", LAYOUT * 2)):
             target = self.repo / "rules/testing.md"
             target.parent.mkdir(exist_ok=True)
-            target.write_text(text)
+            target.write_text("# テスト規約\n\n## 配置と命名\n\n" + body)
             self.git("add", "--", "rules/testing.md")
             self.git("commit", "-q", "-m", label)
             out = self.work / label
             result = self.cli("prepare", "--candidate", "P-001-short", "--base", "HEAD", "--out", out)
             self.assertEqual(result.returncode, 2, result.stderr)
             self.assertFalse(out.exists())
+
+    def test_nested_and_tabbed_imports_are_included_and_their_contents_fingerprinted(self):
+        entry = self.repo / "AGENTS.md"
+        entry.write_text(self.git("show", "HEAD:AGENTS.md") + "\n\t*\t@rules/extra/example.md\n")
+        extra = self.repo / "rules/extra/example.md"
+        extra.parent.mkdir(parents=True)
+        extra.write_text("Additional naming rule.\n")
+        self.git("add", "--", "AGENTS.md", "rules/extra/example.md")
+        self.git("commit", "-q", "-m", "nested import")
+        out, before = self.batch("extra")
+        for packet in (out / "prompts").iterdir():
+            self.assertIn("# rules/extra/example.md\nAdditional naming rule.\n", packet.read_text())
+        extra.write_text("Revised naming rule.\n")
+        self.git("add", "--", "rules/extra/example.md")
+        self.git("commit", "-q", "-m", "change imported body")
+        _, after = self.batch("changed")
+        self.assertNotEqual(before["condition_fingerprint"], after["condition_fingerprint"])
+
+    def test_mentions_and_scoped_packages_in_prose_are_not_imports(self):
+        entry = self.repo / "AGENTS.md"
+        line = "- Ask @maintainer before changing `@typescript-eslint/parser`."
+        entry.write_text(self.git("show", "HEAD:AGENTS.md") + "\n" + line + "\n")
+        self.git("add", "--", "AGENTS.md")
+        self.git("commit", "-q", "-m", "document contact and package")
+        out, _ = self.batch()
+        for packet in (out / "prompts").iterdir():
+            self.assertIn(line, packet.read_text())
+
+    def test_unsupported_or_ambiguous_imports_reject_the_batch(self):
+        entry = self.repo / "AGENTS.md"
+        original = self.git("show", "HEAD:AGENTS.md")
+        for i, line in enumerate(("- @docs/example.md", "@rules/naming.md", "- @rules/../other.md",
+                                  "- @rules/extra.md @rules/next.md", "- more `@rules/example.md`")):
+            with self.subTest(line=line):
+                entry.write_text(original + "\n" + line + "\n")
+                self.git("add", "--", "AGENTS.md")
+                self.git("commit", "-q", "-m", "unsupported import")
+                out = self.work / f"bad-{i}"
+                result = self.cli("prepare", "--candidate", "P-001-short", "--base", "HEAD", "--out", out)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertIn("import", result.stderr)
+                self.assertFalse(out.exists())
+
+    def test_manifest_versions_require_an_integer(self):
+        for stored, invalid in ((2, (True, 2.0)), (3, (3.0,))):
+            out = self.work / str(stored)
+            args = ["--candidate", "P-001-short", "--base", "HEAD"] if stored == 3 else []
+            result = self.cli("run", "--adapter", "replay", "--out", out, *args)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            path = out / "manifest.json"
+            manifest = json.loads(path.read_bytes())
+            for version in invalid:
+                with self.subTest(version=version):
+                    path.write_text(json.dumps(dict(manifest, version=version)))
+                    self.assertEqual(self.cli("report", out).returncode, 2)
 
 
 if __name__ == "__main__":
