@@ -352,6 +352,12 @@ deny|sections|bash|sections-effective-body-input REST 作成はフィールド�
 deny|sections|bash|sections-effective-body-file CLI 作成は直接指定より body-file の本文を優先する|gh issue create -t x -l flow:feature --body-file @W/plain.md -b '@S'
 pass|-|bash|sections-effective-body-file-pass 直接指定が不完全でも完全な body-file があれば通す|gh issue create -t x -l flow:feature --body-file @W/sections.md -b 本文だけ
 deny|sections|bash|sections-effective-body-two-calls 2 件目だけ共通節がなければ止める|gh issue create -t a -l flow:feature --body-file @W/sections.md && gh issue create -t b -l flow:feature -b 本文だけ
+deny|sections|mcp|sections-declaration-only 種類の提案だけは節の内容に数えない|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n結果を確認する\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n種類の提案: flow:feature（根拠）"}
+deny|sections|mcp|sections-opt-out-only 対象外宣言だけは節の内容に数えない|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n結果を確認する\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n種類: implementation-flow に通さない（棚卸しのため）"}
+pass|-|mcp|sections-declared-with-content 節の内容と種類の提案が両方あれば通す|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"@SJ\n種類の提案: flow:feature（根拠）"}
+pass|-|mcp|sections-inline-code インラインコード中の記号はコメントを開かない|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n`<!--` の表示を確かめる\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n既定に従う"}
+pass|-|mcp|sections-escaped-comment エスケープされた記号はコメントを開かない|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n\\<!-- の表示を確かめる\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n既定に従う"}
+pass|-|bash|sections-empty-body-file 最後の空の body-file は無視して直接指定を使う|gh issue create -t x -l flow:feature --body-file @W/plain.md --body-file '' -b '@S'
 CASES
 )"
 
@@ -517,6 +523,10 @@ sections_reason="$(run_hook real ok ok "$(payload bash "gh issue create -t x -l 
 found="載らない"
 [[ "$sections_reason" == *"完了の確かめ方"* ]] && found="載る"
 report "載る" "$found" "sections-hook-guidance 不足した見出しを拒否文に載せる"
+
+found="載らない"
+[[ "$sections_reason" == *"作業の種類がまだ決まっていない場合は"* ]] && found="載る"
+report "載る" "$found" "sections-hook-guidance-kind 種類の決め方は未確定の場合だけ案内する"
 
 # 86: 人に尋ねる道が、人がいない起動の行と書式より先に出る(拒否文が写せる行を先に出すと、
 # 対話中でも人に尋ねない道が最短になる)。

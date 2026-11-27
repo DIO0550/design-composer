@@ -231,6 +231,32 @@ for line in sys.stdin:
             print(f"NG|{name}|判定か実行が例外で落ちた")
             continue
         print(f"NG|{name}|検出器は通したが、実物は{reason}作成を送った" if reason else f"ok|{name}|-")
+
+
+def wire_canary_failure(route, command):
+    # 通常のリプレイは、作成しない操作も含む。既知の作成だけは、正しい本文が実際に届かなければ失敗にする。
+    reason = replay(command)
+    received_routes = [request[0] for request in requests]
+    if received_routes != [route]:
+        return f"{route} の作成 1 件を期待したが、受信した経路は {received_routes}"
+    expected_creation = (["flow:feature"], expand("@S"))
+    if list(own_creations()) != [expected_creation]:
+        return "ラベルと本文が揃った自リポジトリへの作成を受信していない"
+    return reason
+
+
+wire_canaries = (
+    ("graphql", "gh issue create -t x -l flow:feature -b '@S'"),
+    ("rest", "gh api -X POST repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -f 'body=@S'"),
+)
+for route, text in wire_canaries:
+    name = f"wire-canary {route} の実物 gh が完全な作成を 1 件送る"
+    try:
+        reason = wire_canary_failure(route, expand(text))
+    except Exception:
+        traceback.print_exc()
+        reason = "送信確認が例外で落ちた"
+    print(f"NG|{name}|{reason}" if reason else f"ok|{name}|-")
 PY
 )"
 
