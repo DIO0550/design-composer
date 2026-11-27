@@ -5,7 +5,9 @@
   ],
   "rules": {
     "curly": ["error", "all"],
-    "max-depth": ["error", { "max": 3 }]
+    "max-depth": ["error", { "max": 3 }],
+    "no-param-reassign": ["error", { "props": true }],
+    "prefer-const": "error"
   },
   "overrides": [
     {

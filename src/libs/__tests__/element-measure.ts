@@ -35,10 +35,13 @@ export function stubBoundsEachMeasure(
   element: Element,
   measure: () => MeasuredBounds,
 ): void {
-  element.getBoundingClientRect = () => {
-    const bounds = measure();
-    return new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
-  };
+  Object.defineProperty(element, "getBoundingClientRect", {
+    configurable: true,
+    value: () => {
+      const bounds = measure();
+      return new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);
+    },
+  });
 }
 
 /**
