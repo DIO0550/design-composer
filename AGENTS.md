@@ -21,7 +21,7 @@
 - @rules/testing.md — テスト配置・テストの書き方（ネスト禁止）
 - @rules/hooks.md — useEffect / useState / useReducer / カスタムフックの使い方
 - @rules/components.md — コンポーネント設計（Composition パターン）
-- @rules/ui-verification.md — UI の表示確認手順（playwright-cli）
+- @rules/ui-verification.md — UI の表示確認手順（実ブラウザ・Storybook）
 
 ## 規範と判例を分ける
 

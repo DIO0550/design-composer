@@ -1,0 +1,65 @@
+[
+  {
+    "kind": "click",
+    "selector": "[aria-label='artboard 一覧'] button[aria-label='home']"
+  },
+  {
+    "kind": "click",
+    "selector": "button[aria-label='Text を追加']"
+  },
+  {
+    "kind": "expect-visible",
+    "selector": "[aria-label='ツリー'] button[aria-label='text']",
+    "description": "ツリーに追加した Text が現れる"
+  },
+  {
+    "kind": "capture",
+    "name": "text-added",
+    "description": "Text の追加後のツリーとキャンバス"
+  },
+  {
+    "kind": "double-click",
+    "selector": "[aria-label='キャンバスの面'] [data-name='text']"
+  },
+  {
+    "kind": "fill",
+    "selector": "input[aria-label='文言を編集']",
+    "value": "Storybook 検証"
+  },
+  {
+    "kind": "press",
+    "key": "Enter"
+  },
+  {
+    "kind": "expect-text",
+    "selector": "[aria-label='キャンバスの面'] [data-name='text']",
+    "expected": "Storybook 検証",
+    "description": "確定した文言がキャンバスの Text に反映される"
+  },
+  {
+    "kind": "capture",
+    "name": "text-updated",
+    "description": "キャンバスに表示された編集後の文言"
+  },
+  {
+    "kind": "click",
+    "selector": "[aria-label='キャンバスの面'] [data-name='home-badge']"
+  },
+  {
+    "kind": "pointer-down",
+    "selector": "[aria-label='キャンバスの面'] [data-name='home-badge']"
+  },
+  {
+    "kind": "pointer-move",
+    "dx": 60,
+    "dy": 35
+  },
+  {
+    "kind": "capture",
+    "name": "drag-in-progress",
+    "description": "home-badge を掴んだまま (+60, +35 px) 移動した画面"
+  },
+  {
+    "kind": "pointer-up"
+  }
+]

@@ -28,13 +28,11 @@ print(json.loads(body))
 
 ## 表示確認
 
-UI を実装・変更した場合は、**必ず playwright-cli で実際の表示を確認**してから完了とする。
+UI を実装・変更した場合は、**必ず実ブラウザで表示を確認**してから完了とする。
 
-1. 開発サーバーを起動する（`pnpm dev`。ポート 14000）
-2. playwright-cli で対象ページを開き、スクリーンショットを取得する
-   - **編集画面はブラウザでは開けない**（開く導線が Tauri の IPC / ダイアログを使う）。編集画面の中を確認するときは **Storybook（`pnpm storybook`。ポート 6006）** を使う。VRT が比較しているのも Storybook なので、赤くなる差分と確認対象が一致する
-   - `http://localhost:6006/iframe.html?id=<storyId>&viewMode=story` を直接開く（story の id は `http://localhost:6006/index.json` から引ける）
-   - **操作を伴う確認は、画面全体を組み立てているストーリー**（`OpenedDocumentEditor` など）で行う。単体ストーリーは props が固定なので状態変化を追えない
+1. ブラウザから直接開ける画面は開発サーバーを起動する（`pnpm dev`。ポート 14000）
+2. 直接開ける画面は playwright-cli で開き、スクリーンショットを取得する
+   - **編集画面の確認は [verify-storybook](../.claude/skills/verify-storybook/SKILL.md) を使う。** 開く導線が Tauri に依存するため、Storybook 上で操作して撮影する
 3. スクリーンショットを目視確認する（レイアウト崩れ・要素の重なり・はみ出しがないこと、実装した表示が仕様通りであること、操作後の状態変化も同様であること）
 4. 確認したスクリーンショットの取得コマンドと確認結果を作業ログに残す
 
