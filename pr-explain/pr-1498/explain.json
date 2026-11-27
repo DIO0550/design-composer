@@ -123,6 +123,9 @@
     "kept": [
       {
         "text": "既存の画像差分チェックやデスクトップ実アプリの確認は別の役割のまま。"
+      },
+      {
+        "text": "見えている部分が少しでもあれば表示と文言を観測できる。座標で直接指定する操作は従来どおり。"
       }
     ]
   },
@@ -131,6 +134,11 @@
       "id": "case-table",
       "label": "検証手順の判定表",
       "file": ".github/scripts/verify-storybook-cases.mjs"
+    },
+    {
+      "id": "browser-cases",
+      "label": "入力先・押下先・表示範囲の判定",
+      "file": ".github/scripts/verify-storybook-browser-cases.mjs"
     }
   ],
   "tests": [
@@ -146,6 +154,20 @@
       "given": "先に画像を撮影し、次の観測で異なる値が得られる。",
       "when": "同じ手順で期待の値を指定する。",
       "then": "観測された値と先の画像が残り、後続の操作は実行されない。"
+    },
+    {
+      "id": "focus-change",
+      "suite": "browser-cases",
+      "name": "フォーカス後のマイクロタスクで別の入力欄に移ったら入力しない",
+      "techniques": [
+        "state",
+        "regression"
+      ],
+      "why": "入力命令が本来の欄と違う場所に届かないようにする。",
+      "given": "指定欄にフォーカスを移した直後、画面側が別の欄にフォーカスを動かす。",
+      "when": "指定欄への入力を実行する。",
+      "then": "別欄へ文字を入れず最初の手順で失敗する。",
+      "commit": "95849f8fb77af67263142b5273b7f812985fbbc6"
     }
   ],
   "quiz": [
@@ -165,7 +187,7 @@
     }
   ],
   "pr": 1498,
-  "sha": "08e023469303686ee05336474a61df02fec8710d",
+  "sha": "95849f8fb77af67263142b5273b7f812985fbbc6",
   "commitStories": [
     {
       "sha": "e102e7c538c5222b00797dbd32246f1bda6d844d",
@@ -214,6 +236,21 @@
       "phase": "fin",
       "role": "失敗ごとの判定表を補強する",
       "why": "可視性の不一致と3種類の操作先の失敗を、個別の変異として検知できるようにした。"
+    },
+    {
+      "sha": "95849f8fb77af67263142b5273b7f812985fbbc6",
+      "phase": "revise",
+      "role": "入力先・押下先・実際の表示範囲を確かめる",
+      "why": "フォーカスやホバーで対象が変わったり、スクロール枠が内容を隠したりしても、誤った操作や表示の確認を成功にしないため。",
+      "featureRanges": [
+        {
+          "path": ".github/scripts/verify-storybook-browser-cases.mjs",
+          "start": 1,
+          "end": 1,
+          "feature": "evidence",
+          "text": "実ブラウザで回帰を検知する判定表を追加"
+        }
+      ]
     }
   ],
   "concepts": [
@@ -228,6 +265,12 @@
       "name": "配信と撮影の共通部",
       "role": "静的な画面を配信し、Chrome と撮影処理を扱う",
       "feature": "start"
+    },
+    {
+      "path": ".github/scripts/verify-storybook-browser-cases.mjs",
+      "name": "実ブラウザの判定表",
+      "role": "無効な入力先やホバーの覆い、スクロール枠から隠れた内容を実際の画面で調べる",
+      "feature": "evidence"
     }
   ]
 }
