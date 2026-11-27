@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1501,
+      "title": "✨ [New Feature]: #1479 種類別の Issue フォームと作成時の本文検査を揃える"
+    },
+    {
       "pr": 1500,
       "title": "📝 [Doc]: PR #1498 の検証記録を追加"
     },
