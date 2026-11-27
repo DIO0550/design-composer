@@ -247,7 +247,7 @@ async function waitForStory(cdp, story) {
   return Result.err({ kind: "render-timeout", message: `${RenderTimeoutMs} ms 以内に ${story.id} が描画されませんでした` });
 }
 
-function inspectElement(selector, action) {
+async function inspectElement(selector, action, pressedAt = null) {
   const matches = document.querySelectorAll(selector);
   if (matches.length > 1) {
     return { kind: "ambiguous", count: matches.length };
@@ -262,12 +262,33 @@ function inspectElement(selector, action) {
   }
   if (action === "fill") {
     const isTextInput = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
-    const isEditable = isTextInput && !element.disabled && !element.readOnly;
+    const isEditable = isTextInput && !element.matches(":disabled") && !element.readOnly;
     if (!isEditable) {
       return { kind: "not-editable" };
     }
     element.focus();
     element.select();
+    // focus のハンドラーがマイクロタスクで入力先を変えることがある。
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    if (document.activeElement !== element) {
+      return { kind: "not-focused" };
+    }
+    return { kind: "visible" };
+  }
+  if (action === "observe") {
+    // 要素自身の矩形ではなく、スクロール枠やビューポートでクリップされた後の矩形を使う。
+    const hasVisibleArea = await new Promise((resolve) => {
+      const observer = new IntersectionObserver(([entry]) => {
+        observer.disconnect();
+        const { width, height } = entry.intersectionRect;
+        resolve(width > 0 && height > 0);
+      });
+      observer.observe(element);
+    });
+    if (!hasVisibleArea) {
+      return { kind: "outside-visible-area" };
+    }
+    return { kind: "visible", text: (element.innerText ?? element.textContent ?? "").trim() };
   }
   const rect = element.getBoundingClientRect();
   const left = Math.max(rect.left, 0);
@@ -275,28 +296,17 @@ function inspectElement(selector, action) {
   const right = Math.min(rect.right, window.innerWidth);
   const bottom = Math.min(rect.bottom, window.innerHeight);
   const intersectsViewport = left < right && top < bottom;
-  const x = (left + right) / 2;
-  const y = (top + bottom) / 2;
-  if (action === "point") {
-    const isDisabled = element.matches(":disabled") || element.closest('[aria-disabled="true"]') !== null;
-    if (isDisabled) {
-      return { kind: "disabled" };
-    }
-    const hitsElement = intersectsViewport && element.contains(document.elementFromPoint(x, y));
-    if (!hitsElement) {
-      return { kind: "not-hittable" };
-    }
+  const x = pressedAt?.x ?? (left + right) / 2;
+  const y = pressedAt?.y ?? (top + bottom) / 2;
+  const isDisabled = element.matches(":disabled") || element.closest('[aria-disabled="true"]') !== null;
+  if (isDisabled) {
+    return { kind: "disabled" };
   }
-  const isOutsideViewport = action === "visibility" && !intersectsViewport;
-  if (isOutsideViewport) {
-    return { kind: "outside-viewport" };
+  const hitsElement = intersectsViewport && element.contains(document.elementFromPoint(x, y));
+  if (!hitsElement) {
+    return { kind: "not-hittable" };
   }
-  return {
-    kind: "visible",
-    text: (element.innerText ?? element.textContent ?? "").trim(),
-    x,
-    y,
-  };
+  return { kind: "visible", x, y };
 }
 
 async function captureFrame(cdp, path) {
@@ -311,7 +321,8 @@ async function captureFrame(cdp, path) {
 function createBrowserDriver(cdp, out) {
   let pointer = { x: 0, y: 0, pressed: false };
 
-  const elementState = (selector, action) => evaluateInPage(cdp, inspectElement, [selector, action]);
+  const elementState = (selector, action, pressedAt = null) =>
+    evaluateInPage(cdp, inspectElement, [selector, action, pressedAt]);
   const dispatch = async (type, point, { button, pressed, clickCount = 1 }) => {
     await cdp.send("Input.dispatchMouseEvent", {
       type, x: point.x, y: point.y, button, buttons: pressed ? 1 : 0, clickCount,
@@ -322,19 +333,34 @@ function createBrowserDriver(cdp, out) {
     await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", ...Keys[key] });
     await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...Keys[key] });
   };
+  const selectorPoint = async (selector, pressedAt = null) => {
+    const action = pressedAt ? "press-point" : "point";
+    const element = await elementState(selector, action, pressedAt);
+    if (element.kind !== "visible") {
+      return Result.err(`要素を一意に操作できません: ${selector} (${element.kind})`);
+    }
+    return Result.ok(element);
+  };
   const pointFor = async (step) => {
     const usesSelector = step.selector && ["click", "double-click", "pointer-down"].includes(step.kind);
     if (usesSelector) {
-      const element = await elementState(step.selector, "point");
-      if (element.kind !== "visible") {
-        return Result.err(`要素を一意に操作できません: ${step.selector} (${element.kind})`);
-      }
-      return Result.ok(element);
+      return selectorPoint(step.selector);
     }
     if (hasCoordinates(step)) {
       return Result.ok({ x: step.x, y: step.y });
     }
     return Result.ok({ x: pointer.x + (step.dx ?? 0), y: pointer.y + (step.dy ?? 0) });
+  };
+  const pressAt = async (step, point, clickCount = 1) => {
+    // hover や直前のクリックで押下先が変わり得るため、現在の座標で押下のたびに確認する。
+    if (step.selector) {
+      const reachable = await selectorPoint(step.selector, point);
+      if (!Result.isOk(reachable)) {
+        return reachable;
+      }
+    }
+    await dispatch("mousePressed", point, { button: "left", pressed: true, clickCount });
+    return Result.ok(undefined);
   };
   const perform = async (step) => {
     if (step.kind === "press") {
@@ -369,8 +395,7 @@ function createBrowserDriver(cdp, out) {
     switch (step.kind) {
       case "pointer-down":
         await dispatch("mouseMoved", point, { button: "none", pressed: false });
-        await dispatch("mousePressed", point, { button: "left", pressed: true });
-        break;
+        return pressAt(step, point);
       case "pointer-move":
         await dispatch("mouseMoved", point, { button: pointer.pressed ? "left" : "none", pressed: pointer.pressed });
         break;
@@ -382,7 +407,10 @@ function createBrowserDriver(cdp, out) {
         const count = step.kind === "double-click" ? 2 : 1;
         await dispatch("mouseMoved", point, { button: "none", pressed: false });
         for (let clickCount = 1; clickCount <= count; clickCount += 1) {
-          await dispatch("mousePressed", point, { button: "left", pressed: true, clickCount });
+          const pressed = await pressAt(step, point, clickCount);
+          if (!Result.isOk(pressed)) {
+            return pressed;
+          }
           await dispatch("mouseReleased", point, { button: "left", pressed: false, clickCount });
         }
         break;
@@ -396,7 +424,7 @@ function createBrowserDriver(cdp, out) {
     const expected = checksVisibility ? true : step.expected;
     let observed;
     do {
-      const element = await elementState(step.selector, checksVisibility ? "visibility" : "read-text");
+      const element = await elementState(step.selector, "observe");
       if (element.kind === "ambiguous") {
         return Result.err(`${step.selector} に ${element.count} 要素が一致しました`);
       }

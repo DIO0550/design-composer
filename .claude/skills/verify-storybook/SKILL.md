@@ -46,3 +46,5 @@ node .github/scripts/verify-storybook.mjs \
 3. 作業ログや PR に取得コマンド、何を確かめたか、結果と画像を添える。スクリーンショットは VRT のベースライン比較や撮影範囲の検査の代わりにはしない。
 
 手動で story を調べるときは `pnpm storybook`（ポート 6006）を起動し、`http://localhost:6006/index.json` で ID を探して `http://localhost:6006/iframe.html?id=<storyId>&viewMode=story` を開く。
+
+検証 CLI 自体を変えたときは `node .github/scripts/verify-storybook-browser-cases.mjs` で、入力先・押下先・クリップの境界を実ブラウザで再確認する。
