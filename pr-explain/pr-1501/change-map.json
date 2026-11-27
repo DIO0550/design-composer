@@ -1,0 +1,656 @@
+{
+  "version": 2,
+  "pr": 1501,
+  "headBranch": "codex/1479-issue-flow-templates",
+  "baseBranch": "main",
+  "mergeBase": "efa2803e2f150f496f94d6b73424154d9843e7ea",
+  "head": "90a3c13aacbd22393ba9db9c2def6d5cd2845885",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 8,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/block-issue-without-flow-kind.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/cases-fixtures.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 94,
+          "deletions": 53,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-fixtures.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 31,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 59,
+          "deletions": 9,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 150,
+          "deletions": 28,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/post-merge-review.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 3,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/implementation-flow/bugfix.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/implementation-flow/investigation.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/bugfix.yml",
+          "status": "R",
+          "oldPath": ".github/ISSUE_TEMPLATE/bug.yml",
+          "additions": 25,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 25,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/feature.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 57,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 27,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/investigation.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 25,
+          "deletions": 10,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/refactor.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 66,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/lib/detector-precondition.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/detector-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "f635805ccc89cdfa2f6eeac2fc42797222c669f3",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-28T00:39:45+09:00",
+      "subject": "🧪 [Tests]: #1479 Issue 作成本文の契約を判定表で固定",
+      "body": "- 共通節の欠落・空欄・見出し位置と、実際に送る本文の選択を判定表に追加\n- 実物 gh のループバックでラベル付き GraphQL と REST の本文を照合\n\n採用理由:\n既存検出器で不足本文が通ることを先に再現してから検査を実装する。\n判定表は予定どおり RED 19 件、厳格 pre-push は対象の表だけ失敗。",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 83,
+          "deletions": 53,
+          "patch": "@@ -14,7 +14,7 @@\n # - 検出器の表は `期待|分類|形|ケース名|入力`。分類は deny のときの種別の末尾(`missing` など)で、他は `-`。\n #   形は `bash`(入力 `cwd` に作業ディレクトリを載せ、別のディレクトリから走らせる)・`bash-nocwd`(`cwd` を\n #   載せず、作業ディレクトリから走らせる)・`mcp`(入力は `mcp__github__issue_write` の `tool_input` の JSON)。\n-#   入力の `⏎` は改行、`⇥` はタブ、`¦` は `|`、`@W` は作業ディレクトリに置き換える\n+#   入力の `⏎` は改行、`⇥` はタブ、`¦` は `|`、`@W` は作業ディレクトリ、`@S` / `@SJ` は Bash / JSON 用の共通節に置き換える\n # - origin の表は `期待|origin の URL|ケース名|入力`。自リポジトリの決め方を見る\n # - フックの表は `期待|検出器|python3|jq|ケース名|入力`。フックを一時ディレクトリへ写して走らせる\n #   (`edit-detector-cases.sh` と同じ理由で、本番のフックに差し替え口を残さない)\n@@ -133,19 +133,19 @@ place_files\n \n cases=\"$(cat <<'CASES'\n deny|missing|bash|1 ラベルも行もない作成は止める|gh issue create -t x -b 本文\n-pass|-|bash|2 --label flow:feature で通す|gh issue create -t x --label flow:feature\n-pass|-|bash|3 -l bug,flow:bugfix で通す|gh issue create -t x -l bug,flow:bugfix\n-pass|-|bash|4 --label=flow:refactor で通す|gh issue create -t x --label=flow:refactor\n-pass|-|bash|5 -lflow:feature で通す|gh issue create -t x -lflow:feature\n+pass|-|bash|2 --label flow:feature で通す|gh issue create -t x --label flow:feature --body-file @W/sections.md\n+pass|-|bash|3 -l bug,flow:bugfix で通す|gh issue create -t x -l bug,flow:bugfix --body-file @W/sections.md\n+pass|-|bash|4 --label=flow:refactor で通す|gh issue create -t x --label=flow:refactor --body-file @W/sections.md\n+pass|-|bash|5 -lflow:feature で通す|gh issue create -t x -lflow:feature --body-file @W/sections.md\n deny|missing|bash|6 flow: で始まらないラベルだけなら止める|gh issue create -t x --label bug --label noflow:x\n deny|missing|bash|7 空の flow: だけなら止める|gh issue create -t x --label flow:\n deny|multiple|bash|8 異なる flow:* が 2 つなら止める|gh issue create -t x --label flow:feature --label flow:bugfix\n deny|multiple|bash|8 異なる flow:* が 2 つなら提案の行があっても止める|gh issue create -t x --label flow:feature --label flow:bugfix -b '種類の提案: flow:feature（根拠）'\n-pass|-|bash|9 同じ flow:* が 2 回なら通す|gh issue create -t x --label flow:feature -l flow:feature\n-pass|-|bash|10 区切りが 'EOF' のヒアドキュメントに提案の行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類の提案: flow:feature（根拠）⏎EOF\n-pass|-|bash|11 区切りが 'EOF' のヒアドキュメントに通さない行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類: implementation-flow に通さない（棚卸し）⏎EOF\n-pass|-|bash|12 ラベルと行の両方があれば通す|gh issue create -t x --label flow:feature --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF\n-pass|-|bash|13 提案の行が 2 つあっても通す|gh issue create -t x --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎種類の提案: flow:bugfix（別の根拠）⏎EOF\n+pass|-|bash|9 同じ flow:* が 2 回なら通す|gh issue create -t x --label flow:feature -l flow:feature --body-file @W/sections.md\n+pass|-|bash|10 区切りが 'EOF' のヒアドキュメントに提案の行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF\n+pass|-|bash|11 区切りが 'EOF' のヒアドキュメントに通さない行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類: implementation-flow に通さない（棚卸し）⏎⏎@S⏎EOF\n+pass|-|bash|12 ラベルと行の両方があれば通す|gh issue create -t x --label flow:feature --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF\n+pass|-|bash|13 提案の行が 2 つあっても通す|gh issue create -t x --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎種類の提案: flow:bugfix（別の根拠）⏎⏎@S⏎EOF\n deny|missing|bash|14 根拠が空の行は満たさない|gh issue create -t x --body-file - <<'EOF'⏎種類の提案: flow:feature（）⏎EOF\n deny|missing|bash|15 全角コロンの行も半角括弧の行も満たさない|gh issue create -t x --body-file - <<'EOF'⏎種類の提案：flow:feature（根拠）⏎種類の提案: flow:feature(根拠)⏎EOF\n deny|missing|bash|16 行頭にない行は満たさない|gh issue create -t x --body-file - <<'EOF'⏎  種類の提案: flow:feature（根拠）⏎EOF\n@@ -155,21 +155,21 @@ pass|-|bash|19 -F の絶対パスで通す|gh issue create -t x -F @W/prop.md\n pass|-|bash|20 相対パスは入力の cwd を起点に読んで通す|gh issue create -t x --body-file prop.md\n pass|-|bash-nocwd|21 cwd が無ければカレントディレクトリから読んで通す|gh issue create -t x --body-file prop.md\n deny|unreadable|bash|22 ファイルが無く、ラベルも無ければ止める|gh issue create -t x --body-file @W/none.md\n-pass|-|bash|23 ファイルが無くても、ラベルがあれば通す|gh issue create -t x --body-file @W/none.md --label flow:feature\n+deny|unreadable|bash|23 sections-unreadable ファイルが無ければラベルがあっても止める|gh issue create -t x --body-file @W/none.md --label flow:feature\n deny|unreadable|bash|24 1 MiB を超えるファイルは止める|gh issue create -t x --body-file @W/big.md\n deny|unreadable|bash|25 /dev/zero は止める|gh issue create -t x --body-file /dev/zero\n-pass|-|bash|26 -F - <<'EOF' で通す|gh issue create -t x -F - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF\n+pass|-|bash|26 -F - <<'EOF' で通す|gh issue create -t x -F - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF\n deny|unreadable|bash|27 パイプで渡したら止める|printf '%s\\n' '種類の提案: flow:feature（根拠）' ¦ gh issue create -t x --body-file -\n-pass|-|bash|28 前の断片でヒアドキュメントを書いたファイルを --body-file で渡す形は通す|cat > @W/written.md <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎gh issue create -t x --body-file @W/written.md\n+pass|-|bash|28 前の断片でヒアドキュメントを書いたファイルを --body-file で渡す形は通す|cat > @W/written.md <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF⏎gh issue create -t x --body-file @W/written.md\n deny|unreadable|bash|29 閉じない引用符は止める|gh issue create -t x --body '種類の提案: flow:feature（根拠）\n-pass|-|bash|30 --body \"$(cat <<'EOF'…)\" で通す|gh issue create -t x --body \"$(cat <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎)\"\n+pass|-|bash|30 --body \"$(cat <<'EOF'…)\" で通す|gh issue create -t x --body \"$(cat <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF⏎)\"\n deny|unreadable|bash|31 --body \"$(cat f)\" は止める|gh issue create -t x --body \"$(cat @W/prop.md)\"\n deny|unreadable|bash|32 --body \"$BODY\" は止める|gh issue create -t x --body \"$BODY\"\n-pass|-|bash|33 バックスラッシュ改行で続けた --label flow:feature で通す|gh issue create \\⏎  -t x \\⏎  --label flow:feature\n+pass|-|bash|33 バックスラッシュ改行で続けた --label flow:feature で通す|gh issue create \\⏎  -t x \\⏎  --label flow:feature --body-file @W/sections.md\n deny|missing|bash|34 プラグインの形(URL=$(gh issue create … --label \"type:plan\"))は止める|URL=$(gh issue create \\⏎  --title \"plan\" \\⏎  --body-file @W/plain.md \\⏎  --label \"type:plan\")\n deny|missing|bash|35 cd x && gh issue create も止める|cd @W && gh issue create -t x\n deny|missing|bash|36 url=$(gh issue create -t x) も止める|url=$(gh issue create -t x)\n-deny|missing|bash|37 作成が 2 つあり、2 つ目だけ欠けていれば止める|gh issue create -t a --label flow:feature && gh issue create -t b\n+deny|missing|bash|37 作成が 2 つあり、2 つ目だけ欠けていれば止める|gh issue create -t a --label flow:feature --body-file @W/sections.md && gh issue create -t b\n pass|-|bash|38 --web は通す|gh issue create --web\n pass|-|bash|39 -R other/repo は通す|gh issue create -t x -R other/repo\n deny|missing|bash|40 -R が大文字小文字違いの自リポジトリなら止める|gh issue create -t x -R ACME/Widgets\n@@ -199,15 +199,15 @@ deny|missing|bash|49 止めすぎを固定: export GH_REPO=other/r を先に実\n deny|missing|bash|50 止めすぎを固定: cd ../other の後でも止める|cd ../other && gh issue create -t x\n deny|unreadable|bash|51 読む位置の誤りを固定: cd sub の後の相対パスは cwd から読む|cd sub && gh issue create -t x --body-file rel.md\n deny|missing|bash|52 -f title=x(暗黙の POST)は止める|gh api repos/acme/widgets/issues -f title=x\n-pass|-|bash|53 -f 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature'\n-pass|-|bash|54 -F 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues -f title=x -F 'labels[]=flow:feature'\n-pass|-|bash|55 --raw-field 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues --raw-field title=x --raw-field 'labels[]=flow:feature'\n+pass|-|bash|53 -f 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -f 'body=@S'\n+pass|-|bash|54 -F 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues -f title=x -F 'labels[]=flow:feature' -f 'body=@S'\n+pass|-|bash|55 --raw-field 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues --raw-field title=x --raw-field 'labels[]=flow:feature' -f 'body=@S'\n deny|missing|bash|56 --field title=x は止める|gh api repos/acme/widgets/issues --field title=x\n deny|missing|bash|57 --method POST は止める|gh api --method POST repos/acme/widgets/issues\n deny|missing|bash|58 -XPOST は止める|gh api -XPOST repos/acme/widgets/issues\n deny|missing|bash|59 --method=post は止める|gh api --method=post repos/acme/widgets/issues\n deny|missing|bash|60 --input のファイルにラベルも行もなければ止める|gh api repos/acme/widgets/issues --input @W/in-plain.json\n-pass|-|bash|61 --input - <<'EOF' の labels で通す|gh api repos/acme/widgets/issues --input - <<'EOF'⏎{\"title\":\"x\",\"labels\":[\"flow:feature\"]}⏎EOF\n+pass|-|bash|61 --input - <<'EOF' の labels で通す|gh api repos/acme/widgets/issues --input - <<'EOF'⏎{\"title\":\"x\",\"body\":\"@SJ\",\"labels\":[\"flow:feature\"]}⏎EOF\n pass|-|bash|62 --input の body の行で通す|gh api repos/acme/widgets/issues --input @W/in-body.json\n deny|unreadable|bash|63 --input が JSON でなければ止める|gh api repos/acme/widgets/issues --input @W/bad.json\n pass|-|bash|64 -F body=@file で通す|gh api repos/acme/widgets/issues -f title=x -F body=@@W/prop.md\n@@ -221,33 +221,33 @@ pass|-|bash|70 他リポジトリは通す|gh api repos/other/repo/issues -f tit\n miss|-|bash|71 graphql の createIssue は読まない|gh api graphql -f query='mutation { createIssue(input: {repositoryId: \"x\", title: \"y\"}) { issue { id } } }'\n miss|-|bash|72 curl は読まない|curl -X POST https://api.github.com/repos/acme/widgets/issues -d '{\"title\":\"x\"}'\n deny|missing|mcp|73 MCP でラベルも行もなければ止める|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"body\":\"本文\"}\n-pass|-|mcp|74 MCP の flow:* ラベルで通す|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"]}\n+pass|-|mcp|74 MCP の flow:* ラベルで通す|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"body\":\"@SJ\",\"labels\":[\"flow:feature\"]}\n deny|multiple|mcp|75 MCP で異なる flow:* が 2 つなら止める|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\",\"flow:bugfix\"]}\n-pass|-|mcp|76 MCP で同じ flow:* が 2 つなら通す|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\",\"flow:feature\"]}\n-pass|-|mcp|77 MCP の body の提案の行で通す|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"body\":\"前置き\\n種類の提案: flow:feature（根拠）\"}\n-pass|-|mcp|78 MCP の body の通さない行で通す|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"body\":\"種類: implementation-flow に通さない（棚卸し）\"}\n+pass|-|mcp|76 MCP で同じ flow:* が 2 つなら通す|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"body\":\"@SJ\",\"labels\":[\"flow:feature\",\"flow:feature\"]}\n+pass|-|mcp|77 MCP の body の提案の行で通す|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"body\":\"前置き\\n種類の提案: flow:feature（根拠）\\n\\n@SJ\"}\n+pass|-|mcp|78 MCP の body の通さない行で通す|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"body\":\"種類: implementation-flow に通さない（棚卸し）\\n\\n@SJ\"}\n pass|-|mcp|79 MCP の update は止めない|{\"method\":\"update\",\"owner\":\"acme\",\"repo\":\"widgets\",\"issue_number\":1,\"title\":\"x\"}\n pass|-|mcp|80 MCP で他リポジトリは通す|{\"method\":\"create\",\"owner\":\"other\",\"repo\":\"repo\",\"title\":\"x\"}\n deny|missing|mcp|81 MCP で大文字小文字違いの自リポジトリは止める|{\"method\":\"create\",\"owner\":\"ACME\",\"repo\":\"Widgets\",\"title\":\"x\"}\n-pass|-|bash|100 ダブルクォートの --body に $ も ` も \\ も無ければ字面で読んで通す|gh issue create -t x --body \"前置き⏎種類の提案: flow:feature（根拠）\"\n+pass|-|bash|100 ダブルクォートの --body に $ も ` も \\ も無ければ字面で読んで通す|gh issue create -t x --body \"前置き⏎種類の提案: flow:feature（根拠）⏎⏎@S\"\n deny|unreadable|bash|100 ダブルクォートの --body の本文に ` があれば止める|gh issue create -t x --body \"前置き `code`⏎種類の提案: flow:feature（根拠）\"\n-pass|-|bash|101 <<EOF の本文に $ も ` も \\ も無ければ字面で読んで通す|gh issue create -t x --body-file - <<EOF⏎前置き⏎種類の提案: flow:feature（根拠）⏎EOF\n+pass|-|bash|101 <<EOF の本文に $ も ` も \\ も無ければ字面で読んで通す|gh issue create -t x --body-file - <<EOF⏎前置き⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF\n deny|unreadable|bash|101 <<EOF の本文に ` があれば止める|gh issue create -t x --body-file - <<EOF⏎前置き `code`⏎種類の提案: flow:feature（根拠）⏎EOF\n deny|unreadable|bash|102 <<EOF の本文に \\ があれば止める|gh issue create -t x --body-file - <<EOF⏎前置き \\\\⏎種類の提案: flow:feature（根拠）⏎EOF\n deny|unreadable|bash|103 $(cat <<EOF) の本文に ` があれば止める|gh issue create -t x --body \"$(cat <<EOF⏎前置き `code`⏎種類の提案: flow:feature（根拠）⏎EOF⏎)\"\n-pass|-|bash|104 $(cat <<EOF) の本文に $ も ` も \\ も無ければ通す|gh issue create -t x --body \"$(cat <<EOF⏎前置き⏎種類の提案: flow:feature（根拠）⏎EOF⏎)\"\n-pass|-|bash|105 <<'EOF' の本文の $ ` \\ は字面のまま読んで通す|gh issue create -t x --body-file - <<'EOF'⏎前置き $X `code` \\z⏎種類の提案: flow:feature（根拠）⏎EOF\n-pass|-|bash|106 シングルクォートの本文の $ ` \\ は字面のまま読んで通す|gh issue create -t x --body '前置き $X `code` \\z⏎種類の提案: flow:feature（根拠）'\n-pass|-|bash|107 区切りが \"EOF\" なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<\"EOF\"⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎EOF\n-pass|-|bash|107 区切りが \\EOF なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<\\EOF⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎EOF\n-pass|-|bash|107 区切りが E'OF' なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<E'OF'⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎EOF\n+pass|-|bash|104 $(cat <<EOF) の本文に $ も ` も \\ も無ければ通す|gh issue create -t x --body \"$(cat <<EOF⏎前置き⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF⏎)\"\n+pass|-|bash|105 <<'EOF' の本文の $ ` \\ は字面のまま読んで通す|gh issue create -t x --body-file - <<'EOF'⏎前置き $X `code` \\z⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF\n+pass|-|bash|106 シングルクォートの本文の $ ` \\ は字面のまま読んで通す|gh issue create -t x --body '前置き $X `code` \\z⏎種類の提案: flow:feature（根拠）⏎⏎@S'\n+pass|-|bash|107 区切りが \"EOF\" なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<\"EOF\"⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF\n+pass|-|bash|107 区切りが \\EOF なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<\\EOF⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF\n+pass|-|bash|107 区切りが E'OF' なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<E'OF'⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF\n deny|unreadable|bash|108 ダブルクォートの中の $(…) は止める|gh issue create -t x --body \"種類の提案: flow:feature（$(echo 根拠)）\"\n deny|unreadable|bash|109 ダブルクォートの中の \\$ も止める|gh issue create -t x --body \"種類の提案: flow:feature（\\$5）\"\n-pass|-|bash|110 <<-EOF で行頭のタブを除くと合う行は通す|gh issue create -t x --body-file - <<-EOF⏎⇥種類の提案: flow:feature（根拠）⏎⇥EOF\n+pass|-|bash|110 <<-EOF で行頭のタブを除くと合う行は通す|gh issue create -t x --body-file - <<-EOF⏎⇥種類の提案: flow:feature（根拠）⏎⏎@S⏎⇥EOF\n deny|missing|bash|111 -f body=@file は字面のまま送るので止める|gh api repos/acme/widgets/issues -f title=x -f body=@@W/prop.md\n pass|-|bash|112 -Fbody=@file で通す|gh api repos/acme/widgets/issues -f title=x -Fbody=@@W/prop.md\n deny|missing|bash|113 --raw-field body=@file は止める|gh api repos/acme/widgets/issues -f title=x --raw-field body=@@W/prop.md\n-pass|-|bash|114 -F body=@- <<'EOF' で通す|gh api repos/acme/widgets/issues -f title=x -F body=@- <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF\n+pass|-|bash|114 -F body=@- <<'EOF' で通す|gh api repos/acme/widgets/issues -f title=x -F body=@- <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF\n deny|unreadable|bash|115 -F body=@- にパイプで渡したら止める|printf '%s' '種類の提案: flow:feature（根拠）' ¦ gh api repos/acme/widgets/issues -f title=x -F body=@-\n deny|unreadable|bash|116 <<< の後に続く行は本文として読まない|gh issue create -t x --body-file - <<<EOF⏎種類の提案: flow:feature（根拠）⏎EOF\n deny|missing|bash|117 issues?x=1 は止める|gh api 'repos/acme/widgets/issues?x=1' -f title=x\n@@ -256,17 +256,17 @@ deny|missing|bash|119 -X POST は止める|gh api -X POST repos/acme/widgets/iss\n pass|-|bash|120 -X GET -f は止めない|gh api -X GET repos/acme/widgets/issues -f state=open\n pass|-|bash|121 --repo other/repo は通す|gh issue create -t x --repo other/repo\n deny|missing|bash|122 --repo が大文字小文字違いの自リポジトリなら止める|gh issue create -t x --repo Acme/WIDGETS\n-pass|-|bash|123 -b に行があれば通す|gh issue create -t x -b '種類の提案: flow:feature（根拠）'\n+pass|-|bash|123 -b に行があれば通す|gh issue create -t x -b '種類の提案: flow:feature（根拠）⏎⏎@S'\n deny|missing|bash|124 -b に行がなければ止める|gh issue create -t x -b '本文だけ'\n deny|unreadable|bash|125 ダブルクォートの中で ` の範囲が提案の行をまたぐなら止める|gh issue create -t x --body \"前 `echo⏎種類の提案: flow:feature（根拠）⏎` 後\"\n deny|unreadable|bash|126 <<EOF の中で $(… の範囲が提案の行をまたぐなら止める|gh issue create -t x --body-file - <<EOF⏎説明 $(true⏎種類の提案: flow:feature（根拠）⏎)⏎EOF\n-pass|-|bash|127 シングルクォートの本文に cat <<EOF と提案の行があれば通す|gh issue create -t x --body '前⏎cat <<EOF⏎種類の提案: flow:feature（根拠）⏎EOF⏎後'\n-pass|-|bash|128 ダブルクォートの本文に cat <<EOF と提案の行があれば通す|gh issue create -t x --body \"前⏎cat <<EOF⏎種類の提案: flow:feature（根拠）⏎EOF⏎後\"\n+pass|-|bash|127 シングルクォートの本文に cat <<EOF と提案の行があれば通す|gh issue create -t x --body '前⏎cat <<EOF⏎種類の提案: flow:feature（根拠）⏎EOF⏎後⏎⏎@S'\n+pass|-|bash|128 ダブルクォートの本文に cat <<EOF と提案の行があれば通す|gh issue create -t x --body \"前⏎cat <<EOF⏎種類の提案: flow:feature（根拠）⏎EOF⏎後⏎⏎@S\"\n deny|unreadable|bash|168 \"$(cat <<'EOF' …)\" の区切りの行と閉じ括弧の間にパイプが続けば止める|gh issue create -t x --body \"$(cat <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎¦ tr a b)\"\n-pass|-|bash|129 $(cat <<'EOF') の本文に \" と ) を含む行があっても通す|gh issue create -t x --body \"$(cat <<'EOF'⏎\" ) を含む行⏎種類の提案: flow:feature（根拠）⏎EOF⏎)\"\n+pass|-|bash|129 $(cat <<'EOF') の本文に \" と ) を含む行があっても通す|gh issue create -t x --body \"$(cat <<'EOF'⏎\" ) を含む行⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF⏎)\"\n deny|unreadable|bash|130 止めすぎを固定: $(sed … <<'EOF' …) は止める|gh issue create -t x --body \"$(sed s/a/b/ <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎)\"\n deny|missing|bash|131 --label \"flow:$K\" だけなら止める|gh issue create -t x --label \"flow:$K\"\n-pass|-|bash|132 --label \"flow:$K\" と --label flow:feature なら通す|gh issue create -t x --label \"flow:$K\" --label flow:feature\n+pass|-|bash|132 --label \"flow:$K\" と --label flow:feature なら通す|gh issue create -t x --label \"flow:$K\" --label flow:feature --body-file @W/sections.md\n deny|missing|bash|133 -R \"$REPO\" は自リポジトリとして止める|gh issue create -t x -R \"$REPO\"\n deny|missing|bash|133 --repo \"$REPO\" は自リポジトリとして止める|gh issue create -t x --repo \"$REPO\"\n deny|missing|bash|134 GH_REPO=$R gh issue create は止める|GH_REPO=$R gh issue create -t x\n@@ -275,7 +275,7 @@ deny|unreadable|bash|136 <<EOF の提案の行に $(echo 根拠) を含むなら\n deny|unreadable|bash|137 <<EOF の提案の行に $R を含むなら止める|gh issue create -t x --body-file - <<EOF⏎種類の提案: flow:feature（$R）⏎EOF\n deny|unreadable|bash|138 止めすぎを固定: <<EOF の本文の \\$ も確定できないとして止める|gh issue create -t x --body-file - <<EOF⏎種類の提案: flow:feature（根拠 \\$5）⏎EOF\n deny|unreadable|bash|139 残る穴を固定: $'a\\'b…' は止める|gh issue create -t x --body $'a\\'b⏎種類の提案: flow:feature（根拠）'\n-pass|-|bash|141 URL=$(gh issue create --body-file - <<'EOF' …) で通す|URL=$(gh issue create --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎)\n+pass|-|bash|141 URL=$(gh issue create --body-file - <<'EOF' …) で通す|URL=$(gh issue create --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF⏎)\n pass|-|bash|142 gh を含まず字句に分けられないコマンドは通す|echo 'issue の話\n deny|missing|bash|143 for … do の後ろの作成も止める|for i in 1; do gh issue create -t x; done\n deny|missing|bash|144 if … then の後ろの作成も止める|if true; then gh issue create -t x; fi\n@@ -307,29 +307,51 @@ deny|unreadable|bash|160 閉じない ` の後ろの gh を含むなら止める\n deny|unreadable|bash|161 閉じない \" の後ろの gh を含むなら止める|echo \"gh issue create -t x\n deny|unreadable|bash|162 閉じない ' の後ろの gh を含むなら止める|echo 'gh issue create -t x\n deny|unreadable|bash|163 止めすぎを固定: 算術の ((…<<…)) の後ろの作成はラベルがあっても止める|(( x = 1<<2 )); gh issue create -t x --label flow:feature\n-pass|-|bash|163 $((…<<…)) は中身を別に読むので、ラベルのある作成は通す|gh issue create -t $((1<<2)) --label flow:feature\n+pass|-|bash|163 $((…<<…)) は中身を別に読むので、ラベルのある作成は通す|gh issue create -t $((1<<2)) --label flow:feature --body-file @W/sections.md\n deny|missing|bash|169 --input があれば -f 'labels[]=flow:*' はクエリに回るので止める|gh api repos/acme/widgets/issues --input @W/in-plain.json -f 'labels[]=flow:feature'\n deny|missing|bash|169 --input があれば -f body= の提案の行はクエリに回るので止める|gh api repos/acme/widgets/issues --input @W/in-plain.json -f body='種類の提案: flow:feature（根拠）'\n deny|missing|bash|169 --input を 2 つ書けば最後のものを読む|gh api repos/acme/widgets/issues --input @W/in-body.json --input @W/in-plain.json\n pass|-|bash|169 --input を 2 つ書き、最後のものに提案の行があれば通す|gh api repos/acme/widgets/issues --input @W/in-plain.json --input @W/in-body.json\n deny|unreadable|bash|170 ヒアドキュメントの後の < file が標準入力になるなら止める|gh issue create -t x --body-file - <<'EOF' < @W/plain.md⏎種類の提案: flow:feature（根拠）⏎EOF\n deny|unreadable|bash|170 ヒアドキュメントの後の <<< が標準入力になるなら止める|gh issue create -t x --body-file - <<'EOF' <<< x⏎種類の提案: flow:feature（根拠）⏎EOF\n-pass|-|bash|170 < file の後のヒアドキュメントが標準入力になるなら通す|gh issue create -t x --body-file - < @W/plain.md <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF\n+pass|-|bash|170 < file の後のヒアドキュメントが標準入力になるなら通す|gh issue create -t x --body-file - < @W/plain.md <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF\n deny|missing|bash|171 根拠が空白だけの行は満たさない|gh issue create -t x -b '種類の提案: flow:feature（ 　 ）'\n-pass|-|bash|171 根拠の前後に空白があっても通す|gh issue create -t x -b '種類の提案: flow:feature（ 根拠 ）  '\n+pass|-|bash|171 根拠の前後に空白があっても通す|gh issue create -t x -b '種類の提案: flow:feature（ 根拠 ）  ⏎⏎@S'\n deny|missing|bash|172 --body-file があれば --body の提案の行は送られないので止める|gh issue create -t x -b '種類の提案: flow:feature（根拠）' --body-file @W/plain.md\n deny|missing|bash|172 --body-file を後に書いても前に書いても --body-file を読む|gh issue create -t x --body-file @W/plain.md -b '種類の提案: flow:feature（根拠）'\n deny|missing|bash|172 --body を 2 つ書けば最後のものを読む|gh issue create -t x -b '種類の提案: flow:feature（根拠）' -b '本文だけ'\n-pass|-|bash|172 --body を 2 つ書き、最後のものに提案の行があれば通す|gh issue create -t x -b '本文だけ' -b '種類の提案: flow:feature（根拠）'\n+pass|-|bash|172 --body を 2 つ書き、最後のものに提案の行があれば通す|gh issue create -t x -b '本文だけ' -b '種類の提案: flow:feature（根拠）⏎⏎@S'\n deny|missing|bash|172 --body-file を 2 つ書けば最後のものを読む|gh issue create -t x --body-file @W/prop.md --body-file @W/plain.md\n-pass|-|bash|173 クォートした () は区切りでないので、ラベルのある作成は通す|gh issue create --title '()' -l flow:feature\n-pass|-|bash|173 ダブルクォートした ; は区切りでないので、ラベルのある作成は通す|gh issue create --title \";\" -l flow:feature\n-pass|-|bash|173 \\¦ は区切りでないので、ラベルのある作成は通す|gh issue create --title \\¦ -l flow:feature\n+pass|-|bash|173 クォートした () は区切りでないので、ラベルのある作成は通す|gh issue create --title '()' -l flow:feature --body-file @W/sections.md\n+pass|-|bash|173 ダブルクォートした ; は区切りでないので、ラベルのある作成は通す|gh issue create --title \";\" -l flow:feature --body-file @W/sections.md\n+pass|-|bash|173 \\¦ は区切りでないので、ラベルのある作成は通す|gh issue create --title \\¦ -l flow:feature --body-file @W/sections.md\n deny|missing|bash|174 --web=false は作成するので止める|gh issue create -t x --web=false\n deny|missing|bash|174 -w=false は作成するので止める|gh issue create -t x -w=false\n deny|missing|bash|174 --web の後の --web=0 は作成するので止める|gh issue create -t x --web --web=0\n pass|-|bash|174 --web=true は通す|gh issue create -t x --web=true\n-pass|-|bash|174 -l=flow:feature は gh が値として読むので通す|gh issue create -t x -l=flow:feature\n+pass|-|bash|174 -l=flow:feature は gh が値として読むので通す|gh issue create -t x -l=flow:feature --body-file @W/sections.md\n+deny|sections|mcp|sections-missing MCP 作成は完了の確かめ方がなければ止める|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":\"## ゴール\\n作成できる\\n\\n## 拠り所\\n無し\\n\\n## 決めてよい範囲\\n既定に従う\"}\n+deny|sections|bash|sections-missing-goal ゴールがなければ止める|gh issue create -t x -l flow:feature -b '## 完了の確かめ方⏎結果を確認する⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'\n+deny|sections|bash|sections-missing-authority 拠り所がなければ止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎## 完了の確かめ方⏎結果を確認する⏎⏎## 決めてよい範囲⏎既定に従う'\n+deny|sections|bash|sections-missing-scope 決めてよい範囲がなければ止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎## 完了の確かめ方⏎結果を確認する⏎⏎## 拠り所⏎無し'\n+deny|sections|bash|sections-empty 完了の確かめ方が空白だけなら止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎## 完了の確かめ方⏎ ⇥ ⏎## 拠り所⏎無し⏎## 決めてよい範囲⏎既定に従う'\n+deny|sections|bash|sections-in-code コードフェンスの中にしか共通節がなければ止める|gh issue create -t x -l flow:feature -b '```markdown⏎@S⏎```'\n+deny|sections|bash|sections-in-comment HTML コメントの中にしか共通節がなければ止める|gh issue create -t x -l flow:feature -b '<!--⏎@S⏎-->'\n+deny|sections|bash|sections-in-quote 引用の中にしか完了の確かめ方がなければ止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎> ## 完了の確かめ方⏎> 結果を確認する⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'\n+pass|-|bash|sections-fenced-command 完了の確かめ方がコードフェンス内のコマンドだけでも通す|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎## 完了の確かめ方⏎```sh⏎bash test.sh⏎```⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'\n+deny|sections|bash|sections-form-heading-rest REST 作成はフォームの見出しだけなら止める|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/sections-h3.md\n+deny|sections|mcp|sections-form-heading-mcp MCP 作成はフォームの見出しだけなら止める|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":\"### ゴール\\n作成できる\\n\\n### 完了の確かめ方\\n結果を確認する\\n\\n### 拠り所\\n無し\\n\\n### 決めてよい範囲\\n既定に従う\"}\n+pass|-|bash|sections-complete-rest REST 作成は正規の共通節で通す|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/sections.md\n+pass|-|mcp|sections-complete-mcp MCP 作成は正規の共通節で通す|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":\"@SJ\"}\n+deny|sections|bash|sections-effective-body-last-raw REST 作成は最後の raw 本文を検査する|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -f 'body=@S' -f body=本文だけ\n+pass|-|bash|sections-effective-body-last-raw-pass 不完全な raw 本文より最後の完全な raw 本文を使う|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -f body=本文だけ -f 'body=@S'\n+deny|sections|bash|sections-effective-body-last-typed REST 作成は最後の typed 本文を検査する|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/sections.md -F body=@@W/plain.md\n+deny|sections|bash|sections-effective-body-typed REST 作成は後から raw があっても typed 本文を優先する|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/plain.md -f 'body=@S'\n+pass|-|bash|sections-effective-body-typed-pass typed の完全な本文が raw の不完全な本文に勝てば通す|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/sections.md -f body=本文だけ\n+deny|sections|bash|sections-effective-body-input REST 作成はフィールドより input の本文を優先する|gh api --method POST repos/acme/widgets/issues --input @W/in-missing-completion.json -f 'body=@S'\n+deny|sections|bash|sections-effective-body-file CLI 作成は直接指定より body-file の本文を優先する|gh issue create -t x -l flow:feature --body-file @W/plain.md -b '@S'\n+pass|-|bash|sections-effective-body-file-pass 直接指定が不完全でも完全な body-file があれば通す|gh issue create -t x -l flow:feature --body-file @W/sections.md -b 本文だけ\n+deny|sections|bash|sections-effective-body-two-calls 2 件目だけ共通節がなければ止める|gh issue create -t a -l flow:feature --body-file @W/sections.md && gh issue create -t b -l flow:feature -b 本文だけ\n CASES\n )\"\n \n@@ -352,7 +374,7 @@ CASES\n detector_rows() {\n   local expected category form label input origin\n   while IFS='|' read -r expected category form label input; do\n-    [ -n \"$label\" ] && printf 'cases|%s|%s|%s|%s|%s|%s\\n' \"$expected\" \"$category\" \"$form\" \"$own_origin\" \"$label\" \"$input\"\n+    [ -n \"$label\" ] && printf 'cases|%s|%s|%s|%s|%s|%s\\n' \"$expected\" \"$category\" \"$form\" \"$own_origin\" \"$label\" \"$(expand_section_tokens \"$input\")\"\n   done <<<\"$cases\"\n   while IFS='|' read -r expected origin label input; do\n     [ -n \"$label\" ] && printf 'origin_cases|%s|missing|bash|%s|%s|%s\\n' \"$expected\" \"$origin\" \"$label\" \"$input\"\n@@ -426,7 +448,8 @@ git -C \"$hook_copy\" init -q && git -C \"$hook_copy\" remote add origin \"$own_origi\n \n hook_cases=\"$(cat <<'CASES'\n deny|real|ok|ok|84 欠けた作成は deny になる|gh issue create -t x\n-pass|real|ok|ok|88 ラベル付きの MCP 作成は通す|@mcp {\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"]}\n+pass|real|ok|ok|88 sections-hook-complete ラベルと共通節が揃った MCP 作成は通す|@mcp {\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":\"@SJ\"}\n+deny|real|ok|ok|sections-hook-missing フックは本文が不完全な作成を止める|gh issue create -t x -l flow:feature --body '本文だけ'\n deny|crash|ok|ok|89 traceback で落ちる検出器なら deny になる|gh issue create -t x\n deny|summary-exit1|ok|ok|89 報告の行を出さずに exit 1 で終わる検出器なら deny になる|gh issue create -t x\n deny|usage|ok|ok|89 exit 2 で終わる検出器なら deny になる|gh issue create -t x\n@@ -444,9 +467,11 @@ report_column_count hook_cases 6 \"$hook_cases\"\n #\n # $1 表に書いた入力\n hook_payload() {\n-  case \"$1\" in\n-    \"@mcp \"*) payload mcp \"${1#@mcp }\" ;;\n-    *) payload bash \"$1\" ;;\n+  local text\n+  text=\"$(expand_section_tokens \"$1\")\"\n+  case \"$text\" in\n+    \"@mcp \"*) payload mcp \"${text#@mcp }\" ;;\n+    *) payload bash \"$text\" ;;\n   esac\n }\n \n@@ -488,6 +513,11 @@ while IFS='|' read -r label text; do\n done <<<\"$reason_cases\"\n report_cases_ran reason_cases \"$cases_before\"\n \n+sections_reason=\"$(run_hook real ok ok \"$(payload bash \"gh issue create -t x -l flow:feature --body '$missing_completion_body'\")\")\"\n+found=\"載らない\"\n+[[ \"$sections_reason\" == *\"完了の確かめ方\"* ]] && found=\"載る\"\n+report \"載る\" \"$found\" \"sections-hook-guidance 不足した見出しを拒否文に載せる\"\n+\n # 86: 人に尋ねる道が、人がいない起動の行と書式より先に出る(拒否文が写せる行を先に出すと、\n # 対話中でも人に尋ねない道が最短になる)。\n ask_at=\"$(position_in_reason AskUserQuestion)\"",
+          "patchLines": 272,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-fixtures.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 31,
+          "deletions": 4,
+          "patch": "@@ -1,12 +1,25 @@\n #!/usr/bin/env bash\n #\n # Issue の作業の種類の判定表 2 本(`issue-flow-kind-cases.sh` と `issue-flow-kind-real-gh-cases.sh`)が共有する、\n-# ケースの前提の置き方。自リポジトリの origin・提案の行・本文のファイルを置く関数を持つ。\n+# ケースの前提の置き方。自リポジトリの origin・提案の行・共通節と、本文ファイルを置く関数を持つ。\n #\n # 使う側は `work`(作業ディレクトリ)を決めてから source し、`place_files` を呼ぶ。\n \n own_origin=\"https://github.com/acme/widgets\"\n proposal_line='種類の提案: flow:feature（根拠）'\n+sections_body='## ゴール\n+作成できる\n+\n+## 完了の確かめ方\n+結果を確認する\n+\n+## 拠り所\n+無し\n+\n+## 決めてよい範囲\n+既定に従う'\n+completion_section=$'## 完了の確かめ方\\n結果を確認する\\n\\n'\n+missing_completion_body=\"${sections_body/\"$completion_section\"/}\"\n \n # 文字列を JSON の文字列にする(表の入力に出る制御文字は改行とタブだけ)。\n #\n@@ -20,15 +33,29 @@ json_string() {\n   printf '\"%s\"' \"$text\"\n }\n \n+# 表の `@S` を改行の印付きの共通節、`@SJ` を JSON 文字列内の共通節に置き換える。\n+#\n+# $1 表の入力\n+expand_section_tokens() {\n+  local text=\"$1\" json\n+  json=\"$(json_string \"$sections_body\")\"\n+  text=\"${text//@SJ/${json:1:${#json}-2}}\"\n+  printf '%s' \"${text//@S/${sections_body//$'\\n'/⏎}}\"\n+}\n+\n # 本文のファイルを `$work` に置く。`big.md` は提案の行を持つが 1 MiB を超え、`sub/rel.md` は `cd sub` の後の\n # 相対パスで読まれるはずのもの(作業ディレクトリ直下に `rel.md` は置かない)。\n place_files() {\n   mkdir -p \"$work/sub\" \"$work/elsewhere\"\n-  printf '前置き\\n%s\\n' \"$proposal_line\" >\"$work/prop.md\"\n+  printf '前置き\\n%s\\n\\n%s\\n' \"$proposal_line\" \"$sections_body\" >\"$work/prop.md\"\n   printf '本文だけ\\n' >\"$work/plain.md\"\n   { printf '%s\\n' \"$proposal_line\"; head -c 1100000 /dev/zero | tr '\\0' 'a'; } >\"$work/big.md\"\n-  printf '%s\\n' \"$proposal_line\" >\"$work/sub/rel.md\"\n+  printf '%s\\n\\n%s\\n' \"$proposal_line\" \"$sections_body\" >\"$work/sub/rel.md\"\n+  printf '%s\\n' \"$sections_body\" >\"$work/sections.md\"\n+  printf '%s\\n' \"${sections_body//## /### }\" >\"$work/sections-h3.md\"\n   printf '{\"title\":\"x\"}\\n' >\"$work/in-plain.json\"\n-  printf '{\"title\":\"x\",\"body\":%s}\\n' \"$(json_string \"前置き\"$'\\n'\"$proposal_line\")\" >\"$work/in-body.json\"\n+  printf '{\"title\":\"x\",\"body\":%s}\\n' \"$(json_string \"前置き\"$'\\n'\"$proposal_line\"$'\\n\\n'\"$sections_body\")\" >\"$work/in-body.json\"\n+  printf '{\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":%s}\\n' \\\n+    \"$(json_string \"$missing_completion_body\")\" >\"$work/in-missing-completion.json\"\n   printf 'title: x\\n' >\"$work/bad.json\"\n }",
+          "patchLines": 60,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 33,
+          "deletions": 9,
+          "patch": "@@ -1,7 +1,7 @@\n #!/usr/bin/env bash\n #\n # Issue の作業の種類の検出器(`issue-flow-kind-violations.py`)が通す作成を、実物の bash と gh で走らせ、\n-# gh が実際に送った作成に flow:* か宣言の行が載っているかを確かめる判定表。\n+# gh が実際に送った作成に flow:* か宣言の行が載り、共通節が揃っているかを確かめる判定表。\n #\n # 使い方: bash .claude/hooks/lib/issue-flow-kind-real-gh-cases.sh [検出器のパス]\n # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら、検出器が通したのに実物は満たさない作成を送っている。\n@@ -16,7 +16,7 @@\n # `miss` 以外のものを読む(表を写さないため、その書式に依存する)。各行をそのまま走らせるほか、\n # 1 つの gh だけの行には、後ろに付け足すと送るものが変わる指定(`VARIANTS`)を 1 つずつ足して走らせる。\n #\n-# 判定は片向きだけを見る: **検出器が pass なのに、実物が自リポジトリへ flow:* も宣言の行も無い作成を送ったら NG。**\n+# 判定は片向きだけを見る: **検出器が pass なのに、実物が作業の種類か共通節の欠けた作成を自リポジトリへ送ったら NG。**\n # 逆向き(検出器が deny で、実物は満たす)は見ない。読めないものを止める・他リポジトリでも止める、といった\n # 止めすぎは表が `deny` で意図して固定しているため。\n #\n@@ -38,13 +38,14 @@ source \"$lib_dir/issue-flow-kind-fixtures.sh\"\n \n # 自リポジトリの作成が満たしているかを判定し、`NG|ケース名|理由` か `ok|ケース名|-` を出す。\n #\n-# 引数は検出器のパス・作業ディレクトリ・origin の URL・ダミーのサーバーの置き場。標準入力は `ケース名|入力` の\n-# 1 行 1 ケース。\n+# 引数は検出器のパス・作業ディレクトリ・origin の URL・ダミーのサーバーの置き場・共通節の Bash / JSON 用の値。\n+# 標準入力は `ケース名|入力` の 1 行 1 ケース。\n replay_runner=\"$(cat <<'PY'\n import http.server\n import importlib.util\n import json\n import os\n+import re\n import ssl\n import subprocess\n import sys\n@@ -52,13 +53,16 @@ import threading\n import traceback\n \n sys.dont_write_bytecode = True\n-detector_path, work, origin, server_dir = sys.argv[1:5]\n+detector_path, work, origin, server_dir, literal_sections, json_sections = sys.argv[1:]\n spec = importlib.util.spec_from_file_location(\"issue_flow_kind_violations\", detector_path)\n detector = importlib.util.module_from_spec(spec)\n spec.loader.exec_module(detector)\n \n OWN = \"acme/widgets\"\n FLOW = \"flow:\"\n+REQUIRED_HEADINGS = (\"ゴール\", \"完了の確かめ方\", \"拠り所\", \"決めてよい範囲\")\n+# 表で使う Markdown の見出しを、HTML コメントとコードフェンスから区別する。\n+BODY_TOKENS = re.compile(r\"<!--.*?(?:-->|\\Z)|^```[^\\n]*\\n.*?(?:^```[ \\t]*(?:\\n|\\Z)|\\Z)|^(?P<heading>#{1,2}[ \\t]+[^\\n]+)\", re.M | re.S)\n # 1 つの gh だけの行の後ろに付け足す指定。gh が送るものを変える読み方を 1 つずつ足す。\n VARIANTS = {\n     \"issue\": (\" --body-file @W/plain.md\", \" -b 本文だけ\", \" --web=false\", \" < @W/plain.md\"),\n@@ -77,6 +81,11 @@ def graphql(query, variables):\n     if \"createIssue\" in query:\n         requests.append((\"graphql\", variables.get(\"input\", {})))\n         return {\"createIssue\": {\"issue\": {\"id\": \"I1\", \"url\": \"https://localhost/i/1\", \"number\": 1}}}\n+    if \"RepositoryResolveMetadataIDs\" in query:\n+        label_aliases = re.findall(r'(\\w+):\\s*label\\(name:\\s*(\"[^\"]+\")\\)', query)\n+        labels = {alias: json.loads(encoded) for alias, encoded in label_aliases}\n+        return {\"repository\": {alias: {\"id\": \"L:\" + name, \"name\": name} if name in LABEL_NAMES else None\n+                               for alias, name in labels.items()}}\n     if \"labels\" in query:\n         nodes = [{\"id\": \"L:\" + n, \"name\": n} for n in sorted(LABEL_NAMES)]\n         return {\"repository\": {\"labels\": {\"nodes\": nodes, \"pageInfo\": {\"hasNextPage\": False, \"endCursor\": \"\"}}}}\n@@ -140,6 +149,7 @@ for name in (\"GITHUB_TOKEN\", \"GH_TOKEN\"):\n \n \n def expand(text):\n+    text = text.replace(\"@SJ\", json_sections).replace(\"@S\", literal_sections)\n     return text.replace(\"⏎\", \"\\n\").replace(\"⇥\", \"\\t\").replace(\"¦\", \"|\").replace(\"@W\", work)\n \n \n@@ -165,11 +175,24 @@ def own_creations():\n \n def unmet(labels, body):\n     kinds = {label for label in labels if label.startswith(FLOW) and label != FLOW}\n-    if len(kinds) == 1:\n-        return None\n     if len(kinds) > 1:\n         return f\"flow:* が {len(kinds)} つ\"\n-    return None if detector.has_declaration_line(body) else \"flow:* も宣言の行も無い\"\n+    if not kinds and not detector.has_declaration_line(body):\n+        return \"flow:* も宣言の行も無い\"\n+    return missing_sections(body)\n+\n+\n+def missing_sections(body):\n+    body = body.replace(\"\\r\\n\", \"\\n\")\n+    headings = [match for match in BODY_TOKENS.finditer(body) if match.group(\"heading\")]\n+    present = set()\n+    for i, heading in enumerate(headings):\n+        end = headings[i + 1].start() if i + 1 < len(headings) else len(body)\n+        content = re.sub(r\"<!--.*?(?:-->|\\Z)\", \"\", body[heading.end():end], flags=re.S)\n+        if any(line.strip() and not line.strip().startswith(\"```\") for line in content.splitlines()):\n+            present.add(heading.group(\"heading\").strip())\n+    missing = [title for title in REQUIRED_HEADINGS if f\"## {title}\" not in present]\n+    return f\"共通節（{', '.join(missing)}）が無い\" if missing else None\n \n \n def replay(command):\n@@ -232,7 +255,8 @@ openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=localhost -addext \"s\n place_files\n \n rows=\"$(replayed_rows)\"\n-results=\"$(printf '%s\\n' \"$rows\" | python3 -c \"$replay_runner\" \"$detector\" \"$work\" \"$own_origin\" \"$server_dir\")\"\n+results=\"$(printf '%s\\n' \"$rows\" | python3 -c \"$replay_runner\" \"$detector\" \"$work\" \"$own_origin\" \"$server_dir\" \\\n+  \"$(expand_section_tokens '@S')\" \"$(expand_section_tokens '@SJ')\")\"\n \n cases_before=$cases_reported\n while IFS='|' read -r verdict label reason; do",
+          "patchLines": 111,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": "replay_runner=\"$(cat <<'PY'",
+              "new": "replay_runner=\"$(cat <<'PY'"
+            },
+            {
+              "old": "replay_runner=\"$(cat <<'PY'",
+              "new": "replay_runner=\"$(cat <<'PY'"
+            },
+            {
+              "old": "replay_runner=\"$(cat <<'PY'",
+              "new": "replay_runner=\"$(cat <<'PY'"
+            },
+            {
+              "old": "replay_runner=\"$(cat <<'PY'",
+              "new": "replay_runner=\"$(cat <<'PY'"
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "0c62954e9385def4cdd67561c22f0d8f3059833a",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-28T00:40:01+09:00",
+      "subject": "✨ [New Feature]: #1479 種類別フォームと Issue 本文の作成時検査を揃える",
+      "body": "- Epic と4つの作業の種類に分け、フォームの共通4節を必須にする\n- 既存フックの対象と種類判定を保ち、実際に送る本文の共通節を検査する\n- AI の正規見出しと GitHub フォームが生成する見出しの扱いを明記する\n\n背景:\n作業の種類だけが決まっていても、完了条件や判断の拠り所の不足で\n着手後に判断が止まる。\n\n採用理由:\n既存の字句解析と作成経路を再利用し、同じ箇所で送信本文を判定する。\nフォーム側は種類ごとの材料も求め、API 側は共通契約だけを守らせる。\n\n影響とトレードオフ:\n本文を確定できない作成はラベルがあっても止める。\nGitHub サーバー側や既存フック対象外のクライアントには作用しない。",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 8,
+          "deletions": 8,
+          "patch": "@@ -27,7 +27,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse`（Task/Agent） | **作業ツリーを書き換えるサブエージェントの実行中フラグ**。`plan-reviewer` / `test-reviewer` / `implementer` の開始・終了をセッション別・種類別のマーカーで数え、`block-git-during-verification-agent.sh` が読む。この 3 つの起動のうち **`run_in_background: true` を明示したものは拒否する**（塞いでいない形はフック冒頭を参照） |\n | `block-git-during-verification-agent.sh` | `PreToolUse`（Bash） | **作業ツリーを書き換えるサブエージェント実行中の git 操作を拒否**。マーカーがある間は `git add` / `commit` / `push` を deny し、ミューテーション実測や実装途中の書き換えがコミットへ混入する事故を防ぐ。古いマーカーは無視する（種類ごとの有効期間と理由はフック本文。拒否文にマーカーのディレクトリを出す） |\n | `block-parent-session-edit.sh` | `PreToolUse`（Edit/Write） | **`implementation-flow` 中の親セッションによる編集を拒否**（`implementation-flow`「役割の分担」）。入力に `agent_id` がない（親の）Edit / Write で、リポジトリ内のファイルを指し、発火ログの最後の区切りが flow 内なら deny する（区切りになる起動と通す入力はフック冒頭を参照） |\n-| `block-issue-without-flow-kind.sh` | `PreToolUse`（Bash/MCP） | **作業の種類を決めていない Issue 作成を拒否**（`implementation-flow` フェーズ 1「種類の確定」の手順 4）。作成とみなす形・通す条件・行の書式は `lib/issue-flow-kind-violations.py` の docstring と定数を参照。python3 が使えなければ通し、検出器が異常終了したら deny する |\n+| `block-issue-without-flow-kind.sh` | `PreToolUse`（Bash/MCP） | **作業の種類または本文の共通節が揃っていない Issue 作成を拒否**（`implementation-flow` フェーズ 1「種類の確定」の手順 4）。作成とみなす形・通す条件・行の書式は `lib/issue-flow-kind-violations.py` の docstring と定数を参照。python3 が使えなければ通し、検出器が異常終了したら deny する |\n | `block-git-add-all.sh` | `PreToolUse`（Bash） | **一括ステージング禁止**（対応する規範は `commit` スキル「禁止事項」）。`git add -A` / `--all` / `.` / `-a` を拒否する。ヒアドキュメントの本文と引用符の中（コマンド置換を含まないもの）は見ない |\n | `block-commit-md-heading.sh` | `PreToolUse`（Bash） | **コミット本文の行頭 `#` 禁止**（対応する規範は `commit` スキルの本文の「書式」）。引用符の外に `git commit` があれば、ヒアドキュメントの本文（無ければコマンド全体）の行頭 `#` を拒否する |\n | `block-protected-branch-edit.sh` | `PreToolUse`（Edit/Write/MultiEdit/NotebookEdit） | **保護ブランチでの編集禁止**。フックの作業ディレクトリのブランチが保護ブランチ（一覧はフックの `protected_branches`）なら拒否する。入力は読まず、どのツールで止めるかは matcher が決める |\n@@ -77,10 +77,10 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ\n | `lib/hook-input.sh` | `record-firings.sh` / `track-verification-agent-activity.sh` / `block-git-during-verification-agent.sh` / `block-parent-session-edit.sh` | 標準入力の JSON から文字列値を取り出す `extract`。jq を使わず bash の組み込みだけで読む |\n | `lib/firings-log.sh` | `record-firings.sh` / `block-parent-session-edit.sh` | 発火ログのパスを組み立てる `firings_log_path <session_id>` |\n | `lib/parent-session-edit-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | 実物の `record-firings.sh` に発火ログを書かせたうえで `block-parent-session-edit.sh` へ Edit / Write を流し、親セッション編集の拒否と素通りを検証する（詳細は各ケース名）。食い違いがあれば exit 1 |\n-| `lib/issue-flow-kind-violations.py` | `block-issue-without-flow-kind.sh` | Issue を作る呼び出しが作業の種類を決めているかを見る。Bash は bash と同じ規則で字句に分けてから読む。種別の一覧と意味、行の書式は検出器の docstring と定数を参照 |\n+| `lib/issue-flow-kind-violations.py` | `block-issue-without-flow-kind.sh` | Issue を作る呼び出しで作業の種類と本文の共通節を確かめる。Bash は bash と同じ規則で字句に分け、実際に送る本文を読む。種別の一覧と意味、行の書式は検出器の docstring と定数を参照 |\n | `lib/issue-flow-kind-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `issue-flow-kind-violations.py` と `block-issue-without-flow-kind.sh` の判定表。検出器の表は python3 を 1 回だけ起動して検出器を import し、ケースごとに判定の関数を呼ぶ。フックの表はフックを一時ディレクトリへ複製し、検出器を CLI として走らせて deny / pass と拒否文の並びを検証する。食い違いがあれば exit 1 |\n-| `lib/issue-flow-kind-real-gh-cases.sh` | `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `issue-flow-kind-violations.py` が通す作成を、実物の bash と gh で走らせる判定表。入力は `issue-flow-kind-cases.sh` の検出器の表（`miss` 以外の `bash` 形）と、それに送るものを変える指定を 1 つ足した形。gh はダミーのサーバーへ向け、検出器が pass なのに自リポジトリへ flow:* も宣言の行も無い作成を送ったら exit 1 |\n-| `lib/issue-flow-kind-fixtures.sh` | `lib/issue-flow-kind-cases.sh` / `lib/issue-flow-kind-real-gh-cases.sh` | Issue の作業の種類の判定表 2 本が共有する前提（自リポジトリの origin・提案の行・本文のファイルを置く `place_files`） |\n+| `lib/issue-flow-kind-real-gh-cases.sh` | `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `issue-flow-kind-violations.py` が通す作成を、実物の bash と gh で走らせる判定表。入力は `issue-flow-kind-cases.sh` の検出器の表（`miss` 以外の `bash` 形）と、それに送るものを変える指定を 1 つ足した形。gh はダミーのサーバーへ向け、検出器が pass なのに自リポジトリへ種類や共通節が揃っていない作成を送ったら exit 1 |\n+| `lib/issue-flow-kind-fixtures.sh` | `lib/issue-flow-kind-cases.sh` / `lib/issue-flow-kind-real-gh-cases.sh` | Issue 作成の判定表 2 本が共有する前提（自リポジトリの origin・提案の行・共通節・本文のファイルを置く `place_files`） |\n | `lib/command-literals.sh` | `block-git-add-all.sh` / `block-commit-md-heading.sh` | コマンド文字列から、すべてのヒアドキュメントの本文を出す `heredoc_bodies` と、本文と引用符の中を除いて 1 行にする `command_line_outside_literals`。awk（POSIX の機能だけ）と sed で近似し、字句解析は持たない |\n | `lib/git-add-all-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `block-git-add-all.sh` の判定表。deny（止めすぎも含む）/ pass / miss を検証する。食い違いがあれば exit 1 |\n | `lib/commit-md-heading-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `block-commit-md-heading.sh` の判定表。deny（止めすぎも含む）/ pass / miss を検証する。食い違いがあれば exit 1 |\n@@ -140,7 +140,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | 読む位置を誤る | `cd sub && … --body-file rel.md` の相対パスは入力の `cwd` から読む |\n | 区別しない | 対話中かどうか、ラベルを人が選んだかどうかは見ない（手順 4 の (a)・(b) の使い分けは拒否文の案内に頼る） |\n | 字面で読む | `$(cat <<…)` の形なら、作成と無関係でも本文として読む。範囲の閉じ括弧は、中のヒアドキュメントや `case` を考えずに数える（bash との突き合わせは未検証） |\n-| プラグインの作成 | `issues-workflow-plugin` のスキルが作る Issue も止まる（`flow:*` を付けない形のため）。拒否文の案内に従ってラベルか行を足して作り直す |\n+| プラグインの作成 | `issues-workflow-plugin` のスキルが作る Issue も止まる（`flow:*` を付けない形のため）。拒否文の案内に従って種類と本文の共通節を揃えて作り直す |\n | MCP の発火 | `mcp__github__issue_write` で PreToolUse が発火するかは、本物のセッションで確かめるまで未検証 |\n \n `block-git-add-all.sh` / `block-commit-md-heading.sh` / `block-protected-branch-edit.sh` が発火する環境でも残る穴は次のとおり。取りこぼす形は判定表（`lib/git-add-all-cases.sh` / `lib/commit-md-heading-cases.sh` / `lib/protected-branch-edit-cases.sh`）が `miss` で、止めすぎる形は `deny` で固定している。\n@@ -166,7 +166,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | `block-npx.sh` | 実行した `npx` コマンドがリポジトリへ何か書き込んでいないか `git status` で確認する |\n | `block-git-during-verification-agent.sh` | 作業ツリーを書き換えるサブエージェントの実行中に作られたコミットの diff を、そのエージェントが返したはずの内容と照合する（意図しない変更の混入がないか） |\n | `block-parent-session-edit.sh` | このセッションの親の Edit / Write 履歴を見直し、`implementation-flow` 中にリポジトリ内のファイルを編集していないか確認する |\n-| `block-issue-without-flow-kind.sh` | このセッションで作った Issue に、`flow:*` ラベル 1 つか、本文の提案の行・通さない行があるか確認する。無ければ `implementation-flow` フェーズ 1「種類の確定」の手順 4 で決めて付ける |\n+| `block-issue-without-flow-kind.sh` | このセッションで AI が作った Issue に、`flow:*` ラベル 1 つまたは提案の行・通さない行と、空でない共通 4 節があるか確認する。不足は `implementation-flow` フェーズ 1「種類の確定」の手順 4 に従って補う |\n | `block-git-add-all.sh` | このセッションで作ったコミットを `git show --stat <コミット>` で見て、意図しないファイル（`.env`・生成物など）が入っていないか確認する |\n | `block-commit-md-heading.sh` | `git log origin/main..HEAD --format=%B | grep -n '^#'` が何も出さないこと |\n | `block-protected-branch-edit.sh` | `git branch --show-current` が保護ブランチでなく、`git log origin/main..main` が何も出さないこと |\n@@ -477,8 +477,8 @@ bash .claude/hooks/lib/parent-session-edit-cases.sh; echo \"exit=$?\"\n echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"gh issue create -t x -b y\"}}' \\\n   | bash .claude/hooks/block-issue-without-flow-kind.sh\n \n-# flow:* ラベルがあれば通ること(出力なし・exit 0)\n-echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"gh issue create -t x -b y --label flow:feature\"}}' \\\n+# flow:* ラベルと共通 4 節が揃えば通ること(出力なし・exit 0)\n+echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"gh issue create -t x --label flow:feature --body-file - <<'\\''EOF'\\''\\n## ゴール\\n投稿できる\\n## 完了の確かめ方\\n判定表で pass を確認\\n## 拠り所\\n無し\\n## 決めてよい範囲\\n既定に従う\\nEOF\"}}' \\\n   | bash .claude/hooks/block-issue-without-flow-kind.sh; echo \"exit=$?\"\n \n # Issue の作業の種類の判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる",
+          "patchLines": 52,
+          "truncated": false
+        },
+        {
+          "path": ".claude/hooks/block-issue-without-flow-kind.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 3,
+          "patch": "@@ -1,7 +1,7 @@\n #!/usr/bin/env bash\n #\n # Issue を作る呼び出し(`gh issue create` / `gh api` の issues への POST / `mcp__github__issue_write` の create)が、\n-# 作業の種類を決めていなければ拒否する PreToolUse フック(`implementation-flow` フェーズ 1「種類の確定」の手順 4)。\n+# 作業の種類か本文の共通節が揃っていなければ拒否する PreToolUse フック(`implementation-flow` フェーズ 1「種類の確定」の手順 4)。\n #\n # 何を満たせば通すか・どの形を作成とみなすか・行の書式は、検出器 lib/issue-flow-kind-violations.py の\n # docstring と定数だけが持つ。ここは入力を渡して、報告を deny の JSON にするだけ。\n@@ -38,13 +38,13 @@ python3_usable || exit 0\n origin_url=\"$(git -C \"$hook_dir/../..\" remote get-url origin 2>/dev/null || true)\"\n \n if ! report=\"$(printf '%s' \"$input\" | detector_report '^\\[' \"$detector\" --origin-url \"$origin_url\" 2>/dev/null)\"; then\n-  print_deny \"Issue の作業の種類の検査(${detector})が異常終了したため、検査できませんでした。検査していない作成を通さないよう止めました。\n+  print_deny \"Issue 作成の検査(${detector})が異常終了したため、検査できませんでした。検査していない作成を通さないよう止めました。\n \n 標準入力にこの呼び出しの PreToolUse の JSON を渡して \\`python3 ${detector} --origin-url <origin の URL>\\` を走らせ、検出器が落ちた原因を直してください。\"\n   exit 0\n fi\n grep -q '^\\[' <<<\"$report\" || exit 0\n \n-print_deny \"Issue を作る呼び出しが作業の種類を決めていないため、止めました。\n+print_deny \"Issue の作成条件を満たしていないため、止めました。\n \n ${report}\"",
+          "patchLines": 25,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 96,
+          "deletions": 24,
+          "patch": "@@ -1,5 +1,5 @@\n #!/usr/bin/env python3\n-\"\"\"Issue を作る呼び出しが、作業の種類を決めているかを見る。\n+\"\"\"Issue を作る呼び出しで、作業の種類と本文の必須節が揃っているかを見る。\n \n `implementation-flow` フェーズ 1「種類の確定」の手順 4 は、Issue を作るときに種類を決めることを求める。\n 作った後でラベルを付ける形は忘れても何も止まらないので、作成の呼び出しそのものを見る。\n@@ -11,13 +11,17 @@\n \n **行の書式はこのファイルの 2 つの定数だけが持つ。** 文書は写さずにここを指す。\n \n+本文は、実際に送る Markdown に `REQUIRED_SECTIONS` の各 `##` 見出しと空でない内容があることを求める。\n+コードフェンス・HTML コメント・引用内の見出しは数えない。全体の Markdown 構文や内容の良し悪しは判定しない。\n+\n 報告する違反は次のとおり（並びが報告の順）。\n \n - `issue-flow-kind-missing` — ラベルも 2 つの行も無い\n - `issue-flow-kind-multiple` — 重複を除いた `flow:*` ラベルが 2 つ以上ある（行は提案なので数えない）\n-- `issue-flow-kind-unreadable` — ラベルが無く、本文を確定できない\n+- `issue-flow-kind-unreadable` — 本文を確定できない\n   （ファイルが無い・通常ファイルでない・1 MiB を超える、標準入力がヒアドキュメントでない、\n   閉じない引用符、`--input` が JSON でない、本文が展開か、展開する文脈の `$` `` ` `` `\\\\` を含む）\n+- `issue-flow-kind-sections` — 本文の共通節が欠けているか、内容が空\n \n 種別の綴りは、この一覧と `KINDS` にだけ書く（両者の一致は `issue-flow-kind-cases.sh` が照合する）。\n \n@@ -50,12 +54,16 @@ import shlex\n import sys\n from typing import NamedTuple\n \n-KINDS = (\"issue-flow-kind-missing\", \"issue-flow-kind-multiple\", \"issue-flow-kind-unreadable\")\n-MISSING, MULTIPLE, UNREADABLE = KINDS\n+KINDS = (\"issue-flow-kind-missing\", \"issue-flow-kind-multiple\", \"issue-flow-kind-unreadable\", \"issue-flow-kind-sections\")\n+MISSING, MULTIPLE, UNREADABLE, SECTIONS = KINDS\n \n # 提案の行と、通さない行。`{kind}` は小文字の語、`{reason}` は空でない文に当たる。\n PROPOSAL_TEMPLATE = \"種類の提案: flow:{kind}（{reason}）\"\n OPT_OUT_TEMPLATE = \"種類: implementation-flow に通さない（{reason}）\"\n+REQUIRED_SECTIONS = (\"ゴール\", \"完了の確かめ方\", \"拠り所\", \"決めてよい範囲\")\n+SECTION_HEADING = re.compile(r\" {0,3}(#{1,2})(?:[ \\t]+(.*?))?[ \\t]*\")\n+CODE_FENCE = re.compile(r\" {0,3}(`{3,}|~{3,})(.*)\")\n+COMMENT_MARKER = re.compile(r\"<!--|-->\")\n \n # 字面のままでは確定できない位置（展開と、ダブルクォートの中のバックスラッシュ）に置く印と、切り出した本文の\n # 置き場の印と、クォートの開きとバックスラッシュの前に置く印。どれも私用領域の文字で、入力にもともと\n@@ -822,27 +830,84 @@ def stdin_body(segment: Segment, flag: str) -> str | Unreadable:\n     return segment.stdin\n \n \n+def without_html_comments(line: str, in_comment: bool) -> tuple[str, bool]:\n+    \"\"\"1 行の HTML コメントを除く。コードフェンスの内側には適用しない。\n+\n+    @param line コメントを取り除く行\n+    @param in_comment 前の行から続く HTML コメントの中か\n+    @returns 見えている文字列と、次の行へコメントが続くか\n+    \"\"\"\n+    visible: list[str] = []\n+    start = 0\n+    for marker in COMMENT_MARKER.finditer(line):\n+        if marker[0] == \"<!--\" and not in_comment:\n+            visible.append(line[start:marker.start()])\n+            in_comment = True\n+        elif marker[0] == \"-->\" and in_comment:\n+            start = marker.end()\n+            in_comment = False\n+    if not in_comment:\n+        visible.append(line[start:])\n+    return \"\".join(visible), in_comment\n+\n+\n+def missing_sections(body: str) -> tuple[str, ...]:\n+    \"\"\"本文にない、または内容が空の共通節を返す。\n+\n+    コードフェンスの中身は節の内容になりうる（検証コマンドなど）が、その中の見出しで節は始まらない。\n+\n+    @param body 作成に送る Markdown\n+    @returns 欠落または空の節の名前（REQUIRED_SECTIONS の順）\n+    \"\"\"\n+    filled: set[str] = set()\n+    active_section = None\n+    in_comment = False\n+    fence = \"\"\n+    for raw_line in body.split(\"\\n\"):\n+        line = raw_line.removesuffix(\"\\r\")\n+        fence_match = CODE_FENCE.fullmatch(line)\n+        if fence:\n+            if fence_match and fence_match[1].startswith(fence) and not fence_match[2].strip():\n+                fence = \"\"\n+            elif active_section is not None and line.strip():\n+                filled.add(active_section)\n+            continue\n+        if not in_comment and fence_match and (fence_match[1][0] == \"~\" or \"`\" not in fence_match[2]):\n+            fence = fence_match[1]\n+            continue\n+        heading = SECTION_HEADING.fullmatch(line) if not in_comment else None\n+        if heading:\n+            active_section = heading[2] if heading[1] == \"##\" else None\n+            continue\n+        visible, in_comment = without_html_comments(line, in_comment)\n+        if active_section is not None and visible.strip():\n+            filled.add(active_section)\n+    return tuple(section for section in REQUIRED_SECTIONS if section not in filled)\n+\n+\n def judge(target: str, labels: list[str], bodies: list[str | Unreadable]) -> Finding | None:\n-    \"\"\"ラベルと本文から、種類を決めているかを判定する。\n+    \"\"\"作業の種類を先に判定し、続いて同じ本文に共通節が揃っているかを見る。\n \n     @param target 報告に出す作成の呼び出し\n     @param labels 作成に付けるラベル\n-    @param bodies 本文の候補（読めなかったものは Unreadable、字面で確定できないものは `UNSETTLED` を含む）\n-    @returns 違反なら Finding。決めていれば None\n+    @param bodies 実際に送る本文 1 つ（無ければ空、読めなければ Unreadable か `UNSETTLED` を含む文字列）\n+    @returns 違反なら Finding。種類と本文の両方が揃っていれば None\n     \"\"\"\n     flow_labels = sorted({label for label in labels if is_flow_label(label)})\n     if len(flow_labels) >= 2:\n         return Finding(MULTIPLE, target, f\"flow:* ラベルが 2 つ以上ある（{', '.join(flow_labels)}）\")\n-    if flow_labels:\n-        return None\n-    texts = [body for body in bodies if isinstance(body, str)]\n-    if any(has_declaration_line(text) for text in texts if UNSETTLED not in text):\n-        return None\n-    reasons = [body.reason for body in bodies if isinstance(body, Unreadable)]\n-    reasons += [\"本文が展開か、展開する文脈の $ ` \\\\ を含み、字面で確定できない\" for text in texts if UNSETTLED in text]\n-    if reasons:\n-        return Finding(UNREADABLE, target, f\"flow:* ラベルが無く、本文を確定できない（{reasons[0]}）\")\n-    return Finding(MISSING, target, \"flow:* ラベルも、種類の提案の行も、implementation-flow に通さない行も無い\")\n+    body = bodies[0] if bodies else \"\"\n+    if isinstance(body, Unreadable):\n+        return Finding(UNREADABLE, target, f\"本文を確定できない（{body.reason}）\")\n+    if UNSETTLED in body:\n+        return Finding(UNREADABLE, target, \"本文が展開か、展開する文脈の $ ` \\\\ を含み、字面で確定できない\")\n+    if not flow_labels and not has_declaration_line(body):\n+        return Finding(MISSING, target, \"flow:* ラベルも、種類の提案の行も、implementation-flow に通さない行も無い\")\n+    missing = missing_sections(body)\n+    if missing:\n+        headings = \"、\".join(f\"## {title}\" for title in missing)\n+        return Finding(SECTIONS, target, f\"本文に次の節が無い、または内容が空: {headings}\")\n+    return None\n \n \n def is_flow_label(label: str) -> bool:\n@@ -862,7 +927,7 @@ def issue_create_finding(env: dict[str, str], args: tuple[str, ...], segment: Se\n     @param args `gh issue` の後ろの語\n     @param segment 作成のコマンド\n     @param context 判定の周りの事実\n-    @returns 違反なら Finding。作成でない・他のリポジトリ・`--web` が真・種類を決めているなら None\n+    @returns 違反なら Finding。対象外か、種類と本文の両方が揃っていれば None\n     \"\"\"\n     flags = parse_flags(args, ISSUE_CREATE_FLAGS)\n     positionals = [value for name, value in flags if name == \"\"]\n@@ -921,7 +986,7 @@ def api_input(path: str, segment: Segment, context: Context) -> tuple[list[str],\n     @param path `--input` の値（`-` は標準入力）\n     @param segment 作成のコマンド\n     @param context 判定の周りの事実\n-    @returns ラベルと本文の候補。読めない・JSON のオブジェクトでなければ本文の候補に Unreadable\n+    @returns ラベルと送る本文 1 つ。本文が無ければ空、入力が読めない・JSON オブジェクトでない場合は Unreadable\n     \"\"\"\n     raw = stdin_body(segment, \"--input -\") if path == \"-\" else read_body_file(path, context)\n     if isinstance(raw, Unreadable):\n@@ -943,7 +1008,7 @@ def api_finding(args: tuple[str, ...], segment: Segment, context: Context) -> Fi\n     @param args `gh api` の後ろの語\n     @param segment 作成のコマンド\n     @param context 判定の周りの事実\n-    @returns 違反なら Finding。作成でない・他のリポジトリ・種類を決めているなら None\n+    @returns 違反なら Finding。対象外か、種類と本文の両方が揃っていれば None\n     \"\"\"\n     flags = parse_flags(args, API_FLAGS)\n     endpoint = next((value for name, value in flags if name == \"\"), \"\")\n@@ -974,18 +1039,22 @@ def api_fields(flags: list[tuple[str, str]], segment: Segment, context: Context)\n     @param flags `gh api` のフラグと値の並び\n     @param segment 作成のコマンド\n     @param context 判定の周りの事実\n-    @returns ラベルと本文の候補\n+    @returns ラベルと送る本文 1 つ（本文が無ければ空）\n     \"\"\"\n     labels: list[str] = []\n-    bodies: list[str | Unreadable] = []\n+    body_fields: dict[str, str] = {}\n     for name, value in flags:\n         key, _, field_value = value.partition(\"=\")\n         is_field = name in (\"field\", \"raw-field\")\n         if is_field and key == \"labels[]\":\n             labels.append(field_value)\n         if is_field and key == \"body\":\n-            bodies.append(api_field_body(name, field_value, segment, context))\n-    return labels, bodies\n+            body_fields[name] = field_value\n+    # gh は raw の後に typed を処理する。後から現れた raw が先行する typed を上書きすることはない。\n+    for name in (\"field\", \"raw-field\"):\n+        if name in body_fields:\n+            return labels, [api_field_body(name, body_fields[name], segment, context)]\n+    return labels, []\n \n \n def segment_finding(segment: Segment, context: Context) -> Finding | None:\n@@ -1076,6 +1145,7 @@ def guidance() -> str:\n     \"\"\"\n     proposal = PROPOSAL_TEMPLATE.format(kind=\"<種類>\", reason=\"<根拠>\")\n     opt_out = OPT_OUT_TEMPLATE.format(reason=\"<理由>\")\n+    sections = \"、\".join(f\"## {title}\" for title in REQUIRED_SECTIONS)\n     return f\"\"\"\n Issue を作る呼び出しの中で、作業の種類を決めてください。\n \n@@ -1085,6 +1155,8 @@ Issue を作る呼び出しの中で、作業の種類を決めてください\n 3. 手順 4 の (c) に当たる Issue は、本文に次の行を行頭から書く\n {opt_out}\n \n+本文には次の見出しと内容を書いてください: {sections}\n+\n 手順: .claude/skills/implementation-flow/SKILL.md フェーズ 1「種類の確定」の手順 4・5\n 本文はシングルクォート、'EOF' のヒアドキュメント、\"$(cat <<'EOF' … EOF)\" のどれかで渡す（ダブルクォートや、区切りをクォートしないヒアドキュメントの本文は、$ ` \\\\ を含むと確定できないとして止まる）。相対パスで読めなければ絶対パスにする\"\"\"\n ",
+          "patchLines": 214,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 3,
+          "patch": "@@ -64,11 +64,15 @@ description: \"design-composer の実装を ゴールの確定 → タスクの\n - 対応する Issue がなければ**先に作る**。Issue なしで実装を始めない（判断の置き場所がなくなるため）\n   - 自分で進める Issue は、作成の呼び出しでも後からでも assignee を付けない（理由は `AGENTS.md`「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。フェーズ 2 で分けた Issue のうち、このセッションで続けて進めるものも同じ\n - 仕様の拠り所は `docs/`、UI の拠り所は `docs/Design Composer.html`（`rules/ui-verification.md`）\n-- ゴールの書き方は `.github/ISSUE_TEMPLATE/implementation.yml` と `.github/ISSUE_TEMPLATE/epic.yml` のゴール欄にも写してある。変えたら揃える\n+- `.github/ISSUE_TEMPLATE/` の 5 つのフォームは、ゴールに加えて次の欄を必須にする。AI が Issue を作るときも同じ欄を埋める\n+  - **完了の確かめ方** — 何をどう確かめたら終わりか。コマンド・観測・画面で書き、「テストが通る」だけにしない\n+  - **拠り所** — 仕様書の節、UI 案の画面名、既存のテストなど。無ければ「無し」と、決める必要があることを書く\n+  - **決めてよい範囲** — 聞かずに決めてよいことと、必ず人に聞くこと。追加の指定が無ければ「既定に従う」と書く\n+- フォームが生成する見出しは `### <欄名>`、AI が API で作る本文の共通 4 節は `## <欄名>`。既存の本文を読むときは欄名で参照し、フォームの本文を AI の新規作成に再利用するときは共通 4 節の見出しを `##` で書く\n \n ### 種類の確定\n \n-ゴールと同時に作業の種類（「作業の種類」）を確定する。**ラベルは人が決める。** 既存の `bug` / `enhancement` / `feature` / `refactor` ラベルは分類用であり、作業の種類は決めない。\n+ゴールと同時に作業の種類（「作業の種類」）を確定する。**種類を決めるのは人。** GitHub の Issue フォームでは、人が `feature.yml` / `bugfix.yml` / `refactor.yml` / `investigation.yml` を選ぶと、対応する `flow:*` ラベルが付く。`epic.yml` は `epic` のみ。既存の `bug` / `enhancement` / `feature` / `refactor` ラベルは分類用であり、作業の種類は決めない。\n \n 1. Issue の `flow:*` ラベルを読む\n \n@@ -80,7 +84,7 @@ description: \"design-composer の実装を ゴールの確定 → タスクの\n 3. 0 個・2 つ以上・表にない値なら、親が提案する種類と根拠を添えて人に尋ねる\n    - 対話中なら AskUserQuestion で尋ね、**人が答えた種類のラベル**を親が付ける（`gh api -X POST 'repos/{owner}/{repo}/issues/<番号>/labels' -f 'labels[]=<人が答えたラベル>'`。`<人が答えたラベル>` は `flow:bugfix` のようにラベル全体）。複数付いているラベルや表にない値を外すのも、人が答えたときだけにする\n    - 人がいない起動（Issue の assign から起動した等）なら、提案と根拠をセッション URL と一緒に Issue に書いて止める\n-4. Issue を新規作成するときは、**作成の呼び出しの中で**種類を決める（作った後にラベルを付ける形は、作成の時点で止められる）。行の書式は `.claude/hooks/lib/issue-flow-kind-violations.py` の定数が持ち、欠けた作成は `block-issue-without-flow-kind.sh` が止める（止めた理由に書式が出る）\n+4. AI が Issue を新規作成するときは、**作成の呼び出しの中で**種類を決め、本文に共通 4 節の `##` 見出しと内容を書く。対応する自リポジトリへの作成では `block-issue-without-flow-kind.sh` が両方を検査する。書式は `.claude/hooks/lib/issue-flow-kind-violations.py` の定数と拒否理由を参照する\n    - (a) 対話中なら AskUserQuestion で尋ね、人が答えた `flow:*` を作成の呼び出しのラベルに含める\n    - (b) 人がいない起動なら、本文に提案の行を書く\n    - (c) `implementation-flow` に通さない Issue（`harness-growth` の介入・棚卸し・Epic など）は、本文に通さない行を書く。Epic なら、作成の呼び出しのラベルに `epic` も含める",
+          "patchLines": 27,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/bugfix.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -12,7 +12,7 @@\n - 期待する結果（拠り所となる `docs/` の節があれば添える）\n - 実際の結果\n \n-この 3 つは `.github/ISSUE_TEMPLATE/bug.yml` の欄にも写してある。変えたら揃える。\n+この 3 つは `.github/ISSUE_TEMPLATE/bugfix.yml` の欄にも写してある。変えたら揃える。\n \n 再現手順が書けないならゴールが決まっていない（`SKILL.md` フェーズ 1 のとおり止める）。\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/investigation.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 2,
+          "patch": "@@ -9,9 +9,9 @@\n ゴールに加えて、次の 2 つを Issue に書く。\n \n - **問い** — 何に答えれば終わりか（「◯◯はなぜ△△になるか」「◯◯を使っている箇所はどこか」など）\n-- **終わりの条件** — どこまで確かめたら答えとするか（再現した／呼び出し元を数えきった 等）\n+- **完了の確かめ方** — どこまで確かめたら答えとするか（再現した／呼び出し元を数えきった 等）\n \n-この 2 つは `.github/ISSUE_TEMPLATE/investigation.yml` の欄にも写してある。変えたら揃える。\n+この 2 つは `.github/ISSUE_TEMPLATE/investigation.yml` の欄にも写してある。フォームの `###` と AI が書く `##` を区別せず欄名で読み、「完了の確かめ方」が無い旧 Issue では「終わりの条件」を読む。どちらで読んだ値も、調査と検証の入力では「終わりの条件」として渡す。\n \n ## フェーズ 3: 調査（`investigator`）\n ",
+          "patchLines": 12,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/bugfix.yml",
+          "status": "R",
+          "oldPath": ".github/ISSUE_TEMPLATE/bug.yml",
+          "additions": 25,
+          "deletions": 4,
+          "patch": "@@ -2,11 +2,8 @@ name: バグ（既存の振る舞いの誤り）\n description: 既存の振る舞いの誤り。拠り所（仕様書の節や既存のテスト）と食い違う動き\n labels:\n   - bug\n+  - flow:bugfix\n body:\n-  - type: markdown\n-    attributes:\n-      value: |\n-        作業の種類（`flow:*`）のラベルは人が付けます（テンプレートでは付けません）。\n   - type: textarea\n     id: goal\n     attributes:\n@@ -14,6 +11,30 @@ body:\n       description: 直ったとき、何ができるようになっているか\n     validations:\n       required: true\n+  - type: textarea\n+    id: completion\n+    attributes:\n+      label: 完了の確かめ方\n+      description: 何をどう確かめるか。コマンド・観測・画面で書き、「テストが通る」だけにしない\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: basis\n+    attributes:\n+      label: 拠り所\n+      description: 仕様書の節、UI 案の画面名、既存のテストなど。無ければ「無し」と、決める必要があることを書く\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: decision-scope\n+    attributes:\n+      label: 決めてよい範囲\n+      description: 聞かずに決めてよいことと、必ず人に聞くこと。追加の指定が無ければ「既定に従う」と書く\n+      placeholder: |\n+        - 聞かずに決めてよい:\n+        - 必ず聞く:\n+    validations:\n+      required: true\n   - type: textarea\n     id: steps\n     attributes:",
+          "patchLines": 44,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/epic.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 25,
+          "deletions": 1,
+          "patch": "@@ -7,7 +7,7 @@ body:\n   - type: markdown\n     attributes:\n       value: |\n-        子 Issue は、この Issue の sub-issue として紐づけてください。この Issue では実装せず、実装は子 Issue で行います。子 Issue の作業の種類（`flow:*`）のラベルは、子の側で人が付けます（テンプレートでは付けません）。\n+        子 Issue は、この Issue の sub-issue として紐づけてください。この Issue では実装せず、実装は子 Issue で行います。子 Issue には、作業の種類に対応するテンプレートを選んでください。\n   - type: textarea\n     id: goal\n     attributes:\n@@ -15,6 +15,30 @@ body:\n       description: 子 Issue がすべて閉じたとき、何ができるようになっているか。実装手段ではなく達成状態で書く\n     validations:\n       required: true\n+  - type: textarea\n+    id: completion\n+    attributes:\n+      label: 完了の確かめ方\n+      description: 何をどう確かめるか。コマンド・観測・画面で書き、「テストが通る」だけにしない\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: basis\n+    attributes:\n+      label: 拠り所\n+      description: 仕様書の節、UI 案の画面名、既存のテストなど。無ければ「無し」と、決める必要があることを書く\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: decision-scope\n+    attributes:\n+      label: 決めてよい範囲\n+      description: 聞かずに決めてよいことと、必ず人に聞くこと。追加の指定が無ければ「既定に従う」と書く\n+      placeholder: |\n+        - 聞かずに決めてよい:\n+        - 必ず聞く:\n+    validations:\n+      required: true\n   - type: textarea\n     id: split\n     attributes:",
+          "patchLines": 40,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/feature.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 57,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,57 @@\n+name: 機能追加（新しい振る舞い）\n+description: 新しい振る舞いを加える、または仕様として振る舞いを変更する作業\n+labels:\n+  - flow:feature\n+body:\n+  - type: textarea\n+    id: goal\n+    attributes:\n+      label: ゴール\n+      description: 何ができるようになれば終わりか（1〜3 行）。実装手段ではなく達成状態で書く\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: completion\n+    attributes:\n+      label: 完了の確かめ方\n+      description: 何をどう確かめるか。コマンド・観測・画面で書き、「テストが通る」だけにしない\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: basis\n+    attributes:\n+      label: 拠り所\n+      description: 仕様書の節、UI 案の画面名、既存のテストなど。無ければ「無し」と、決める必要があることを書く\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: decision-scope\n+    attributes:\n+      label: 決めてよい範囲\n+      description: 聞かずに決めてよいことと、必ず人に聞くこと。追加の指定が無ければ「既定に従う」と書く\n+      placeholder: |\n+        - 聞かずに決めてよい:\n+        - 必ず聞く:\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: behavior\n+    attributes:\n+      label: 仕様として固定したい振る舞い\n+      description: どの入力・操作・状態のときに、どんな結果になるか\n+      placeholder: ◯◯のとき□□になる\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: background\n+    attributes:\n+      label: 背景\n+  - type: textarea\n+    id: split\n+    attributes:\n+      label: 分割の判断\n+      description: この Issue を子に分けるなら、その軸と理由。分けないなら、その理由。作る時点で決まっていなければ空でよく、決めたら書き足す\n+  - type: textarea\n+    id: out-of-scope\n+    attributes:\n+      label: スコープ外",
+          "patchLines": 58,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/implementation.yml",
+          "status": "D",
+          "oldPath": null,
+          "additions": 0,
+          "deletions": 27,
+          "patch": null,
+          "patchLines": 0,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/investigation.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 25,
+          "deletions": 10,
+          "patch": "@@ -1,10 +1,8 @@\n name: 調査（ソースを変えずに答えを書く）\n description: ソースを変えずに調べて、答えを Issue に書いて閉じる作業\n+labels:\n+  - flow:investigation\n body:\n-  - type: markdown\n-    attributes:\n-      value: |\n-        作業の種類（`flow:*`）のラベルは人が付けます（テンプレートでは付けません）。\n   - type: textarea\n     id: goal\n     attributes:\n@@ -13,17 +11,34 @@ body:\n     validations:\n       required: true\n   - type: textarea\n-    id: question\n+    id: completion\n     attributes:\n-      label: 問い\n-      description: 何に答えれば終わりか\n+      label: 完了の確かめ方\n+      description: どこまで確かめたら答えとするか。使うコマンドや、症状を再現する・呼び出し元を数えきるなどの判定条件を書く\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: basis\n+    attributes:\n+      label: 拠り所\n+      description: 仕様書の節、UI 案の画面名、既存のテストなど。無ければ「無し」と、決める必要があることを書く\n     validations:\n       required: true\n   - type: textarea\n-    id: done-when\n+    id: decision-scope\n     attributes:\n-      label: 終わりの条件\n-      description: どこまで確かめたら答えとするか（再現した／呼び出し元を数えきった 等）\n+      label: 決めてよい範囲\n+      description: 聞かずに決めてよいことと、必ず人に聞くこと。追加の指定が無ければ「既定に従う」と書く\n+      placeholder: |\n+        - 聞かずに決めてよい:\n+        - 必ず聞く:\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: question\n+    attributes:\n+      label: 問い\n+      description: 何に答えれば終わりか\n     validations:\n       required: true\n   - type: textarea",
+          "patchLines": 54,
+          "truncated": false
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/refactor.yml",
+          "status": "A",
+          "oldPath": null,
+          "additions": 66,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,66 @@\n+name: リファクタリング（振る舞いはそのまま）\n+description: 外から見える振る舞いを変えず、構造の整理・移動・改名を行う作業\n+labels:\n+  - flow:refactor\n+body:\n+  - type: textarea\n+    id: goal\n+    attributes:\n+      label: ゴール\n+      description: 何ができるようになれば終わりか（1〜3 行）。実装手段ではなく達成状態で書く\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: completion\n+    attributes:\n+      label: 完了の確かめ方\n+      description: 何をどう確かめるか。コマンド・観測・画面で書き、「テストが通る」だけにしない\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: basis\n+    attributes:\n+      label: 拠り所\n+      description: 仕様書の節、UI 案の画面名、既存のテストなど。無ければ「無し」と、決める必要があることを書く\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: decision-scope\n+    attributes:\n+      label: 決めてよい範囲\n+      description: 聞かずに決めてよいことと、必ず人に聞くこと。追加の指定が無ければ「既定に従う」と書く\n+      placeholder: |\n+        - 聞かずに決めてよい:\n+        - 必ず聞く:\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: behavior\n+    attributes:\n+      label: 変えない振る舞い\n+      description: 移動や改名をしても、同じ入力・操作・状態で何が変わらないか\n+    validations:\n+      required: true\n+  - type: textarea\n+    id: existing-tests\n+    attributes:\n+      label: 守っている既存テスト\n+      description: 分かれば、変更箇所を守るテスト名や実行コマンドを書く\n+  - type: textarea\n+    id: moves-and-renames\n+    attributes:\n+      label: 移動・改名の予定\n+      description: 対象と移動先・新しい名前。予定がなければ空でよい\n+  - type: textarea\n+    id: background\n+    attributes:\n+      label: 背景\n+  - type: textarea\n+    id: split\n+    attributes:\n+      label: 分割の判断\n+      description: この Issue を子に分けるなら、その軸と理由。分けないなら、その理由。作る時点で決まっていなければ空でよく、決めたら書き足す\n+  - type: textarea\n+    id: out-of-scope\n+    attributes:\n+      label: スコープ外",
+          "patchLines": 67,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "fc8b0722da7c939ed1fcfb05ba14c80ad70097b4",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-28T00:40:14+09:00",
+      "subject": "🐛 [Bug Fix]: #1479 本文判定の境界と実物送信の確認を補う",
+      "body": "- 宣言だけの節と、表示用のコメント記号を区別する\n- 最後の空の本文ファイル指定を実物 gh と同じように扱う\n- 本文不足の案内と共通欄の記入説明を整理する\n- 実物 gh の GraphQL と REST の送信が届くことを判定表で固定する\n\n採用理由:\n実物の本文と違う理由で止まるケース、またテスト上で送信が一度も\n起きなくても成功するケースをレビューの実測に沿って除く。\n第1工程の判定は保持し、新しい対照だけを足す。",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 10,
+          "deletions": 0,
+          "patch": "@@ -352,6 +352,12 @@ deny|sections|bash|sections-effective-body-input REST 作成はフィールド\n deny|sections|bash|sections-effective-body-file CLI 作成は直接指定より body-file の本文を優先する|gh issue create -t x -l flow:feature --body-file @W/plain.md -b '@S'\n pass|-|bash|sections-effective-body-file-pass 直接指定が不完全でも完全な body-file があれば通す|gh issue create -t x -l flow:feature --body-file @W/sections.md -b 本文だけ\n deny|sections|bash|sections-effective-body-two-calls 2 件目だけ共通節がなければ止める|gh issue create -t a -l flow:feature --body-file @W/sections.md && gh issue create -t b -l flow:feature -b 本文だけ\n+deny|sections|mcp|sections-declaration-only 種類の提案だけは節の内容に数えない|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"body\":\"## ゴール\\n作成できる\\n\\n## 完了の確かめ方\\n結果を確認する\\n\\n## 拠り所\\n無し\\n\\n## 決めてよい範囲\\n種類の提案: flow:feature（根拠）\"}\n+deny|sections|mcp|sections-opt-out-only 対象外宣言だけは節の内容に数えない|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"body\":\"## ゴール\\n作成できる\\n\\n## 完了の確かめ方\\n結果を確認する\\n\\n## 拠り所\\n無し\\n\\n## 決めてよい範囲\\n種類: implementation-flow に通さない（棚卸しのため）\"}\n+pass|-|mcp|sections-declared-with-content 節の内容と種類の提案が両方あれば通す|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"body\":\"@SJ\\n種類の提案: flow:feature（根拠）\"}\n+pass|-|mcp|sections-inline-code インラインコード中の記号はコメントを開かない|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":\"## ゴール\\n作成できる\\n\\n## 完了の確かめ方\\n`<!--` の表示を確かめる\\n\\n## 拠り所\\n無し\\n\\n## 決めてよい範囲\\n既定に従う\"}\n+pass|-|mcp|sections-escaped-comment エスケープされた記号はコメントを開かない|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":\"## ゴール\\n作成できる\\n\\n## 完了の確かめ方\\n\\\\<!-- の表示を確かめる\\n\\n## 拠り所\\n無し\\n\\n## 決めてよい範囲\\n既定に従う\"}\n+pass|-|bash|sections-empty-body-file 最後の空の body-file は無視して直接指定を使う|gh issue create -t x -l flow:feature --body-file @W/plain.md --body-file '' -b '@S'\n CASES\n )\"\n \n@@ -518,6 +524,10 @@ found=\"載らない\"\n [[ \"$sections_reason\" == *\"完了の確かめ方\"* ]] && found=\"載る\"\n report \"載る\" \"$found\" \"sections-hook-guidance 不足した見出しを拒否文に載せる\"\n \n+found=\"載らない\"\n+[[ \"$sections_reason\" == *\"作業の種類がまだ決まっていない場合は\"* ]] && found=\"載る\"\n+report \"載る\" \"$found\" \"sections-hook-guidance-kind 種類の決め方は未確定の場合だけ案内する\"\n+\n # 86: 人に尋ねる道が、人がいない起動の行と書式より先に出る(拒否文が写せる行を先に出すと、\n # 対話中でも人に尋ねない道が最短になる)。\n ask_at=\"$(position_in_reason AskUserQuestion)\"",
+          "patchLines": 24,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 26,
+          "deletions": 0,
+          "patch": "@@ -231,6 +231,32 @@ for line in sys.stdin:\n             print(f\"NG|{name}|判定か実行が例外で落ちた\")\n             continue\n         print(f\"NG|{name}|検出器は通したが、実物は{reason}作成を送った\" if reason else f\"ok|{name}|-\")\n+\n+\n+def wire_canary_failure(route, command):\n+    # 通常のリプレイは、作成しない操作も含む。既知の作成だけは、正しい本文が実際に届かなければ失敗にする。\n+    reason = replay(command)\n+    received_routes = [request[0] for request in requests]\n+    if received_routes != [route]:\n+        return f\"{route} の作成 1 件を期待したが、受信した経路は {received_routes}\"\n+    expected_creation = ([\"flow:feature\"], expand(\"@S\"))\n+    if list(own_creations()) != [expected_creation]:\n+        return \"ラベルと本文が揃った自リポジトリへの作成を受信していない\"\n+    return reason\n+\n+\n+wire_canaries = (\n+    (\"graphql\", \"gh issue create -t x -l flow:feature -b '@S'\"),\n+    (\"rest\", \"gh api -X POST repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -f 'body=@S'\"),\n+)\n+for route, text in wire_canaries:\n+    name = f\"wire-canary {route} の実物 gh が完全な作成を 1 件送る\"\n+    try:\n+        reason = wire_canary_failure(route, expand(text))\n+    except Exception:\n+        traceback.print_exc()\n+        reason = \"送信確認が例外で落ちた\"\n+    print(f\"NG|{name}|{reason}\" if reason else f\"ok|{name}|-\")\n PY\n )\"\n ",
+          "patchLines": 33,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "replay_runner=\"$(cat <<'PY'",
+              "new": "replay_runner=\"$(cat <<'PY'"
+            }
+          ]
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "status": "M",
+          "oldPath": null,
+          "additions": 71,
+          "deletions": 21,
+          "patch": "@@ -61,9 +61,9 @@ MISSING, MULTIPLE, UNREADABLE, SECTIONS = KINDS\n PROPOSAL_TEMPLATE = \"種類の提案: flow:{kind}（{reason}）\"\n OPT_OUT_TEMPLATE = \"種類: implementation-flow に通さない（{reason}）\"\n REQUIRED_SECTIONS = (\"ゴール\", \"完了の確かめ方\", \"拠り所\", \"決めてよい範囲\")\n-SECTION_HEADING = re.compile(r\" {0,3}(#{1,2})(?:[ \\t]+(.*?))?[ \\t]*\")\n+SECTION_HEADING_PREFIX = re.compile(r\" {0,3}(#{1,2})(?=[ \\t]|$)\")\n CODE_FENCE = re.compile(r\" {0,3}(`{3,}|~{3,})(.*)\")\n-COMMENT_MARKER = re.compile(r\"<!--|-->\")\n+MARKDOWN_INLINE_MARKER = re.compile(r\"<!--|-->|`+|\\\\+\")\n \n # 字面のままでは確定できない位置（展開と、ダブルクォートの中のバックスラッシュ）に置く印と、切り出した本文の\n # 置き場の印と、クォートの開きとバックスラッシュの前に置く印。どれも私用領域の文字で、入力にもともと\n@@ -830,22 +830,64 @@ def stdin_body(segment: Segment, flag: str) -> str | Unreadable:\n     return segment.stdin\n \n \n+def code_span_ends(markers: list[re.Match[str]]) -> dict[int, int]:\n+    \"\"\"行内のバッククォート列ごとに、同じ長さの次の列の終了位置を返す。\n+\n+    開始の 1 文字目がエスケープされる場合は、その残りから始まる列も候補にする。\n+\n+    @param markers 行内の記号と位置\n+    @returns 開始できる位置から同じ長さの次の列の終了位置への対応\n+    \"\"\"\n+    next_ends: dict[int, int] = {}\n+    ends_by_start: dict[int, int] = {}\n+    for marker in reversed(markers):\n+        if not marker[0].startswith(\"`\"):\n+            continue\n+        width = len(marker[0])\n+        for escaped_chars in range(min(2, width)):\n+            end = next_ends.get(width - escaped_chars)\n+            if end is not None:\n+                ends_by_start[marker.start() + escaped_chars] = end\n+        next_ends[width] = marker.end()\n+    return ends_by_start\n+\n+\n def without_html_comments(line: str, in_comment: bool) -> tuple[str, bool]:\n-    \"\"\"1 行の HTML コメントを除く。コードフェンスの内側には適用しない。\n+    \"\"\"1 行の HTML コメントを除く。行内のコードやエスケープで表示される記号は残す。\n \n     @param line コメントを取り除く行\n     @param in_comment 前の行から続く HTML コメントの中か\n     @returns 見えている文字列と、次の行へコメントが続くか\n     \"\"\"\n+    has_comment_marker = \"<!--\" in line or \"-->\" in line\n+    if not has_comment_marker:\n+        return (\"\" if in_comment else line), in_comment\n+    markers = list(MARKDOWN_INLINE_MARKER.finditer(line))\n+    span_ends = code_span_ends(markers)\n     visible: list[str] = []\n     start = 0\n-    for marker in COMMENT_MARKER.finditer(line):\n-        if marker[0] == \"<!--\" and not in_comment:\n-            visible.append(line[start:marker.start()])\n+    escaped_at = -1\n+    code_until = 0\n+    for marker in markers:\n+        token, offset = marker[0], marker.start()\n+        if in_comment:\n+            if token == \"-->\":\n+                start = marker.end()\n+                in_comment = False\n+            continue\n+        if offset < code_until:\n+            continue\n+        if token.startswith(\"\\\\\"):\n+            escaped_at = marker.end() if len(token) % 2 else -1\n+            continue\n+        if token.startswith(\"`\"):\n+            opening = offset + 1 if offset == escaped_at else offset\n+            code_until = span_ends.get(opening, 0)\n+            continue\n+        opens_comment = token == \"<!--\" and offset != escaped_at\n+        if opens_comment:\n+            visible.append(line[start:offset])\n             in_comment = True\n-        elif marker[0] == \"-->\" and in_comment:\n-            start = marker.end()\n-            in_comment = False\n     if not in_comment:\n         visible.append(line[start:])\n     return \"\".join(visible), in_comment\n@@ -855,32 +897,39 @@ def missing_sections(body: str) -> tuple[str, ...]:\n     \"\"\"本文にない、または内容が空の共通節を返す。\n \n     コードフェンスの中身は節の内容になりうる（検証コマンドなど）が、その中の見出しで節は始まらない。\n+    種類を宣言する行は、作業の種類を決めるためのもので節への回答ではない。\n \n     @param body 作成に送る Markdown\n     @returns 欠落または空の節の名前（REQUIRED_SECTIONS の順）\n     \"\"\"\n     filled: set[str] = set()\n-    active_section = None\n+    active_section: str | None = None\n     in_comment = False\n     fence = \"\"\n     for raw_line in body.split(\"\\n\"):\n         line = raw_line.removesuffix(\"\\r\")\n         fence_match = CODE_FENCE.fullmatch(line)\n         if fence:\n-            if fence_match and fence_match[1].startswith(fence) and not fence_match[2].strip():\n+            closes_fence = fence_match is not None and fence_match[1].startswith(fence) and not fence_match[2].strip()\n+            if closes_fence:\n                 fence = \"\"\n-            elif active_section is not None and line.strip():\n+                continue\n+            has_fenced_content = active_section is not None and bool(line.strip())\n+            if has_fenced_content:\n                 filled.add(active_section)\n             continue\n-        if not in_comment and fence_match and (fence_match[1][0] == \"~\" or \"`\" not in fence_match[2]):\n+        opens_fence = not in_comment and fence_match is not None and (fence_match[1][0] == \"~\" or \"`\" not in fence_match[2])\n+        if opens_fence:\n             fence = fence_match[1]\n             continue\n-        heading = SECTION_HEADING.fullmatch(line) if not in_comment else None\n+        heading = SECTION_HEADING_PREFIX.match(line) if not in_comment else None\n         if heading:\n-            active_section = heading[2] if heading[1] == \"##\" else None\n+            title = line[heading.end():].strip(\" \\t\")\n+            active_section = title if heading[1] == \"##\" else None\n             continue\n         visible, in_comment = without_html_comments(line, in_comment)\n-        if active_section is not None and visible.strip():\n+        has_section_answer = active_section is not None and bool(visible.strip()) and not has_declaration_line(visible)\n+        if has_section_answer:\n             filled.add(active_section)\n     return tuple(section for section in REQUIRED_SECTIONS if section not in filled)\n \n@@ -901,7 +950,8 @@ def judge(target: str, labels: list[str], bodies: list[str | Unreadable]) -> Fin\n         return Finding(UNREADABLE, target, f\"本文を確定できない（{body.reason}）\")\n     if UNSETTLED in body:\n         return Finding(UNREADABLE, target, \"本文が展開か、展開する文脈の $ ` \\\\ を含み、字面で確定できない\")\n-    if not flow_labels and not has_declaration_line(body):\n+    missing_kind = not flow_labels and not has_declaration_line(body)\n+    if missing_kind:\n         return Finding(MISSING, target, \"flow:* ラベルも、種類の提案の行も、implementation-flow に通さない行も無い\")\n     missing = missing_sections(body)\n     if missing:\n@@ -947,7 +997,7 @@ def issue_create_finding(env: dict[str, str], args: tuple[str, ...], segment: Se\n def sent_issue_body(body: list[str], body_file: list[str], segment: Segment, context: Context) -> list[str | Unreadable]:\n     \"\"\"`gh issue create` が実際に送る本文を返す。\n \n-    gh は `--body-file` があれば `--body` より優先し、同じフラグを繰り返せば最後の値を送る。\n+    gh は同じフラグが複数あれば最後の値を使う。最後の `--body-file` が空でなければ `--body` より優先する。\n \n     @param body `--body` の値（出てきた順）\n     @param body_file `--body-file` の値（出てきた順）\n@@ -955,9 +1005,9 @@ def sent_issue_body(body: list[str], body_file: list[str], segment: Segment, con\n     @param context 判定の周りの事実\n     @returns 送る本文 1 つ（読めなければ Unreadable）。どちらも無ければ空\n     \"\"\"\n-    if not body_file:\n+    path = body_file[-1] if body_file else \"\"\n+    if not path:\n         return list(body[-1:])\n-    path = body_file[-1]\n     return [stdin_body(segment, \"--body-file -\") if path == \"-\" else read_body_file(path, context)]\n \n \n@@ -1147,7 +1197,7 @@ def guidance() -> str:\n     opt_out = OPT_OUT_TEMPLATE.format(reason=\"<理由>\")\n     sections = \"、\".join(f\"## {title}\" for title in REQUIRED_SECTIONS)\n     return f\"\"\"\n-Issue を作る呼び出しの中で、作業の種類を決めてください。\n+作業の種類がまだ決まっていない場合は、Issue を作る呼び出しの中で決めてください。\n \n 1. 対話中なら AskUserQuestion で人に尋ね、人が答えた flow:* を作成の呼び出しのラベルに含める（例: --label flow:feature）。親が自分で選んだラベルは付けない\n 2. 人がいない起動のときだけ、本文に次の行を行頭から書く",
+          "patchLines": 171,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 4,
+          "patch": "@@ -64,10 +64,7 @@ description: \"design-composer の実装を ゴールの確定 → タスクの\n - 対応する Issue がなければ**先に作る**。Issue なしで実装を始めない（判断の置き場所がなくなるため）\n   - 自分で進める Issue は、作成の呼び出しでも後からでも assignee を付けない（理由は `AGENTS.md`「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。フェーズ 2 で分けた Issue のうち、このセッションで続けて進めるものも同じ\n - 仕様の拠り所は `docs/`、UI の拠り所は `docs/Design Composer.html`（`rules/ui-verification.md`）\n-- `.github/ISSUE_TEMPLATE/` の 5 つのフォームは、ゴールに加えて次の欄を必須にする。AI が Issue を作るときも同じ欄を埋める\n-  - **完了の確かめ方** — 何をどう確かめたら終わりか。コマンド・観測・画面で書き、「テストが通る」だけにしない\n-  - **拠り所** — 仕様書の節、UI 案の画面名、既存のテストなど。無ければ「無し」と、決める必要があることを書く\n-  - **決めてよい範囲** — 聞かずに決めてよいことと、必ず人に聞くこと。追加の指定が無ければ「既定に従う」と書く\n+- 5 つのフォームの共通必須欄は **ゴール・完了の確かめ方・拠り所・決めてよい範囲**。AI が Issue を作るときも同じ欄を埋める。各欄の書き方は[機能追加フォーム](../../../.github/ISSUE_TEMPLATE/feature.yml)の欄の説明を参照する\n - フォームが生成する見出しは `### <欄名>`、AI が API で作る本文の共通 4 節は `## <欄名>`。既存の本文を読むときは欄名で参照し、フォームの本文を AI の新規作成に再利用するときは共通 4 節の見出しを `##` で書く\n \n ### 種類の確定",
+          "patchLines": 12,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/implementation-flow/investigation.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -11,7 +11,7 @@\n - **問い** — 何に答えれば終わりか（「◯◯はなぜ△△になるか」「◯◯を使っている箇所はどこか」など）\n - **完了の確かめ方** — どこまで確かめたら答えとするか（再現した／呼び出し元を数えきった 等）\n \n-この 2 つは `.github/ISSUE_TEMPLATE/investigation.yml` の欄にも写してある。フォームの `###` と AI が書く `##` を区別せず欄名で読み、「完了の確かめ方」が無い旧 Issue では「終わりの条件」を読む。どちらで読んだ値も、調査と検証の入力では「終わりの条件」として渡す。\n+この 2 つは `.github/ISSUE_TEMPLATE/investigation.yml` の欄にも写してある。[共通の見出しの読み方](SKILL.md#フェーズ-1-ゴールの確定)に沿って読み、「完了の確かめ方」が無い旧 Issue では「終わりの条件」を読む。どちらで読んだ値も、調査と検証の入力では「終わりの条件」として渡す。\n \n ## フェーズ 3: 調査（`investigator`）\n ",
+          "patchLines": 9,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "90a3c13aacbd22393ba9db9c2def6d5cd2845885",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-28T00:40:29+09:00",
+      "subject": "🧪 [Tests]: #1479 コメントのみの回答を拒否することを固定",
+      "body": "- 正しい見出しの下に HTML コメントしかない本文を判定表に追加\n\n採用理由:\n見出しを隠すコメントと、回答だけを隠すコメントは別の条件。\n後者の処理だけを外すと新しいケースが失敗することを実測した。",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -337,6 +337,7 @@ deny|sections|bash|sections-missing-scope 決めてよい範囲がなければ\n deny|sections|bash|sections-empty 完了の確かめ方が空白だけなら止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎## 完了の確かめ方⏎ ⇥ ⏎## 拠り所⏎無し⏎## 決めてよい範囲⏎既定に従う'\n deny|sections|bash|sections-in-code コードフェンスの中にしか共通節がなければ止める|gh issue create -t x -l flow:feature -b '```markdown⏎@S⏎```'\n deny|sections|bash|sections-in-comment HTML コメントの中にしか共通節がなければ止める|gh issue create -t x -l flow:feature -b '<!--⏎@S⏎-->'\n+deny|sections|bash|sections-comment-only-answer 完了の確かめ方が HTML コメントだけなら止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎## 完了の確かめ方⏎<!-- 結果を確認する -->⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'\n deny|sections|bash|sections-in-quote 引用の中にしか完了の確かめ方がなければ止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎> ## 完了の確かめ方⏎> 結果を確認する⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'\n pass|-|bash|sections-fenced-command 完了の確かめ方がコードフェンス内のコマンドだけでも通す|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎## 完了の確かめ方⏎```sh⏎bash test.sh⏎```⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'\n deny|sections|bash|sections-form-heading-rest REST 作成はフォームの見出しだけなら止める|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/sections-h3.md",
+          "patchLines": 8,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/block-issue-without-flow-kind.sh",
+      "to": ".claude/hooks/lib/issue-flow-kind-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "to": ".claude/hooks/block-issue-without-flow-kind.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "to": ".claude/hooks/lib/cases-fixtures.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "to": ".claude/hooks/lib/issue-flow-kind-fixtures.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "to": ".claude/hooks/lib/issue-flow-kind-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "to": ".github/scripts/lib/detector-precondition.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "to": ".github/scripts/lib/detector-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+      "to": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+      "to": ".claude/hooks/lib/issue-flow-kind-fixtures.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": ".claude/skills/implementation-flow/SKILL.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "status": "kept"
+    }
+  ]
+}
