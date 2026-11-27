@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1495,
+      "title": "✨ [New Feature]: #1485 計画と実装の検証を最大3周で回す"
+    },
+    {
       "pr": 1477,
       "title": "📝 [Doc]: PR #1465 の振り返りを harness/records に記録する"
     },
