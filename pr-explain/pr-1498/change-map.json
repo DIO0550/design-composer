@@ -1,0 +1,1066 @@
+{
+  "version": 2,
+  "pr": 1498,
+  "headBranch": "feat/1486-verify-storybook",
+  "baseBranch": "main",
+  "mergeBase": "393374a24a59c19c7208e4dc790f61737292d345",
+  "head": "08e023469303686ee05336474a61df02fec8710d",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/canary-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/commit-md-heading-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/duplicate-test-helpers.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/edit-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/git-add-all-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/import-rule-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/missing-doc-comments.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/parent-session-edit-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/pre-push-detector-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/story-title-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/test-rules-scan.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/verification-agent-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/post-merge-review.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/session-url-notice.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/skills/verify-storybook/SKILL.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 48,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/skills/verify-storybook/examples/add-edit-drag.json",
+          "status": "A",
+          "oldPath": null,
+          "additions": 65,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/build-frontend-report.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-change-map.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/build-pr-explain-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-lint-suppressions.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-added-test-helper-duplication.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-closing-issue.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-pr-explain-template-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/check-tauri-version-match.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/detector-precondition.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/lib/storybook-browser.mjs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 147,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-core-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/pr-explain-pages-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/storybook-visual-regression.mjs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 98,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/upsert-sticky-comment.sh",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/verify-storybook-cases.mjs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 248,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/verify-storybook.mjs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 537,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "AGENTS.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/evals/experiment.py",
+          "changed": false
+        },
+        {
+          "path": "harness/evals/presets.py",
+          "changed": false
+        },
+        {
+          "path": "harness/evals/test_presets.py",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/lib/check-tally-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/lib/check-tally.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/count-cases.sh",
+          "changed": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "rules/ui-verification.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 6,
+          "changed": true,
+          "target": null
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": ".oxlintrc.json",
+          "changed": false
+        },
+        {
+          "path": "index.html",
+          "changed": false
+        },
+        {
+          "path": "package.json",
+          "changed": false
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "changed": false
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "e102e7c538c5222b00797dbd32246f1bda6d844d",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-27T21:33:00+09:00",
+      "subject": "🧪 [Tests]: #1486 Storybook 検証の結果と操作順を固定",
+      "body": "- story の解決と途中撮影を含む操作手順の判定表を追加する\n- 同じ判定表を pre-push と CI から実行する\n\n背景:\nStorybook の動作確認を一回の呼び出しにまとめる前に、\n成功だけでなく曖昧な指定や不成立時の証拠保全も仕様として固定する。\n\n採用理由:\n実ブラウザの有無にかかわらず、story index と偽ドライバで\n判定を再現できるようにし、既存の Node 24 の検査へ接続する。\n\n影響とトレードオフ:\n判定表の7件は骨組みの状態では意図して失敗する。\n実際の描画とブラウザ操作は後続の実装で別に実測する。",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 1,
+          "patch": "@@ -179,7 +179,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n \n #### 判定表をどの層へ置くか\n \n-**判定表（`*-cases.sh`）の配置判断はここで管理する。** 検出器本体をゲートで呼んでいても、`src` や記録に違反がない限り緑のままになるため、**取りこぼす向きの退行**（意図した取りこぼしの広がり・走査対象の抜け・報告の切り詰め）は判定表でしか捕まえられない。\n+**判定表（`*-cases.*`）の配置判断はここで管理する。** 検出器本体をゲートで呼んでいても、`src` や記録に違反がない限り緑のままになるため、**取りこぼす向きの退行**（意図した取りこぼしの広がり・走査対象の抜け・報告の切り詰め）は判定表でしか捕まえられない。\n \n | 判定表 | 層 1（CI） | 層 2（`pre-push`） |\n | --- | --- | --- |\n@@ -209,6 +209,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の\n | `.github/scripts/build-pr-explain-cases.sh` | あり | あり（`python3` がある環境のみ） |\n | `.github/scripts/check-pr-explain-template-cases.sh` | あり | あり（`python3` がある環境のみ） |\n | `.github/scripts/pr-explain-core-cases.sh` | あり | あり（`python3` と Node 20 以上がある環境のみ） |\n+| `.github/scripts/verify-storybook-cases.mjs` | あり | あり（Node 24 以上がある環境のみ） |\n | `.github/scripts/oxlint-config-cases.sh` | あり（`check` ジョブ） | あり（`pnpm` と `node_modules` がある環境のみ） |\n | `harness/githooks/lib/check-tally-cases.sh` | あり | あり |\n ",
+          "patchLines": 17,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/verify-storybook-cases.mjs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 175,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,175 @@\n+import { isDeepStrictEqual } from \"node:util\";\n+import { Result } from \"../../src/utils/Result.ts\";\n+import { resolveStory, runSteps } from \"./verify-storybook.mjs\";\n+\n+const CanvasStory = {\n+  type: \"story\",\n+  id: \"editor-canvas--default\",\n+  title: \"Editor/Canvas\",\n+  name: \"Default\",\n+};\n+const AlternateCanvasStory = {\n+  ...CanvasStory,\n+  id: \"editor-canvas--example\",\n+  name: \"Example\",\n+};\n+const AnotherDefaultStory = {\n+  ...CanvasStory,\n+  id: \"editor-sidebar--default\",\n+  title: \"Editor/Sidebar\",\n+};\n+const CanvasDocs = {\n+  ...CanvasStory,\n+  type: \"docs\",\n+  id: \"editor-canvas--docs\",\n+};\n+const IndexWithCanvasStories = {\n+  entries: Object.fromEntries(\n+    [CanvasStory, AlternateCanvasStory, AnotherDefaultStory, CanvasDocs]\n+      .map((entry) => [entry.id, entry]),\n+  ),\n+};\n+const DuplicateCanvasStory = {\n+  ...CanvasStory,\n+  id: \"editor-canvas--another-default\",\n+};\n+\n+/** 操作と撮影の呼び出し順を残し、期待と比較する文言を返す。 */\n+function createRecordingDriver(observedText) {\n+  const calls = [];\n+  return {\n+    calls,\n+    driver: {\n+      async perform(step) {\n+        calls.push(step);\n+        return Result.ok(undefined);\n+      },\n+      async observe(step) {\n+        calls.push(step);\n+        return Result.ok(observedText);\n+      },\n+      async capture(name) {\n+        calls.push({ kind: \"capture\", name });\n+        return Result.ok(`proof/${name}.png`);\n+      },\n+    },\n+  };\n+}\n+\n+const PointerDown = { kind: \"pointer-down\", x: 10, y: 20 };\n+const PointerMove = { kind: \"pointer-move\", x: 30, y: 45 };\n+const PointerUp = { kind: \"pointer-up\", x: 30, y: 45 };\n+const HeldCapture = { kind: \"capture\", name: \"held\", description: \"押したまま移動した位置\" };\n+const BeforeCapture = { kind: \"capture\", name: \"before\", description: \"比較前の表示\" };\n+const TextExpectation = {\n+  kind: \"expect-text\",\n+  selector: \"[data-name=title]\",\n+  expected: \"新しい題名\",\n+  description: \"変更した題名が表示される\",\n+};\n+const LateClick = { kind: \"click\", selector: \"button\" };\n+\n+/** story 解決や操作の成否を、比較用の値として展開する。 */\n+function readableResult(result) {\n+  if (Result.isOk(result)) {\n+    return { kind: \"ok\", value: result.value };\n+  }\n+  return { kind: \"err\", error: result.error };\n+}\n+\n+/** story 解決の失敗は読み手が区別できる種別を比較する。 */\n+function storyErrorKind(result) {\n+  if (Result.isOk(result)) {\n+    return \"accepted\";\n+  }\n+  return result.error.kind;\n+}\n+\n+const StorybookVerificationCases = [\n+  {\n+    label: \"完全 ID は該当する story を選ぶ\",\n+    expected: { kind: \"ok\", value: AlternateCanvasStory },\n+    measure: () => readableResult(resolveStory(IndexWithCanvasStories, { id: AlternateCanvasStory.id })),\n+  },\n+  {\n+    label: \"title と name が完全一致する一意の story を選ぶ\",\n+    expected: { kind: \"ok\", value: CanvasStory },\n+    measure: () => readableResult(resolveStory(IndexWithCanvasStories, {\n+      title: CanvasStory.title,\n+      name: CanvasStory.name,\n+    })),\n+  },\n+  {\n+    label: \"未知の ID を story として選ばない\",\n+    expected: \"not-found\",\n+    measure: () => storyErrorKind(resolveStory(IndexWithCanvasStories, { id: \"editor-canvas--unknown\" })),\n+  },\n+  {\n+    label: \"title と name の重複は曖昧と判定する\",\n+    expected: \"ambiguous\",\n+    measure: () => storyErrorKind(resolveStory({\n+      entries: { ...IndexWithCanvasStories.entries, [DuplicateCanvasStory.id]: DuplicateCanvasStory },\n+    }, { title: CanvasStory.title, name: CanvasStory.name })),\n+  },\n+  {\n+    label: \"docs の ID を story として選ばない\",\n+    expected: \"not-found\",\n+    measure: () => storyErrorKind(resolveStory(IndexWithCanvasStories, { id: CanvasDocs.id })),\n+  },\n+  {\n+    label: \"押下から解放までの途中に撮影し、画像と説明を記録する\",\n+    expected: {\n+      calls: [PointerDown, PointerMove, { kind: \"capture\", name: HeldCapture.name }, PointerUp],\n+      result: {\n+        kind: \"ok\",\n+        value: {\n+          screenshots: [{ path: \"proof/held.png\", description: HeldCapture.description }],\n+          checks: [],\n+        },\n+      },\n+    },\n+    async measure() {\n+      const { calls, driver } = createRecordingDriver(\"操作前の題名\");\n+      const result = await runSteps([PointerDown, PointerMove, HeldCapture, PointerUp], driver);\n+      return { calls, result: readableResult(result) };\n+    },\n+  },\n+  {\n+    label: \"期待不一致で止まり、手順・観測値・撮影済み画像を保つ\",\n+    expected: {\n+      calls: [{ kind: \"capture\", name: BeforeCapture.name }, TextExpectation],\n+      result: {\n+        kind: \"err\",\n+        error: {\n+          kind: \"step-failed\",\n+          step: 2,\n+          description: TextExpectation.description,\n+          expected: TextExpectation.expected,\n+          observed: \"操作前の題名\",\n+          screenshots: [{ path: \"proof/before.png\", description: BeforeCapture.description }],\n+          checks: [],\n+        },\n+      },\n+    },\n+    async measure() {\n+      const { calls, driver } = createRecordingDriver(\"操作前の題名\");\n+      const result = await runSteps([BeforeCapture, TextExpectation, LateClick], driver);\n+      return { calls, result: readableResult(result) };\n+    },\n+  },\n+];\n+\n+const results = await Promise.all(StorybookVerificationCases.map(async ({ label, expected, measure }) => {\n+  const actual = await measure();\n+  return { label, expected, actual, matches: isDeepStrictEqual(actual, expected) };\n+}));\n+\n+for (const { label, expected, actual, matches } of results) {\n+  if (matches) {\n+    console.log(`ok   ${label}`);\n+    continue;\n+  }\n+  console.log(`NG   expected=${JSON.stringify(expected)} got=${JSON.stringify(actual)}  ${label}`);\n+}\n+\n+process.exitCode = results.every(({ matches }) => matches) ? 0 : 1;",
+          "patchLines": 176,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/verify-storybook.mjs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,23 @@\n+import { Result } from \"../../src/utils/Result.ts\";\n+\n+/**\n+ * Storybook の index から、完全一致する story を探す。\n+ *\n+ * @param _index Storybook が返した index\n+ * @param _selector `{ id }` または `{ title, name }`\n+ * @returns 選択した story、または不在・曖昧さを表す失敗\n+ */\n+export function resolveStory(_index, _selector) {\n+  return Result.err({ kind: \"not-run\" });\n+}\n+\n+/**\n+ * 手順を順に実行し、期待の観測と途中の撮影を記録する。\n+ *\n+ * @param _steps 実行する手順\n+ * @param _driver `perform(step)`・`observe(step)`・`capture(name)` を持つ操作先\n+ * @returns 確認の記録、または失敗した手順と直前までの記録\n+ */\n+export async function runSteps(_steps, _driver) {\n+  return Result.err({ kind: \"not-run\" });\n+}",
+          "patchLines": 24,
+          "truncated": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -258,6 +258,9 @@ jobs:\n       - name: 解説ページの核の判定表\n         run: bash .github/scripts/pr-explain-core-cases.sh\n \n+      - name: Storybook の動作検証の判定表\n+        run: node .github/scripts/verify-storybook-cases.mjs\n+\n   report-comment:\n     name: post ci report comment\n     needs: check",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "patch": "@@ -79,6 +79,11 @@ core_runnable || skip_following_checks \"python3 が使えない / node が無い\n run_check \"解説ページの核の判定表\" bash .github/scripts/pr-explain-core-cases.sh\n resume_checks\n \n+node -e 'process.exit(Number(process.versions.node.split(\".\")[0]) >= 24 ? 0 : 1)' >/dev/null 2>&1 ||\n+  skip_following_checks \"node が無いか古い(Node 24 未満)\"\n+run_check \"Storybook の動作検証の判定表\" node .github/scripts/verify-storybook-cases.mjs\n+resume_checks\n+\n # 行数の予算(AGENTS.md「常時ロードは増やさない」)。実測と予算がずれていれば落ちる。\n run_check \"行数のラチェット\" bash harness/records/count.sh --ratchet\n ",
+          "patchLines": 12,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "52d8962c82b3f0f72e002439b33603878a88b36c",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-27T21:33:31+09:00",
+      "subject": "✨ [New Feature]: #1486 Storybook の操作と撮影を一度で実行",
+      "body": "- 静的 Storybook を開いて操作、観測、途中撮影を実行する\n- 実際のエディターで追加から編集とドラッグへ進む例を置く\n- 表示確認の手順を参照へまとめ、常時ロードを2行減らす\n\n背景:\n操作の再現には story の探索、起動、操作、撮影がそれぞれ必要で、\n作業ごとにコマンドを組み立てていた。VRT の撮影は初期状態の比較用。\n\n採用理由:\n手順を列挙する JSON と Chrome/CDP を使い、既存の撮影の部品と\n新しい操作用の手順を分ける。指定した story の描画が完了してから\n操作し、失敗してもそれまでの証拠を返す。\n\n代替案:\n開発サーバーの常時起動は不要にする。任意の Playwright スクリプト\nではなく、検証で使う操作語彙を明示的に受け付ける。\n\n影響とトレードオフ:\n既定の呼び出しは静的ビルドの時間がかかる。再実行は既存ビルドを\n指定できる。VRT の撮影条件は維持し、比較はこの CLI へ移さない。\n\n参考:\n#1486 の計画と検証の採否。UI 案との比較は #1487。",
+      "files": [
+        {
+          "path": ".claude/skills/verify-storybook/SKILL.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 48,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,48 @@\n+---\n+name: verify-storybook\n+description: \"Storybook の実ブラウザで UI の操作と表示を検証し、PNG と確認結果を残す。編集画面の確認、Issue に指定された UI の再現、ドラッグ中の撮影、操作の前後を比較するときに使う。\"\n+---\n+\n+# Storybook で動作を検証する\n+\n+対象の story・操作・期待する見え方を確認する。操作による状態変化を確かめる場合は、固定の props を受け取る単体 story ではなく、編集画面全体を組み立てる story（OpenedDocumentEditor など）を選ぶ。アプリの編集画面を開く導線は Tauri の IPC / ダイアログを使うため、開発サーバー上のアプリを直接開く手順ではなく Storybook を使う。\n+\n+## 一度で実行する\n+\n+リポジトリのルートで実行する。Node 24、`pnpm install --frozen-lockfile` で導入した依存関係、Chrome / Chromium が必要。Chrome が PATH に無ければ `CHROME_BIN` に実行ファイルを指定する。\n+\n+```bash\n+node .github/scripts/verify-storybook.mjs \\\n+  --story features-editor-openeddocumenteditor--absolute-node \\\n+  --steps .claude/skills/verify-storybook/examples/add-edit-drag.json\n+```\n+\n+- `--story ID` の代わりに `--title 'features/editor/OpenedDocumentEditor' --name '絶対配置のノードがある編集画面'` も使える。名前は完全一致で、一意に選べないと失敗する。\n+- 毎回一時ディレクトリに Storybook を静的ビルドする。手元に対象コミットのビルドがあるときは `--storybook-dir DIR` で再利用できる。使うビルドが対象コミットのものか確認してから渡す。\n+- 結果は標準出力と `report.json`、画像は同じ出力先に保存される。既定は新しい一時ディレクトリで、場所は `reportPath` に出る。明示するなら `--out DIR` に未使用の出力先を渡す。\n+\n+## 操作を指定する\n+\n+`--steps FILE` に JSON 配列を渡す。要素を指定するときは一意な CSS セレクターを使う。可能なら `aria-label` など意味のある属性で絞る。操作は配列の順に実行される。\n+\n+| `kind` | フィールド |\n+| --- | --- |\n+| `click` / `double-click` | `selector` |\n+| `fill` | `selector`、テキスト入力欄に入れる `value` |\n+| `press` | `key`（Enter / Escape / Tab / Backspace） |\n+| `pointer-down` | `selector` または画面内の `x` と `y` |\n+| `pointer-move` | `x` と `y`、または現在位置からの `dx` と `dy` |\n+| `pointer-up` | 省略すると現在位置。位置を指定するなら `x` と `y` |\n+| `expect-visible` | `selector` と、何を確かめるかを書く `description` |\n+| `expect-text` | `selector`、前後の空白を除いた表示文言との完全一致値 `expected`、`description` |\n+| `capture` | 拡張子のない一意な画像名 `name`（英数字で始め、英数字・ハイフン・アンダースコアを使用）と `description` |\n+\n+ドラッグ中は `pointer-down` → `pointer-move` → `capture` → `pointer-up` の順にし、押したままの間に撮影する。撮影を指定しなければ成功時の最後の画面を撮る。静止画だけなら `--steps` を省略してよい。\n+\n+## 何を確かめたか残す\n+\n+1. `report.json` で選ばれた story とチェックの期待値・観測値を確認する。不成立時は非ゼロ終了になる。報告に残った撮影済みの画像と、止まった理由を確認する。\n+2. PNG を目視し、表示の崩れ・重なり・はみ出しがなく、意図した見え方になったかを確かめる。ドラッグ中は操作対象が写っていることも見る。自動チェックが通っても目視したことにはならない。\n+3. 作業ログや PR に取得コマンド、何を確かめたか、結果と画像を添える。スクリーンショットは VRT のベースライン比較や撮影範囲の検査の代わりにはしない。\n+\n+手動で story を調べるときは `pnpm storybook`（ポート 6006）を起動し、`http://localhost:6006/index.json` で ID を探して `http://localhost:6006/iframe.html?id=<storyId>&viewMode=story` を開く。",
+          "patchLines": 49,
+          "truncated": false
+        },
+        {
+          "path": ".claude/skills/verify-storybook/examples/add-edit-drag.json",
+          "status": "A",
+          "oldPath": null,
+          "additions": 65,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,65 @@\n+[\n+  {\n+    \"kind\": \"click\",\n+    \"selector\": \"[aria-label='artboard 一覧'] button[aria-label='home']\"\n+  },\n+  {\n+    \"kind\": \"click\",\n+    \"selector\": \"button[aria-label='Text を追加']\"\n+  },\n+  {\n+    \"kind\": \"expect-visible\",\n+    \"selector\": \"[aria-label='ツリー'] button[aria-label='text']\",\n+    \"description\": \"ツリーに追加した Text が現れる\"\n+  },\n+  {\n+    \"kind\": \"capture\",\n+    \"name\": \"text-added\",\n+    \"description\": \"Text の追加後のツリーとキャンバス\"\n+  },\n+  {\n+    \"kind\": \"double-click\",\n+    \"selector\": \"[aria-label='キャンバスの面'] [data-name='text']\"\n+  },\n+  {\n+    \"kind\": \"fill\",\n+    \"selector\": \"input[aria-label='文言を編集']\",\n+    \"value\": \"Storybook 検証\"\n+  },\n+  {\n+    \"kind\": \"press\",\n+    \"key\": \"Enter\"\n+  },\n+  {\n+    \"kind\": \"expect-text\",\n+    \"selector\": \"[aria-label='キャンバスの面'] [data-name='text']\",\n+    \"expected\": \"Storybook 検証\",\n+    \"description\": \"確定した文言がキャンバスの Text に反映される\"\n+  },\n+  {\n+    \"kind\": \"capture\",\n+    \"name\": \"text-updated\",\n+    \"description\": \"キャンバスに表示された編集後の文言\"\n+  },\n+  {\n+    \"kind\": \"click\",\n+    \"selector\": \"[aria-label='キャンバスの面'] [data-name='home-badge']\"\n+  },\n+  {\n+    \"kind\": \"pointer-down\",\n+    \"selector\": \"[aria-label='キャンバスの面'] [data-name='home-badge']\"\n+  },\n+  {\n+    \"kind\": \"pointer-move\",\n+    \"dx\": 60,\n+    \"dy\": 35\n+  },\n+  {\n+    \"kind\": \"capture\",\n+    \"name\": \"drag-in-progress\",\n+    \"description\": \"home-badge を掴んだまま (+60, +35 px) 移動した画面\"\n+  },\n+  {\n+    \"kind\": \"pointer-up\"\n+  }\n+]",
+          "patchLines": 66,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/lib/storybook-browser.mjs",
+          "status": "A",
+          "oldPath": null,
+          "additions": 144,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,144 @@\n+import { spawnSync } from \"node:child_process\";\n+import { readFile, realpath, stat } from \"node:fs/promises\";\n+import { createServer } from \"node:http\";\n+import { extname, isAbsolute, relative, resolve, sep } from \"node:path\";\n+\n+const ContentTypes = {\n+  \".html\": \"text/html\",\n+  \".js\": \"text/javascript\",\n+  \".css\": \"text/css\",\n+  \".json\": \"application/json\",\n+  \".png\": \"image/png\",\n+  \".svg\": \"image/svg+xml\",\n+  \".ico\": \"image/x-icon\",\n+};\n+const CdpTimeoutMs = 15_000;\n+\n+/** ビルドの実ファイルだけを loopback の空きポートで配信する。 */\n+export async function serveStatic(root) {\n+  const rootPath = await realpath(root);\n+  const server = createServer(async (request, response) => {\n+    try {\n+      const { pathname } = new URL(request.url ?? \"/\", \"http://127.0.0.1\");\n+      const decoded = decodeURIComponent(pathname);\n+      const target = await realpath(resolve(rootPath, decoded === \"/\" ? \"index.html\" : `.${decoded}`));\n+      const fromRoot = relative(rootPath, target);\n+      // ディレクトリ名の共通接頭辞や、外へ向くシンボリックリンクは配信の境界にしない。\n+      if (fromRoot === \"..\" || fromRoot.startsWith(`..${sep}`) || isAbsolute(fromRoot) || !(await stat(target)).isFile()) {\n+        response.writeHead(404).end(\"not found\");\n+        return;\n+      }\n+      const contents = await readFile(target);\n+      response.writeHead(200, { \"content-type\": ContentTypes[extname(target)] ?? \"application/octet-stream\" }).end(contents);\n+    } catch (error) {\n+      if (error instanceof URIError || error.code === \"ENOENT\" || error.code === \"ENOTDIR\") {\n+        response.writeHead(404).end(\"not found\");\n+        return;\n+      }\n+      response.writeHead(500).end(\"Could not read Storybook asset\");\n+    }\n+  });\n+  await new Promise((resolve, reject) => {\n+    server.once(\"error\", reject);\n+    server.listen(0, \"127.0.0.1\", () => {\n+      server.off(\"error\", reject);\n+      resolve();\n+    });\n+  });\n+  const { port } = server.address();\n+  return { server, origin: `http://127.0.0.1:${port}` };\n+}\n+\n+/** HTTP の不成立を JSON の読み取りエラーと区別する。 */\n+export async function requestJson(url, options) {\n+  const response = await fetch(url, options);\n+  if (!response.ok) {\n+    throw new Error(`${options?.method ?? \"GET\"} ${url} failed: ${response.status}`);\n+  }\n+  return response.json();\n+}\n+\n+/** CHROME_BIN または PATH から実行できる Chrome / Chromium を探す。 */\n+export function findChrome() {\n+  const candidates = [process.env.CHROME_BIN, \"google-chrome\", \"google-chrome-stable\", \"chromium\", \"chromium-browser\"].filter(Boolean);\n+  const found = candidates.find((candidate) => spawnSync(candidate, [\"--version\"], { stdio: \"ignore\" }).status === 0);\n+  if (!found) {\n+    throw new Error(\"Chrome is required. Install Google Chrome/Chromium or set CHROME_BIN.\");\n+  }\n+  return found;\n+}\n+\n+/** 対象のタブに CDP 接続を開き、各コマンドの応答を対応づける。 */\n+export async function openCdp(wsUrl) {\n+  const socket = new WebSocket(wsUrl);\n+  await new Promise((resolve, reject) => {\n+    const timer = setTimeout(() => {\n+      socket.close();\n+      reject(new Error(\"CDP 接続が時間内に開きませんでした\"));\n+    }, CdpTimeoutMs);\n+    socket.addEventListener(\"open\", () => {\n+      clearTimeout(timer);\n+      resolve();\n+    }, { once: true });\n+    socket.addEventListener(\"error\", () => {\n+      clearTimeout(timer);\n+      reject(new Error(\"CDP に接続できませんでした\"));\n+    }, { once: true });\n+  });\n+\n+  let id = 0;\n+  const pending = new Map();\n+  socket.addEventListener(\"close\", () => {\n+    for (const { method, timer, reject } of pending.values()) {\n+      clearTimeout(timer);\n+      reject(new Error(`CDP 接続が閉じました (${method})`));\n+    }\n+    pending.clear();\n+  });\n+  socket.addEventListener(\"message\", ({ data }) => {\n+    const message = JSON.parse(data.toString());\n+    const callbacks = pending.get(message.id);\n+    if (!callbacks) {\n+      return;\n+    }\n+    pending.delete(message.id);\n+    clearTimeout(callbacks.timer);\n+    if (message.error) {\n+      callbacks.reject(new Error(message.error.message));\n+      return;\n+    }\n+    callbacks.resolve(message.result ?? {});\n+  });\n+  const send = (method, params = {}) => new Promise((resolve, reject) => {\n+    if (socket.readyState !== WebSocket.OPEN) {\n+      reject(new Error(`CDP 接続が開いていません (${method})`));\n+      return;\n+    }\n+    const messageId = ++id;\n+    const timer = setTimeout(() => {\n+      pending.delete(messageId);\n+      reject(new Error(`CDP コマンドが時間切れになりました (${method})`));\n+    }, CdpTimeoutMs);\n+    pending.set(messageId, { method, timer, resolve, reject });\n+    socket.send(JSON.stringify({ id: messageId, method, params }));\n+  });\n+  return { send, close: () => socket.close() };\n+}\n+\n+/** 固定のページ内関数に JSON の引数を渡し、値を読み取る。 */\n+export async function evaluateInPage(cdp, probe, args = []) {\n+  const { result, exceptionDetails } = await cdp.send(\"Runtime.evaluate\", {\n+    expression: `(${probe.toString()})(...${JSON.stringify(args)})`,\n+    returnByValue: true,\n+    awaitPromise: true,\n+  });\n+  if (exceptionDetails) {\n+    throw new Error(`${probe.name}: ${exceptionDetails.exception?.description ?? exceptionDetails.text}`);\n+  }\n+  return result.value;\n+}\n+\n+/** 現在のビューポートの PNG データを取得する。 */\n+export function captureScreenshot(cdp) {\n+  return cdp.send(\"Page.captureScreenshot\", { format: \"png\", captureBeyondViewport: false });\n+}",
+          "patchLines": 145,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/storybook-visual-regression.mjs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 98,
+          "patch": "@@ -1,10 +1,10 @@\n #!/usr/bin/env node\n-import { createServer } from \"node:http\";\n-import { spawn, spawnSync } from \"node:child_process\";\n+import { spawn } from \"node:child_process\";\n import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from \"node:fs\";\n import { tmpdir } from \"node:os\";\n import { basename, extname, join } from \"node:path\";\n import { ODiffServer } from \"odiff-bin\";\n+import { captureScreenshot, evaluateInPage, findChrome, openCdp, requestJson, serveStatic } from \"./lib/storybook-browser.mjs\";\n \n const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));\n \n@@ -33,40 +33,6 @@ const listFiles = (dir) => {\n   });\n };\n \n-const contentType = (path) => {\n-  const map = { \".html\": \"text/html\", \".js\": \"text/javascript\", \".css\": \"text/css\", \".json\": \"application/json\", \".png\": \"image/png\", \".svg\": \"image/svg+xml\", \".ico\": \"image/x-icon\" };\n-  return map[extname(path)] ?? \"application/octet-stream\";\n-};\n-\n-const serveStatic = async (root) => {\n-  const server = createServer((request, response) => {\n-    const url = new URL(request.url ?? \"/\", \"http://127.0.0.1\");\n-    const decoded = decodeURIComponent(url.pathname);\n-    const target = join(root, decoded === \"/\" ? \"index.html\" : decoded);\n-    if (!target.startsWith(root) || !existsSync(target) || statSync(target).isDirectory()) {\n-      response.writeHead(404);\n-      response.end(\"not found\");\n-      return;\n-    }\n-    response.writeHead(200, { \"content-type\": contentType(target) });\n-    response.end(readFileSync(target));\n-  });\n-  await new Promise((resolve) => server.listen(0, \"127.0.0.1\", resolve));\n-  const address = server.address();\n-  if (!address || typeof address === \"string\") {\n-    throw new Error(\"Failed to start static server\");\n-  }\n-  return { server, origin: `http://127.0.0.1:${address.port}` };\n-};\n-\n-const requestJson = async (url, options) => {\n-  const response = await fetch(url, options);\n-  if (!response.ok) {\n-    throw new Error(`${options?.method ?? \"GET\"} ${url} failed: ${response.status}`);\n-  }\n-  return response.json();\n-};\n-\n const requestOk = async (url, options) => {\n   const response = await fetch(url, options);\n   if (!response.ok) {\n@@ -75,66 +41,6 @@ const requestOk = async (url, options) => {\n   await response.arrayBuffer();\n };\n \n-const findChrome = () => {\n-  const candidates = [process.env.CHROME_BIN, \"google-chrome\", \"google-chrome-stable\", \"chromium\", \"chromium-browser\"].filter(Boolean);\n-  const found = candidates.find((candidate) => spawnSync(candidate, [\"--version\"], { stdio: \"ignore\" }).status === 0);\n-  if (!found) {\n-    throw new Error(\"Chrome is required. Install Google Chrome/Chromium or set CHROME_BIN.\");\n-  }\n-  return found;\n-};\n-\n-const openCdp = async (wsUrl) => {\n-  const socket = new WebSocket(wsUrl);\n-  await new Promise((resolve, reject) => {\n-    socket.addEventListener(\"open\", resolve, { once: true });\n-    socket.addEventListener(\"error\", reject, { once: true });\n-  });\n-  let id = 0;\n-  const pending = new Map();\n-  socket.addEventListener(\"message\", (event) => {\n-    const message = JSON.parse(event.data.toString());\n-    if (!message.id) {\n-      return;\n-    }\n-    const callbacks = pending.get(message.id);\n-    if (!callbacks) {\n-      return;\n-    }\n-    pending.delete(message.id);\n-    if (message.error) {\n-      callbacks.reject(new Error(message.error.message));\n-    } else {\n-      callbacks.resolve(message.result ?? {});\n-    }\n-  });\n-  const send = (method, params = {}) => new Promise((resolve, reject) => {\n-    const messageId = ++id;\n-    pending.set(messageId, { resolve, reject });\n-    socket.send(JSON.stringify({ id: messageId, method, params }));\n-  });\n-  return { send, close: () => socket.close() };\n-};\n-\n-/**\n- * ページ内で関数を評価し、その戻り値を受け取る。\n- *\n- * @param cdp 対象ページへ開いた CDP 接続\n- * @param probe ページ内で実行する関数。ページの外の変数は参照できない(文字列化して送るため)\n- * @returns probe の戻り値\n- * @throws 評価中に例外が出たとき(probe の名前を添える)\n- */\n-const evaluateInPage = async (cdp, probe) => {\n-  const { result, exceptionDetails } = await cdp.send(\"Runtime.evaluate\", {\n-    expression: `(${probe.toString()})()`,\n-    returnByValue: true,\n-  });\n-  if (exceptionDetails) {\n-    throw new Error(`${probe.name} failed to evaluate: ${exceptionDetails.text ?? \"unknown error\"}`);\n-  }\n-  return result.value;\n-};\n-\n // ページ内で評価して、日本語グリフが notdef(豆腐)へフォールバックしていないか調べる。\n // 同条件で「あ」「未割り当てコードポイント」「空白」を描き分け、ビットマップを比較する。\n // 未割り当てコードポイントはどのフォントでも必ず notdef になるため、これと一致したら\n@@ -256,13 +162,13 @@ const capture = async (options) => {\n       await sleep(settleMs);\n       // 固定待ちのままだと非同期描画が終わる前に撮れてしまい、loading 表示が\n       // baseline に焼き付く。同じフレームが 2 回続くまで待ってから採用する。\n-      const settledShot = await cdp.send(\"Page.captureScreenshot\", { format: \"png\", captureBeyondViewport: false });\n+      const settledShot = await captureScreenshot(cdp);\n       let screenshot = settledShot;\n       let stable = false;\n       const deadline = Date.now() + stableTimeoutMs;\n       while (Date.now() < deadline) {\n         await sleep(stablePollMs);\n-        const next = await cdp.send(\"Page.captureScreenshot\", { format: \"png\", captureBeyondViewport: false });\n+        const next = await captureScreenshot(cdp);\n         if (next.data === screenshot.data) {\n           stable = true;\n           break;",
+          "patchLines": 137,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/verify-storybook.mjs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 481,
+          "deletions": 8,
+          "patch": "@@ -1,23 +1,496 @@\n+import { spawn } from \"node:child_process\";\n+import { mkdir, mkdtemp, open, readFile, rm, writeFile } from \"node:fs/promises\";\n+import { tmpdir } from \"node:os\";\n+import { join, resolve } from \"node:path\";\n+import { setTimeout as sleep } from \"node:timers/promises\";\n+import { pathToFileURL } from \"node:url\";\n import { Result } from \"../../src/utils/Result.ts\";\n+import { captureScreenshot, evaluateInPage, findChrome, openCdp, requestJson, serveStatic } from \"./lib/storybook-browser.mjs\";\n \n /**\n  * Storybook の index から、完全一致する story を探す。\n  *\n- * @param _index Storybook が返した index\n- * @param _selector `{ id }` または `{ title, name }`\n+ * @param index Storybook が返した index\n+ * @param selector `{ id }` または `{ title, name }`\n  * @returns 選択した story、または不在・曖昧さを表す失敗\n  */\n-export function resolveStory(_index, _selector) {\n-  return Result.err({ kind: \"not-run\" });\n+export function resolveStory(index, selector) {\n+  const stories = Object.values(index.entries ?? {}).filter((entry) => entry?.type === \"story\");\n+  const matches = \"id\" in selector\n+    ? stories.filter(({ id }) => id === selector.id)\n+    : stories.filter(({ title, name }) => title === selector.title && name === selector.name);\n+  if (matches.length === 0) {\n+    return Result.err({ kind: \"not-found\", selector });\n+  }\n+  if (matches.length > 1) {\n+    return Result.err({ kind: \"ambiguous\", selector, ids: matches.map(({ id }) => id) });\n+  }\n+  return Result.ok(matches[0]);\n }\n \n /**\n  * 手順を順に実行し、期待の観測と途中の撮影を記録する。\n  *\n- * @param _steps 実行する手順\n- * @param _driver `perform(step)`・`observe(step)`・`capture(name)` を持つ操作先\n+ * @param steps 実行する手順\n+ * @param driver `perform(step)`・`observe(step)`・`capture(name)` を持つ操作先\n  * @returns 確認の記録、または失敗した手順と直前までの記録\n  */\n-export async function runSteps(_steps, _driver) {\n-  return Result.err({ kind: \"not-run\" });\n+export async function runSteps(steps, driver) {\n+  const screenshots = [];\n+  const checks = [];\n+  for (const [index, step] of steps.entries()) {\n+    const description = step.description ?? step.kind;\n+    const failure = (expected, observed) => Result.err({\n+      kind: \"step-failed\", step: index + 1, description, expected, observed, screenshots, checks,\n+    });\n+    if (step.kind === \"capture\") {\n+      const capture = await driver.capture(step.name);\n+      if (!Result.isOk(capture)) {\n+        return failure(\"PNG を保存できる\", capture.error);\n+      }\n+      screenshots.push({ path: capture.value, description });\n+      continue;\n+    }\n+    if (step.kind === \"expect-text\" || step.kind === \"expect-visible\") {\n+      const expected = step.kind === \"expect-visible\" ? true : step.expected;\n+      const observation = await driver.observe(step);\n+      if (!Result.isOk(observation)) {\n+        return failure(expected, observation.error);\n+      }\n+      if (observation.value !== expected) {\n+        return failure(expected, observation.value);\n+      }\n+      checks.push({ step: index + 1, description, expected, observed: observation.value });\n+      continue;\n+    }\n+    const performed = await driver.perform(step);\n+    if (!Result.isOk(performed)) {\n+      return failure(\"操作が成功する\", performed.error);\n+    }\n+  }\n+  return Result.ok({ screenshots, checks });\n+}\n+\n+const Viewport = { width: 1280, height: 720, deviceScaleFactor: 1, mobile: false };\n+const RenderTimeoutMs = 10_000;\n+const ObservationTimeoutMs = 5_000;\n+const Usage = \"node .github/scripts/verify-storybook.mjs (--story ID | --title TITLE --name NAME) [--steps FILE] [--storybook-dir DIR] [--out DIR]\";\n+const CaptureName = /^[a-z0-9][a-z0-9_-]*$/i;\n+const Keys = {\n+  Enter: { key: \"Enter\", code: \"Enter\", windowsVirtualKeyCode: 13 },\n+  Escape: { key: \"Escape\", code: \"Escape\", windowsVirtualKeyCode: 27 },\n+  Tab: { key: \"Tab\", code: \"Tab\", windowsVirtualKeyCode: 9 },\n+  Backspace: { key: \"Backspace\", code: \"Backspace\", windowsVirtualKeyCode: 8 },\n+};\n+\n+const errorMessage = (error) => error instanceof Error ? error.message : String(error);\n+const invalidInput = (message) => Result.err({ kind: \"invalid-input\", message });\n+const nonempty = (value) => typeof value === \"string\" && value.trim().length > 0;\n+\n+function parseArguments(args) {\n+  const options = new Map();\n+  for (let index = 0; index < args.length; index += 2) {\n+    const key = args[index];\n+    const value = args[index + 1];\n+    if (![\"--story\", \"--title\", \"--name\", \"--steps\", \"--storybook-dir\", \"--out\"].includes(key)\n+      || options.has(key) || !nonempty(value) || value.startsWith(\"--\")) {\n+      return invalidInput(`不正な引数: ${key}`);\n+    }\n+    options.set(key, value);\n+  }\n+  const id = options.get(\"--story\");\n+  const title = options.get(\"--title\");\n+  const name = options.get(\"--name\");\n+  if (id ? title || name : !title || !name) {\n+    return invalidInput(\"--story または --title と --name を指定してください\");\n+  }\n+  return Result.ok({ selector: id ? { id } : { title, name }, options });\n+}\n+\n+const hasCoordinates = (step) => Number.isFinite(step.x) && Number.isFinite(step.y);\n+const StepValidators = {\n+  click: (step) => nonempty(step.selector),\n+  \"double-click\": (step) => nonempty(step.selector),\n+  fill: (step) => nonempty(step.selector) && typeof step.value === \"string\",\n+  press: (step) => typeof step.key === \"string\" && Object.hasOwn(Keys, step.key),\n+  \"pointer-down\": (step) => hasCoordinates(step) || nonempty(step.selector),\n+  \"pointer-move\": (step) => hasCoordinates(step) || (Number.isFinite(step.dx) && Number.isFinite(step.dy)),\n+  \"pointer-up\": (step) => hasCoordinates(step) || (!(\"x\" in step) && !(\"y\" in step)),\n+  \"expect-visible\": (step) => nonempty(step.selector) && nonempty(step.description),\n+  \"expect-text\": (step) => nonempty(step.selector) && typeof step.expected === \"string\" && nonempty(step.description),\n+  capture: (step) => nonempty(step.name) && CaptureName.test(step.name) && nonempty(step.description),\n+};\n+\n+function validateSteps(steps) {\n+  if (!Array.isArray(steps)) {\n+    return invalidInput(\"操作ファイルは手順の JSON 配列にしてください\");\n+  }\n+  const captures = new Set();\n+  for (const [index, step] of steps.entries()) {\n+    if (typeof step?.kind !== \"string\" || !Object.hasOwn(StepValidators, step.kind) || !StepValidators[step.kind](step)) {\n+      return invalidInput(`手順 ${index + 1} に未対応の操作か不正な引数があります`);\n+    }\n+    if (step.kind !== \"capture\") {\n+      continue;\n+    }\n+    if (captures.has(step.name)) {\n+      return invalidInput(`撮影名が重複しています: ${step.name}`);\n+    }\n+    captures.add(step.name);\n+  }\n+  if (captures.size > 0) {\n+    return Result.ok(steps);\n+  }\n+  return Result.ok([...steps, { kind: \"capture\", name: \"final\", description: \"全手順を終えた画面\" }]);\n+}\n+\n+/** 専用プロファイルに書かれた CDP ポートを待つ。 */\n+async function waitForDebugOrigin(profile, browserExited) {\n+  const deadline = Date.now() + 15_000;\n+  while (!browserExited() && Date.now() < deadline) {\n+    const portText = await readFile(join(profile, \"DevToolsActivePort\"), \"utf8\").catch((error) => {\n+      if (error.code === \"ENOENT\") {\n+        return \"\";\n+      }\n+      return Promise.reject(error);\n+    });\n+    const port = Number(portText.match(/^(\\d+)\\r?\\n/)?.[1]);\n+    if (Number.isInteger(port) && port > 0 && port <= 65535) {\n+      return Result.ok(`http://127.0.0.1:${port}`);\n+    }\n+    await sleep(50);\n+  }\n+  return Result.err({ kind: \"browser-start\", message: \"Chrome の CDP ポートが開きませんでした\" });\n+}\n+\n+/** 各回で起動した Chrome だけを使い、終了後にそのプロファイルを削除する。 */\n+async function withChrome(verify) {\n+  const binary = findChrome();\n+  const profile = await mkdtemp(join(tmpdir(), \"verify-storybook-chrome-\"));\n+  try {\n+    const chrome = spawn(binary, [\n+      \"--headless=new\", \"--disable-gpu\", \"--no-sandbox\", \"--remote-debugging-port=0\",\n+      `--user-data-dir=${profile}`, \"about:blank\",\n+    ], { stdio: [\"ignore\", \"ignore\", \"pipe\"] });\n+    let stderr = \"\";\n+    chrome.stderr.setEncoding(\"utf8\").on(\"data\", (chunk) => {\n+      stderr = (stderr + chunk).slice(-2000);\n+    });\n+    let ended = false;\n+    const stopped = new Promise((resolve) => {\n+      chrome.once(\"exit\", () => {\n+        ended = true;\n+        resolve();\n+      });\n+      chrome.once(\"error\", (error) => {\n+        ended = true;\n+        stderr = errorMessage(error);\n+        resolve();\n+      });\n+    });\n+\n+    try {\n+      const debuggerOrigin = await waitForDebugOrigin(profile, () => ended);\n+      if (!Result.isOk(debuggerOrigin)) {\n+        return Result.err({ ...debuggerOrigin.error, stderr: stderr.trim() });\n+      }\n+      return await verify(debuggerOrigin.value);\n+    } finally {\n+      if (!ended) {\n+        chrome.kill(\"SIGTERM\");\n+        const force = setTimeout(() => chrome.kill(\"SIGKILL\"), 2000);\n+        await stopped;\n+        clearTimeout(force);\n+      }\n+    }\n+  } finally {\n+    await rm(profile, { recursive: true, force: true, maxRetries: 3, retryDelay: 100 });\n+  }\n+}\n+\n+function renderState(id) {\n+  const body = document.body;\n+  if (body?.classList.contains(\"sb-show-errordisplay\") || body?.classList.contains(\"sb-show-nopreview\")) {\n+    return { kind: \"render-error\", message: document.querySelector(\"#error-message\")?.textContent?.trim() || document.title };\n+  }\n+  const render = globalThis.__STORYBOOK_PREVIEW__?.currentRender;\n+  const root = document.querySelector(\"#storybook-root\");\n+  if (body?.classList.contains(\"sb-show-main\") && root && !root.hidden\n+    && render?.id === id && render.phase === \"finished\") {\n+    return { kind: \"ready\" };\n+  }\n+  return { kind: \"pending\" };\n+}\n+\n+async function waitForStory(cdp, story) {\n+  const deadline = Date.now() + RenderTimeoutMs;\n+  while (Date.now() < deadline) {\n+    const state = await evaluateInPage(cdp, renderState, [story.id]);\n+    if (state.kind === \"render-error\") {\n+      return Result.err(state);\n+    }\n+    if (state.kind === \"ready\") {\n+      return Result.ok(undefined);\n+    }\n+    await sleep(50);\n+  }\n+  return Result.err({ kind: \"render-timeout\", message: `${RenderTimeoutMs} ms 以内に ${story.id} が描画されませんでした` });\n+}\n+\n+function inspectElement(selector, action) {\n+  const matches = document.querySelectorAll(selector);\n+  if (matches.length > 1) {\n+    return { kind: \"ambiguous\", count: matches.length };\n+  }\n+  const element = matches[0];\n+  if (!element?.checkVisibility({ opacityProperty: true, visibilityProperty: true })) {\n+    return { kind: \"hidden\" };\n+  }\n+  if (action === \"point\" || action === \"fill\") {\n+    element.scrollIntoView({ block: \"nearest\", inline: \"nearest\" });\n+  }\n+  if (action === \"fill\") {\n+    if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)\n+      || element.disabled || element.readOnly) {\n+      return { kind: \"not-editable\" };\n+    }\n+    element.focus();\n+    element.select();\n+  }\n+  const rect = element.getBoundingClientRect();\n+  return {\n+    kind: \"visible\",\n+    text: (element.innerText ?? element.textContent ?? \"\").trim(),\n+    x: rect.x + rect.width / 2,\n+    y: rect.y + rect.height / 2,\n+  };\n+}\n+\n+async function captureFrame(cdp, path) {\n+  await evaluateInPage(cdp, () => new Promise((resolve) => {\n+    requestAnimationFrame(() => requestAnimationFrame(() => resolve(true)));\n+  }));\n+  const { data } = await captureScreenshot(cdp);\n+  await writeFile(path, Buffer.from(data, \"base64\"), { flag: \"wx\" });\n+  return path;\n+}\n+\n+function createBrowserDriver(cdp, out) {\n+  let pointer = { x: 0, y: 0, pressed: false };\n+\n+  const elementState = (selector, action) => evaluateInPage(cdp, inspectElement, [selector, action]);\n+  const dispatch = async (type, point, { button, pressed, clickCount = 1 }) => {\n+    await cdp.send(\"Input.dispatchMouseEvent\", {\n+      type, x: point.x, y: point.y, button, buttons: pressed ? 1 : 0, clickCount,\n+    });\n+    pointer = { x: point.x, y: point.y, pressed };\n+  };\n+  const press = async (key) => {\n+    await cdp.send(\"Input.dispatchKeyEvent\", { type: \"keyDown\", ...Keys[key] });\n+    await cdp.send(\"Input.dispatchKeyEvent\", { type: \"keyUp\", ...Keys[key] });\n+  };\n+  const pointFor = async (step) => {\n+    if (step.selector && [\"click\", \"double-click\", \"pointer-down\"].includes(step.kind)) {\n+      const element = await elementState(step.selector, \"point\");\n+      if (element.kind !== \"visible\") {\n+        return Result.err(`要素を一意に操作できません: ${step.selector} (${element.kind})`);\n+      }\n+      return Result.ok(element);\n+    }\n+    if (hasCoordinates(step)) {\n+      return Result.ok({ x: step.x, y: step.y });\n+    }\n+    return Result.ok({ x: pointer.x + (step.dx ?? 0), y: pointer.y + (step.dy ?? 0) });\n+  };\n+  const perform = async (step) => {\n+    if (step.kind === \"press\") {\n+      await press(step.key);\n+      return Result.ok(undefined);\n+    }\n+    if (step.kind === \"fill\") {\n+      const element = await elementState(step.selector, \"fill\");\n+      if (element.kind !== \"visible\") {\n+        return Result.err(`入力できません: ${step.selector} (${element.kind})`);\n+      }\n+      if (step.value === \"\") {\n+        await press(\"Backspace\");\n+      } else {\n+        await cdp.send(\"Input.insertText\", { text: step.value });\n+      }\n+      return Result.ok(undefined);\n+    }\n+    if (step.kind === \"pointer-up\" && !pointer.pressed) {\n+      return Result.err(\"押下していないポインターは解放できません\");\n+    }\n+    if (pointer.pressed && step.kind !== \"pointer-move\" && step.kind !== \"pointer-up\") {\n+      return Result.err(\"ポインターを押したまま別のクリックはできません\");\n+    }\n+    const position = await pointFor(step);\n+    if (!Result.isOk(position)) {\n+      return position;\n+    }\n+    const point = position.value;\n+    switch (step.kind) {\n+      case \"pointer-down\":\n+        await dispatch(\"mouseMoved\", point, { button: \"none\", pressed: false });\n+        await dispatch(\"mousePressed\", point, { button: \"left\", pressed: true });\n+        break;\n+      case \"pointer-move\":\n+        await dispatch(\"mouseMoved\", point, { button: pointer.pressed ? \"left\" : \"none\", pressed: pointer.pressed });\n+        break;\n+      case \"pointer-up\":\n+        await dispatch(\"mouseReleased\", point, { button: \"left\", pressed: false });\n+        break;\n+      case \"click\":\n+      case \"double-click\": {\n+        const count = step.kind === \"double-click\" ? 2 : 1;\n+        await dispatch(\"mouseMoved\", point, { button: \"none\", pressed: false });\n+        for (let clickCount = 1; clickCount <= count; clickCount += 1) {\n+          await dispatch(\"mousePressed\", point, { button: \"left\", pressed: true, clickCount });\n+          await dispatch(\"mouseReleased\", point, { button: \"left\", pressed: false, clickCount });\n+        }\n+        break;\n+      }\n+    }\n+    return Result.ok(undefined);\n+  };\n+  const observe = async (step) => {\n+    const deadline = Date.now() + ObservationTimeoutMs;\n+    const expected = step.kind === \"expect-text\" ? step.expected : true;\n+    let observed;\n+    do {\n+      const element = await elementState(step.selector, \"observe\");\n+      if (element.kind === \"ambiguous\") {\n+        return Result.err(`${step.selector} に ${element.count} 要素が一致しました`);\n+      }\n+      observed = step.kind === \"expect-visible\" ? element.kind === \"visible\" : element.text ?? null;\n+      if (observed === expected) {\n+        break;\n+      }\n+      await sleep(50);\n+    } while (Date.now() < deadline);\n+    return Result.ok(observed);\n+  };\n+  return {\n+    perform: (step) => perform(step).catch((error) => Result.err(errorMessage(error))),\n+    observe: (step) => observe(step).catch((error) => Result.err(errorMessage(error))),\n+    capture: (name) => captureFrame(cdp, join(out, `${name}.png`))\n+      .then(Result.ok, (error) => Result.err(errorMessage(error))),\n+  };\n+}\n+\n+async function verifyInBrowser({ origin, story, steps, out }, debuggerOrigin) {\n+  const target = await requestJson(`${debuggerOrigin}/json/new?about:blank`, { method: \"PUT\", signal: AbortSignal.timeout(5000) });\n+  const webSocket = new URL(target.webSocketDebuggerUrl);\n+  const debuggerPort = new URL(debuggerOrigin).port;\n+  if (webSocket.protocol !== \"ws:\" || webSocket.hostname !== \"127.0.0.1\" || webSocket.port !== debuggerPort) {\n+    return Result.err({ kind: \"browser-start\", message: \"起動した Chrome とは異なる接続先が返りました\" });\n+  }\n+  const cdp = await openCdp(webSocket);\n+  try {\n+    await cdp.send(\"Emulation.setDeviceMetricsOverride\", Viewport);\n+    const iframe = new URL(\"/iframe.html\", origin);\n+    iframe.search = new URLSearchParams({ id: story.id, viewMode: \"story\" });\n+    const navigation = await cdp.send(\"Page.navigate\", { url: iframe.href });\n+    if (navigation.errorText) {\n+      return Result.err({ kind: \"render-error\", message: navigation.errorText });\n+    }\n+    const ready = await waitForStory(cdp, story);\n+    if (!Result.isOk(ready)) {\n+      return ready;\n+    }\n+    return await runSteps(steps, createBrowserDriver(cdp, out));\n+  } finally {\n+    cdp.close();\n+  }\n+}\n+\n+async function buildStorybook(directory) {\n+  const builder = spawn(\"pnpm\", [\"run\", \"build-storybook\", \"--output-dir\", directory], {\n+    stdio: [\"ignore\", process.stderr, process.stderr],\n+  });\n+  return new Promise((resolve) => {\n+    builder.once(\"error\", (error) => resolve(Result.err({ kind: \"build-failed\", message: errorMessage(error) })));\n+    builder.once(\"exit\", (code, signal) => resolve(code === 0\n+      ? Result.ok(undefined)\n+      : Result.err({ kind: \"build-failed\", message: `pnpm build-storybook: ${signal ?? code}` })));\n+  });\n+}\n+\n+async function verifyStory(config, steps, out) {\n+  const build = config.options.get(\"--storybook-dir\");\n+  const directory = build ? resolve(build) : await mkdtemp(join(tmpdir(), \"verify-storybook-build-\"));\n+  try {\n+    if (!build) {\n+      const built = await buildStorybook(directory);\n+      if (!Result.isOk(built)) {\n+        return built;\n+      }\n+    }\n+    const { server, origin } = await serveStatic(directory);\n+    try {\n+      const index = await requestJson(`${origin}/index.json`, { signal: AbortSignal.timeout(5000) });\n+      const story = resolveStory(index, config.selector);\n+      if (!Result.isOk(story)) {\n+        return story;\n+      }\n+      const result = await withChrome((debuggerOrigin) => verifyInBrowser({ origin, story: story.value, steps, out }, debuggerOrigin));\n+      if (!Result.isOk(result)) {\n+        return Result.err({ ...result.error, story: story.value.id });\n+      }\n+      return Result.ok({ story: story.value.id, ...result.value });\n+    } finally {\n+      const closed = new Promise((resolve) => server.close(resolve));\n+      server.closeAllConnections();\n+      await closed;\n+    }\n+  } finally {\n+    if (!build) {\n+      await rm(directory, { recursive: true, force: true });\n+    }\n+  }\n+}\n+\n+async function main(args) {\n+  if (args.length === 1 && args[0] === \"--help\") {\n+    console.log(Usage);\n+    return 0;\n+  }\n+  const parsed = parseArguments(args);\n+  if (!Result.isOk(parsed)) {\n+    console.error(`${parsed.error.message}\\n${Usage}`);\n+    return 1;\n+  }\n+  const { selector, options } = parsed.value;\n+  const stepsFile = options.get(\"--steps\");\n+  const out = options.has(\"--out\") ? resolve(options.get(\"--out\")) : await mkdtemp(join(tmpdir(), \"verify-storybook-proof-\"));\n+  await mkdir(out, { recursive: true });\n+  const reportPath = join(out, \"report.json\");\n+  const reportFile = await open(reportPath, \"wx\");\n+  try {\n+    const steps = stepsFile\n+      ? await readFile(stepsFile, \"utf8\").then((contents) => validateSteps(JSON.parse(contents)))\n+        .catch((error) => invalidInput(`操作ファイルを読めません: ${errorMessage(error)}`))\n+      : validateSteps([]);\n+    const result = Result.isOk(steps)\n+      ? await verifyStory(parsed.value, steps.value, out)\n+        .catch((error) => Result.err({ kind: \"runtime-error\", message: errorMessage(error) }))\n+      : steps;\n+    const report = Result.isOk(result)\n+      ? { status: \"passed\", ...result.value, reportPath }\n+      : { status: \"failed\", selector, ...result.error, reportPath };\n+    const json = JSON.stringify(report, null, 2);\n+    await reportFile.writeFile(`${json}\\n`);\n+    console.log(json);\n+    return Result.isOk(result) ? 0 : 1;\n+  } finally {\n+    await reportFile.close();\n+  }\n+}\n+\n+if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {\n+  process.exitCode = await main(process.argv.slice(2)).catch((error) => {\n+    console.error(errorMessage(error));\n+    return 1;\n+  });\n }",
+          "patchLines": 505,
+          "truncated": false
+        },
+        {
+          "path": "AGENTS.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -21,7 +21,7 @@\n - @rules/testing.md — テスト配置・テストの書き方（ネスト禁止）\n - @rules/hooks.md — useEffect / useState / useReducer / カスタムフックの使い方\n - @rules/components.md — コンポーネント設計（Composition パターン）\n-- @rules/ui-verification.md — UI の表示確認手順（playwright-cli）\n+- @rules/ui-verification.md — UI の表示確認手順（実ブラウザ・Storybook）\n \n ## 規範と判例を分ける\n ",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/count.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -39,7 +39,7 @@ cd \"$(dirname \"$0\")\"\n \n # 常時ロード(AGENTS.md + rules/)と harness-growth スキルの行数の予算。\n # ラチェット: 足すなら同量削り、縮めたら実測に合わせて下げる。上げない。\n-always_loaded_cap=753\n+always_loaded_cap=751\n growth_skill_cap=88\n \n # 記録を読む awk が共有する関数。",
+          "patchLines": 9,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        },
+        {
+          "path": "rules/ui-verification.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 4,
+          "deletions": 6,
+          "patch": "@@ -28,13 +28,11 @@ print(json.loads(body))\n \n ## 表示確認\n \n-UI を実装・変更した場合は、**必ず playwright-cli で実際の表示を確認**してから完了とする。\n+UI を実装・変更した場合は、**必ず実ブラウザで表示を確認**してから完了とする。\n \n-1. 開発サーバーを起動する（`pnpm dev`。ポート 14000）\n-2. playwright-cli で対象ページを開き、スクリーンショットを取得する\n-   - **編集画面はブラウザでは開けない**（開く導線が Tauri の IPC / ダイアログを使う）。編集画面の中を確認するときは **Storybook（`pnpm storybook`。ポート 6006）** を使う。VRT が比較しているのも Storybook なので、赤くなる差分と確認対象が一致する\n-   - `http://localhost:6006/iframe.html?id=<storyId>&viewMode=story` を直接開く（story の id は `http://localhost:6006/index.json` から引ける）\n-   - **操作を伴う確認は、画面全体を組み立てているストーリー**（`OpenedDocumentEditor` など）で行う。単体ストーリーは props が固定なので状態変化を追えない\n+1. ブラウザから直接開ける画面は開発サーバーを起動する（`pnpm dev`。ポート 14000）\n+2. 直接開ける画面は playwright-cli で開き、スクリーンショットを取得する\n+   - **編集画面の確認は [verify-storybook](../.claude/skills/verify-storybook/SKILL.md) を使う。** 開く導線が Tauri に依存するため、Storybook 上で操作して撮影する\n 3. スクリーンショットを目視確認する（レイアウト崩れ・要素の重なり・はみ出しがないこと、実装した表示が仕様通りであること、操作後の状態変化も同様であること）\n 4. 確認したスクリーンショットの取得コマンドと確認結果を作業ログに残す\n ",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "be74968f4628a9a0a94181c76c4c80a48fd6924c",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-27T21:33:44+09:00",
+      "subject": "🐛 [Bug Fix]: #1486 指定した要素へ操作が届くかを確かめる",
+      "body": "- セレクター指定の押下先と表示チェックの画面内判定を確認する\n- 新しい検証CLIでは Chrome の既定の隔離を維持する\n- 条件の名前と描画完了確認の理由、判定表の実行先を残す\n\n背景:\n重なった別のボタンへのクリックと、画面外の要素の表示チェックが\n検証成功として扱われることを実ブラウザで再現した。\n\n採用理由:\nセレクターで示した中心点が実際に対象へ届くかを押下前に見る。\n撮影範囲の外を見えたと判定せず、ブラウザの既定の隔離も外さない。\n\n影響とトレードオフ:\n座標で直接指定した操作と既存 VRT のブラウザ起動は変更しない。",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 0,
+          "patch": "@@ -399,6 +399,11 @@ deny メッセージには `jq` / `python3` が欠けていればその名前も\n \n ## 動作確認\n \n+```bash\n+# Storybook の検証 CLI の判定表。pre-push と CI も走らせる\n+node .github/scripts/verify-storybook-cases.mjs\n+```\n+\n ```bash\n # 拒否されること(deny が出力される)\n echo '{\"tool_input\":{\"command\":\"npx create-vite\"}}' | bash .claude/hooks/block-npx.sh",
+          "patchLines": 12,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/lib/storybook-browser.mjs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 5,
+          "deletions": 2,
+          "patch": "@@ -24,14 +24,17 @@ export async function serveStatic(root) {\n       const target = await realpath(resolve(rootPath, decoded === \"/\" ? \"index.html\" : `.${decoded}`));\n       const fromRoot = relative(rootPath, target);\n       // ディレクトリ名の共通接頭辞や、外へ向くシンボリックリンクは配信の境界にしない。\n-      if (fromRoot === \"..\" || fromRoot.startsWith(`..${sep}`) || isAbsolute(fromRoot) || !(await stat(target)).isFile()) {\n+      const escapesRoot = fromRoot === \"..\" || fromRoot.startsWith(`..${sep}`) || isAbsolute(fromRoot);\n+      const isServedAsset = !escapesRoot && (await stat(target)).isFile();\n+      if (!isServedAsset) {\n         response.writeHead(404).end(\"not found\");\n         return;\n       }\n       const contents = await readFile(target);\n       response.writeHead(200, { \"content-type\": ContentTypes[extname(target)] ?? \"application/octet-stream\" }).end(contents);\n     } catch (error) {\n-      if (error instanceof URIError || error.code === \"ENOENT\" || error.code === \"ENOTDIR\") {\n+      const hasNoMatchingAsset = error instanceof URIError || error.code === \"ENOENT\" || error.code === \"ENOTDIR\";\n+      if (hasNoMatchingAsset) {\n         response.writeHead(404).end(\"not found\");\n         return;\n       }",
+          "patchLines": 20,
+          "truncated": false
+        },
+        {
+          "path": ".github/scripts/verify-storybook.mjs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 61,
+          "deletions": 24,
+          "patch": "@@ -51,7 +51,8 @@ export async function runSteps(steps, driver) {\n       screenshots.push({ path: capture.value, description });\n       continue;\n     }\n-    if (step.kind === \"expect-text\" || step.kind === \"expect-visible\") {\n+    const isExpectation = step.kind === \"expect-text\" || step.kind === \"expect-visible\";\n+    if (isExpectation) {\n       const expected = step.kind === \"expect-visible\" ? true : step.expected;\n       const observation = await driver.observe(step);\n       if (!Result.isOk(observation)) {\n@@ -92,8 +93,9 @@ function parseArguments(args) {\n   for (let index = 0; index < args.length; index += 2) {\n     const key = args[index];\n     const value = args[index + 1];\n-    if (![\"--story\", \"--title\", \"--name\", \"--steps\", \"--storybook-dir\", \"--out\"].includes(key)\n-      || options.has(key) || !nonempty(value) || value.startsWith(\"--\")) {\n+    const isValidOption = [\"--story\", \"--title\", \"--name\", \"--steps\", \"--storybook-dir\", \"--out\"].includes(key)\n+      && !options.has(key) && nonempty(value) && !value.startsWith(\"--\");\n+    if (!isValidOption) {\n       return invalidInput(`不正な引数: ${key}`);\n     }\n     options.set(key, value);\n@@ -101,7 +103,8 @@ function parseArguments(args) {\n   const id = options.get(\"--story\");\n   const title = options.get(\"--title\");\n   const name = options.get(\"--name\");\n-  if (id ? title || name : !title || !name) {\n+  const hasValidStorySelector = id ? !title && !name : Boolean(title) && Boolean(name);\n+  if (!hasValidStorySelector) {\n     return invalidInput(\"--story または --title と --name を指定してください\");\n   }\n   return Result.ok({ selector: id ? { id } : { title, name }, options });\n@@ -127,7 +130,9 @@ function validateSteps(steps) {\n   }\n   const captures = new Set();\n   for (const [index, step] of steps.entries()) {\n-    if (typeof step?.kind !== \"string\" || !Object.hasOwn(StepValidators, step.kind) || !StepValidators[step.kind](step)) {\n+    const isValidStep = typeof step?.kind === \"string\"\n+      && Object.hasOwn(StepValidators, step.kind) && StepValidators[step.kind](step);\n+    if (!isValidStep) {\n       return invalidInput(`手順 ${index + 1} に未対応の操作か不正な引数があります`);\n     }\n     if (step.kind !== \"capture\") {\n@@ -155,7 +160,8 @@ async function waitForDebugOrigin(profile, browserExited) {\n       return Promise.reject(error);\n     });\n     const port = Number(portText.match(/^(\\d+)\\r?\\n/)?.[1]);\n-    if (Number.isInteger(port) && port > 0 && port <= 65535) {\n+    const isValidPort = Number.isInteger(port) && port > 0 && port <= 65535;\n+    if (isValidPort) {\n       return Result.ok(`http://127.0.0.1:${port}`);\n     }\n     await sleep(50);\n@@ -169,7 +175,7 @@ async function withChrome(verify) {\n   const profile = await mkdtemp(join(tmpdir(), \"verify-storybook-chrome-\"));\n   try {\n     const chrome = spawn(binary, [\n-      \"--headless=new\", \"--disable-gpu\", \"--no-sandbox\", \"--remote-debugging-port=0\",\n+      \"--headless=new\", \"--disable-gpu\", \"--remote-debugging-port=0\",\n       `--user-data-dir=${profile}`, \"about:blank\",\n     ], { stdio: [\"ignore\", \"ignore\", \"pipe\"] });\n     let stderr = \"\";\n@@ -210,13 +216,17 @@ async function withChrome(verify) {\n \n function renderState(id) {\n   const body = document.body;\n-  if (body?.classList.contains(\"sb-show-errordisplay\") || body?.classList.contains(\"sb-show-nopreview\")) {\n+  const showsRenderError = body?.classList.contains(\"sb-show-errordisplay\")\n+    || body?.classList.contains(\"sb-show-nopreview\");\n+  if (showsRenderError) {\n     return { kind: \"render-error\", message: document.querySelector(\"#error-message\")?.textContent?.trim() || document.title };\n   }\n   const render = globalThis.__STORYBOOK_PREVIEW__?.currentRender;\n   const root = document.querySelector(\"#storybook-root\");\n-  if (body?.classList.contains(\"sb-show-main\") && root && !root.hidden\n-    && render?.id === id && render.phase === \"finished\") {\n+  // Storybook は sb-show-main を描画前にも付けるため、選択した story の完了まで待つ。\n+  const isSelectedStoryReady = body?.classList.contains(\"sb-show-main\") && root && !root.hidden\n+    && render?.id === id && render.phase === \"finished\";\n+  if (isSelectedStoryReady) {\n     return { kind: \"ready\" };\n   }\n   return { kind: \"pending\" };\n@@ -246,23 +256,42 @@ function inspectElement(selector, action) {\n   if (!element?.checkVisibility({ opacityProperty: true, visibilityProperty: true })) {\n     return { kind: \"hidden\" };\n   }\n-  if (action === \"point\" || action === \"fill\") {\n+  const shouldScrollIntoView = action === \"point\" || action === \"fill\";\n+  if (shouldScrollIntoView) {\n     element.scrollIntoView({ block: \"nearest\", inline: \"nearest\" });\n   }\n   if (action === \"fill\") {\n-    if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)\n-      || element.disabled || element.readOnly) {\n+    const isTextInput = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;\n+    const isEditable = isTextInput && !element.disabled && !element.readOnly;\n+    if (!isEditable) {\n       return { kind: \"not-editable\" };\n     }\n     element.focus();\n     element.select();\n   }\n   const rect = element.getBoundingClientRect();\n+  const x = rect.x + rect.width / 2;\n+  const y = rect.y + rect.height / 2;\n+  if (action === \"point\") {\n+    const isDisabled = element.matches(\":disabled\") || element.closest('[aria-disabled=\"true\"]') !== null;\n+    if (isDisabled) {\n+      return { kind: \"disabled\" };\n+    }\n+    if (!element.contains(document.elementFromPoint(x, y))) {\n+      return { kind: \"not-hittable\" };\n+    }\n+  }\n+  const intersectsViewport = rect.width > 0 && rect.height > 0\n+    && rect.right > 0 && rect.bottom > 0 && rect.left < window.innerWidth && rect.top < window.innerHeight;\n+  const isOutsideViewport = action === \"visibility\" && !intersectsViewport;\n+  if (isOutsideViewport) {\n+    return { kind: \"outside-viewport\" };\n+  }\n   return {\n     kind: \"visible\",\n     text: (element.innerText ?? element.textContent ?? \"\").trim(),\n-    x: rect.x + rect.width / 2,\n-    y: rect.y + rect.height / 2,\n+    x,\n+    y,\n   };\n }\n \n@@ -290,7 +319,8 @@ function createBrowserDriver(cdp, out) {\n     await cdp.send(\"Input.dispatchKeyEvent\", { type: \"keyUp\", ...Keys[key] });\n   };\n   const pointFor = async (step) => {\n-    if (step.selector && [\"click\", \"double-click\", \"pointer-down\"].includes(step.kind)) {\n+    const usesSelector = step.selector && [\"click\", \"double-click\", \"pointer-down\"].includes(step.kind);\n+    if (usesSelector) {\n       const element = await elementState(step.selector, \"point\");\n       if (element.kind !== \"visible\") {\n         return Result.err(`要素を一意に操作できません: ${step.selector} (${element.kind})`);\n@@ -319,10 +349,12 @@ function createBrowserDriver(cdp, out) {\n       }\n       return Result.ok(undefined);\n     }\n-    if (step.kind === \"pointer-up\" && !pointer.pressed) {\n+    const releasesWithoutPress = step.kind === \"pointer-up\" && !pointer.pressed;\n+    if (releasesWithoutPress) {\n       return Result.err(\"押下していないポインターは解放できません\");\n     }\n-    if (pointer.pressed && step.kind !== \"pointer-move\" && step.kind !== \"pointer-up\") {\n+    const interruptsPointerPress = pointer.pressed && step.kind !== \"pointer-move\" && step.kind !== \"pointer-up\";\n+    if (interruptsPointerPress) {\n       return Result.err(\"ポインターを押したまま別のクリックはできません\");\n     }\n     const position = await pointFor(step);\n@@ -356,14 +388,15 @@ function createBrowserDriver(cdp, out) {\n   };\n   const observe = async (step) => {\n     const deadline = Date.now() + ObservationTimeoutMs;\n-    const expected = step.kind === \"expect-text\" ? step.expected : true;\n+    const checksVisibility = step.kind === \"expect-visible\";\n+    const expected = checksVisibility ? true : step.expected;\n     let observed;\n     do {\n-      const element = await elementState(step.selector, \"observe\");\n+      const element = await elementState(step.selector, checksVisibility ? \"visibility\" : \"read-text\");\n       if (element.kind === \"ambiguous\") {\n         return Result.err(`${step.selector} に ${element.count} 要素が一致しました`);\n       }\n-      observed = step.kind === \"expect-visible\" ? element.kind === \"visible\" : element.text ?? null;\n+      observed = checksVisibility ? element.kind === \"visible\" : element.text ?? null;\n       if (observed === expected) {\n         break;\n       }\n@@ -383,7 +416,9 @@ async function verifyInBrowser({ origin, story, steps, out }, debuggerOrigin) {\n   const target = await requestJson(`${debuggerOrigin}/json/new?about:blank`, { method: \"PUT\", signal: AbortSignal.timeout(5000) });\n   const webSocket = new URL(target.webSocketDebuggerUrl);\n   const debuggerPort = new URL(debuggerOrigin).port;\n-  if (webSocket.protocol !== \"ws:\" || webSocket.hostname !== \"127.0.0.1\" || webSocket.port !== debuggerPort) {\n+  const isOwnDebugEndpoint = webSocket.protocol === \"ws:\"\n+    && webSocket.hostname === \"127.0.0.1\" && webSocket.port === debuggerPort;\n+  if (!isOwnDebugEndpoint) {\n     return Result.err({ kind: \"browser-start\", message: \"起動した Chrome とは異なる接続先が返りました\" });\n   }\n   const cdp = await openCdp(webSocket);\n@@ -452,7 +487,8 @@ async function verifyStory(config, steps, out) {\n }\n \n async function main(args) {\n-  if (args.length === 1 && args[0] === \"--help\") {\n+  const requestsHelp = args.length === 1 && args[0] === \"--help\";\n+  if (requestsHelp) {\n     console.log(Usage);\n     return 0;\n   }\n@@ -488,7 +524,8 @@ async function main(args) {\n   }\n }\n \n-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {\n+const isScriptEntry = process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;\n+if (isScriptEntry) {\n   process.exitCode = await main(process.argv.slice(2)).catch((error) => {\n     console.error(errorMessage(error));\n     return 1;",
+          "patchLines": 206,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "f4d4da51c1746af456415d47134780e6a15a0dd5",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-27T21:33:56+09:00",
+      "subject": "🐛 [Bug Fix]: #1486 画面端で見える範囲をクリックする",
+      "body": "- 要素と表示領域の交差部分から押下地点を決める\n\n背景:\n全体の中心が画面外にあるボタンは、画面内の部分をクリック\nできる状態でもセレクター指定の操作に失敗した。\n\n採用理由:\n画面内の部分を押下候補にし、その地点に覆いがないかを今まで\n通り検査する。座標指定の操作は従来通り扱う。",
+      "files": [
+        {
+          "path": ".github/scripts/verify-storybook.mjs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 9,
+          "deletions": 5,
+          "patch": "@@ -270,19 +270,23 @@ function inspectElement(selector, action) {\n     element.select();\n   }\n   const rect = element.getBoundingClientRect();\n-  const x = rect.x + rect.width / 2;\n-  const y = rect.y + rect.height / 2;\n+  const left = Math.max(rect.left, 0);\n+  const top = Math.max(rect.top, 0);\n+  const right = Math.min(rect.right, window.innerWidth);\n+  const bottom = Math.min(rect.bottom, window.innerHeight);\n+  const intersectsViewport = left < right && top < bottom;\n+  const x = (left + right) / 2;\n+  const y = (top + bottom) / 2;\n   if (action === \"point\") {\n     const isDisabled = element.matches(\":disabled\") || element.closest('[aria-disabled=\"true\"]') !== null;\n     if (isDisabled) {\n       return { kind: \"disabled\" };\n     }\n-    if (!element.contains(document.elementFromPoint(x, y))) {\n+    const hitsElement = intersectsViewport && element.contains(document.elementFromPoint(x, y));\n+    if (!hitsElement) {\n       return { kind: \"not-hittable\" };\n     }\n   }\n-  const intersectsViewport = rect.width > 0 && rect.height > 0\n-    && rect.right > 0 && rect.bottom > 0 && rect.left < window.innerWidth && rect.top < window.innerHeight;\n   const isOutsideViewport = action === \"visibility\" && !intersectsViewport;\n   if (isOutsideViewport) {\n     return { kind: \"outside-viewport\" };",
+          "patchLines": 29,
+          "truncated": false
+        }
+      ]
+    },
+    {
+      "sha": "08e023469303686ee05336474a61df02fec8710d",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-27T21:34:07+09:00",
+      "subject": "🧪 [Tests]: #1486 可視性の不一致と操作先の失敗を固定",
+      "body": "- 可視性の観測と、操作・撮影・観測が失敗する場合を追加する\n\n採用理由:\n実装を意図的に壊した検証で、これらの失敗を無視しても従来の\n判定表が通った。個別の失敗理由と先行画像を残して止まることを\n確かめ、4件の変異がそれぞれ検知されるようにする。",
+      "files": [
+        {
+          "path": ".github/scripts/verify-storybook-cases.mjs",
+          "status": "M",
+          "oldPath": null,
+          "additions": 73,
+          "deletions": 0,
+          "patch": "@@ -85,6 +85,47 @@ function storyErrorKind(result) {\n   return result.error.kind;\n }\n \n+const VisibilityExpectation = {\n+  kind: \"expect-visible\",\n+  selector: \"[data-name=title]\",\n+  description: \"題名が画面に見える\",\n+};\n+\n+/** 失敗の理由と撮影済み画像が残り、後続の操作が呼ばれないか比較する。 */\n+function failedStepCase({ label, step, method, driverResult, expected, observed }) {\n+  const argument = method === \"capture\" ? step.name : step;\n+  const recordedCall = method === \"capture\" ? { kind: \"capture\", name: step.name } : step;\n+  return {\n+    label,\n+    expected: {\n+      calls: [{ kind: \"capture\", name: BeforeCapture.name }, recordedCall],\n+      result: {\n+        kind: \"err\",\n+        error: {\n+          kind: \"step-failed\",\n+          step: 2,\n+          description: step.description ?? step.kind,\n+          expected,\n+          observed,\n+          screenshots: [{ path: \"proof/before.png\", description: BeforeCapture.description }],\n+          checks: [],\n+        },\n+      },\n+    },\n+    async measure() {\n+      const { calls, driver } = createRecordingDriver(\"操作前の題名\");\n+      const result = await runSteps([BeforeCapture, step, LateClick], {\n+        ...driver,\n+        async [method](input) {\n+          const recorded = await driver[method](input);\n+          return input === argument ? driverResult : recorded;\n+        },\n+      });\n+      return { calls, result: readableResult(result) };\n+    },\n+  };\n+}\n+\n const StorybookVerificationCases = [\n   {\n     label: \"完全 ID は該当する story を選ぶ\",\n@@ -157,6 +198,38 @@ const StorybookVerificationCases = [\n       return { calls, result: readableResult(result) };\n     },\n   },\n+  failedStepCase({\n+    label: \"表示されなかった観測値を残して止まる\",\n+    step: VisibilityExpectation,\n+    method: \"observe\",\n+    driverResult: Result.ok(false),\n+    expected: true,\n+    observed: false,\n+  }),\n+  failedStepCase({\n+    label: \"操作に失敗した理由と撮影済み画像を残して止まる\",\n+    step: PointerDown,\n+    method: \"perform\",\n+    driverResult: Result.err(\"ポインターを押せなかった\"),\n+    expected: \"操作が成功する\",\n+    observed: \"ポインターを押せなかった\",\n+  }),\n+  failedStepCase({\n+    label: \"撮影に失敗した理由と撮影済み画像を残して止まる\",\n+    step: HeldCapture,\n+    method: \"capture\",\n+    driverResult: Result.err(\"画像を保存できなかった\"),\n+    expected: \"PNG を保存できる\",\n+    observed: \"画像を保存できなかった\",\n+  }),\n+  failedStepCase({\n+    label: \"観測に失敗した理由と撮影済み画像を残して止まる\",\n+    step: TextExpectation,\n+    method: \"observe\",\n+    driverResult: Result.err(\"題名を読めなかった\"),\n+    expected: TextExpectation.expected,\n+    observed: \"題名を読めなかった\",\n+  }),\n ];\n \n const results = await Promise.all(StorybookVerificationCases.map(async ({ label, expected, measure }) => {",
+          "patchLines": 87,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/post-merge-review.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/session-url-notice.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/build-pr-change-map.py",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/check-pr-closing-issue.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/lib/storybook-browser.mjs",
+      "to": "index.html",
+      "status": "added"
+    },
+    {
+      "from": ".github/scripts/storybook-visual-regression.mjs",
+      "to": "index.html",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/commit-md-heading-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/git-add-all-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-frontend-report.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-duplicate-issue-pr-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/check-tauri-version-match.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/oxlint-config-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/upsert-sticky-comment.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/verify-storybook-cases.mjs",
+      "status": "added"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": "pnpm-lock.yaml",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": ".github/scripts/storybook-visual-regression.mjs",
+      "status": "kept"
+    },
+    {
+      "from": "harness/evals/experiment.py",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/evals/presets.py",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/evals/test_presets.py",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/lib/check-tally-cases.sh",
+      "to": "harness/githooks/pre-push",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/canary-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/cases-report-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/duplicate-test-helpers.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/edit-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/git-add-all-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/import-rule-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/missing-doc-comments.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/named-path-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/parent-session-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/pre-push-detector-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/protected-branch-edit-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/story-title-violations.py",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/test-rules-scan.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".claude/hooks/lib/verification-agent-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-change-map-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/build-pr-explain-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-lint-suppressions.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-added-test-helper-duplication.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-closing-issue-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/check-pr-explain-template-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/lib/detector-precondition.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/oxlint-config-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-core-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/pr-explain-pages-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/upsert-sticky-comment-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/verify-storybook-cases.mjs",
+      "status": "added"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/githooks/lib/check-tally.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count-cases.sh",
+      "to": "harness/records/count.sh",
+      "status": "kept"
+    },
+    {
+      "from": "harness/records/count.sh",
+      "to": "AGENTS.md",
+      "status": "kept"
+    },
+    {
+      "from": "package.json",
+      "to": ".github/scripts/storybook-visual-regression.mjs",
+      "status": "kept"
+    }
+  ]
+}
