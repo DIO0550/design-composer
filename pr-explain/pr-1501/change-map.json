@@ -4,7 +4,7 @@
   "headBranch": "codex/1479-issue-flow-templates",
   "baseBranch": "main",
   "mergeBase": "efa2803e2f150f496f94d6b73424154d9843e7ea",
-  "head": "90a3c13aacbd22393ba9db9c2def6d5cd2845885",
+  "head": "a14abed76ed064cece041b26c52279cf07ce983f",
   "groups": [
     {
       "label": "ハーネス",
@@ -57,8 +57,8 @@
           "path": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
           "status": "M",
           "oldPath": null,
-          "additions": 59,
-          "deletions": 9,
+          "additions": 75,
+          "deletions": 12,
           "changed": true,
           "target": null
         },
@@ -560,6 +560,40 @@
             {
               "old": null,
               "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "a14abed76ed064cece041b26c52279cf07ce983f",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-28T00:52:26+09:00",
+      "subject": "🧪 [Tests]: #1479 CI の実物 gh が行う機能照会に応答する",
+      "body": "- gh 2.105.0 の Issue 機能照会にループバックのサーバーが応答する\n- 送信確認が失敗した場合は gh の終了コードと標準エラーを表示する\n\n背景:\nCI の gh は localhost を Enterprise と見なし、機能照会で停止した。\n対応する応答を返すと GraphQL と REST の両方で期待の本文が届く。\n既存のケースと送信確認の必須条件は維持する。",
+      "files": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 18,
+          "deletions": 5,
+          "patch": "@@ -78,6 +78,9 @@ def repository_id(owner, name):\n \n \n def graphql(query, variables):\n+    # localhost は gh から Enterprise として扱われる。作成前の機能照会には追加の依存関係機能なしと答える。\n+    if \"Issue_fields\" in query:\n+        return {\"Issue\": {\"fields\": []}}\n     if \"createIssue\" in query:\n         requests.append((\"graphql\", variables.get(\"input\", {})))\n         return {\"createIssue\": {\"issue\": {\"id\": \"I1\", \"url\": \"https://localhost/i/1\", \"number\": 1}}}\n@@ -195,12 +198,16 @@ def missing_sections(body):\n     return f\"共通節（{', '.join(missing)}）が無い\" if missing else None\n \n \n-def replay(command):\n+def run_command(command, stderr):\n     requests.clear()\n+    return subprocess.run([\"bash\", \"-c\", command], cwd=work, env=gh_env, stdin=subprocess.DEVNULL,\n+                          stdout=subprocess.DEVNULL, stderr=stderr, text=True, timeout=5)\n+\n+\n+def replay(command):\n     # 終わらない本文(`--body-file /dev/zero`)は gh が読み終えず、作成を送らないまま止まる。\n     try:\n-        subprocess.run([\"bash\", \"-c\", command], cwd=work, env=gh_env, stdin=subprocess.DEVNULL,\n-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)\n+        run_command(command, subprocess.DEVNULL)\n     except subprocess.TimeoutExpired:\n         pass\n     reasons = [reason for labels, body in own_creations() if (reason := unmet(labels, body))]\n@@ -235,14 +242,20 @@ for line in sys.stdin:\n \n def wire_canary_failure(route, command):\n     # 通常のリプレイは、作成しない操作も含む。既知の作成だけは、正しい本文が実際に届かなければ失敗にする。\n-    reason = replay(command)\n+    try:\n+        result = run_command(command, subprocess.PIPE)\n+    except subprocess.TimeoutExpired:\n+        return \"gh が 5 秒以内に終了しなかった\"\n+    if result.returncode:\n+        details = \" \".join(result.stderr.splitlines()).strip()[-320:]\n+        return f\"gh が exit {result.returncode} で終了（{details or '標準エラーなし'}）\"\n     received_routes = [request[0] for request in requests]\n     if received_routes != [route]:\n         return f\"{route} の作成 1 件を期待したが、受信した経路は {received_routes}\"\n     expected_creation = ([\"flow:feature\"], expand(\"@S\"))\n     if list(own_creations()) != [expected_creation]:\n         return \"ラベルと本文が揃った自リポジトリへの作成を受信していない\"\n-    return reason\n+    return unmet(*expected_creation)\n \n \n wire_canaries = (",
+          "patchLines": 53,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": "replay_runner=\"$(cat <<'PY'",
+              "new": "replay_runner=\"$(cat <<'PY'"
+            },
+            {
+              "old": "replay_runner=\"$(cat <<'PY'",
+              "new": "replay_runner=\"$(cat <<'PY'"
+            },
+            {
+              "old": "replay_runner=\"$(cat <<'PY'",
+              "new": "replay_runner=\"$(cat <<'PY'"
             }
           ]
         }
