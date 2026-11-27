@@ -1,0 +1,52 @@
+{
+  "version": 2,
+  "pr": 1499,
+  "headBranch": "record/pr-1496",
+  "baseBranch": "main",
+  "mergeBase": "393374a24a59c19c7208e4dc790f61737292d345",
+  "head": "8597af2f941944a3181c893fc28704ee7b3aab54",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": "harness/records/pr-1496.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 35,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "8597af2f941944a3181c893fc28704ee7b3aab54",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-27T12:53:53Z",
+      "subject": "📝 [Doc]: PR #1496 のハーネス評価を記録",
+      "body": "- harness/records/pr-1496.md を追加（分類: harness 1 件、出どころ: レビュー（bot））\n\n背景:\nharness-record スキルに従い、マージ済み PR #1496 の振り返り記録を残す。",
+      "files": [
+        {
+          "path": "harness/records/pr-1496.md",
+          "status": "A",
+          "oldPath": null,
+          "additions": 35,
+          "deletions": 0,
+          "patch": "@@ -0,0 +1,35 @@\n+# PR #1496 oxlint で no-param-reassign と prefer-const を有効化\n+\n+- マージ日: 2026-11-27\n+- 関連 Issue: #1471\n+- 差分規模: 5 ファイル / +45 -7\n+\n+## ゴールと結果\n+\n+ゴールは「`rules/coding.md`『イミュータブル』のうち、引数自体および引数のプロパティ・要素への再代入を oxlint の `no-param-reassign`（`{ \"props\": true }`）で、再代入されない `let` を `prefer-const` で機械的に止め、`.github/scripts/oxlint-config-cases.sh` の判定表で固定する」。\n+\n+- 着手時のフェーズ 2 で、配列・オブジェクトの破壊的メソッドおよび `domains/` 等での `let` 宣言の GritQL 化は #1476 に分離した\n+- `.oxlintrc.json` トップレベル `rules` への 2 規則追加、唯一の既存違反だった `src/libs/__tests__/element-measure.ts` の `stubBoundsEachMeasure` 修正、判定表への 28 行（展開後 43 ケース）追加、`.claude/hooks/README.md` への追記を完了した\n+- GitHub 上の人のレビューは 0 件だった（`reviews` / `review_comments` / `comments` の 3 箇所すべて確認）。bot のレビューは Devin から 1 件（[P2] `post-edit-lint.sh` での `prefer-const` 自動修正除外）、Codex は指摘 0 件。CI はすべて緑だった\n+- 計画検証（`plan-reviewer`）およびフェーズ 6 の観点別レビュー（10 エージェント: `solution` / `duplication` / `comment` / `naming` / `structure` / `performance` / `over-guard` / `security` / `harness` / `test`）はすべて指摘 0 件だった\n+\n+## 指摘\n+\n+### 1. 編集後フックの `oxlint --fix` で `prefer-const` の自動修正が `typeof` 参照する型を狭め、型検査を壊す\n+\n+- 分類: `harness`\n+- 出どころ: `レビュー（bot）`\n+- 内容: Devin（[P2]）の指摘。Biome の対象外（`.storybook/` 配下など）で `let fallback = \"en\"; export type Locale = typeof fallback;` のように `let` を `typeof` 参照していると、`post-edit-lint.sh` の `oxlint --fix` が黙って `const` へ書き換えて型をリテラル型へ狭め TS2322 を起こす。修正パスを `oxlint --fix -A prefer-const` にして自動書き換えを除外し、直後の診断パスと `pre-push`・CI では `error` を維持する形に直した（`64ddf7a`）。\n+- 既存ルール: なし\n+\n+## 手戻り\n+\n+- 計画 v1 時点では `.claude/hooks/post-edit-lint.sh` は変更対象外で、`prefer-const` の自動修正が走る前提で `.claude/hooks/README.md` にもその挙動を書いていた。PR #1496 の Devin レビュー（指摘 1）を受けて `post-edit-lint.sh` の修正パスへ `-A prefer-const` を追加し、`README.md` の記述も実態に合わせて更新した。\n+\n+## 発火\n+\n+- 発火: 計測対象外(フック不発)\n+\n+## 規約への反映\n+\n+無し（この記録 PR の管轄は記録を残すところまでであり、集計と介入の判断は `harness-growth` の管轄のため）。",
+          "patchLines": 36,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
