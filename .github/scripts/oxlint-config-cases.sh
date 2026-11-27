@@ -24,7 +24,7 @@
 # 終了コードと出力を 1 回だけ標準エラーへ出し、全ケースを broken にする。設定が壊れたとき(診断の行を
 # 出さずに exit 1 で終わる)と oxlint が無いとき(exit 127)は、その一例。
 #
-# 表が見る規則は `no-restricted-imports` と jest の `no-restricted-jest-methods` / `no-hooks` と、
+# 表が見る規則は `no-param-reassign` と `prefer-const` と `no-restricted-imports` と jest の `no-restricted-jest-methods` / `no-hooks` と、
 # `require-to-throw-message` の `off` だけ。`curly` / `max-depth` / `max-lines` / `react/forbid-elements` は
 # 見ない。
 #
@@ -196,6 +196,34 @@ miss|no-hooks|test.beforeEach は見ない|src/features/probe/__tests__/probe.no
 miss|no-hooks|it.beforeAll は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { it } from "vitest";\nit.beforeAll(() => {});
 miss|no-hooks|test.extend で作ったテストの beforeEach は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { test } from "vitest";\ntest.extend({}).beforeEach(() => {});
 pass|require-to-throw-message|toThrow にメッセージを渡さなくてもよい|src/features/probe/__tests__/probe.normal.test.ts|import { expect, test } from "vitest";\ntest("probe", () => {\n  expect(() => JSON.parse("{")).toThrow();\n});
+deny|no-param-reassign|関数で引数に再代入すると止まる|src/features/probe/index.{ext}|export function probe(x: number): number {\n  x = 1;\n  return x;\n}
+deny|no-param-reassign|関数で引数のプロパティに代入すると止まる|src/features/probe/index.{ext}|export function probe(x: { a: number }): number {\n  x.a = 1;\n  return x.a;\n}
+deny|no-param-reassign|関数で引数の配列の要素に代入すると止まる|src/features/probe/index.ts|export function probe(xs: number[]): number[] {\n  xs[0] = 1;\n  return xs;\n}
+deny|no-param-reassign|関数で引数のプロパティを複合代入で更新すると止まる|src/features/probe/index.ts|export function probe(x: { a: number }): number {\n  x.a += 1;\n  return x.a;\n}
+deny|no-param-reassign|関数で引数のプロパティをインクリメントすると止まる|src/features/probe/index.ts|export function probe(x: { a: number }): number {\n  x.a++;\n  return x.a;\n}
+deny|no-param-reassign|関数で引数の深いプロパティに代入すると止まる|src/features/probe/index.ts|export function probe(x: { a: { b: number } }): number {\n  x.a.b = 1;\n  return x.a.b;\n}
+deny|no-param-reassign|関数で引数のプロパティを delete すると止まる|src/features/probe/index.ts|export function probe(x: { a?: number }): { a?: number } {\n  delete x.a;\n  return x;\n}
+deny|no-param-reassign|分割代入で受け取った引数に再代入すると止まる|src/features/probe/index.ts|export function probe({ a }: { a: number }): number {\n  a = 1;\n  return a;\n}
+deny|no-param-reassign|分割代入で受け取った引数のプロパティに代入すると止まる|src/features/probe/index.ts|export function probe({ a }: { a: { b: number } }): number {\n  a.b = 1;\n  return a.b;\n}
+deny|no-param-reassign|既定値付きの引数に再代入すると止まる|src/features/probe/index.ts|export function probe(x = 0): number {\n  x = 1;\n  return x;\n}
+deny|no-param-reassign|既定値付きの引数のプロパティに代入すると止まる|src/features/probe/index.ts|export function probe(x: { a: number } = { a: 0 }): number {\n  x.a = 1;\n  return x.a;\n}
+deny|no-param-reassign|src の外の .mjs でも引数に再代入すると止まる|.github/scripts/probe.mjs|export function probe(x) {\n  x = 1;\n  return x;\n}
+pass|no-param-reassign|関数で引数を読み取って新しいオブジェクトを返すのは通る|src/features/probe/index.{ext}|export function probe(x: { a: number }): { a: number } {\n  return { ...x, a: 1 };\n}
+miss|no-param-reassign|引数をローカル変数に受けてからそのプロパティに代入するのは見ない|src/features/probe/index.ts|export function probe(x: { a: number }): number {\n  const y = x;\n  y.a = 1;\n  return y.a;\n}
+miss|no-param-reassign|引数の配列に push などの破壊的メソッドを呼ぶのは見ない|src/features/probe/index.ts|export function probe(xs: number[]): number[] {\n  xs.push(1);\n  return xs;\n}
+miss|no-param-reassign|Object.assign の第 1 引数に引数を渡すのは見ない|src/features/probe/index.ts|export function probe(x: { a: number }): { a: number } {\n  return Object.assign(x, { a: 1 });\n}
+miss|no-param-reassign|Object.defineProperty で引数のプロパティを定義するのは見ない|src/features/probe/index.ts|export function probe(x: { a?: number }): { a?: number } {\n  Object.defineProperty(x, "a", { value: 1 });\n  return x;\n}
+miss|no-param-reassign|残余引数に再代入するのは見ない|src/features/probe/index.ts|export function probe(...xs: number[]): number[] {\n  xs = [1];\n  return xs;\n}
+miss|no-param-reassign|残余引数の要素に代入するのは見ない|src/features/probe/index.ts|export function probe(...xs: number[]): number[] {\n  xs[0] = 1;\n  return xs;\n}
+deny|prefer-const|再代入しない let を使うと止まる|src/features/probe/index.{ext}|export function probe(): number {\n  let x = 1;\n  return x;\n}
+deny|prefer-const|プロパティを書き換えるだけで再代入しない let は止まる|src/features/probe/index.ts|export function probe(): { a: number } {\n  let x = { a: 1 };\n  x.a = 2;\n  return x;\n}
+deny|prefer-const|初期値なしの let に 1 度だけ代入してその後再代入しないと止まる|src/features/probe/index.ts|export function probe(): number {\n  let x: number;\n  x = 1;\n  return x;\n}
+deny|prefer-const|分割代入の let で一部しか再代入しないと再代入しない変数で止まる|src/features/probe/index.ts|export function probe(): number {\n  let { a, b } = { a: 1, b: 2 };\n  b = 3;\n  return a + b;\n}
+deny|prefer-const|for-of のループ変数に再代入しない let を使うと止まる|src/features/probe/index.ts|export function probe(xs: readonly number[]): number {\n  const out: number[] = [];\n  for (let x of xs) {\n    out.push(x);\n  }\n  return out.length;\n}
+deny|prefer-const|for-in のループ変数に再代入しない let を使うと止まる|src/features/probe/index.ts|export function probe(record: Readonly<Record<string, number>>): number {\n  const keys: string[] = [];\n  for (let k in record) {\n    keys.push(k);\n  }\n  return keys.length;\n}
+deny|prefer-const|src の外の .mjs でも再代入しない let は止まる|.github/scripts/probe.mjs|export function probe() {\n  let x = 1;\n  return x;\n}
+pass|prefer-const|再代入する let は使える|src/features/probe/index.{ext}|export function probe(): number {\n  let x = 1;\n  x = 2;\n  return x;\n}
+pass|prefer-const|for ループで更新される let は使える|src/features/probe/index.ts|export function probe(): number {\n  let sum = 0;\n  for (let i = 0; i < 3; i++) {\n    sum += i;\n  }\n  return sum;\n}
 CASES
 )"
 
