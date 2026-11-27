@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # Issue の作業の種類の検出器(`issue-flow-kind-violations.py`)が通す作成を、実物の bash と gh で走らせ、
-# gh が実際に送った作成に flow:* か宣言の行が載っているかを確かめる判定表。
+# gh が実際に送った作成に flow:* か宣言の行が載り、共通節が揃っているかを確かめる判定表。
 #
 # 使い方: bash .claude/hooks/lib/issue-flow-kind-real-gh-cases.sh [検出器のパス]
 # 出力が `ok` だけなら期待どおり。`NG` が 1 行でも出たら、検出器が通したのに実物は満たさない作成を送っている。
@@ -16,7 +16,7 @@
 # `miss` 以外のものを読む(表を写さないため、その書式に依存する)。各行をそのまま走らせるほか、
 # 1 つの gh だけの行には、後ろに付け足すと送るものが変わる指定(`VARIANTS`)を 1 つずつ足して走らせる。
 #
-# 判定は片向きだけを見る: **検出器が pass なのに、実物が自リポジトリへ flow:* も宣言の行も無い作成を送ったら NG。**
+# 判定は片向きだけを見る: **検出器が pass なのに、実物が作業の種類か共通節の欠けた作成を自リポジトリへ送ったら NG。**
 # 逆向き(検出器が deny で、実物は満たす)は見ない。読めないものを止める・他リポジトリでも止める、といった
 # 止めすぎは表が `deny` で意図して固定しているため。
 #
@@ -38,13 +38,14 @@ source "$lib_dir/issue-flow-kind-fixtures.sh"
 
 # 自リポジトリの作成が満たしているかを判定し、`NG|ケース名|理由` か `ok|ケース名|-` を出す。
 #
-# 引数は検出器のパス・作業ディレクトリ・origin の URL・ダミーのサーバーの置き場。標準入力は `ケース名|入力` の
-# 1 行 1 ケース。
+# 引数は検出器のパス・作業ディレクトリ・origin の URL・ダミーのサーバーの置き場・共通節の Bash / JSON 用の値。
+# 標準入力は `ケース名|入力` の 1 行 1 ケース。
 replay_runner="$(cat <<'PY'
 import http.server
 import importlib.util
 import json
 import os
+import re
 import ssl
 import subprocess
 import sys
@@ -52,13 +53,16 @@ import threading
 import traceback
 
 sys.dont_write_bytecode = True
-detector_path, work, origin, server_dir = sys.argv[1:5]
+detector_path, work, origin, server_dir, literal_sections, json_sections = sys.argv[1:]
 spec = importlib.util.spec_from_file_location("issue_flow_kind_violations", detector_path)
 detector = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(detector)
 
 OWN = "acme/widgets"
 FLOW = "flow:"
+REQUIRED_HEADINGS = ("ゴール", "完了の確かめ方", "拠り所", "決めてよい範囲")
+# 表で使う Markdown の見出しを、HTML コメントとコードフェンスから区別する。
+BODY_TOKENS = re.compile(r"<!--.*?(?:-->|\Z)|^```[^\n]*\n.*?(?:^```[ \t]*(?:\n|\Z)|\Z)|^(?P<heading>#{1,2}[ \t]+[^\n]+)", re.M | re.S)
 # 1 つの gh だけの行の後ろに付け足す指定。gh が送るものを変える読み方を 1 つずつ足す。
 VARIANTS = {
     "issue": (" --body-file @W/plain.md", " -b 本文だけ", " --web=false", " < @W/plain.md"),
@@ -77,6 +81,11 @@ def graphql(query, variables):
     if "createIssue" in query:
         requests.append(("graphql", variables.get("input", {})))
         return {"createIssue": {"issue": {"id": "I1", "url": "https://localhost/i/1", "number": 1}}}
+    if "RepositoryResolveMetadataIDs" in query:
+        label_aliases = re.findall(r'(\w+):\s*label\(name:\s*("[^"]+")\)', query)
+        labels = {alias: json.loads(encoded) for alias, encoded in label_aliases}
+        return {"repository": {alias: {"id": "L:" + name, "name": name} if name in LABEL_NAMES else None
+                               for alias, name in labels.items()}}
     if "labels" in query:
         nodes = [{"id": "L:" + n, "name": n} for n in sorted(LABEL_NAMES)]
         return {"repository": {"labels": {"nodes": nodes, "pageInfo": {"hasNextPage": False, "endCursor": ""}}}}
@@ -140,6 +149,7 @@ for name in ("GITHUB_TOKEN", "GH_TOKEN"):
 
 
 def expand(text):
+    text = text.replace("@SJ", json_sections).replace("@S", literal_sections)
     return text.replace("⏎", "\n").replace("⇥", "\t").replace("¦", "|").replace("@W", work)
 
 
@@ -165,11 +175,24 @@ def own_creations():
 
 def unmet(labels, body):
     kinds = {label for label in labels if label.startswith(FLOW) and label != FLOW}
-    if len(kinds) == 1:
-        return None
     if len(kinds) > 1:
         return f"flow:* が {len(kinds)} つ"
-    return None if detector.has_declaration_line(body) else "flow:* も宣言の行も無い"
+    if not kinds and not detector.has_declaration_line(body):
+        return "flow:* も宣言の行も無い"
+    return missing_sections(body)
+
+
+def missing_sections(body):
+    body = body.replace("\r\n", "\n")
+    headings = [match for match in BODY_TOKENS.finditer(body) if match.group("heading")]
+    present = set()
+    for i, heading in enumerate(headings):
+        end = headings[i + 1].start() if i + 1 < len(headings) else len(body)
+        content = re.sub(r"<!--.*?(?:-->|\Z)", "", body[heading.end():end], flags=re.S)
+        if any(line.strip() and not line.strip().startswith("```") for line in content.splitlines()):
+            present.add(heading.group("heading").strip())
+    missing = [title for title in REQUIRED_HEADINGS if f"## {title}" not in present]
+    return f"共通節（{', '.join(missing)}）が無い" if missing else None
 
 
 def replay(command):
@@ -232,7 +255,8 @@ openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=localhost -addext "s
 place_files
 
 rows="$(replayed_rows)"
-results="$(printf '%s\n' "$rows" | python3 -c "$replay_runner" "$detector" "$work" "$own_origin" "$server_dir")"
+results="$(printf '%s\n' "$rows" | python3 -c "$replay_runner" "$detector" "$work" "$own_origin" "$server_dir" \
+  "$(expand_section_tokens '@S')" "$(expand_section_tokens '@SJ')")"
 
 cases_before=$cases_reported
 while IFS='|' read -r verdict label reason; do
