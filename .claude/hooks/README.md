@@ -179,7 +179,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 
 #### 判定表をどの層へ置くか
 
-**判定表（`*-cases.sh`）の配置判断はここで管理する。** 検出器本体をゲートで呼んでいても、`src` や記録に違反がない限り緑のままになるため、**取りこぼす向きの退行**（意図した取りこぼしの広がり・走査対象の抜け・報告の切り詰め）は判定表でしか捕まえられない。
+**判定表（`*-cases.*`）の配置判断はここで管理する。** 検出器本体をゲートで呼んでいても、`src` や記録に違反がない限り緑のままになるため、**取りこぼす向きの退行**（意図した取りこぼしの広がり・走査対象の抜け・報告の切り詰め）は判定表でしか捕まえられない。
 
 | 判定表 | 層 1（CI） | 層 2（`pre-push`） |
 | --- | --- | --- |
@@ -209,6 +209,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 | `.github/scripts/build-pr-explain-cases.sh` | あり | あり（`python3` がある環境のみ） |
 | `.github/scripts/check-pr-explain-template-cases.sh` | あり | あり（`python3` がある環境のみ） |
 | `.github/scripts/pr-explain-core-cases.sh` | あり | あり（`python3` と Node 20 以上がある環境のみ） |
+| `.github/scripts/verify-storybook-cases.mjs` | あり | あり（Node 24 以上がある環境のみ） |
 | `.github/scripts/oxlint-config-cases.sh` | あり（`check` ジョブ） | あり（`pnpm` と `node_modules` がある環境のみ） |
 | `harness/githooks/lib/check-tally-cases.sh` | あり | あり |
 

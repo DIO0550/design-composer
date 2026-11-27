@@ -258,6 +258,9 @@ jobs:
       - name: 解説ページの核の判定表
         run: bash .github/scripts/pr-explain-core-cases.sh
 
+      - name: Storybook の動作検証の判定表
+        run: node .github/scripts/verify-storybook-cases.mjs
+
   report-comment:
     name: post ci report comment
     needs: check

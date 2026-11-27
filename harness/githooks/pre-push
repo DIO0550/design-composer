@@ -79,6 +79,11 @@ core_runnable || skip_following_checks "python3 が使えない / node が無い
 run_check "解説ページの核の判定表" bash .github/scripts/pr-explain-core-cases.sh
 resume_checks
 
+node -e 'process.exit(Number(process.versions.node.split(".")[0]) >= 24 ? 0 : 1)' >/dev/null 2>&1 ||
+  skip_following_checks "node が無いか古い(Node 24 未満)"
+run_check "Storybook の動作検証の判定表" node .github/scripts/verify-storybook-cases.mjs
+resume_checks
+
 # 行数の予算(AGENTS.md「常時ロードは増やさない」)。実測と予算がずれていれば落ちる。
 run_check "行数のラチェット" bash harness/records/count.sh --ratchet
 
