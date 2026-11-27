@@ -27,7 +27,7 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `track-verification-agent-activity.sh` | `PreToolUse` + `PostToolUse`（Task/Agent） | **作業ツリーを書き換えるサブエージェントの実行中フラグ**。`plan-reviewer` / `test-reviewer` / `implementer` の開始・終了をセッション別・種類別のマーカーで数え、`block-git-during-verification-agent.sh` が読む。この 3 つの起動のうち **`run_in_background: true` を明示したものは拒否する**（塞いでいない形はフック冒頭を参照） |
 | `block-git-during-verification-agent.sh` | `PreToolUse`（Bash） | **作業ツリーを書き換えるサブエージェント実行中の git 操作を拒否**。マーカーがある間は `git add` / `commit` / `push` を deny し、ミューテーション実測や実装途中の書き換えがコミットへ混入する事故を防ぐ。古いマーカーは無視する（種類ごとの有効期間と理由はフック本文。拒否文にマーカーのディレクトリを出す） |
 | `block-parent-session-edit.sh` | `PreToolUse`（Edit/Write） | **`implementation-flow` 中の親セッションによる編集を拒否**（`implementation-flow`「役割の分担」）。入力に `agent_id` がない（親の）Edit / Write で、リポジトリ内のファイルを指し、発火ログの最後の区切りが flow 内なら deny する（区切りになる起動と通す入力はフック冒頭を参照） |
-| `block-issue-without-flow-kind.sh` | `PreToolUse`（Bash/MCP） | **作業の種類を決めていない Issue 作成を拒否**（`implementation-flow` フェーズ 1「種類の確定」の手順 4）。作成とみなす形・通す条件・行の書式は `lib/issue-flow-kind-violations.py` の docstring と定数を参照。python3 が使えなければ通し、検出器が異常終了したら deny する |
+| `block-issue-without-flow-kind.sh` | `PreToolUse`（Bash/MCP） | **作業の種類または本文の共通節が揃っていない Issue 作成を拒否**（`implementation-flow` フェーズ 1「種類の確定」の手順 4）。作成とみなす形・通す条件・行の書式は `lib/issue-flow-kind-violations.py` の docstring と定数を参照。python3 が使えなければ通し、検出器が異常終了したら deny する |
 | `block-git-add-all.sh` | `PreToolUse`（Bash） | **一括ステージング禁止**（対応する規範は `commit` スキル「禁止事項」）。`git add -A` / `--all` / `.` / `-a` を拒否する。ヒアドキュメントの本文と引用符の中（コマンド置換を含まないもの）は見ない |
 | `block-commit-md-heading.sh` | `PreToolUse`（Bash） | **コミット本文の行頭 `#` 禁止**（対応する規範は `commit` スキルの本文の「書式」）。引用符の外に `git commit` があれば、ヒアドキュメントの本文（無ければコマンド全体）の行頭 `#` を拒否する |
 | `block-protected-branch-edit.sh` | `PreToolUse`（Edit/Write/MultiEdit/NotebookEdit） | **保護ブランチでの編集禁止**。フックの作業ディレクトリのブランチが保護ブランチ（一覧はフックの `protected_branches`）なら拒否する。入力は読まず、どのツールで止めるかは matcher が決める |
@@ -77,10 +77,10 @@ Claude Code で `rules/` 配下の実装規約を**強制**するためのフッ
 | `lib/hook-input.sh` | `record-firings.sh` / `track-verification-agent-activity.sh` / `block-git-during-verification-agent.sh` / `block-parent-session-edit.sh` | 標準入力の JSON から文字列値を取り出す `extract`。jq を使わず bash の組み込みだけで読む |
 | `lib/firings-log.sh` | `record-firings.sh` / `block-parent-session-edit.sh` | 発火ログのパスを組み立てる `firings_log_path <session_id>` |
 | `lib/parent-session-edit-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | 実物の `record-firings.sh` に発火ログを書かせたうえで `block-parent-session-edit.sh` へ Edit / Write を流し、親セッション編集の拒否と素通りを検証する（詳細は各ケース名）。食い違いがあれば exit 1 |
-| `lib/issue-flow-kind-violations.py` | `block-issue-without-flow-kind.sh` | Issue を作る呼び出しが作業の種類を決めているかを見る。Bash は bash と同じ規則で字句に分けてから読む。種別の一覧と意味、行の書式は検出器の docstring と定数を参照 |
+| `lib/issue-flow-kind-violations.py` | `block-issue-without-flow-kind.sh` | Issue を作る呼び出しで作業の種類と本文の共通節を確かめる。Bash は bash と同じ規則で字句に分け、実際に送る本文を読む。種別の一覧と意味、行の書式は検出器の docstring と定数を参照 |
 | `lib/issue-flow-kind-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `issue-flow-kind-violations.py` と `block-issue-without-flow-kind.sh` の判定表。検出器の表は python3 を 1 回だけ起動して検出器を import し、ケースごとに判定の関数を呼ぶ。フックの表はフックを一時ディレクトリへ複製し、検出器を CLI として走らせて deny / pass と拒否文の並びを検証する。食い違いがあれば exit 1 |
-| `lib/issue-flow-kind-real-gh-cases.sh` | `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `issue-flow-kind-violations.py` が通す作成を、実物の bash と gh で走らせる判定表。入力は `issue-flow-kind-cases.sh` の検出器の表（`miss` 以外の `bash` 形）と、それに送るものを変える指定を 1 つ足した形。gh はダミーのサーバーへ向け、検出器が pass なのに自リポジトリへ flow:* も宣言の行も無い作成を送ったら exit 1 |
-| `lib/issue-flow-kind-fixtures.sh` | `lib/issue-flow-kind-cases.sh` / `lib/issue-flow-kind-real-gh-cases.sh` | Issue の作業の種類の判定表 2 本が共有する前提（自リポジトリの origin・提案の行・本文のファイルを置く `place_files`） |
+| `lib/issue-flow-kind-real-gh-cases.sh` | `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `issue-flow-kind-violations.py` が通す作成を、実物の bash と gh で走らせる判定表。入力は `issue-flow-kind-cases.sh` の検出器の表（`miss` 以外の `bash` 形）と、それに送るものを変える指定を 1 つ足した形。gh はダミーのサーバーへ向け、検出器が pass なのに自リポジトリへ種類や共通節が揃っていない作成を送ったら exit 1 |
+| `lib/issue-flow-kind-fixtures.sh` | `lib/issue-flow-kind-cases.sh` / `lib/issue-flow-kind-real-gh-cases.sh` | Issue 作成の判定表 2 本が共有する前提（自リポジトリの origin・提案の行・共通節・本文のファイルを置く `place_files`） |
 | `lib/command-literals.sh` | `block-git-add-all.sh` / `block-commit-md-heading.sh` | コマンド文字列から、すべてのヒアドキュメントの本文を出す `heredoc_bodies` と、本文と引用符の中を除いて 1 行にする `command_line_outside_literals`。awk（POSIX の機能だけ）と sed で近似し、字句解析は持たない |
 | `lib/git-add-all-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `block-git-add-all.sh` の判定表。deny（止めすぎも含む）/ pass / miss を検証する。食い違いがあれば exit 1 |
 | `lib/commit-md-heading-cases.sh` | `harness/githooks/pre-push` / `frontend.yml` の `rules-check`（「動作確認」でも手動実行） | `block-commit-md-heading.sh` の判定表。deny（止めすぎも含む）/ pass / miss を検証する。食い違いがあれば exit 1 |
@@ -140,7 +140,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 | 読む位置を誤る | `cd sub && … --body-file rel.md` の相対パスは入力の `cwd` から読む |
 | 区別しない | 対話中かどうか、ラベルを人が選んだかどうかは見ない（手順 4 の (a)・(b) の使い分けは拒否文の案内に頼る） |
 | 字面で読む | `$(cat <<…)` の形なら、作成と無関係でも本文として読む。範囲の閉じ括弧は、中のヒアドキュメントや `case` を考えずに数える（bash との突き合わせは未検証） |
-| プラグインの作成 | `issues-workflow-plugin` のスキルが作る Issue も止まる（`flow:*` を付けない形のため）。拒否文の案内に従ってラベルか行を足して作り直す |
+| プラグインの作成 | `issues-workflow-plugin` のスキルが作る Issue も止まる（`flow:*` を付けない形のため）。拒否文の案内に従って種類と本文の共通節を揃えて作り直す |
 | MCP の発火 | `mcp__github__issue_write` で PreToolUse が発火するかは、本物のセッションで確かめるまで未検証 |
 
 `block-git-add-all.sh` / `block-commit-md-heading.sh` / `block-protected-branch-edit.sh` が発火する環境でも残る穴は次のとおり。取りこぼす形は判定表（`lib/git-add-all-cases.sh` / `lib/commit-md-heading-cases.sh` / `lib/protected-branch-edit-cases.sh`）が `miss` で、止めすぎる形は `deny` で固定している。
@@ -166,7 +166,7 @@ git hooks へ移せるのは **push 前に痕跡が残る検査だけ**。下の
 | `block-npx.sh` | 実行した `npx` コマンドがリポジトリへ何か書き込んでいないか `git status` で確認する |
 | `block-git-during-verification-agent.sh` | 作業ツリーを書き換えるサブエージェントの実行中に作られたコミットの diff を、そのエージェントが返したはずの内容と照合する（意図しない変更の混入がないか） |
 | `block-parent-session-edit.sh` | このセッションの親の Edit / Write 履歴を見直し、`implementation-flow` 中にリポジトリ内のファイルを編集していないか確認する |
-| `block-issue-without-flow-kind.sh` | このセッションで作った Issue に、`flow:*` ラベル 1 つか、本文の提案の行・通さない行があるか確認する。無ければ `implementation-flow` フェーズ 1「種類の確定」の手順 4 で決めて付ける |
+| `block-issue-without-flow-kind.sh` | このセッションで AI が作った Issue に、`flow:*` ラベル 1 つまたは提案の行・通さない行と、空でない共通 4 節があるか確認する。不足は `implementation-flow` フェーズ 1「種類の確定」の手順 4 に従って補う |
 | `block-git-add-all.sh` | このセッションで作ったコミットを `git show --stat <コミット>` で見て、意図しないファイル（`.env`・生成物など）が入っていないか確認する |
 | `block-commit-md-heading.sh` | `git log origin/main..HEAD --format=%B | grep -n '^#'` が何も出さないこと |
 | `block-protected-branch-edit.sh` | `git branch --show-current` が保護ブランチでなく、`git log origin/main..main` が何も出さないこと |
@@ -477,8 +477,8 @@ bash .claude/hooks/lib/parent-session-edit-cases.sh; echo "exit=$?"
 echo '{"tool_name":"Bash","tool_input":{"command":"gh issue create -t x -b y"}}' \
   | bash .claude/hooks/block-issue-without-flow-kind.sh
 
-# flow:* ラベルがあれば通ること(出力なし・exit 0)
-echo '{"tool_name":"Bash","tool_input":{"command":"gh issue create -t x -b y --label flow:feature"}}' \
+# flow:* ラベルと共通 4 節が揃えば通ること(出力なし・exit 0)
+echo '{"tool_name":"Bash","tool_input":{"command":"gh issue create -t x --label flow:feature --body-file - <<'\''EOF'\''\n## ゴール\n投稿できる\n## 完了の確かめ方\n判定表で pass を確認\n## 拠り所\n無し\n## 決めてよい範囲\n既定に従う\nEOF"}}' \
   | bash .claude/hooks/block-issue-without-flow-kind.sh; echo "exit=$?"
 
 # Issue の作業の種類の判定表(`ok` だけなら期待どおり・`NG` が出たら判定が変わっている)。pre-push と CI も走らせる

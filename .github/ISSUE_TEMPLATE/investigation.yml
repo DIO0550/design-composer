@@ -1,10 +1,8 @@
 name: 調査（ソースを変えずに答えを書く）
 description: ソースを変えずに調べて、答えを Issue に書いて閉じる作業
+labels:
+  - flow:investigation
 body:
-  - type: markdown
-    attributes:
-      value: |
-        作業の種類（`flow:*`）のラベルは人が付けます（テンプレートでは付けません）。
   - type: textarea
     id: goal
     attributes:
@@ -13,17 +11,34 @@ body:
     validations:
       required: true
   - type: textarea
+    id: completion
+    attributes:
+      label: 完了の確かめ方
+      description: どこまで確かめたら答えとするか。使うコマンドや、症状を再現する・呼び出し元を数えきるなどの判定条件を書く
+    validations:
+      required: true
+  - type: textarea
+    id: basis
+    attributes:
+      label: 拠り所
+      description: 仕様書の節、UI 案の画面名、既存のテストなど。無ければ「無し」と、決める必要があることを書く
+    validations:
+      required: true
+  - type: textarea
+    id: decision-scope
+    attributes:
+      label: 決めてよい範囲
+      description: 聞かずに決めてよいことと、必ず人に聞くこと。追加の指定が無ければ「既定に従う」と書く
+      placeholder: |
+        - 聞かずに決めてよい:
+        - 必ず聞く:
+    validations:
+      required: true
+  - type: textarea
     id: question
     attributes:
       label: 問い
       description: 何に答えれば終わりか
-    validations:
-      required: true
-  - type: textarea
-    id: done-when
-    attributes:
-      label: 終わりの条件
-      description: どこまで確かめたら答えとするか（再現した／呼び出し元を数えきった 等）
     validations:
       required: true
   - type: textarea

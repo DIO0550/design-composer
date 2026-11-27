@@ -1,0 +1,66 @@
+name: リファクタリング（振る舞いはそのまま）
+description: 外から見える振る舞いを変えず、構造の整理・移動・改名を行う作業
+labels:
+  - flow:refactor
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: ゴール
+      description: 何ができるようになれば終わりか（1〜3 行）。実装手段ではなく達成状態で書く
+    validations:
+      required: true
+  - type: textarea
+    id: completion
+    attributes:
+      label: 完了の確かめ方
+      description: 何をどう確かめるか。コマンド・観測・画面で書き、「テストが通る」だけにしない
+    validations:
+      required: true
+  - type: textarea
+    id: basis
+    attributes:
+      label: 拠り所
+      description: 仕様書の節、UI 案の画面名、既存のテストなど。無ければ「無し」と、決める必要があることを書く
+    validations:
+      required: true
+  - type: textarea
+    id: decision-scope
+    attributes:
+      label: 決めてよい範囲
+      description: 聞かずに決めてよいことと、必ず人に聞くこと。追加の指定が無ければ「既定に従う」と書く
+      placeholder: |
+        - 聞かずに決めてよい:
+        - 必ず聞く:
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: 変えない振る舞い
+      description: 移動や改名をしても、同じ入力・操作・状態で何が変わらないか
+    validations:
+      required: true
+  - type: textarea
+    id: existing-tests
+    attributes:
+      label: 守っている既存テスト
+      description: 分かれば、変更箇所を守るテスト名や実行コマンドを書く
+  - type: textarea
+    id: moves-and-renames
+    attributes:
+      label: 移動・改名の予定
+      description: 対象と移動先・新しい名前。予定がなければ空でよい
+  - type: textarea
+    id: background
+    attributes:
+      label: 背景
+  - type: textarea
+    id: split
+    attributes:
+      label: 分割の判断
+      description: この Issue を子に分けるなら、その軸と理由。分けないなら、その理由。作る時点で決まっていなければ空でよく、決めたら書き足す
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: スコープ外
