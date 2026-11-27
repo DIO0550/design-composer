@@ -4,7 +4,7 @@
   "headBranch": "feat/1471-immutability-lint",
   "baseBranch": "main",
   "mergeBase": "d199ad2483ca82c1a9d2b9134460d04a2d89105d",
-  "head": "4911437a91b6a360acb97adfbf7e59a2b9ef66ca",
+  "head": "64ddf7a22e982a23d040e90cab452f4dfaaf4824",
   "groups": [
     {
       "label": "domains / compiled",
@@ -197,6 +197,15 @@
           "changed": false
         },
         {
+          "path": ".claude/hooks/post-edit-lint.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
           "path": ".github/scripts/oxlint-config-cases.sh",
           "status": "M",
           "oldPath": null,
@@ -242,6 +251,10 @@
           "deletions": 1,
           "changed": true,
           "target": null
+        },
+        {
+          "path": "package.json",
+          "changed": false
         }
       ]
     }
@@ -321,6 +334,42 @@
           "truncated": false
         }
       ]
+    },
+    {
+      "sha": "64ddf7a22e982a23d040e90cab452f4dfaaf4824",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-27T09:57:19Z",
+      "subject": "🔧 [Config]: #1471 post-edit-lint の自動修正から prefer-const を除外",
+      "body": "- .claude/hooks/post-edit-lint.sh の oxlint --fix に -A prefer-const を追加し、\n  直後の診断パス（oxlint）で引き続き error として報告するように変更\n- .claude/hooks/README.md の #1471 の項を実態に合わせて更新\n\n背景:\nPR #1496 のレビュー指摘で、Biome 対象外の .storybook 配下などにおいて\nlet を typeof で参照する型があるとき、編集後フックの prefer-const 自動修正が\n黙って const へ書き換えて型をリテラル型へ狭め、型検査を壊すケースが報告された。\n\n採用理由:\n修正パスだけ -A prefer-const で書き換えを止め、直後の診断パス・pre-push・CI\nでは error を維持することで、開発者が型注釈（const x: string = ... 等）を\n判断しながら直せるようにする。\n\n影響とトレードオフ:\n編集直後に再代入されない let が自動で const に書き換わらなくなるが、直後の\nPostToolUse 診断で即座にフィードバックされるため見落としは生じない。",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 1,
+          "patch": "@@ -375,7 +375,7 @@ deny メッセージには `jq` / `python3` が欠けていればその名前も\n   - **override の glob は `*.{ts,tsx,mts,cts}` で書く。** oxlint は `.mts` / `.cts` も lint するが、`.ts` / `.tsx` だけを並べた glob ではそこで層の向きと effect の禁止が黙って外れていた（#1445 で広げた。`.tsx` だけを見る override と許可の override は変えていない）。tsconfig 側で `.mts` / `.cts` を外す案は採らなかった。`include` を絞っても import された `.mts` は型検査に入り（`tsc --listFilesOnly` で実測）、型検査を外すだけになるため。oxlint の外に残る `.mts` / `.cts` の穴は #1463\n   - 残る穴は判定表の `miss` の行が持つ（ここに写さない）。表に無い穴として、`test.extend` で作ったテストには、correctness の `expect-expect` / `no-disabled-tests` / `no-standalone-expect` が誤って `warn` を出す（実測。今の使用は 0 件で、`warn` は push を止めない）\n - `.oxlintrc.json` のトップレベル `rules`（#1471）は `no-param-reassign`（`{ \"props\": true }`）と `prefer-const` を `error` で置き、`rules/coding.md`「イミュータブル」のうち引数自体および引数のプロパティ・要素への再代入と、再代入されない `let` を止める。導入時の違反 1 件（`src/libs/__tests__/element-measure.ts` の `stubBoundsEachMeasure`）は同ファイルの `stubLayoutSize` と同じ `Object.defineProperty` に揃えて 0 件にした\n-  - `prefer-const` は自動修正を持つため、`post-edit-lint.sh` の `oxlint --fix` が再代入されない `let`（分割代入の全員が再代入されない場合や `for-of` / `for-in` を含む）を `const` に書き換える。一方、初期値なしの `let x; x = 1;` と分割代入の一部だけ再代入する `let { a, b } = ...; b = 2;` は自動修正せず診断だけを出す（実測）\n+  - `prefer-const` は自動修正を持つが、黙って `const` へ書き換えると `typeof` で参照する型がリテラル型へ狭まり型検査を壊しうるため、`post-edit-lint.sh` の自動修正パスは `oxlint --fix -A prefer-const` で書き換えを除外している。直後の診断パスと push 前・CI で `error` を報告する（実測）\n   - 残る穴は判定表 `.github/scripts/oxlint-config-cases.sh` の `miss` の行が持つ（ここに写さない）。配列・オブジェクトの破壊的メソッドや `domains/` 等での再代入を伴う `let` は #1476 で扱う\n - **feature 間の deep import・循環参照・モジュール内部への deep import**（#257 のゴール 1・2・6）は `lib/import-rule-violations.py` が検査する。oxlint に置かなかったのは 3 つとも**リポジトリ構造を読まないと判定できない**ためであり、`overrides.files` の静的 glob では書けない（#284 実測で同一 feature 内ドメイン間 import まで巻き込み 38 件の偽陽性。数値出典は #257 コメント）\n   - **判定根拠はスクリプトの docstring に記載している**（入れ子モジュール・`__tests__/` の扱い・feature だけ狭い理由）。二重管理を避けるためここには写さない。判定表は `lib/import-rule-cases.sh`",
+          "patchLines": 9,
+          "truncated": false
+        },
+        {
+          "path": ".claude/hooks/post-edit-lint.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "patch": "@@ -52,7 +52,9 @@ start_dir=\"$(dirname \"$file\")\"\n \n # --- oxlint (ESLint より高速な代替。両方あれば oxlint を優先) ---\n if oxlint_root=\"$(find_dep_root \"oxlint\" \"$start_dir\")\" && tool_available \"$oxlint_root\" oxlint; then\n-  run_lint \"$oxlint_root\" oxlint --fix \"$file\" >/dev/null 2>&1 || true\n+  # prefer-const の自動修正は typeof で参照する型をリテラル型へ狭めうるため除外し、\n+  # 直後の診断パスで error として報告する。\n+  run_lint \"$oxlint_root\" oxlint --fix -A prefer-const \"$file\" >/dev/null 2>&1 || true\n   result=\"$(run_lint \"$oxlint_root\" oxlint \"$file\" 2>&1 | head -30)\" || true\n   if [ -n \"$result\" ]; then\n     diag=\"${diag}[oxlint]",
+          "patchLines": 11,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
     }
   ],
   "dependencies": [
@@ -332,6 +381,11 @@
     {
       "from": ".claude/hooks/lib/named-path-violations.py",
       "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/post-edit-lint.sh",
+      "to": "package.json",
       "status": "kept"
     },
     {
