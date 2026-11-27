@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1496,
+      "title": "✨ [New Feature]: #1471 oxlint で no-param-reassign と prefer-const を有効化"
+    },
+    {
       "pr": 1495,
       "title": "✨ [New Feature]: #1485 計画と実装の検証を最大3周で回す"
     },
