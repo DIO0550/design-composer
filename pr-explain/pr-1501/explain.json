@@ -1,0 +1,370 @@
+{
+  "version": 1,
+  "pr": 1501,
+  "sha": "90a3c13aacbd22393ba9db9c2def6d5cd2845885",
+  "issue": 1479,
+  "overview": {
+    "title": "共通の節をそろえてから Issue を作る",
+    "lead": "人は作業の種類に合うフォームを選べる。AI が対応する経路から起票するときは、送る本文に共通四節があるかを送信前に確かめる。",
+    "before": [
+      {
+        "text": "作業の種類を決めていれば、完了の確かめ方が本文になくても作成できた。",
+        "message": "judge-body"
+      }
+    ],
+    "after": [
+      {
+        "text": "ラベルがあっても、本文の共通四節に不足があれば拒否される。",
+        "message": "judge-body"
+      },
+      {
+        "text": "フォームで起票する人は、種類別の入力欄と共通の必須欄を見ながら書ける。"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "実際に送る本文",
+        "text": "候補のうちどれかではなく、引数の優先順位で最後に有効になった本文を確かめる。",
+        "go": {
+          "kind": "flow",
+          "id": "create-issue"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "create-body",
+      "label": "作成前の本文検査",
+      "role": "対象となる Issue の作成で種類と本文がそろっているか判定する。",
+      "review": [
+        "ラベルがあっても空本文で通らないか。"
+      ]
+    },
+    {
+      "id": "forms",
+      "label": "種類別のフォーム",
+      "role": "人が作業の種類を選び、計画の材料を入力する。",
+      "review": [
+        "共通欄と種類固有の欄に抜けがないか。"
+      ]
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".claude/hooks/block-issue-without-flow-kind.sh",
+      "name": "作成を止める入口",
+      "role": "ツール実行前に検出器を呼び、拒否時の理由を返す。",
+      "feature": "create-body"
+    },
+    {
+      "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+      "name": "種類と本文の判定",
+      "role": "コマンド等の入力から作成する Issue の種類と本文を取り出して検査する。",
+      "feature": "create-body"
+    },
+    {
+      "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+      "name": "入出力の判定表",
+      "role": "通る入力と止まる入力を事前に固定する。",
+      "feature": "create-body"
+    },
+    {
+      "path": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+      "name": "実物の送信確認",
+      "role": "実物のコマンドをローカルの代替サーバーに向け、送信された本文を検査する。",
+      "feature": "create-body"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/feature.yml",
+      "name": "機能追加のフォーム",
+      "role": "人が機能追加を選んだときの共通欄と種類別の欄を定義する。",
+      "feature": "forms"
+    },
+    {
+      "path": ".claude/skills/implementation-flow/SKILL.md",
+      "name": "作成経路の取り決め",
+      "role": "フォームと AI の入力形およびラベルの選び方を定める。",
+      "feature": "forms"
+    }
+  ],
+  "actors": [
+    {
+      "id": "session",
+      "label": "作業セッション",
+      "role": "Issue を作るツールにタイトル・種類・本文を渡す。"
+    }
+  ],
+  "messages": [
+    {
+      "id": "issue-call",
+      "from": "session",
+      "to": ".claude/hooks/block-issue-without-flow-kind.sh",
+      "kind": "cmd",
+      "name": "作成を試みる",
+      "code": "gh issue create",
+      "via": "exec"
+    },
+    {
+      "id": "judge-body",
+      "from": ".claude/hooks/block-issue-without-flow-kind.sh",
+      "to": ".claude/hooks/lib/issue-flow-kind-violations.py",
+      "kind": "qry",
+      "name": "作成の材料を照合",
+      "code": "issue-flow-kind-violations.py --origin-url",
+      "via": "exec",
+      "status": "changed"
+    }
+  ],
+  "flows": [
+    {
+      "id": "create-issue",
+      "label": "作成前の検査",
+      "steps": [
+        "issue-call",
+        "judge-body"
+      ],
+      "beforeSteps": [
+        "issue-call",
+        "judge-body"
+      ],
+      "gist": "種類だけでは足りず、本文に共通の材料をそろえる。",
+      "stepChanges": [
+        {
+          "beforeStep": 1,
+          "afterStep": 1
+        },
+        {
+          "status": "changed",
+          "beforeStep": 2,
+          "afterStep": 2,
+          "beforeText": "種類が決まっているか確認。",
+          "change": "実際に送る本文を確定して四節も確認。"
+        }
+      ]
+    }
+  ],
+  "calls": {
+    "boxes": [
+      {
+        "id": "detector-entry",
+        "name": "findings_for",
+        "role": "フック入力を作成経路ごとに振り分ける。",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "now": "判定経路は維持する。"
+      },
+      {
+        "id": "body-judge",
+        "name": "judge",
+        "role": "作成を止めるべきか決める。",
+        "module": ".claude/hooks/lib/issue-flow-kind-violations.py",
+        "status": "changed",
+        "was": "種類の条件を満たすと通した。",
+        "now": "種類と本文の双方を確かめる。"
+      }
+    ],
+    "edges": [
+      {
+        "id": "run-judge",
+        "from": "detector-entry",
+        "to": "body-judge",
+        "code": "findings_for → 各コマンド経路 → judge",
+        "status": "changed",
+        "was": "種類を判定できる情報で照合。",
+        "now": "実際に送る本文に対して照合。"
+      }
+    ]
+  },
+  "suites": [
+    {
+      "id": "hook-cases",
+      "label": "作成時の判定表",
+      "file": ".claude/hooks/lib/issue-flow-kind-cases.sh"
+    }
+  ],
+  "tests": [
+    {
+      "id": "missing-completion",
+      "suite": "hook-cases",
+      "name": "sections-missing MCP 作成は完了の確かめ方がなければ止める",
+      "techniques": [
+        "error",
+        "regression"
+      ],
+      "why": "種類が決まっても不足したまま起票させない。",
+      "given": "種類を表すラベルがあり、完了の確かめ方だけがない本文を用意する。",
+      "when": "作成前に入力を検査する。",
+      "then": "作成を止める。",
+      "commit": "f635805ccc89cdfa2f6eeac2fc42797222c669f3",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 333,
+        "end": 333,
+        "text": "deny|sections|mcp|sections-missing MCP 作成は完了の確かめ方がなければ止める|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":\"## ゴール\\n作成できる\\n\\n## 拠り所\\n無し\\n\\n## 決めてよい範囲\\n既定に従う\"}"
+      },
+      "covers": [
+        "judge-body"
+      ],
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ]
+    },
+    {
+      "id": "effective-body",
+      "suite": "hook-cases",
+      "name": "sections-effective-body-typed REST 作成は後から raw があっても typed 本文を優先する",
+      "techniques": [
+        "boundary",
+        "regression"
+      ],
+      "why": "検査した本文と送った本文のずれを防ぐ。",
+      "given": "有効な優先度の高い入力に不足本文を、別の入力に完全な本文を指定する。",
+      "when": "API 作成前に入力を検査する。",
+      "then": "完全な低優先の本文では通らず、作成を止める。",
+      "commit": "f635805ccc89cdfa2f6eeac2fc42797222c669f3",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 350,
+        "end": 350,
+        "text": "deny|sections|bash|sections-effective-body-typed REST 作成は後から raw があっても typed 本文を優先する|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/plain.md -f 'body=@S'"
+      },
+      "covers": [
+        "judge-body"
+      ],
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ]
+    }
+  ],
+  "impact": {
+    "title": "共通の節をそろえてから Issue を作る",
+    "lead": "後から確認し直す内容を減らすため、起票時に完了条件・根拠・任せる範囲まで書き残す。",
+    "changed": {
+      "before": [
+        {
+          "text": "種類を決めただけでも、AI は作業の判断材料が足りない Issue を作れた。"
+        }
+      ],
+      "after": [
+        {
+          "text": "対応する AI の起票経路では、種類が決まっていても共通の節が不足すれば送信前に止まる。"
+        }
+      ],
+      "specs": [
+        {
+          "path": ".claude/skills/implementation-flow/SKILL.md",
+          "locator": "種類の確定",
+          "text": "作成時に種類と本文をそろえる。",
+          "shas": [
+            "0c62954e9385def4cdd67561c22f0d8f3059833a"
+          ]
+        }
+      ],
+      "relatedIssues": [
+        {
+          "issue": 1479,
+          "text": "フォームと作成時の検査を揃える作業。"
+        }
+      ],
+      "primers": [
+        "body-contract"
+      ]
+    },
+    "kept": [
+      {
+        "text": "AI は作業の種類を勝手に選んでラベルを付けない。"
+      }
+    ]
+  },
+  "primers": [
+    {
+      "id": "body-contract",
+      "kind": "codebase",
+      "category": "作成前の検査",
+      "label": "本文を一つに確定する",
+      "gist": "同時に複数の本文指定があっても、コマンドが実際に送る本文は一つ。先にそれを選ぶと、別の候補で不足を見落とさない。",
+      "passages": [
+        {
+          "kind": "text",
+          "text": "JSON 入力があればその本文が使われ、フィールド指定同士では型付きの入力が通常の入力より優先される。"
+        }
+      ],
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "text": "API の入力が本文に採用される順。"
+        }
+      ],
+      "tests": [
+        "effective-body"
+      ]
+    }
+  ],
+  "quiz": [
+    {
+      "id": "valid-label-is-not-enough",
+      "kind": "yesno",
+      "title": "ラベルと完了条件",
+      "prompt": "有効な作業ラベルがあれば、完了の確かめ方がない本文でも対応経路から作成できる。",
+      "holds": false,
+      "why": "種類とは別に、本文の四つの節が検査される。",
+      "go": [
+        {
+          "kind": "flow",
+          "id": "create-issue"
+        }
+      ]
+    }
+  ],
+  "commitStories": [
+    {
+      "sha": "f635805ccc89cdfa2f6eeac2fc42797222c669f3",
+      "phase": "prep",
+      "role": "空欄や欠落が通る事実を固定。",
+      "why": "完成後と同じ判定表で、変更前の不足を確かめる。",
+      "featureRanges": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+          "start": 333,
+          "end": 333,
+          "feature": "create-body",
+          "text": "期待する拒否を先にテストへ置いた。"
+        }
+      ]
+    },
+    {
+      "sha": "0c62954e9385def4cdd67561c22f0d8f3059833a",
+      "phase": "core",
+      "role": "作成前の検査とフォームを同時に揃える。",
+      "why": "本文の見出し契約が片方だけずれるのを防ぐ。",
+      "featureRanges": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "start": 24,
+          "end": 24,
+          "feature": "create-body",
+          "text": "共通節の不足を別の判定として表す。"
+        },
+        {
+          "path": ".github/ISSUE_TEMPLATE/feature.yml",
+          "start": 16,
+          "end": 16,
+          "feature": "forms",
+          "text": "フォームにも完了を確かめるための欄を置く。"
+        }
+      ]
+    },
+    {
+      "sha": "fc8b0722da7c939ed1fcfb05ba14c80ad70097b4",
+      "phase": "revise",
+      "role": "レビュー対象の条件を明確にする。",
+      "why": "境界の振る舞いを読み違えないようにする。"
+    },
+    {
+      "sha": "90a3c13aacbd22393ba9db9c2def6d5cd2845885",
+      "phase": "revise",
+      "role": "レビュー対象の条件を明確にする。",
+      "why": "境界の振る舞いを読み違えないようにする。"
+    }
+  ]
+}
