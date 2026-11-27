@@ -1,5 +1,5 @@
 {
-  "reportVersion": "08e023469303686ee05336474a61df02fec8710d",
+  "reportVersion": "95849f8fb77af67263142b5273b7f812985fbbc6",
   "maxDiffRatio": 0.002,
   "changed": 0,
   "new": 0,
@@ -13,12 +13,12 @@
       "title": "components/ActionCard",
       "name": "押せない",
       "status": "passed",
-      "reason": "within-threshold",
-      "diffPixels": 725,
-      "diffRatio": 0.0008,
+      "reason": "match",
+      "diffPixels": 0,
+      "diffRatio": 0,
       "hasExpected": true,
       "hasActual": true,
-      "hasDiff": true
+      "hasDiff": false
     },
     {
       "story": "components-actioncard--normal",
