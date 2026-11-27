@@ -337,6 +337,7 @@ deny|sections|bash|sections-missing-scope 決めてよい範囲がなければ�
 deny|sections|bash|sections-empty 完了の確かめ方が空白だけなら止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎## 完了の確かめ方⏎ ⇥ ⏎## 拠り所⏎無し⏎## 決めてよい範囲⏎既定に従う'
 deny|sections|bash|sections-in-code コードフェンスの中にしか共通節がなければ止める|gh issue create -t x -l flow:feature -b '```markdown⏎@S⏎```'
 deny|sections|bash|sections-in-comment HTML コメントの中にしか共通節がなければ止める|gh issue create -t x -l flow:feature -b '<!--⏎@S⏎-->'
+deny|sections|bash|sections-comment-only-answer 完了の確かめ方が HTML コメントだけなら止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎## 完了の確かめ方⏎<!-- 結果を確認する -->⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'
 deny|sections|bash|sections-in-quote 引用の中にしか完了の確かめ方がなければ止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎> ## 完了の確かめ方⏎> 結果を確認する⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'
 pass|-|bash|sections-fenced-command 完了の確かめ方がコードフェンス内のコマンドだけでも通す|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎## 完了の確かめ方⏎```sh⏎bash test.sh⏎```⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'
 deny|sections|bash|sections-form-heading-rest REST 作成はフォームの見出しだけなら止める|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/sections-h3.md
