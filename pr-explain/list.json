@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1499,
+      "title": "📝 [Doc]: PR #1496 のハーネス評価を記録"
+    },
+    {
       "pr": 1498,
       "title": "✨ [New Feature]: #1486 Storybook の操作と撮影を一度で検証する"
     },
