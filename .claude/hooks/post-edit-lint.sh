@@ -52,7 +52,9 @@ start_dir="$(dirname "$file")"
 
 # --- oxlint (ESLint より高速な代替。両方あれば oxlint を優先) ---
 if oxlint_root="$(find_dep_root "oxlint" "$start_dir")" && tool_available "$oxlint_root" oxlint; then
-  run_lint "$oxlint_root" oxlint --fix "$file" >/dev/null 2>&1 || true
+  # prefer-const の自動修正は typeof で参照する型をリテラル型へ狭めうるため除外し、
+  # 直後の診断パスで error として報告する。
+  run_lint "$oxlint_root" oxlint --fix -A prefer-const "$file" >/dev/null 2>&1 || true
   result="$(run_lint "$oxlint_root" oxlint "$file" 2>&1 | head -30)" || true
   if [ -n "$result" ]; then
     diag="${diag}[oxlint]
