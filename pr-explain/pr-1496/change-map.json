@@ -1,0 +1,528 @@
+{
+  "version": 2,
+  "pr": 1496,
+  "headBranch": "feat/1471-immutability-lint",
+  "baseBranch": "main",
+  "mergeBase": "d199ad2483ca82c1a9d2b9134460d04a2d89105d",
+  "head": "4911437a91b6a360acb97adfbf7e59a2b9ef66ca",
+  "groups": [
+    {
+      "label": "domains / compiled",
+      "files": [
+        {
+          "path": "src/domains/compiled/compiled-element/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "libs",
+      "files": [
+        {
+          "path": "src/libs/element-measure/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 4,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "src/libs/element-measure/__tests__/element-measure.bounds.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor",
+      "files": [
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.multi-selection.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.zoom-fit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/canvas",
+      "files": [
+        {
+          "path": "src/features/editor/features/canvas/components/canvas-toolbar/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-artboards.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/document-start",
+      "files": [
+        {
+          "path": "src/features/editor/features/document-start/components/document-start/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/sidebar",
+      "files": [
+        {
+          "path": "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/document-tree/index.tsx",
+          "changed": false
+        },
+        {
+          "path": "src/features/editor/features/sidebar/components/left-pane-rail/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "features / editor/features/tokens",
+      "files": [
+        {
+          "path": "src/features/editor/features/tokens/components/token-list/index.tsx",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "hooks",
+      "files": [
+        {
+          "path": "src/hooks/use-remeasure/index.ts",
+          "changed": false
+        },
+        {
+          "path": "src/hooks/use-subscription/index.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "src(その他)",
+      "files": [
+        {
+          "path": "src/test-setup.ts",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".claude/hooks/lib/cases-report.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-cases.sh",
+          "changed": false
+        },
+        {
+          "path": ".claude/hooks/lib/named-path-violations.py",
+          "changed": false
+        },
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 29,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": ".github/scripts/storybook-visual-regression.mjs",
+          "changed": false
+        },
+        {
+          "path": ".github/workflows/frontend.yml",
+          "changed": false
+        },
+        {
+          "path": "harness/githooks/pre-push",
+          "changed": false
+        },
+        {
+          "path": "rules/architecture.md",
+          "changed": false
+        },
+        {
+          "path": "rules/hooks.md",
+          "changed": false
+        },
+        {
+          "path": "rules/testing.md",
+          "changed": false
+        }
+      ]
+    },
+    {
+      "label": "その他",
+      "files": [
+        {
+          "path": ".oxlintrc.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "846d1f3d7ddd74161c5435cdee9fea502fa84f4a",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-27T07:35:30Z",
+      "subject": "🧪 [Tests]: #1471 oxlint の判定表に no-param-reassign と prefer-const のケースを追加",
+      "body": "- .github/scripts/oxlint-config-cases.sh の冒頭コメントに no-param-reassign と\n  prefer-const を追記\n- CASES に no-param-reassign（19 行・展開後 28 ケース）と prefer-const（9 行・\n  展開後 15 ケース）の計 28 行（43 ケース）を追加\n\n背景:\nflow:feature の第 1 工程（仕様の固定）として、.oxlintrc.json を変更する前に\n期待する deny / pass / miss の仕様を判定表へ固定する。\n\n採用理由:\noxlint-config-cases.sh の既存の仕組み（ケースごとに実物の .oxlintrc.json を\n写して 1 回で lint）に乗せることで、設定の抜けやオプションの誤りを\npre-push と CI で検知できるようにする。\n\n影響とトレードオフ:\nこのコミット時点では .oxlintrc.json に 2 規則が未設定のため、deny を期待する\n28 ケースが NG expected=deny got=pass で落ちる（第 2 工程で通す）。",
+      "files": [
+        {
+          "path": ".github/scripts/oxlint-config-cases.sh",
+          "status": "M",
+          "oldPath": null,
+          "additions": 29,
+          "deletions": 1,
+          "patch": "@@ -24,7 +24,7 @@\n # 終了コードと出力を 1 回だけ標準エラーへ出し、全ケースを broken にする。設定が壊れたとき(診断の行を\n # 出さずに exit 1 で終わる)と oxlint が無いとき(exit 127)は、その一例。\n #\n-# 表が見る規則は `no-restricted-imports` と jest の `no-restricted-jest-methods` / `no-hooks` と、\n+# 表が見る規則は `no-param-reassign` と `prefer-const` と `no-restricted-imports` と jest の `no-restricted-jest-methods` / `no-hooks` と、\n # `require-to-throw-message` の `off` だけ。`curly` / `max-depth` / `max-lines` / `react/forbid-elements` は\n # 見ない。\n #\n@@ -196,6 +196,34 @@ miss|no-hooks|test.beforeEach は見ない|src/features/probe/__tests__/probe.no\n miss|no-hooks|it.beforeAll は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { it } from \"vitest\";\\nit.beforeAll(() => {});\n miss|no-hooks|test.extend で作ったテストの beforeEach は見ない|src/features/probe/__tests__/probe.normal.test.ts|import { test } from \"vitest\";\\ntest.extend({}).beforeEach(() => {});\n pass|require-to-throw-message|toThrow にメッセージを渡さなくてもよい|src/features/probe/__tests__/probe.normal.test.ts|import { expect, test } from \"vitest\";\\ntest(\"probe\", () => {\\n  expect(() => JSON.parse(\"{\")).toThrow();\\n});\n+deny|no-param-reassign|関数で引数に再代入すると止まる|src/features/probe/index.{ext}|export function probe(x: number): number {\\n  x = 1;\\n  return x;\\n}\n+deny|no-param-reassign|関数で引数のプロパティに代入すると止まる|src/features/probe/index.{ext}|export function probe(x: { a: number }): number {\\n  x.a = 1;\\n  return x.a;\\n}\n+deny|no-param-reassign|関数で引数の配列の要素に代入すると止まる|src/features/probe/index.ts|export function probe(xs: number[]): number[] {\\n  xs[0] = 1;\\n  return xs;\\n}\n+deny|no-param-reassign|関数で引数のプロパティを複合代入で更新すると止まる|src/features/probe/index.ts|export function probe(x: { a: number }): number {\\n  x.a += 1;\\n  return x.a;\\n}\n+deny|no-param-reassign|関数で引数のプロパティをインクリメントすると止まる|src/features/probe/index.ts|export function probe(x: { a: number }): number {\\n  x.a++;\\n  return x.a;\\n}\n+deny|no-param-reassign|関数で引数の深いプロパティに代入すると止まる|src/features/probe/index.ts|export function probe(x: { a: { b: number } }): number {\\n  x.a.b = 1;\\n  return x.a.b;\\n}\n+deny|no-param-reassign|関数で引数のプロパティを delete すると止まる|src/features/probe/index.ts|export function probe(x: { a?: number }): { a?: number } {\\n  delete x.a;\\n  return x;\\n}\n+deny|no-param-reassign|分割代入で受け取った引数に再代入すると止まる|src/features/probe/index.ts|export function probe({ a }: { a: number }): number {\\n  a = 1;\\n  return a;\\n}\n+deny|no-param-reassign|分割代入で受け取った引数のプロパティに代入すると止まる|src/features/probe/index.ts|export function probe({ a }: { a: { b: number } }): number {\\n  a.b = 1;\\n  return a.b;\\n}\n+deny|no-param-reassign|既定値付きの引数に再代入すると止まる|src/features/probe/index.ts|export function probe(x = 0): number {\\n  x = 1;\\n  return x;\\n}\n+deny|no-param-reassign|既定値付きの引数のプロパティに代入すると止まる|src/features/probe/index.ts|export function probe(x: { a: number } = { a: 0 }): number {\\n  x.a = 1;\\n  return x.a;\\n}\n+deny|no-param-reassign|src の外の .mjs でも引数に再代入すると止まる|.github/scripts/probe.mjs|export function probe(x) {\\n  x = 1;\\n  return x;\\n}\n+pass|no-param-reassign|関数で引数を読み取って新しいオブジェクトを返すのは通る|src/features/probe/index.{ext}|export function probe(x: { a: number }): { a: number } {\\n  return { ...x, a: 1 };\\n}\n+miss|no-param-reassign|引数をローカル変数に受けてからそのプロパティに代入するのは見ない|src/features/probe/index.ts|export function probe(x: { a: number }): number {\\n  const y = x;\\n  y.a = 1;\\n  return y.a;\\n}\n+miss|no-param-reassign|引数の配列に push などの破壊的メソッドを呼ぶのは見ない|src/features/probe/index.ts|export function probe(xs: number[]): number[] {\\n  xs.push(1);\\n  return xs;\\n}\n+miss|no-param-reassign|Object.assign の第 1 引数に引数を渡すのは見ない|src/features/probe/index.ts|export function probe(x: { a: number }): { a: number } {\\n  return Object.assign(x, { a: 1 });\\n}\n+miss|no-param-reassign|Object.defineProperty で引数のプロパティを定義するのは見ない|src/features/probe/index.ts|export function probe(x: { a?: number }): { a?: number } {\\n  Object.defineProperty(x, \"a\", { value: 1 });\\n  return x;\\n}\n+miss|no-param-reassign|残余引数に再代入するのは見ない|src/features/probe/index.ts|export function probe(...xs: number[]): number[] {\\n  xs = [1];\\n  return xs;\\n}\n+miss|no-param-reassign|残余引数の要素に代入するのは見ない|src/features/probe/index.ts|export function probe(...xs: number[]): number[] {\\n  xs[0] = 1;\\n  return xs;\\n}\n+deny|prefer-const|再代入しない let を使うと止まる|src/features/probe/index.{ext}|export function probe(): number {\\n  let x = 1;\\n  return x;\\n}\n+deny|prefer-const|プロパティを書き換えるだけで再代入しない let は止まる|src/features/probe/index.ts|export function probe(): { a: number } {\\n  let x = { a: 1 };\\n  x.a = 2;\\n  return x;\\n}\n+deny|prefer-const|初期値なしの let に 1 度だけ代入してその後再代入しないと止まる|src/features/probe/index.ts|export function probe(): number {\\n  let x: number;\\n  x = 1;\\n  return x;\\n}\n+deny|prefer-const|分割代入の let で一部しか再代入しないと再代入しない変数で止まる|src/features/probe/index.ts|export function probe(): number {\\n  let { a, b } = { a: 1, b: 2 };\\n  b = 3;\\n  return a + b;\\n}\n+deny|prefer-const|for-of のループ変数に再代入しない let を使うと止まる|src/features/probe/index.ts|export function probe(xs: readonly number[]): number {\\n  const out: number[] = [];\\n  for (let x of xs) {\\n    out.push(x);\\n  }\\n  return out.length;\\n}\n+deny|prefer-const|for-in のループ変数に再代入しない let を使うと止まる|src/features/probe/index.ts|export function probe(record: Readonly<Record<string, number>>): number {\\n  const keys: string[] = [];\\n  for (let k in record) {\\n    keys.push(k);\\n  }\\n  return keys.length;\\n}\n+deny|prefer-const|src の外の .mjs でも再代入しない let は止まる|.github/scripts/probe.mjs|export function probe() {\\n  let x = 1;\\n  return x;\\n}\n+pass|prefer-const|再代入する let は使える|src/features/probe/index.{ext}|export function probe(): number {\\n  let x = 1;\\n  x = 2;\\n  return x;\\n}\n+pass|prefer-const|for ループで更新される let は使える|src/features/probe/index.ts|export function probe(): number {\\n  let sum = 0;\\n  for (let i = 0; i < 3; i++) {\\n    sum += i;\\n  }\\n  return sum;\\n}\n CASES\n )\"\n ",
+          "patchLines": 44,
+          "truncated": false,
+          "hunkOpeningLines": [
+            {
+              "old": null,
+              "new": null
+            },
+            {
+              "old": null,
+              "new": null
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "sha": "4911437a91b6a360acb97adfbf7e59a2b9ef66ca",
+      "merge": false,
+      "author": "DIO0550",
+      "date": "2026-11-27T08:24:29Z",
+      "subject": "✨ [New Feature]: #1471 oxlint で no-param-reassign と prefer-const を有効化",
+      "body": "- .oxlintrc.json のトップレベル rules に no-param-reassign (props: true) と\n  prefer-const を error で追加\n- 唯一の既存違反だった src/libs/__tests__/element-measure.ts の\n  stubBoundsEachMeasure を同ファイルの stubLayoutSize と同じ\n  Object.defineProperty 形式に統一\n- .claude/hooks/README.md に #1471 の項（自動修正の挙動・残る穴・#1476 への\n  分離）を追記\n\n背景:\nrules/coding.md「イミュータブル」のうち、引数および引数のプロパティ・要素への\n再代入と再代入されない let は oxlint の組み込みルールで機械的に止められる。\n\n採用理由:\nrules/coding.md「規約の適用範囲」に従い src/ 外の .mjs 等も守るため、overrides\nではなくトップレベルの rules に置いた。Biome の noParameterAssign は\nprops: true 相当を持たず、useConst は分割代入の一部再代入を見ないため oxlint\nを採用した。\n\n影響とトレードオフ:\n破壊的メソッド呼び出しやローカル変数経由の書き換え、再代入を伴う let は\nno-param-reassign / prefer-const の範囲外であり、判定表の miss に固定したうえで\n#1476 側で扱う。",
+      "files": [
+        {
+          "path": ".claude/hooks/README.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 0,
+          "patch": "@@ -374,6 +374,9 @@ deny メッセージには `jq` / `python3` が欠けていればその名前も\n   - jest プラグインを有効にすると、jest の correctness 10 規則が `warn` で入る。`require-to-throw-message` だけ `off` にした（既存の `toThrow()` 3 件があり、規約はメッセージを求めない）。残る 9 規則は導入時 0 件。そのうち `no-focused-tests` / `valid-title` は自動修正を持つため、`post-edit-lint.sh` の `oxlint --fix` が `test.only` を `test` に、前後に空白のあるテスト名を詰めた名前に黙って書き換える（実測）\n   - **override の glob は `*.{ts,tsx,mts,cts}` で書く。** oxlint は `.mts` / `.cts` も lint するが、`.ts` / `.tsx` だけを並べた glob ではそこで層の向きと effect の禁止が黙って外れていた（#1445 で広げた。`.tsx` だけを見る override と許可の override は変えていない）。tsconfig 側で `.mts` / `.cts` を外す案は採らなかった。`include` を絞っても import された `.mts` は型検査に入り（`tsc --listFilesOnly` で実測）、型検査を外すだけになるため。oxlint の外に残る `.mts` / `.cts` の穴は #1463\n   - 残る穴は判定表の `miss` の行が持つ（ここに写さない）。表に無い穴として、`test.extend` で作ったテストには、correctness の `expect-expect` / `no-disabled-tests` / `no-standalone-expect` が誤って `warn` を出す（実測。今の使用は 0 件で、`warn` は push を止めない）\n+- `.oxlintrc.json` のトップレベル `rules`（#1471）は `no-param-reassign`（`{ \"props\": true }`）と `prefer-const` を `error` で置き、`rules/coding.md`「イミュータブル」のうち引数自体および引数のプロパティ・要素への再代入と、再代入されない `let` を止める。導入時の違反 1 件（`src/libs/__tests__/element-measure.ts` の `stubBoundsEachMeasure`）は同ファイルの `stubLayoutSize` と同じ `Object.defineProperty` に揃えて 0 件にした\n+  - `prefer-const` は自動修正を持つため、`post-edit-lint.sh` の `oxlint --fix` が再代入されない `let`（分割代入の全員が再代入されない場合や `for-of` / `for-in` を含む）を `const` に書き換える。一方、初期値なしの `let x; x = 1;` と分割代入の一部だけ再代入する `let { a, b } = ...; b = 2;` は自動修正せず診断だけを出す（実測）\n+  - 残る穴は判定表 `.github/scripts/oxlint-config-cases.sh` の `miss` の行が持つ（ここに写さない）。配列・オブジェクトの破壊的メソッドや `domains/` 等での再代入を伴う `let` は #1476 で扱う\n - **feature 間の deep import・循環参照・モジュール内部への deep import**（#257 のゴール 1・2・6）は `lib/import-rule-violations.py` が検査する。oxlint に置かなかったのは 3 つとも**リポジトリ構造を読まないと判定できない**ためであり、`overrides.files` の静的 glob では書けない（#284 実測で同一 feature 内ドメイン間 import まで巻き込み 38 件の偽陽性。数値出典は #257 コメント）\n   - **判定根拠はスクリプトの docstring に記載している**（入れ子モジュール・`__tests__/` の扱い・feature だけ狭い理由）。二重管理を避けるためここには写さない。判定表は `lib/import-rule-cases.sh`\n   - **ゴール 6 の実効範囲は現状ほぼ fixture 専用。** 入れ子モジュールの index を許すため `module-public-api` に該当するのは「モジュールフォルダ配下の非 index ファイルを外から読む」形だけで、テスト・ストーリーを除いた該当ファイルは実測 4 件のみ（`index.ts` 直書き規約が守られているため）。**将来の退行を止める枠**としての位置づけ",
+          "patchLines": 10,
+          "truncated": false
+        },
+        {
+          "path": ".oxlintrc.json",
+          "status": "M",
+          "oldPath": null,
+          "additions": 3,
+          "deletions": 1,
+          "patch": "@@ -5,7 +5,9 @@\n   ],\n   \"rules\": {\n     \"curly\": [\"error\", \"all\"],\n-    \"max-depth\": [\"error\", { \"max\": 3 }]\n+    \"max-depth\": [\"error\", { \"max\": 3 }],\n+    \"no-param-reassign\": [\"error\", { \"props\": true }],\n+    \"prefer-const\": \"error\"\n   },\n   \"overrides\": [\n     {",
+          "patchLines": 11,
+          "truncated": false
+        },
+        {
+          "path": "src/libs/__tests__/element-measure.ts",
+          "status": "M",
+          "oldPath": null,
+          "additions": 7,
+          "deletions": 4,
+          "patch": "@@ -35,10 +35,13 @@ export function stubBoundsEachMeasure(\n   element: Element,\n   measure: () => MeasuredBounds,\n ): void {\n-  element.getBoundingClientRect = () => {\n-    const bounds = measure();\n-    return new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);\n-  };\n+  Object.defineProperty(element, \"getBoundingClientRect\", {\n+    configurable: true,\n+    value: () => {\n+      const bounds = measure();\n+      return new DOMRect(bounds.left, bounds.top, bounds.width, bounds.height);\n+    },\n+  });\n }\n \n /**",
+          "patchLines": 18,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": [
+    {
+      "from": ".claude/hooks/lib/named-path-cases.sh",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".claude/hooks/lib/named-path-violations.py",
+      "to": ".claude/hooks/README.md",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": ".claude/hooks/lib/cases-report.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": ".oxlintrc.json",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": "src/hooks/use-remeasure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/scripts/oxlint-config-cases.sh",
+      "to": "src/test-setup.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".github/workflows/frontend.yml",
+      "to": ".github/scripts/oxlint-config-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": ".github/scripts/storybook-visual-regression.mjs",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "rules/architecture.md",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "rules/hooks.md",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "rules/testing.md",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/canvas/components/canvas-toolbar/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/document-start/components/document-start/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/sidebar/components/artboard-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/sidebar/components/document-tree/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/sidebar/components/left-pane-rail/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/features/editor/features/tokens/components/token-list/index.tsx",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/hooks/use-remeasure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": ".oxlintrc.json",
+      "to": "src/hooks/use-subscription/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "harness/githooks/pre-push",
+      "to": ".github/scripts/oxlint-config-cases.sh",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.multi-selection.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize-rotation.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.resize.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.selection-distance.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/opened-document-editor.zoom-fit.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/components/opened-document-editor/__tests__/setup.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/__tests__/canvas-measure.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/artboard-canvas.resize-rotation.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/components/artboard-canvas/__tests__/snap-artboards.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-canvas-view/__tests__/use-canvas-view.fit.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-drawn-bounds/__tests__/use-drawn-bounds.normal.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-node-resize/__tests__/use-node-resize.normal.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/hooks/use-selection-distances/__tests__/use-selection-distances.normal.test.tsx",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.edge.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/features/editor/features/canvas/utils/__tests__/DrawnBounds.normal.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/__tests__/element-measure.ts",
+      "to": "src/domains/compiled/compiled-element/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/__tests__/element-measure.ts",
+      "to": "src/libs/element-measure/index.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/element-measure/__tests__/element-measure.bounds.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    },
+    {
+      "from": "src/libs/element-measure/__tests__/element-measure.untransformed-size.test.ts",
+      "to": "src/libs/__tests__/element-measure.ts",
+      "status": "kept"
+    }
+  ]
+}
