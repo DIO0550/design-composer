@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1498,
+      "title": "✨ [New Feature]: #1486 Storybook の操作と撮影を一度で検証する"
+    },
+    {
       "pr": 1497,
       "title": "📝 [Doc]: #1495 マージ後のハーネス評価を記録する"
     },
