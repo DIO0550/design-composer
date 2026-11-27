@@ -270,19 +270,23 @@ function inspectElement(selector, action) {
     element.select();
   }
   const rect = element.getBoundingClientRect();
-  const x = rect.x + rect.width / 2;
-  const y = rect.y + rect.height / 2;
+  const left = Math.max(rect.left, 0);
+  const top = Math.max(rect.top, 0);
+  const right = Math.min(rect.right, window.innerWidth);
+  const bottom = Math.min(rect.bottom, window.innerHeight);
+  const intersectsViewport = left < right && top < bottom;
+  const x = (left + right) / 2;
+  const y = (top + bottom) / 2;
   if (action === "point") {
     const isDisabled = element.matches(":disabled") || element.closest('[aria-disabled="true"]') !== null;
     if (isDisabled) {
       return { kind: "disabled" };
     }
-    if (!element.contains(document.elementFromPoint(x, y))) {
+    const hitsElement = intersectsViewport && element.contains(document.elementFromPoint(x, y));
+    if (!hitsElement) {
       return { kind: "not-hittable" };
     }
   }
-  const intersectsViewport = rect.width > 0 && rect.height > 0
-    && rect.right > 0 && rect.bottom > 0 && rect.left < window.innerWidth && rect.top < window.innerHeight;
   const isOutsideViewport = action === "visibility" && !intersectsViewport;
   if (isOutsideViewport) {
     return { kind: "outside-viewport" };
