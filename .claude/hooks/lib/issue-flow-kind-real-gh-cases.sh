@@ -78,6 +78,9 @@ def repository_id(owner, name):
 
 
 def graphql(query, variables):
+    # localhost は gh から Enterprise として扱われる。作成前の機能照会には追加の依存関係機能なしと答える。
+    if "Issue_fields" in query:
+        return {"Issue": {"fields": []}}
     if "createIssue" in query:
         requests.append(("graphql", variables.get("input", {})))
         return {"createIssue": {"issue": {"id": "I1", "url": "https://localhost/i/1", "number": 1}}}
@@ -195,12 +198,16 @@ def missing_sections(body):
     return f"共通節（{', '.join(missing)}）が無い" if missing else None
 
 
-def replay(command):
+def run_command(command, stderr):
     requests.clear()
+    return subprocess.run(["bash", "-c", command], cwd=work, env=gh_env, stdin=subprocess.DEVNULL,
+                          stdout=subprocess.DEVNULL, stderr=stderr, text=True, timeout=5)
+
+
+def replay(command):
     # 終わらない本文(`--body-file /dev/zero`)は gh が読み終えず、作成を送らないまま止まる。
     try:
-        subprocess.run(["bash", "-c", command], cwd=work, env=gh_env, stdin=subprocess.DEVNULL,
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, timeout=5)
+        run_command(command, subprocess.DEVNULL)
     except subprocess.TimeoutExpired:
         pass
     reasons = [reason for labels, body in own_creations() if (reason := unmet(labels, body))]
@@ -235,14 +242,20 @@ for line in sys.stdin:
 
 def wire_canary_failure(route, command):
     # 通常のリプレイは、作成しない操作も含む。既知の作成だけは、正しい本文が実際に届かなければ失敗にする。
-    reason = replay(command)
+    try:
+        result = run_command(command, subprocess.PIPE)
+    except subprocess.TimeoutExpired:
+        return "gh が 5 秒以内に終了しなかった"
+    if result.returncode:
+        details = " ".join(result.stderr.splitlines()).strip()[-320:]
+        return f"gh が exit {result.returncode} で終了（{details or '標準エラーなし'}）"
     received_routes = [request[0] for request in requests]
     if received_routes != [route]:
         return f"{route} の作成 1 件を期待したが、受信した経路は {received_routes}"
     expected_creation = (["flow:feature"], expand("@S"))
     if list(own_creations()) != [expected_creation]:
         return "ラベルと本文が揃った自リポジトリへの作成を受信していない"
-    return reason
+    return unmet(*expected_creation)
 
 
 wire_canaries = (
