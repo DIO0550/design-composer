@@ -51,7 +51,8 @@ export async function runSteps(steps, driver) {
       screenshots.push({ path: capture.value, description });
       continue;
     }
-    if (step.kind === "expect-text" || step.kind === "expect-visible") {
+    const isExpectation = step.kind === "expect-text" || step.kind === "expect-visible";
+    if (isExpectation) {
       const expected = step.kind === "expect-visible" ? true : step.expected;
       const observation = await driver.observe(step);
       if (!Result.isOk(observation)) {
@@ -92,8 +93,9 @@ function parseArguments(args) {
   for (let index = 0; index < args.length; index += 2) {
     const key = args[index];
     const value = args[index + 1];
-    if (!["--story", "--title", "--name", "--steps", "--storybook-dir", "--out"].includes(key)
-      || options.has(key) || !nonempty(value) || value.startsWith("--")) {
+    const isValidOption = ["--story", "--title", "--name", "--steps", "--storybook-dir", "--out"].includes(key)
+      && !options.has(key) && nonempty(value) && !value.startsWith("--");
+    if (!isValidOption) {
       return invalidInput(`不正な引数: ${key}`);
     }
     options.set(key, value);
@@ -101,7 +103,8 @@ function parseArguments(args) {
   const id = options.get("--story");
   const title = options.get("--title");
   const name = options.get("--name");
-  if (id ? title || name : !title || !name) {
+  const hasValidStorySelector = id ? !title && !name : Boolean(title) && Boolean(name);
+  if (!hasValidStorySelector) {
     return invalidInput("--story または --title と --name を指定してください");
   }
   return Result.ok({ selector: id ? { id } : { title, name }, options });
@@ -127,7 +130,9 @@ function validateSteps(steps) {
   }
   const captures = new Set();
   for (const [index, step] of steps.entries()) {
-    if (typeof step?.kind !== "string" || !Object.hasOwn(StepValidators, step.kind) || !StepValidators[step.kind](step)) {
+    const isValidStep = typeof step?.kind === "string"
+      && Object.hasOwn(StepValidators, step.kind) && StepValidators[step.kind](step);
+    if (!isValidStep) {
       return invalidInput(`手順 ${index + 1} に未対応の操作か不正な引数があります`);
     }
     if (step.kind !== "capture") {
@@ -155,7 +160,8 @@ async function waitForDebugOrigin(profile, browserExited) {
       return Promise.reject(error);
     });
     const port = Number(portText.match(/^(\d+)\r?\n/)?.[1]);
-    if (Number.isInteger(port) && port > 0 && port <= 65535) {
+    const isValidPort = Number.isInteger(port) && port > 0 && port <= 65535;
+    if (isValidPort) {
       return Result.ok(`http://127.0.0.1:${port}`);
     }
     await sleep(50);
@@ -169,7 +175,7 @@ async function withChrome(verify) {
   const profile = await mkdtemp(join(tmpdir(), "verify-storybook-chrome-"));
   try {
     const chrome = spawn(binary, [
-      "--headless=new", "--disable-gpu", "--no-sandbox", "--remote-debugging-port=0",
+      "--headless=new", "--disable-gpu", "--remote-debugging-port=0",
       `--user-data-dir=${profile}`, "about:blank",
     ], { stdio: ["ignore", "ignore", "pipe"] });
     let stderr = "";
@@ -210,13 +216,17 @@ async function withChrome(verify) {
 
 function renderState(id) {
   const body = document.body;
-  if (body?.classList.contains("sb-show-errordisplay") || body?.classList.contains("sb-show-nopreview")) {
+  const showsRenderError = body?.classList.contains("sb-show-errordisplay")
+    || body?.classList.contains("sb-show-nopreview");
+  if (showsRenderError) {
     return { kind: "render-error", message: document.querySelector("#error-message")?.textContent?.trim() || document.title };
   }
   const render = globalThis.__STORYBOOK_PREVIEW__?.currentRender;
   const root = document.querySelector("#storybook-root");
-  if (body?.classList.contains("sb-show-main") && root && !root.hidden
-    && render?.id === id && render.phase === "finished") {
+  // Storybook は sb-show-main を描画前にも付けるため、選択した story の完了まで待つ。
+  const isSelectedStoryReady = body?.classList.contains("sb-show-main") && root && !root.hidden
+    && render?.id === id && render.phase === "finished";
+  if (isSelectedStoryReady) {
     return { kind: "ready" };
   }
   return { kind: "pending" };
@@ -246,23 +256,42 @@ function inspectElement(selector, action) {
   if (!element?.checkVisibility({ opacityProperty: true, visibilityProperty: true })) {
     return { kind: "hidden" };
   }
-  if (action === "point" || action === "fill") {
+  const shouldScrollIntoView = action === "point" || action === "fill";
+  if (shouldScrollIntoView) {
     element.scrollIntoView({ block: "nearest", inline: "nearest" });
   }
   if (action === "fill") {
-    if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement)
-      || element.disabled || element.readOnly) {
+    const isTextInput = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement;
+    const isEditable = isTextInput && !element.disabled && !element.readOnly;
+    if (!isEditable) {
       return { kind: "not-editable" };
     }
     element.focus();
     element.select();
   }
   const rect = element.getBoundingClientRect();
+  const x = rect.x + rect.width / 2;
+  const y = rect.y + rect.height / 2;
+  if (action === "point") {
+    const isDisabled = element.matches(":disabled") || element.closest('[aria-disabled="true"]') !== null;
+    if (isDisabled) {
+      return { kind: "disabled" };
+    }
+    if (!element.contains(document.elementFromPoint(x, y))) {
+      return { kind: "not-hittable" };
+    }
+  }
+  const intersectsViewport = rect.width > 0 && rect.height > 0
+    && rect.right > 0 && rect.bottom > 0 && rect.left < window.innerWidth && rect.top < window.innerHeight;
+  const isOutsideViewport = action === "visibility" && !intersectsViewport;
+  if (isOutsideViewport) {
+    return { kind: "outside-viewport" };
+  }
   return {
     kind: "visible",
     text: (element.innerText ?? element.textContent ?? "").trim(),
-    x: rect.x + rect.width / 2,
-    y: rect.y + rect.height / 2,
+    x,
+    y,
   };
 }
 
@@ -290,7 +319,8 @@ function createBrowserDriver(cdp, out) {
     await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", ...Keys[key] });
   };
   const pointFor = async (step) => {
-    if (step.selector && ["click", "double-click", "pointer-down"].includes(step.kind)) {
+    const usesSelector = step.selector && ["click", "double-click", "pointer-down"].includes(step.kind);
+    if (usesSelector) {
       const element = await elementState(step.selector, "point");
       if (element.kind !== "visible") {
         return Result.err(`要素を一意に操作できません: ${step.selector} (${element.kind})`);
@@ -319,10 +349,12 @@ function createBrowserDriver(cdp, out) {
       }
       return Result.ok(undefined);
     }
-    if (step.kind === "pointer-up" && !pointer.pressed) {
+    const releasesWithoutPress = step.kind === "pointer-up" && !pointer.pressed;
+    if (releasesWithoutPress) {
       return Result.err("押下していないポインターは解放できません");
     }
-    if (pointer.pressed && step.kind !== "pointer-move" && step.kind !== "pointer-up") {
+    const interruptsPointerPress = pointer.pressed && step.kind !== "pointer-move" && step.kind !== "pointer-up";
+    if (interruptsPointerPress) {
       return Result.err("ポインターを押したまま別のクリックはできません");
     }
     const position = await pointFor(step);
@@ -356,14 +388,15 @@ function createBrowserDriver(cdp, out) {
   };
   const observe = async (step) => {
     const deadline = Date.now() + ObservationTimeoutMs;
-    const expected = step.kind === "expect-text" ? step.expected : true;
+    const checksVisibility = step.kind === "expect-visible";
+    const expected = checksVisibility ? true : step.expected;
     let observed;
     do {
-      const element = await elementState(step.selector, "observe");
+      const element = await elementState(step.selector, checksVisibility ? "visibility" : "read-text");
       if (element.kind === "ambiguous") {
         return Result.err(`${step.selector} に ${element.count} 要素が一致しました`);
       }
-      observed = step.kind === "expect-visible" ? element.kind === "visible" : element.text ?? null;
+      observed = checksVisibility ? element.kind === "visible" : element.text ?? null;
       if (observed === expected) {
         break;
       }
@@ -383,7 +416,9 @@ async function verifyInBrowser({ origin, story, steps, out }, debuggerOrigin) {
   const target = await requestJson(`${debuggerOrigin}/json/new?about:blank`, { method: "PUT", signal: AbortSignal.timeout(5000) });
   const webSocket = new URL(target.webSocketDebuggerUrl);
   const debuggerPort = new URL(debuggerOrigin).port;
-  if (webSocket.protocol !== "ws:" || webSocket.hostname !== "127.0.0.1" || webSocket.port !== debuggerPort) {
+  const isOwnDebugEndpoint = webSocket.protocol === "ws:"
+    && webSocket.hostname === "127.0.0.1" && webSocket.port === debuggerPort;
+  if (!isOwnDebugEndpoint) {
     return Result.err({ kind: "browser-start", message: "起動した Chrome とは異なる接続先が返りました" });
   }
   const cdp = await openCdp(webSocket);
@@ -452,7 +487,8 @@ async function verifyStory(config, steps, out) {
 }
 
 async function main(args) {
-  if (args.length === 1 && args[0] === "--help") {
+  const requestsHelp = args.length === 1 && args[0] === "--help";
+  if (requestsHelp) {
     console.log(Usage);
     return 0;
   }
@@ -488,7 +524,8 @@ async function main(args) {
   }
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) {
+const isScriptEntry = process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
+if (isScriptEntry) {
   process.exitCode = await main(process.argv.slice(2)).catch((error) => {
     console.error(errorMessage(error));
     return 1;

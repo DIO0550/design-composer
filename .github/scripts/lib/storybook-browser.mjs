@@ -24,14 +24,17 @@ export async function serveStatic(root) {
       const target = await realpath(resolve(rootPath, decoded === "/" ? "index.html" : `.${decoded}`));
       const fromRoot = relative(rootPath, target);
       // ディレクトリ名の共通接頭辞や、外へ向くシンボリックリンクは配信の境界にしない。
-      if (fromRoot === ".." || fromRoot.startsWith(`..${sep}`) || isAbsolute(fromRoot) || !(await stat(target)).isFile()) {
+      const escapesRoot = fromRoot === ".." || fromRoot.startsWith(`..${sep}`) || isAbsolute(fromRoot);
+      const isServedAsset = !escapesRoot && (await stat(target)).isFile();
+      if (!isServedAsset) {
         response.writeHead(404).end("not found");
         return;
       }
       const contents = await readFile(target);
       response.writeHead(200, { "content-type": ContentTypes[extname(target)] ?? "application/octet-stream" }).end(contents);
     } catch (error) {
-      if (error instanceof URIError || error.code === "ENOENT" || error.code === "ENOTDIR") {
+      const hasNoMatchingAsset = error instanceof URIError || error.code === "ENOENT" || error.code === "ENOTDIR";
+      if (hasNoMatchingAsset) {
         response.writeHead(404).end("not found");
         return;
       }

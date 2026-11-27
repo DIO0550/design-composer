@@ -400,6 +400,11 @@ deny メッセージには `jq` / `python3` が欠けていればその名前も
 ## 動作確認
 
 ```bash
+# Storybook の検証 CLI の判定表。pre-push と CI も走らせる
+node .github/scripts/verify-storybook-cases.mjs
+```
+
+```bash
 # 拒否されること(deny が出力される)
 echo '{"tool_input":{"command":"npx create-vite"}}' | bash .claude/hooks/block-npx.sh
 
