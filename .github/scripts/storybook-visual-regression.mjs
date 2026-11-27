@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import { createServer } from "node:http";
-import { spawn, spawnSync } from "node:child_process";
+import { spawn } from "node:child_process";
 import { appendFileSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, extname, join } from "node:path";
 import { ODiffServer } from "odiff-bin";
+import { captureScreenshot, evaluateInPage, findChrome, openCdp, requestJson, serveStatic } from "./lib/storybook-browser.mjs";
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -33,106 +33,12 @@ const listFiles = (dir) => {
   });
 };
 
-const contentType = (path) => {
-  const map = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".json": "application/json", ".png": "image/png", ".svg": "image/svg+xml", ".ico": "image/x-icon" };
-  return map[extname(path)] ?? "application/octet-stream";
-};
-
-const serveStatic = async (root) => {
-  const server = createServer((request, response) => {
-    const url = new URL(request.url ?? "/", "http://127.0.0.1");
-    const decoded = decodeURIComponent(url.pathname);
-    const target = join(root, decoded === "/" ? "index.html" : decoded);
-    if (!target.startsWith(root) || !existsSync(target) || statSync(target).isDirectory()) {
-      response.writeHead(404);
-      response.end("not found");
-      return;
-    }
-    response.writeHead(200, { "content-type": contentType(target) });
-    response.end(readFileSync(target));
-  });
-  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve));
-  const address = server.address();
-  if (!address || typeof address === "string") {
-    throw new Error("Failed to start static server");
-  }
-  return { server, origin: `http://127.0.0.1:${address.port}` };
-};
-
-const requestJson = async (url, options) => {
-  const response = await fetch(url, options);
-  if (!response.ok) {
-    throw new Error(`${options?.method ?? "GET"} ${url} failed: ${response.status}`);
-  }
-  return response.json();
-};
-
 const requestOk = async (url, options) => {
   const response = await fetch(url, options);
   if (!response.ok) {
     throw new Error(`${options?.method ?? "GET"} ${url} failed: ${response.status}`);
   }
   await response.arrayBuffer();
-};
-
-const findChrome = () => {
-  const candidates = [process.env.CHROME_BIN, "google-chrome", "google-chrome-stable", "chromium", "chromium-browser"].filter(Boolean);
-  const found = candidates.find((candidate) => spawnSync(candidate, ["--version"], { stdio: "ignore" }).status === 0);
-  if (!found) {
-    throw new Error("Chrome is required. Install Google Chrome/Chromium or set CHROME_BIN.");
-  }
-  return found;
-};
-
-const openCdp = async (wsUrl) => {
-  const socket = new WebSocket(wsUrl);
-  await new Promise((resolve, reject) => {
-    socket.addEventListener("open", resolve, { once: true });
-    socket.addEventListener("error", reject, { once: true });
-  });
-  let id = 0;
-  const pending = new Map();
-  socket.addEventListener("message", (event) => {
-    const message = JSON.parse(event.data.toString());
-    if (!message.id) {
-      return;
-    }
-    const callbacks = pending.get(message.id);
-    if (!callbacks) {
-      return;
-    }
-    pending.delete(message.id);
-    if (message.error) {
-      callbacks.reject(new Error(message.error.message));
-    } else {
-      callbacks.resolve(message.result ?? {});
-    }
-  });
-  const send = (method, params = {}) => new Promise((resolve, reject) => {
-    const messageId = ++id;
-    pending.set(messageId, { resolve, reject });
-    socket.send(JSON.stringify({ id: messageId, method, params }));
-  });
-  return { send, close: () => socket.close() };
-};
-
-/**
- * ページ内で関数を評価し、その戻り値を受け取る。
- *
- * @param cdp 対象ページへ開いた CDP 接続
- * @param probe ページ内で実行する関数。ページの外の変数は参照できない(文字列化して送るため)
- * @returns probe の戻り値
- * @throws 評価中に例外が出たとき(probe の名前を添える)
- */
-const evaluateInPage = async (cdp, probe) => {
-  const { result, exceptionDetails } = await cdp.send("Runtime.evaluate", {
-    expression: `(${probe.toString()})()`,
-    returnByValue: true,
-  });
-  if (exceptionDetails) {
-    throw new Error(`${probe.name} failed to evaluate: ${exceptionDetails.text ?? "unknown error"}`);
-  }
-  return result.value;
 };
 
 // ページ内で評価して、日本語グリフが notdef(豆腐)へフォールバックしていないか調べる。
@@ -256,13 +162,13 @@ const capture = async (options) => {
       await sleep(settleMs);
       // 固定待ちのままだと非同期描画が終わる前に撮れてしまい、loading 表示が
       // baseline に焼き付く。同じフレームが 2 回続くまで待ってから採用する。
-      const settledShot = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+      const settledShot = await captureScreenshot(cdp);
       let screenshot = settledShot;
       let stable = false;
       const deadline = Date.now() + stableTimeoutMs;
       while (Date.now() < deadline) {
         await sleep(stablePollMs);
-        const next = await cdp.send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
+        const next = await captureScreenshot(cdp);
         if (next.data === screenshot.data) {
           stable = true;
           break;
