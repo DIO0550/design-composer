@@ -1,7 +1,7 @@
 {
   "version": 1,
   "pr": 1501,
-  "sha": "90a3c13aacbd22393ba9db9c2def6d5cd2845885",
+  "sha": "a14abed76ed064cece041b26c52279cf07ce983f",
   "issue": 1479,
   "overview": {
     "title": "共通の節をそろえてから Issue を作る",
@@ -365,6 +365,21 @@
       "phase": "revise",
       "role": "レビュー対象の条件を明確にする。",
       "why": "境界の振る舞いを読み違えないようにする。"
+    },
+    {
+      "sha": "a14abed76ed064cece041b26c52279cf07ce983f",
+      "phase": "hard",
+      "role": "新しい実物のコマンドが先に行う機能照会に応答する。",
+      "why": "CI の版では照会の応答がないと作成そのものを送らない。正常系は実際に送ったことまで確かめたい。",
+      "featureRanges": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-real-gh-cases.sh",
+          "start": 82,
+          "end": 82,
+          "feature": "create-body",
+          "text": "テスト用のサーバーが Issue の機能照会に答える。"
+        }
+      ]
     }
   ]
 }
