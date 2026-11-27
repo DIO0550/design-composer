@@ -85,6 +85,47 @@ function storyErrorKind(result) {
   return result.error.kind;
 }
 
+const VisibilityExpectation = {
+  kind: "expect-visible",
+  selector: "[data-name=title]",
+  description: "題名が画面に見える",
+};
+
+/** 失敗の理由と撮影済み画像が残り、後続の操作が呼ばれないか比較する。 */
+function failedStepCase({ label, step, method, driverResult, expected, observed }) {
+  const argument = method === "capture" ? step.name : step;
+  const recordedCall = method === "capture" ? { kind: "capture", name: step.name } : step;
+  return {
+    label,
+    expected: {
+      calls: [{ kind: "capture", name: BeforeCapture.name }, recordedCall],
+      result: {
+        kind: "err",
+        error: {
+          kind: "step-failed",
+          step: 2,
+          description: step.description ?? step.kind,
+          expected,
+          observed,
+          screenshots: [{ path: "proof/before.png", description: BeforeCapture.description }],
+          checks: [],
+        },
+      },
+    },
+    async measure() {
+      const { calls, driver } = createRecordingDriver("操作前の題名");
+      const result = await runSteps([BeforeCapture, step, LateClick], {
+        ...driver,
+        async [method](input) {
+          const recorded = await driver[method](input);
+          return input === argument ? driverResult : recorded;
+        },
+      });
+      return { calls, result: readableResult(result) };
+    },
+  };
+}
+
 const StorybookVerificationCases = [
   {
     label: "完全 ID は該当する story を選ぶ",
@@ -157,6 +198,38 @@ const StorybookVerificationCases = [
       return { calls, result: readableResult(result) };
     },
   },
+  failedStepCase({
+    label: "表示されなかった観測値を残して止まる",
+    step: VisibilityExpectation,
+    method: "observe",
+    driverResult: Result.ok(false),
+    expected: true,
+    observed: false,
+  }),
+  failedStepCase({
+    label: "操作に失敗した理由と撮影済み画像を残して止まる",
+    step: PointerDown,
+    method: "perform",
+    driverResult: Result.err("ポインターを押せなかった"),
+    expected: "操作が成功する",
+    observed: "ポインターを押せなかった",
+  }),
+  failedStepCase({
+    label: "撮影に失敗した理由と撮影済み画像を残して止まる",
+    step: HeldCapture,
+    method: "capture",
+    driverResult: Result.err("画像を保存できなかった"),
+    expected: "PNG を保存できる",
+    observed: "画像を保存できなかった",
+  }),
+  failedStepCase({
+    label: "観測に失敗した理由と撮影済み画像を残して止まる",
+    step: TextExpectation,
+    method: "observe",
+    driverResult: Result.err("題名を読めなかった"),
+    expected: TextExpectation.expected,
+    observed: "題名を読めなかった",
+  }),
 ];
 
 const results = await Promise.all(StorybookVerificationCases.map(async ({ label, expected, measure }) => {
