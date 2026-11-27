@@ -1,0 +1,233 @@
+{
+  "version": 1,
+  "issue": 1486,
+  "overview": {
+    "title": "Storybook で操作と撮影を一度で再現する",
+    "lead": "静的にビルドした編集画面を実ブラウザで操作し、途中の画像と期待の観測値をそのまま残す。",
+    "before": [
+      {
+        "text": "対象のストーリーを探し、ブラウザを開いて操作と撮影を個別に行っていた。"
+      }
+    ],
+    "after": [
+      {
+        "text": "対象と操作を一度渡すと、追加、編集、ドラッグ途中の撮影を同じ実行で再現できる。"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "途中の証拠",
+        "text": "マウスを押したままの状態で撮れ、期待が外れたときも既に得た画像が残る。",
+        "go": {
+          "kind": "feature",
+          "id": "evidence"
+        }
+      }
+    ]
+  },
+  "features": [
+    {
+      "id": "start",
+      "label": "画面を開く",
+      "role": "指定画面の実描画まで待ってから操作を開始する。"
+    },
+    {
+      "id": "evidence",
+      "label": "操作と証拠",
+      "role": "順番どおりに操作し、撮影の説明と期待・観測の値を記録する。"
+    },
+    {
+      "id": "rules",
+      "label": "表示確認の導線",
+      "role": "常時ロードの記述を短くし、編集画面の検証を再現できる一つの手順につなぐ。"
+    }
+  ],
+  "calls": {
+    "gist": "起動・描画・動作・出力の順序を一つの呼び出しにする。",
+    "boxes": [
+      {
+        "id": "main",
+        "name": "main",
+        "role": "入力を確認し、結果を書き出す",
+        "module": ".github/scripts/verify-storybook.mjs",
+        "status": "added",
+        "now": "入力を確認し、結果を書き出す"
+      },
+      {
+        "id": "static",
+        "name": "serveStatic",
+        "role": "ビルド済みの静的ファイルをローカルに配信する",
+        "module": ".github/scripts/lib/storybook-browser.mjs",
+        "status": "added",
+        "now": "ビルド済みの静的ファイルをローカルに配信する"
+      },
+      {
+        "id": "ready",
+        "name": "waitForStory",
+        "role": "指定した画面が描画を終えるまで待つ",
+        "module": ".github/scripts/verify-storybook.mjs",
+        "status": "added",
+        "now": "指定した画面が描画を終えるまで待つ"
+      },
+      {
+        "id": "run",
+        "name": "runSteps",
+        "role": "操作、撮影、期待の照合を順に実行する",
+        "module": ".github/scripts/verify-storybook.mjs",
+        "status": "added",
+        "now": "操作、撮影、期待の照合を順に実行する"
+      }
+    ],
+    "edges": [
+      {
+        "id": "main-static",
+        "from": "main",
+        "to": "static",
+        "code": "verifyStory → serveStatic",
+        "now": "ビルドがあれば再利用し、配信を開始する",
+        "status": "added"
+      },
+      {
+        "id": "main-ready",
+        "from": "main",
+        "to": "ready",
+        "code": "verifyInBrowser → waitForStory",
+        "now": "選んだ画面が準備できるまで操作しない",
+        "status": "added"
+      },
+      {
+        "id": "ready-run",
+        "from": "ready",
+        "to": "run",
+        "code": "verifyInBrowser: waitForStory → runSteps",
+        "now": "描画が成功した実行だけを操作へ渡す",
+        "status": "added"
+      }
+    ]
+  },
+  "impact": {
+    "title": "同じ画面操作を別の人が再現できる",
+    "lead": "編集画面の確認では、操作と期待を指定すれば撮影と結果の記録まで一度で実行できます。",
+    "changed": {
+      "before": [
+        {
+          "text": "編集画面の起動、操作、途中の撮影を毎回個別に組み立てていた。"
+        }
+      ],
+      "after": [
+        {
+          "text": "押したままの動きも含め、同じ手順を繰り返せる。期待から外れたら残りの操作を止め、撮影済みの画像と観測値を残す。"
+        }
+      ]
+    },
+    "kept": [
+      {
+        "text": "既存の画像差分チェックやデスクトップ実アプリの確認は別の役割のまま。"
+      }
+    ]
+  },
+  "suites": [
+    {
+      "id": "case-table",
+      "label": "検証手順の判定表",
+      "file": ".github/scripts/verify-storybook-cases.mjs"
+    }
+  ],
+  "tests": [
+    {
+      "id": "failed-check",
+      "suite": "case-table",
+      "name": "期待不一致で止まり、手順・観測値・撮影済み画像を保つ",
+      "techniques": [
+        "error",
+        "state"
+      ],
+      "why": "失敗した実行でも、その時点の証拠がレビューできるようにする。",
+      "given": "先に画像を撮影し、次の観測で異なる値が得られる。",
+      "when": "同じ手順で期待の値を指定する。",
+      "then": "観測された値と先の画像が残り、後続の操作は実行されない。"
+    }
+  ],
+  "quiz": [
+    {
+      "kind": "yesno",
+      "id": "drag",
+      "title": "ドラッグ途中の撮影",
+      "prompt": "マウスを離した後のスクリーンショットだけで、押したままの表示を確認できる。",
+      "holds": false,
+      "why": "解放後の表示と、保持中に見える位置や重なりは一致するとは限らない。手順の途中に撮影を入れて確認する。",
+      "go": [
+        {
+          "kind": "feature",
+          "id": "evidence"
+        }
+      ]
+    }
+  ],
+  "pr": 1498,
+  "sha": "08e023469303686ee05336474a61df02fec8710d",
+  "commitStories": [
+    {
+      "sha": "e102e7c538c5222b00797dbd32246f1bda6d844d",
+      "phase": "prep",
+      "role": "story の選び方と失敗時の記録を先に固定する",
+      "why": "実装と独立に期待する振る舞いを固め、骨組みでは判定表が意図どおり失敗することを確認した。",
+      "featureRanges": [
+        {
+          "path": ".github/scripts/verify-storybook-cases.mjs",
+          "start": 1,
+          "end": 1,
+          "feature": "evidence",
+          "text": "story の選び方と失敗時の記録を先に固定する"
+        }
+      ]
+    },
+    {
+      "sha": "52d8962c82b3f0f72e002439b33603878a88b36c",
+      "phase": "core",
+      "role": "実際の編集画面を開き、操作と途中撮影を行う",
+      "why": "静的なビルドに対して描画完了を待つことで、開発サーバーの起動に依存せず同じ手順を実行できる。",
+      "featureRanges": [
+        {
+          "path": ".github/scripts/verify-storybook.mjs",
+          "start": 1,
+          "end": 1,
+          "feature": "start",
+          "text": "実際の編集画面を開き、操作と途中撮影を行う"
+        }
+      ]
+    },
+    {
+      "sha": "be74968f4628a9a0a94181c76c4c80a48fd6924c",
+      "phase": "revise",
+      "role": "セレクターの押下先と画面内の可視性を確認する",
+      "why": "別の要素へ届く操作や画面外の表示を検証成功として扱わない。"
+    },
+    {
+      "sha": "f4d4da51c1746af456415d47134780e6a15a0dd5",
+      "phase": "revise",
+      "role": "画面端で一部だけ見えている要素を押せるようにする",
+      "why": "要素全体の中心が画面外でも、見えている範囲で実際に届く地点を検査できる。"
+    },
+    {
+      "sha": "08e023469303686ee05336474a61df02fec8710d",
+      "phase": "fin",
+      "role": "失敗ごとの判定表を補強する",
+      "why": "可視性の不一致と3種類の操作先の失敗を、個別の変異として検知できるようにした。"
+    }
+  ],
+  "concepts": [
+    {
+      "path": ".github/scripts/verify-storybook.mjs",
+      "name": "検証コマンド",
+      "role": "対象を選び、ブラウザ操作と記録をまとめる",
+      "feature": "evidence"
+    },
+    {
+      "path": ".github/scripts/lib/storybook-browser.mjs",
+      "name": "配信と撮影の共通部",
+      "role": "静的な画面を配信し、Chrome と撮影処理を扱う",
+      "feature": "start"
+    }
+  ]
+}
