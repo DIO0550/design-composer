@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1497,
+      "title": "📝 [Doc]: #1495 マージ後のハーネス評価を記録する"
+    },
+    {
       "pr": 1496,
       "title": "✨ [New Feature]: #1471 oxlint で no-param-reassign と prefer-const を有効化"
     },
