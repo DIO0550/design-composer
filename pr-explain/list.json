@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1503,
+      "title": "📝 [Doc]: #1502 判定が代わりの条件を見ていた形を判例へ（harness-growth）"
+    },
+    {
       "pr": 1501,
       "title": "✨ [New Feature]: #1479 種類別の Issue フォームと作成時の本文検査を揃える"
     },
