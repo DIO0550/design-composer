@@ -52,6 +52,7 @@ import os
 import re
 import shlex
 import sys
+from collections.abc import Iterator
 from typing import NamedTuple
 
 KINDS = ("issue-flow-kind-missing", "issue-flow-kind-multiple", "issue-flow-kind-unreadable", "issue-flow-kind-sections")
@@ -61,8 +62,14 @@ MISSING, MULTIPLE, UNREADABLE, SECTIONS = KINDS
 PROPOSAL_TEMPLATE = "種類の提案: flow:{kind}（{reason}）"
 OPT_OUT_TEMPLATE = "種類: implementation-flow に通さない（{reason}）"
 REQUIRED_SECTIONS = ("ゴール", "完了の確かめ方", "拠り所", "決めてよい範囲")
-SECTION_HEADING_PREFIX = re.compile(r" {0,3}(#{1,2})(?=[ \t]|$)")
+ATX_HEADING_PREFIX = re.compile(r" {0,3}(#{1,6})(?=[ \t]|$)")
 CODE_FENCE = re.compile(r" {0,3}(`{3,}|~{3,})(.*)")
+MARKDOWN_BLOCK_START = re.compile(
+    r" {0,3}(?:<!--|(?:=+|-+)[ \t]*$"
+    r"|(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$)"
+)
+BLOCK_QUOTE_PREFIX = re.compile(r"(?: {0,3}>[ \t]?)+")
+LIST_ITEM_PREFIX = re.compile(r" {0,3}([-+*]|[0-9]{1,9}[.)])[ \t]+")
 MARKDOWN_INLINE_MARKER = re.compile(r"<!--|-->|`+|\\+")
 
 # 字面のままでは確定できない位置（展開と、ダブルクォートの中のバックスラッシュ）に置く印と、切り出した本文の
@@ -830,12 +837,75 @@ def stdin_body(segment: Segment, flag: str) -> str | Unreadable:
     return segment.stdin
 
 
+def opening_fence_marker(line: str) -> str:
+    """行がコードフェンスを開くなら、その区切り記号を返す。
+
+    @param line Markdown の 1 行
+    @returns 開くフェンスの記号（開かないなら空文字列）
+    """
+    match = CODE_FENCE.fullmatch(line)
+    if not match:
+        return ""
+    marker, info = match.groups()
+    allowed_info = marker.startswith("~") or "`" not in info
+    return marker if allowed_info else ""
+
+
+def is_section_inline_boundary(line: str) -> bool:
+    """見出し・フェンスなど、前の段落とインラインコードを共有しない行か。
+
+    @param line 引用・リストの接頭辞を除いた 1 行
+    @returns 単独で残す境界行なら True
+    """
+    return bool(ATX_HEADING_PREFIX.match(line) or MARKDOWN_BLOCK_START.match(line) or opening_fence_marker(line))
+
+
+def section_inline_blocks(body: str) -> Iterator[str]:
+    """同じ段落の継続行だけを、リスト項目や引用も含めてまとめる。
+
+    @param body 作成に送る Markdown
+    @returns バッククォート列を対応付ける範囲。節の検出に使う接頭辞は残す。
+    """
+    paragraph: list[str] = []
+    paragraph_quote_depth = 0
+    paragraph_is_list_item = False
+    for raw_line in body.split("\n"):
+        line = raw_line.removesuffix("\r")
+        quote = BLOCK_QUOTE_PREFIX.match(line)
+        quote_depth = quote[0].count(">") if quote else 0
+        content = line[quote.end():] if quote else line
+        starts_quote = quote_depth != 0 and quote_depth != paragraph_quote_depth
+        starts_block = is_section_inline_boundary(content)
+        item = None if starts_block else LIST_ITEM_PREFIX.match(content)
+        # 通常段落を割り込める番号は 1 だけ。同じリストの次の項目は別の番号でも区切る。
+        starts_item = item is not None and (
+            not paragraph or starts_quote or paragraph_is_list_item or item[1] in {"-", "+", "*", "1.", "1)"}
+        )
+        if starts_item:
+            content = content[item.end():]
+            starts_block = is_section_inline_boundary(content)
+        has_paragraph_text = bool(content.strip(" \t")) and not starts_block
+        ends_paragraph = not has_paragraph_text or starts_quote or starts_item
+        if paragraph and ends_paragraph:
+            yield "\n".join(paragraph)
+            paragraph.clear()
+        if not has_paragraph_text:
+            yield line
+            continue
+        if not paragraph:
+            paragraph_quote_depth = quote_depth
+            paragraph_is_list_item = starts_item
+        paragraph.append(line)
+    if paragraph:
+        yield "\n".join(paragraph)
+
+
 def code_span_ends(markers: list[re.Match[str]]) -> dict[int, int]:
-    """行内のバッククォート列ごとに、同じ長さの次の列の終了位置を返す。
+    """同じインラインのまとまり内で、バッククォート列ごとに同じ長さの次の列の終了位置を返す。
 
     開始の 1 文字目がエスケープされる場合は、その残りから始まる列も候補にする。
 
-    @param markers 行内の記号と位置
+    @param markers まとまり内の記号と位置
     @returns 開始できる位置から同じ長さの次の列の終了位置への対応
     """
     next_ends: dict[int, int] = {}
@@ -852,18 +922,20 @@ def code_span_ends(markers: list[re.Match[str]]) -> dict[int, int]:
     return ends_by_start
 
 
-def without_html_comments(line: str, in_comment: bool) -> tuple[str, bool]:
-    """1 行の HTML コメントを除く。行内のコードやエスケープで表示される記号は残す。
+def without_html_comments(block: str, in_comment: bool, *, allow_unclosed_comment: bool) -> tuple[str, bool]:
+    """まとまり内の HTML コメントを除く。コードやエスケープで表示される記号、改行は残す。
 
-    @param line コメントを取り除く行
-    @param in_comment 前の行から続く HTML コメントの中か
-    @returns 見えている文字列と、次の行へコメントが続くか
+    @param block コメントを取り除くまとまり
+    @param in_comment 前のまとまりから続く HTML コメントの中か
+    @param allow_unclosed_comment 閉じていない開始記号で、後続のまとまりを隠してよいか
+    @returns 見えている文字列と、次のまとまりへコメントが続くか
     """
-    has_comment_marker = "<!--" in line or "-->" in line
+    has_comment_marker = "<!--" in block or "-->" in block
     if not has_comment_marker:
-        return ("" if in_comment else line), in_comment
-    markers = list(MARKDOWN_INLINE_MARKER.finditer(line))
+        return ("\n" * block.count("\n") if in_comment else block), in_comment
+    markers = list(MARKDOWN_INLINE_MARKER.finditer(block))
     span_ends = code_span_ends(markers)
+    last_close = block.rfind("-->")
     visible: list[str] = []
     start = 0
     escaped_at = -1
@@ -872,6 +944,7 @@ def without_html_comments(line: str, in_comment: bool) -> tuple[str, bool]:
         token, offset = marker[0], marker.start()
         if in_comment:
             if token == "-->":
+                visible.append("\n" * block.count("\n", start, offset))
                 start = marker.end()
                 in_comment = False
             continue
@@ -884,12 +957,13 @@ def without_html_comments(line: str, in_comment: bool) -> tuple[str, bool]:
             opening = offset + 1 if offset == escaped_at else offset
             code_until = span_ends.get(opening, 0)
             continue
-        opens_comment = token == "<!--" and offset != escaped_at
+        can_open_comment = allow_unclosed_comment or offset < last_close
+        opens_comment = token == "<!--" and offset != escaped_at and can_open_comment
         if opens_comment:
-            visible.append(line[start:offset])
+            visible.append(block[start:offset])
+            start = offset
             in_comment = True
-    if not in_comment:
-        visible.append(line[start:])
+    visible.append("\n" * block.count("\n", start) if in_comment else block[start:])
     return "".join(visible), in_comment
 
 
@@ -906,29 +980,33 @@ def missing_sections(body: str) -> tuple[str, ...]:
     active_section: str | None = None
     in_comment = False
     fence = ""
-    for raw_line in body.split("\n"):
-        line = raw_line.removesuffix("\r")
-        fence_match = CODE_FENCE.fullmatch(line)
+    for block in section_inline_blocks(body):
+        single_line = "\n" not in block
         if fence:
+            fence_match = CODE_FENCE.fullmatch(block) if single_line else None
             closes_fence = fence_match is not None and fence_match[1].startswith(fence) and not fence_match[2].strip()
             if closes_fence:
                 fence = ""
                 continue
-            has_fenced_content = active_section is not None and bool(line.strip())
+            has_fenced_content = active_section is not None and bool(block.strip())
             if has_fenced_content:
                 filled.add(active_section)
             continue
-        opens_fence = not in_comment and fence_match is not None and (fence_match[1][0] == "~" or "`" not in fence_match[2])
-        if opens_fence:
-            fence = fence_match[1]
+        can_open_fence = single_line and not in_comment
+        fence = opening_fence_marker(block) if can_open_fence else ""
+        if fence:
             continue
-        heading = SECTION_HEADING_PREFIX.match(line) if not in_comment else None
-        if heading:
-            title = line[heading.end():].strip(" \t")
+        heading = ATX_HEADING_PREFIX.match(block) if not in_comment else None
+        # ATX 見出しは 1 行で終わるので、行内で閉じない開始記号は後続の節を隠さない。
+        visible, in_comment = without_html_comments(block, in_comment, allow_unclosed_comment=heading is None)
+        section_heading = heading is not None and len(heading[1]) <= 2
+        if section_heading:
+            title = visible[heading.end():].strip(" \t")
             active_section = title if heading[1] == "##" else None
             continue
-        visible, in_comment = without_html_comments(line, in_comment)
-        has_section_answer = active_section is not None and bool(visible.strip()) and not has_declaration_line(visible)
+        has_section_answer = active_section is not None and any(
+            line.strip() and not has_declaration_line(line) for line in visible.split("\n")
+        )
         if has_section_answer:
             filled.add(active_section)
     return tuple(section for section in REQUIRED_SECTIONS if section not in filled)
