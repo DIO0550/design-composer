@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1506,
+      "title": "✨ [New Feature]: #1480 起票前に仕様と判断を詰める grill を追加"
+    },
+    {
       "pr": 1504,
       "title": "📖 [Doc]: PR #1501 のハーネス記録を追加"
     },
