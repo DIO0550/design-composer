@@ -2,6 +2,10 @@
   "version": 1,
   "pages": [
     {
+      "pr": 1504,
+      "title": "📖 [Doc]: PR #1501 のハーネス記録を追加"
+    },
+    {
       "pr": 1503,
       "title": "📝 [Doc]: #1502 判定が代わりの条件を見ていた形を判例へ（harness-growth）"
     },
