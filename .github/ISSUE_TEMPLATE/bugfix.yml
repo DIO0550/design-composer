@@ -2,16 +2,37 @@ name: バグ（既存の振る舞いの誤り）
 description: 既存の振る舞いの誤り。拠り所（仕様書の節や既存のテスト）と食い違う動き
 labels:
   - bug
+  - flow:bugfix
 body:
-  - type: markdown
-    attributes:
-      value: |
-        作業の種類（`flow:*`）のラベルは人が付けます（テンプレートでは付けません）。
   - type: textarea
     id: goal
     attributes:
       label: ゴール
       description: 直ったとき、何ができるようになっているか
+    validations:
+      required: true
+  - type: textarea
+    id: completion
+    attributes:
+      label: 完了の確かめ方
+      description: 何をどう確かめるか。コマンド・観測・画面で書き、「テストが通る」だけにしない
+    validations:
+      required: true
+  - type: textarea
+    id: basis
+    attributes:
+      label: 拠り所
+      description: 仕様書の節、UI 案の画面名、既存のテストなど。無ければ「無し」と、決める必要があることを書く
+    validations:
+      required: true
+  - type: textarea
+    id: decision-scope
+    attributes:
+      label: 決めてよい範囲
+      description: 聞かずに決めてよいことと、必ず人に聞くこと。追加の指定が無ければ「既定に従う」と書く
+      placeholder: |
+        - 聞かずに決めてよい:
+        - 必ず聞く:
     validations:
       required: true
   - type: textarea

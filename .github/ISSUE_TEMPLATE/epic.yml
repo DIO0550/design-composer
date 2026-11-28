@@ -7,12 +7,36 @@ body:
   - type: markdown
     attributes:
       value: |
-        子 Issue は、この Issue の sub-issue として紐づけてください。この Issue では実装せず、実装は子 Issue で行います。子 Issue の作業の種類（`flow:*`）のラベルは、子の側で人が付けます（テンプレートでは付けません）。
+        子 Issue は、この Issue の sub-issue として紐づけてください。この Issue では実装せず、実装は子 Issue で行います。子 Issue には、作業の種類に対応するテンプレートを選んでください。
   - type: textarea
     id: goal
     attributes:
       label: ゴール
       description: 子 Issue がすべて閉じたとき、何ができるようになっているか。実装手段ではなく達成状態で書く
+    validations:
+      required: true
+  - type: textarea
+    id: completion
+    attributes:
+      label: 完了の確かめ方
+      description: 何をどう確かめるか。コマンド・観測・画面で書き、「テストが通る」だけにしない
+    validations:
+      required: true
+  - type: textarea
+    id: basis
+    attributes:
+      label: 拠り所
+      description: 仕様書の節、UI 案の画面名、既存のテストなど。無ければ「無し」と、決める必要があることを書く
+    validations:
+      required: true
+  - type: textarea
+    id: decision-scope
+    attributes:
+      label: 決めてよい範囲
+      description: 聞かずに決めてよいことと、必ず人に聞くこと。追加の指定が無ければ「既定に従う」と書く
+      placeholder: |
+        - 聞かずに決めてよい:
+        - 必ず聞く:
     validations:
       required: true
   - type: textarea

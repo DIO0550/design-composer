@@ -64,11 +64,12 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 - 対応する Issue がなければ**先に作る**。Issue なしで実装を始めない（判断の置き場所がなくなるため）
   - 自分で進める Issue は、作成の呼び出しでも後からでも assignee を付けない（理由は `AGENTS.md`「Issue に紐づいて起動したら、セッションの URL を Issue に残す」）。フェーズ 2 で分けた Issue のうち、このセッションで続けて進めるものも同じ
 - 仕様の拠り所は `docs/`、UI の拠り所は `docs/Design Composer.html`（`rules/ui-verification.md`）
-- ゴールの書き方は `.github/ISSUE_TEMPLATE/implementation.yml` と `.github/ISSUE_TEMPLATE/epic.yml` のゴール欄にも写してある。変えたら揃える
+- 5 つのフォームの共通必須欄は **ゴール・完了の確かめ方・拠り所・決めてよい範囲**。AI が Issue を作るときも同じ欄を埋める。各欄の書き方は[機能追加フォーム](../../../.github/ISSUE_TEMPLATE/feature.yml)の欄の説明を参照する
+- フォームが生成する見出しは `### <欄名>`、AI が API で作る本文の共通 4 節は `## <欄名>`。既存の本文を読むときは欄名で参照し、フォームの本文を AI の新規作成に再利用するときは共通 4 節の見出しを `##` で書く
 
 ### 種類の確定
 
-ゴールと同時に作業の種類（「作業の種類」）を確定する。**ラベルは人が決める。** 既存の `bug` / `enhancement` / `feature` / `refactor` ラベルは分類用であり、作業の種類は決めない。
+ゴールと同時に作業の種類（「作業の種類」）を確定する。**種類を決めるのは人。** GitHub の Issue フォームでは、人が `feature.yml` / `bugfix.yml` / `refactor.yml` / `investigation.yml` を選ぶと、対応する `flow:*` ラベルが付く。`epic.yml` は `epic` のみ。既存の `bug` / `enhancement` / `feature` / `refactor` ラベルは分類用であり、作業の種類は決めない。
 
 1. Issue の `flow:*` ラベルを読む
 
@@ -80,7 +81,7 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
 3. 0 個・2 つ以上・表にない値なら、親が提案する種類と根拠を添えて人に尋ねる
    - 対話中なら AskUserQuestion で尋ね、**人が答えた種類のラベル**を親が付ける（`gh api -X POST 'repos/{owner}/{repo}/issues/<番号>/labels' -f 'labels[]=<人が答えたラベル>'`。`<人が答えたラベル>` は `flow:bugfix` のようにラベル全体）。複数付いているラベルや表にない値を外すのも、人が答えたときだけにする
    - 人がいない起動（Issue の assign から起動した等）なら、提案と根拠をセッション URL と一緒に Issue に書いて止める
-4. Issue を新規作成するときは、**作成の呼び出しの中で**種類を決める（作った後にラベルを付ける形は、作成の時点で止められる）。行の書式は `.claude/hooks/lib/issue-flow-kind-violations.py` の定数が持ち、欠けた作成は `block-issue-without-flow-kind.sh` が止める（止めた理由に書式が出る）
+4. AI が Issue を新規作成するときは、**作成の呼び出しの中で**種類を決め、本文に共通 4 節の `##` 見出しと内容を書く。対応する自リポジトリへの作成では `block-issue-without-flow-kind.sh` が両方を検査する。書式は `.claude/hooks/lib/issue-flow-kind-violations.py` の定数と拒否理由を参照する
    - (a) 対話中なら AskUserQuestion で尋ね、人が答えた `flow:*` を作成の呼び出しのラベルに含める
    - (b) 人がいない起動なら、本文に提案の行を書く
    - (c) `implementation-flow` に通さない Issue（`harness-growth` の介入・棚卸し・Epic など）は、本文に通さない行を書く。Epic なら、作成の呼び出しのラベルに `epic` も含める

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Issue を作る呼び出しが、作業の種類を決めているかを見る。
+"""Issue を作る呼び出しで、作業の種類と本文の必須節が揃っているかを見る。
 
 `implementation-flow` フェーズ 1「種類の確定」の手順 4 は、Issue を作るときに種類を決めることを求める。
 作った後でラベルを付ける形は忘れても何も止まらないので、作成の呼び出しそのものを見る。
@@ -11,13 +11,17 @@
 
 **行の書式はこのファイルの 2 つの定数だけが持つ。** 文書は写さずにここを指す。
 
+本文は、実際に送る Markdown に `REQUIRED_SECTIONS` の各 `##` 見出しと空でない内容があることを求める。
+コードフェンス・HTML コメント・引用内の見出しは数えない。全体の Markdown 構文や内容の良し悪しは判定しない。
+
 報告する違反は次のとおり（並びが報告の順）。
 
 - `issue-flow-kind-missing` — ラベルも 2 つの行も無い
 - `issue-flow-kind-multiple` — 重複を除いた `flow:*` ラベルが 2 つ以上ある（行は提案なので数えない）
-- `issue-flow-kind-unreadable` — ラベルが無く、本文を確定できない
+- `issue-flow-kind-unreadable` — 本文を確定できない
   （ファイルが無い・通常ファイルでない・1 MiB を超える、標準入力がヒアドキュメントでない、
   閉じない引用符、`--input` が JSON でない、本文が展開か、展開する文脈の `$` `` ` `` `\\` を含む）
+- `issue-flow-kind-sections` — 本文の共通節が欠けているか、内容が空
 
 種別の綴りは、この一覧と `KINDS` にだけ書く（両者の一致は `issue-flow-kind-cases.sh` が照合する）。
 
@@ -48,14 +52,25 @@ import os
 import re
 import shlex
 import sys
+from collections.abc import Iterator
 from typing import NamedTuple
 
-KINDS = ("issue-flow-kind-missing", "issue-flow-kind-multiple", "issue-flow-kind-unreadable")
-MISSING, MULTIPLE, UNREADABLE = KINDS
+KINDS = ("issue-flow-kind-missing", "issue-flow-kind-multiple", "issue-flow-kind-unreadable", "issue-flow-kind-sections")
+MISSING, MULTIPLE, UNREADABLE, SECTIONS = KINDS
 
 # 提案の行と、通さない行。`{kind}` は小文字の語、`{reason}` は空でない文に当たる。
 PROPOSAL_TEMPLATE = "種類の提案: flow:{kind}（{reason}）"
 OPT_OUT_TEMPLATE = "種類: implementation-flow に通さない（{reason}）"
+REQUIRED_SECTIONS = ("ゴール", "完了の確かめ方", "拠り所", "決めてよい範囲")
+ATX_HEADING_PREFIX = re.compile(r" {0,3}(#{1,6})(?=[ \t]|$)")
+CODE_FENCE = re.compile(r" {0,3}(`{3,}|~{3,})(.*)")
+MARKDOWN_BLOCK_START = re.compile(
+    r" {0,3}(?:<!--|(?:=+|-+)[ \t]*$"
+    r"|(?:(?:\*[ \t]*){3,}|(?:-[ \t]*){3,}|(?:_[ \t]*){3,})$)"
+)
+BLOCK_QUOTE_PREFIX = re.compile(r"(?: {0,3}>[ \t]?)+")
+LIST_ITEM_PREFIX = re.compile(r" {0,3}([-+*]|[0-9]{1,9}[.)])[ \t]+")
+MARKDOWN_INLINE_MARKER = re.compile(r"<!--|-->|`+|\\+")
 
 # 字面のままでは確定できない位置（展開と、ダブルクォートの中のバックスラッシュ）に置く印と、切り出した本文の
 # 置き場の印と、クォートの開きとバックスラッシュの前に置く印。どれも私用領域の文字で、入力にもともと
@@ -822,27 +837,205 @@ def stdin_body(segment: Segment, flag: str) -> str | Unreadable:
     return segment.stdin
 
 
+def opening_fence_marker(line: str) -> str:
+    """行がコードフェンスを開くなら、その区切り記号を返す。
+
+    @param line Markdown の 1 行
+    @returns 開くフェンスの記号（開かないなら空文字列）
+    """
+    match = CODE_FENCE.fullmatch(line)
+    if not match:
+        return ""
+    marker, info = match.groups()
+    allowed_info = marker.startswith("~") or "`" not in info
+    return marker if allowed_info else ""
+
+
+def is_section_inline_boundary(line: str) -> bool:
+    """見出し・フェンスなど、前の段落とインラインコードを共有しない行か。
+
+    @param line 引用・リストの接頭辞を除いた 1 行
+    @returns 単独で残す境界行なら True
+    """
+    return bool(ATX_HEADING_PREFIX.match(line) or MARKDOWN_BLOCK_START.match(line) or opening_fence_marker(line))
+
+
+def section_inline_blocks(body: str) -> Iterator[str]:
+    """同じ段落の継続行だけを、リスト項目や引用も含めてまとめる。
+
+    @param body 作成に送る Markdown
+    @returns バッククォート列を対応付ける範囲。節の検出に使う接頭辞は残す。
+    """
+    paragraph: list[str] = []
+    paragraph_quote_depth = 0
+    paragraph_is_list_item = False
+    for raw_line in body.split("\n"):
+        line = raw_line.removesuffix("\r")
+        quote = BLOCK_QUOTE_PREFIX.match(line)
+        quote_depth = quote[0].count(">") if quote else 0
+        content = line[quote.end():] if quote else line
+        starts_quote = quote_depth != 0 and quote_depth != paragraph_quote_depth
+        starts_block = is_section_inline_boundary(content)
+        item = None if starts_block else LIST_ITEM_PREFIX.match(content)
+        # 通常段落を割り込める番号は 1 だけ。同じリストの次の項目は別の番号でも区切る。
+        starts_item = item is not None and (
+            not paragraph or starts_quote or paragraph_is_list_item or item[1] in {"-", "+", "*", "1.", "1)"}
+        )
+        if starts_item:
+            content = content[item.end():]
+            starts_block = is_section_inline_boundary(content)
+        has_paragraph_text = bool(content.strip(" \t")) and not starts_block
+        ends_paragraph = not has_paragraph_text or starts_quote or starts_item
+        if paragraph and ends_paragraph:
+            yield "\n".join(paragraph)
+            paragraph.clear()
+        if not has_paragraph_text:
+            yield line
+            continue
+        if not paragraph:
+            paragraph_quote_depth = quote_depth
+            paragraph_is_list_item = starts_item
+        paragraph.append(line)
+    if paragraph:
+        yield "\n".join(paragraph)
+
+
+def code_span_ends(markers: list[re.Match[str]]) -> dict[int, int]:
+    """同じインラインのまとまり内で、バッククォート列ごとに同じ長さの次の列の終了位置を返す。
+
+    開始の 1 文字目がエスケープされる場合は、その残りから始まる列も候補にする。
+
+    @param markers まとまり内の記号と位置
+    @returns 開始できる位置から同じ長さの次の列の終了位置への対応
+    """
+    next_ends: dict[int, int] = {}
+    ends_by_start: dict[int, int] = {}
+    for marker in reversed(markers):
+        if not marker[0].startswith("`"):
+            continue
+        width = len(marker[0])
+        for escaped_chars in range(min(2, width)):
+            end = next_ends.get(width - escaped_chars)
+            if end is not None:
+                ends_by_start[marker.start() + escaped_chars] = end
+        next_ends[width] = marker.end()
+    return ends_by_start
+
+
+def without_html_comments(block: str, in_comment: bool, *, allow_unclosed_comment: bool) -> tuple[str, bool]:
+    """まとまり内の HTML コメントを除く。コードやエスケープで表示される記号、改行は残す。
+
+    @param block コメントを取り除くまとまり
+    @param in_comment 前のまとまりから続く HTML コメントの中か
+    @param allow_unclosed_comment 閉じていない開始記号で、後続のまとまりを隠してよいか
+    @returns 見えている文字列と、次のまとまりへコメントが続くか
+    """
+    has_comment_marker = "<!--" in block or "-->" in block
+    if not has_comment_marker:
+        return ("\n" * block.count("\n") if in_comment else block), in_comment
+    markers = list(MARKDOWN_INLINE_MARKER.finditer(block))
+    span_ends = code_span_ends(markers)
+    last_close = block.rfind("-->")
+    visible: list[str] = []
+    start = 0
+    escaped_at = -1
+    code_until = 0
+    for marker in markers:
+        token, offset = marker[0], marker.start()
+        if in_comment:
+            if token == "-->":
+                visible.append("\n" * block.count("\n", start, offset))
+                start = marker.end()
+                in_comment = False
+            continue
+        if offset < code_until:
+            continue
+        if token.startswith("\\"):
+            escaped_at = marker.end() if len(token) % 2 else -1
+            continue
+        if token.startswith("`"):
+            opening = offset + 1 if offset == escaped_at else offset
+            code_until = span_ends.get(opening, 0)
+            continue
+        can_open_comment = allow_unclosed_comment or offset < last_close
+        opens_comment = token == "<!--" and offset != escaped_at and can_open_comment
+        if opens_comment:
+            visible.append(block[start:offset])
+            start = offset
+            in_comment = True
+    visible.append("\n" * block.count("\n", start) if in_comment else block[start:])
+    return "".join(visible), in_comment
+
+
+def missing_sections(body: str) -> tuple[str, ...]:
+    """本文にない、または内容が空の共通節を返す。
+
+    コードフェンスの中身は節の内容になりうる（検証コマンドなど）が、その中の見出しで節は始まらない。
+    種類を宣言する行は、作業の種類を決めるためのもので節への回答ではない。
+
+    @param body 作成に送る Markdown
+    @returns 欠落または空の節の名前（REQUIRED_SECTIONS の順）
+    """
+    filled: set[str] = set()
+    active_section: str | None = None
+    in_comment = False
+    fence = ""
+    for block in section_inline_blocks(body):
+        single_line = "\n" not in block
+        if fence:
+            fence_match = CODE_FENCE.fullmatch(block) if single_line else None
+            closes_fence = fence_match is not None and fence_match[1].startswith(fence) and not fence_match[2].strip()
+            if closes_fence:
+                fence = ""
+                continue
+            has_fenced_content = active_section is not None and bool(block.strip())
+            if has_fenced_content:
+                filled.add(active_section)
+            continue
+        can_open_fence = single_line and not in_comment
+        fence = opening_fence_marker(block) if can_open_fence else ""
+        if fence:
+            continue
+        heading = ATX_HEADING_PREFIX.match(block) if not in_comment else None
+        # ATX 見出しは 1 行で終わるので、行内で閉じない開始記号は後続の節を隠さない。
+        visible, in_comment = without_html_comments(block, in_comment, allow_unclosed_comment=heading is None)
+        section_heading = heading is not None and len(heading[1]) <= 2
+        if section_heading:
+            title = visible[heading.end():].strip(" \t")
+            active_section = title if heading[1] == "##" else None
+            continue
+        has_section_answer = active_section is not None and any(
+            line.strip() and not has_declaration_line(line) for line in visible.split("\n")
+        )
+        if has_section_answer:
+            filled.add(active_section)
+    return tuple(section for section in REQUIRED_SECTIONS if section not in filled)
+
+
 def judge(target: str, labels: list[str], bodies: list[str | Unreadable]) -> Finding | None:
-    """ラベルと本文から、種類を決めているかを判定する。
+    """作業の種類を先に判定し、続いて同じ本文に共通節が揃っているかを見る。
 
     @param target 報告に出す作成の呼び出し
     @param labels 作成に付けるラベル
-    @param bodies 本文の候補（読めなかったものは Unreadable、字面で確定できないものは `UNSETTLED` を含む）
-    @returns 違反なら Finding。決めていれば None
+    @param bodies 実際に送る本文 1 つ（無ければ空、読めなければ Unreadable か `UNSETTLED` を含む文字列）
+    @returns 違反なら Finding。種類と本文の両方が揃っていれば None
     """
     flow_labels = sorted({label for label in labels if is_flow_label(label)})
     if len(flow_labels) >= 2:
         return Finding(MULTIPLE, target, f"flow:* ラベルが 2 つ以上ある（{', '.join(flow_labels)}）")
-    if flow_labels:
-        return None
-    texts = [body for body in bodies if isinstance(body, str)]
-    if any(has_declaration_line(text) for text in texts if UNSETTLED not in text):
-        return None
-    reasons = [body.reason for body in bodies if isinstance(body, Unreadable)]
-    reasons += ["本文が展開か、展開する文脈の $ ` \\ を含み、字面で確定できない" for text in texts if UNSETTLED in text]
-    if reasons:
-        return Finding(UNREADABLE, target, f"flow:* ラベルが無く、本文を確定できない（{reasons[0]}）")
-    return Finding(MISSING, target, "flow:* ラベルも、種類の提案の行も、implementation-flow に通さない行も無い")
+    body = bodies[0] if bodies else ""
+    if isinstance(body, Unreadable):
+        return Finding(UNREADABLE, target, f"本文を確定できない（{body.reason}）")
+    if UNSETTLED in body:
+        return Finding(UNREADABLE, target, "本文が展開か、展開する文脈の $ ` \\ を含み、字面で確定できない")
+    missing_kind = not flow_labels and not has_declaration_line(body)
+    if missing_kind:
+        return Finding(MISSING, target, "flow:* ラベルも、種類の提案の行も、implementation-flow に通さない行も無い")
+    missing = missing_sections(body)
+    if missing:
+        headings = "、".join(f"## {title}" for title in missing)
+        return Finding(SECTIONS, target, f"本文に次の節が無い、または内容が空: {headings}")
+    return None
 
 
 def is_flow_label(label: str) -> bool:
@@ -862,7 +1055,7 @@ def issue_create_finding(env: dict[str, str], args: tuple[str, ...], segment: Se
     @param args `gh issue` の後ろの語
     @param segment 作成のコマンド
     @param context 判定の周りの事実
-    @returns 違反なら Finding。作成でない・他のリポジトリ・`--web` が真・種類を決めているなら None
+    @returns 違反なら Finding。対象外か、種類と本文の両方が揃っていれば None
     """
     flags = parse_flags(args, ISSUE_CREATE_FLAGS)
     positionals = [value for name, value in flags if name == ""]
@@ -882,7 +1075,7 @@ def issue_create_finding(env: dict[str, str], args: tuple[str, ...], segment: Se
 def sent_issue_body(body: list[str], body_file: list[str], segment: Segment, context: Context) -> list[str | Unreadable]:
     """`gh issue create` が実際に送る本文を返す。
 
-    gh は `--body-file` があれば `--body` より優先し、同じフラグを繰り返せば最後の値を送る。
+    gh は同じフラグが複数あれば最後の値を使う。最後の `--body-file` が空でなければ `--body` より優先する。
 
     @param body `--body` の値（出てきた順）
     @param body_file `--body-file` の値（出てきた順）
@@ -890,9 +1083,9 @@ def sent_issue_body(body: list[str], body_file: list[str], segment: Segment, con
     @param context 判定の周りの事実
     @returns 送る本文 1 つ（読めなければ Unreadable）。どちらも無ければ空
     """
-    if not body_file:
+    path = body_file[-1] if body_file else ""
+    if not path:
         return list(body[-1:])
-    path = body_file[-1]
     return [stdin_body(segment, "--body-file -") if path == "-" else read_body_file(path, context)]
 
 
@@ -921,7 +1114,7 @@ def api_input(path: str, segment: Segment, context: Context) -> tuple[list[str],
     @param path `--input` の値（`-` は標準入力）
     @param segment 作成のコマンド
     @param context 判定の周りの事実
-    @returns ラベルと本文の候補。読めない・JSON のオブジェクトでなければ本文の候補に Unreadable
+    @returns ラベルと送る本文 1 つ。本文が無ければ空、入力が読めない・JSON オブジェクトでない場合は Unreadable
     """
     raw = stdin_body(segment, "--input -") if path == "-" else read_body_file(path, context)
     if isinstance(raw, Unreadable):
@@ -943,7 +1136,7 @@ def api_finding(args: tuple[str, ...], segment: Segment, context: Context) -> Fi
     @param args `gh api` の後ろの語
     @param segment 作成のコマンド
     @param context 判定の周りの事実
-    @returns 違反なら Finding。作成でない・他のリポジトリ・種類を決めているなら None
+    @returns 違反なら Finding。対象外か、種類と本文の両方が揃っていれば None
     """
     flags = parse_flags(args, API_FLAGS)
     endpoint = next((value for name, value in flags if name == ""), "")
@@ -974,18 +1167,22 @@ def api_fields(flags: list[tuple[str, str]], segment: Segment, context: Context)
     @param flags `gh api` のフラグと値の並び
     @param segment 作成のコマンド
     @param context 判定の周りの事実
-    @returns ラベルと本文の候補
+    @returns ラベルと送る本文 1 つ（本文が無ければ空）
     """
     labels: list[str] = []
-    bodies: list[str | Unreadable] = []
+    body_fields: dict[str, str] = {}
     for name, value in flags:
         key, _, field_value = value.partition("=")
         is_field = name in ("field", "raw-field")
         if is_field and key == "labels[]":
             labels.append(field_value)
         if is_field and key == "body":
-            bodies.append(api_field_body(name, field_value, segment, context))
-    return labels, bodies
+            body_fields[name] = field_value
+    # gh は raw の後に typed を処理する。後から現れた raw が先行する typed を上書きすることはない。
+    for name in ("field", "raw-field"):
+        if name in body_fields:
+            return labels, [api_field_body(name, body_fields[name], segment, context)]
+    return labels, []
 
 
 def segment_finding(segment: Segment, context: Context) -> Finding | None:
@@ -1076,14 +1273,17 @@ def guidance() -> str:
     """
     proposal = PROPOSAL_TEMPLATE.format(kind="<種類>", reason="<根拠>")
     opt_out = OPT_OUT_TEMPLATE.format(reason="<理由>")
+    sections = "、".join(f"## {title}" for title in REQUIRED_SECTIONS)
     return f"""
-Issue を作る呼び出しの中で、作業の種類を決めてください。
+作業の種類がまだ決まっていない場合は、Issue を作る呼び出しの中で決めてください。
 
 1. 対話中なら AskUserQuestion で人に尋ね、人が答えた flow:* を作成の呼び出しのラベルに含める（例: --label flow:feature）。親が自分で選んだラベルは付けない
 2. 人がいない起動のときだけ、本文に次の行を行頭から書く
 {proposal}
 3. 手順 4 の (c) に当たる Issue は、本文に次の行を行頭から書く
 {opt_out}
+
+本文には次の見出しと内容を書いてください: {sections}
 
 手順: .claude/skills/implementation-flow/SKILL.md フェーズ 1「種類の確定」の手順 4・5
 本文はシングルクォート、'EOF' のヒアドキュメント、"$(cat <<'EOF' … EOF)" のどれかで渡す（ダブルクォートや、区切りをクォートしないヒアドキュメントの本文は、$ ` \\ を含むと確定できないとして止まる）。相対パスで読めなければ絶対パスにする"""

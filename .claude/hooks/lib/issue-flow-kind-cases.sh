@@ -14,7 +14,7 @@
 # - 検出器の表は `期待|分類|形|ケース名|入力`。分類は deny のときの種別の末尾(`missing` など)で、他は `-`。
 #   形は `bash`(入力 `cwd` に作業ディレクトリを載せ、別のディレクトリから走らせる)・`bash-nocwd`(`cwd` を
 #   載せず、作業ディレクトリから走らせる)・`mcp`(入力は `mcp__github__issue_write` の `tool_input` の JSON)。
-#   入力の `⏎` は改行、`⇥` はタブ、`¦` は `|`、`@W` は作業ディレクトリに置き換える
+#   入力の `⏎` は改行、`⇥` はタブ、`¦` は `|`、`@W` は作業ディレクトリ、`@S` / `@SJ` は Bash / JSON 用の共通節に置き換える
 # - origin の表は `期待|origin の URL|ケース名|入力`。自リポジトリの決め方を見る
 # - フックの表は `期待|検出器|python3|jq|ケース名|入力`。フックを一時ディレクトリへ写して走らせる
 #   (`edit-detector-cases.sh` と同じ理由で、本番のフックに差し替え口を残さない)
@@ -133,19 +133,19 @@ place_files
 
 cases="$(cat <<'CASES'
 deny|missing|bash|1 ラベルも行もない作成は止める|gh issue create -t x -b 本文
-pass|-|bash|2 --label flow:feature で通す|gh issue create -t x --label flow:feature
-pass|-|bash|3 -l bug,flow:bugfix で通す|gh issue create -t x -l bug,flow:bugfix
-pass|-|bash|4 --label=flow:refactor で通す|gh issue create -t x --label=flow:refactor
-pass|-|bash|5 -lflow:feature で通す|gh issue create -t x -lflow:feature
+pass|-|bash|2 --label flow:feature で通す|gh issue create -t x --label flow:feature --body-file @W/sections.md
+pass|-|bash|3 -l bug,flow:bugfix で通す|gh issue create -t x -l bug,flow:bugfix --body-file @W/sections.md
+pass|-|bash|4 --label=flow:refactor で通す|gh issue create -t x --label=flow:refactor --body-file @W/sections.md
+pass|-|bash|5 -lflow:feature で通す|gh issue create -t x -lflow:feature --body-file @W/sections.md
 deny|missing|bash|6 flow: で始まらないラベルだけなら止める|gh issue create -t x --label bug --label noflow:x
 deny|missing|bash|7 空の flow: だけなら止める|gh issue create -t x --label flow:
 deny|multiple|bash|8 異なる flow:* が 2 つなら止める|gh issue create -t x --label flow:feature --label flow:bugfix
 deny|multiple|bash|8 異なる flow:* が 2 つなら提案の行があっても止める|gh issue create -t x --label flow:feature --label flow:bugfix -b '種類の提案: flow:feature（根拠）'
-pass|-|bash|9 同じ flow:* が 2 回なら通す|gh issue create -t x --label flow:feature -l flow:feature
-pass|-|bash|10 区切りが 'EOF' のヒアドキュメントに提案の行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類の提案: flow:feature（根拠）⏎EOF
-pass|-|bash|11 区切りが 'EOF' のヒアドキュメントに通さない行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類: implementation-flow に通さない（棚卸し）⏎EOF
-pass|-|bash|12 ラベルと行の両方があれば通す|gh issue create -t x --label flow:feature --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF
-pass|-|bash|13 提案の行が 2 つあっても通す|gh issue create -t x --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎種類の提案: flow:bugfix（別の根拠）⏎EOF
+pass|-|bash|9 同じ flow:* が 2 回なら通す|gh issue create -t x --label flow:feature -l flow:feature --body-file @W/sections.md
+pass|-|bash|10 区切りが 'EOF' のヒアドキュメントに提案の行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF
+pass|-|bash|11 区切りが 'EOF' のヒアドキュメントに通さない行があれば通す|gh issue create -t x --body-file - <<'EOF'⏎前置き⏎種類: implementation-flow に通さない（棚卸し）⏎⏎@S⏎EOF
+pass|-|bash|12 ラベルと行の両方があれば通す|gh issue create -t x --label flow:feature --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF
+pass|-|bash|13 提案の行が 2 つあっても通す|gh issue create -t x --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎種類の提案: flow:bugfix（別の根拠）⏎⏎@S⏎EOF
 deny|missing|bash|14 根拠が空の行は満たさない|gh issue create -t x --body-file - <<'EOF'⏎種類の提案: flow:feature（）⏎EOF
 deny|missing|bash|15 全角コロンの行も半角括弧の行も満たさない|gh issue create -t x --body-file - <<'EOF'⏎種類の提案：flow:feature（根拠）⏎種類の提案: flow:feature(根拠)⏎EOF
 deny|missing|bash|16 行頭にない行は満たさない|gh issue create -t x --body-file - <<'EOF'⏎  種類の提案: flow:feature（根拠）⏎EOF
@@ -155,21 +155,21 @@ pass|-|bash|19 -F の絶対パスで通す|gh issue create -t x -F @W/prop.md
 pass|-|bash|20 相対パスは入力の cwd を起点に読んで通す|gh issue create -t x --body-file prop.md
 pass|-|bash-nocwd|21 cwd が無ければカレントディレクトリから読んで通す|gh issue create -t x --body-file prop.md
 deny|unreadable|bash|22 ファイルが無く、ラベルも無ければ止める|gh issue create -t x --body-file @W/none.md
-pass|-|bash|23 ファイルが無くても、ラベルがあれば通す|gh issue create -t x --body-file @W/none.md --label flow:feature
+deny|unreadable|bash|23 sections-unreadable ファイルが無ければラベルがあっても止める|gh issue create -t x --body-file @W/none.md --label flow:feature
 deny|unreadable|bash|24 1 MiB を超えるファイルは止める|gh issue create -t x --body-file @W/big.md
 deny|unreadable|bash|25 /dev/zero は止める|gh issue create -t x --body-file /dev/zero
-pass|-|bash|26 -F - <<'EOF' で通す|gh issue create -t x -F - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF
+pass|-|bash|26 -F - <<'EOF' で通す|gh issue create -t x -F - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF
 deny|unreadable|bash|27 パイプで渡したら止める|printf '%s\n' '種類の提案: flow:feature（根拠）' ¦ gh issue create -t x --body-file -
-pass|-|bash|28 前の断片でヒアドキュメントを書いたファイルを --body-file で渡す形は通す|cat > @W/written.md <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎gh issue create -t x --body-file @W/written.md
+pass|-|bash|28 前の断片でヒアドキュメントを書いたファイルを --body-file で渡す形は通す|cat > @W/written.md <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF⏎gh issue create -t x --body-file @W/written.md
 deny|unreadable|bash|29 閉じない引用符は止める|gh issue create -t x --body '種類の提案: flow:feature（根拠）
-pass|-|bash|30 --body "$(cat <<'EOF'…)" で通す|gh issue create -t x --body "$(cat <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎)"
+pass|-|bash|30 --body "$(cat <<'EOF'…)" で通す|gh issue create -t x --body "$(cat <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF⏎)"
 deny|unreadable|bash|31 --body "$(cat f)" は止める|gh issue create -t x --body "$(cat @W/prop.md)"
 deny|unreadable|bash|32 --body "$BODY" は止める|gh issue create -t x --body "$BODY"
-pass|-|bash|33 バックスラッシュ改行で続けた --label flow:feature で通す|gh issue create \⏎  -t x \⏎  --label flow:feature
+pass|-|bash|33 バックスラッシュ改行で続けた --label flow:feature で通す|gh issue create \⏎  -t x \⏎  --label flow:feature --body-file @W/sections.md
 deny|missing|bash|34 プラグインの形(URL=$(gh issue create … --label "type:plan"))は止める|URL=$(gh issue create \⏎  --title "plan" \⏎  --body-file @W/plain.md \⏎  --label "type:plan")
 deny|missing|bash|35 cd x && gh issue create も止める|cd @W && gh issue create -t x
 deny|missing|bash|36 url=$(gh issue create -t x) も止める|url=$(gh issue create -t x)
-deny|missing|bash|37 作成が 2 つあり、2 つ目だけ欠けていれば止める|gh issue create -t a --label flow:feature && gh issue create -t b
+deny|missing|bash|37 作成が 2 つあり、2 つ目だけ欠けていれば止める|gh issue create -t a --label flow:feature --body-file @W/sections.md && gh issue create -t b
 pass|-|bash|38 --web は通す|gh issue create --web
 pass|-|bash|39 -R other/repo は通す|gh issue create -t x -R other/repo
 deny|missing|bash|40 -R が大文字小文字違いの自リポジトリなら止める|gh issue create -t x -R ACME/Widgets
@@ -199,15 +199,15 @@ deny|missing|bash|49 止めすぎを固定: export GH_REPO=other/r を先に実�
 deny|missing|bash|50 止めすぎを固定: cd ../other の後でも止める|cd ../other && gh issue create -t x
 deny|unreadable|bash|51 読む位置の誤りを固定: cd sub の後の相対パスは cwd から読む|cd sub && gh issue create -t x --body-file rel.md
 deny|missing|bash|52 -f title=x(暗黙の POST)は止める|gh api repos/acme/widgets/issues -f title=x
-pass|-|bash|53 -f 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature'
-pass|-|bash|54 -F 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues -f title=x -F 'labels[]=flow:feature'
-pass|-|bash|55 --raw-field 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues --raw-field title=x --raw-field 'labels[]=flow:feature'
+pass|-|bash|53 -f 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -f 'body=@S'
+pass|-|bash|54 -F 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues -f title=x -F 'labels[]=flow:feature' -f 'body=@S'
+pass|-|bash|55 --raw-field 'labels[]=flow:feature' で通す|gh api repos/acme/widgets/issues --raw-field title=x --raw-field 'labels[]=flow:feature' -f 'body=@S'
 deny|missing|bash|56 --field title=x は止める|gh api repos/acme/widgets/issues --field title=x
 deny|missing|bash|57 --method POST は止める|gh api --method POST repos/acme/widgets/issues
 deny|missing|bash|58 -XPOST は止める|gh api -XPOST repos/acme/widgets/issues
 deny|missing|bash|59 --method=post は止める|gh api --method=post repos/acme/widgets/issues
 deny|missing|bash|60 --input のファイルにラベルも行もなければ止める|gh api repos/acme/widgets/issues --input @W/in-plain.json
-pass|-|bash|61 --input - <<'EOF' の labels で通す|gh api repos/acme/widgets/issues --input - <<'EOF'⏎{"title":"x","labels":["flow:feature"]}⏎EOF
+pass|-|bash|61 --input - <<'EOF' の labels で通す|gh api repos/acme/widgets/issues --input - <<'EOF'⏎{"title":"x","body":"@SJ","labels":["flow:feature"]}⏎EOF
 pass|-|bash|62 --input の body の行で通す|gh api repos/acme/widgets/issues --input @W/in-body.json
 deny|unreadable|bash|63 --input が JSON でなければ止める|gh api repos/acme/widgets/issues --input @W/bad.json
 pass|-|bash|64 -F body=@file で通す|gh api repos/acme/widgets/issues -f title=x -F body=@@W/prop.md
@@ -221,33 +221,33 @@ pass|-|bash|70 他リポジトリは通す|gh api repos/other/repo/issues -f tit
 miss|-|bash|71 graphql の createIssue は読まない|gh api graphql -f query='mutation { createIssue(input: {repositoryId: "x", title: "y"}) { issue { id } } }'
 miss|-|bash|72 curl は読まない|curl -X POST https://api.github.com/repos/acme/widgets/issues -d '{"title":"x"}'
 deny|missing|mcp|73 MCP でラベルも行もなければ止める|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"本文"}
-pass|-|mcp|74 MCP の flow:* ラベルで通す|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"]}
+pass|-|mcp|74 MCP の flow:* ラベルで通す|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"@SJ","labels":["flow:feature"]}
 deny|multiple|mcp|75 MCP で異なる flow:* が 2 つなら止める|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature","flow:bugfix"]}
-pass|-|mcp|76 MCP で同じ flow:* が 2 つなら通す|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature","flow:feature"]}
-pass|-|mcp|77 MCP の body の提案の行で通す|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"前置き\n種類の提案: flow:feature（根拠）"}
-pass|-|mcp|78 MCP の body の通さない行で通す|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"種類: implementation-flow に通さない（棚卸し）"}
+pass|-|mcp|76 MCP で同じ flow:* が 2 つなら通す|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"@SJ","labels":["flow:feature","flow:feature"]}
+pass|-|mcp|77 MCP の body の提案の行で通す|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"前置き\n種類の提案: flow:feature（根拠）\n\n@SJ"}
+pass|-|mcp|78 MCP の body の通さない行で通す|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"種類: implementation-flow に通さない（棚卸し）\n\n@SJ"}
 pass|-|mcp|79 MCP の update は止めない|{"method":"update","owner":"acme","repo":"widgets","issue_number":1,"title":"x"}
 pass|-|mcp|80 MCP で他リポジトリは通す|{"method":"create","owner":"other","repo":"repo","title":"x"}
 deny|missing|mcp|81 MCP で大文字小文字違いの自リポジトリは止める|{"method":"create","owner":"ACME","repo":"Widgets","title":"x"}
-pass|-|bash|100 ダブルクォートの --body に $ も ` も \ も無ければ字面で読んで通す|gh issue create -t x --body "前置き⏎種類の提案: flow:feature（根拠）"
+pass|-|bash|100 ダブルクォートの --body に $ も ` も \ も無ければ字面で読んで通す|gh issue create -t x --body "前置き⏎種類の提案: flow:feature（根拠）⏎⏎@S"
 deny|unreadable|bash|100 ダブルクォートの --body の本文に ` があれば止める|gh issue create -t x --body "前置き `code`⏎種類の提案: flow:feature（根拠）"
-pass|-|bash|101 <<EOF の本文に $ も ` も \ も無ければ字面で読んで通す|gh issue create -t x --body-file - <<EOF⏎前置き⏎種類の提案: flow:feature（根拠）⏎EOF
+pass|-|bash|101 <<EOF の本文に $ も ` も \ も無ければ字面で読んで通す|gh issue create -t x --body-file - <<EOF⏎前置き⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF
 deny|unreadable|bash|101 <<EOF の本文に ` があれば止める|gh issue create -t x --body-file - <<EOF⏎前置き `code`⏎種類の提案: flow:feature（根拠）⏎EOF
 deny|unreadable|bash|102 <<EOF の本文に \ があれば止める|gh issue create -t x --body-file - <<EOF⏎前置き \\⏎種類の提案: flow:feature（根拠）⏎EOF
 deny|unreadable|bash|103 $(cat <<EOF) の本文に ` があれば止める|gh issue create -t x --body "$(cat <<EOF⏎前置き `code`⏎種類の提案: flow:feature（根拠）⏎EOF⏎)"
-pass|-|bash|104 $(cat <<EOF) の本文に $ も ` も \ も無ければ通す|gh issue create -t x --body "$(cat <<EOF⏎前置き⏎種類の提案: flow:feature（根拠）⏎EOF⏎)"
-pass|-|bash|105 <<'EOF' の本文の $ ` \ は字面のまま読んで通す|gh issue create -t x --body-file - <<'EOF'⏎前置き $X `code` \z⏎種類の提案: flow:feature（根拠）⏎EOF
-pass|-|bash|106 シングルクォートの本文の $ ` \ は字面のまま読んで通す|gh issue create -t x --body '前置き $X `code` \z⏎種類の提案: flow:feature（根拠）'
-pass|-|bash|107 区切りが "EOF" なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<"EOF"⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎EOF
-pass|-|bash|107 区切りが \EOF なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<\EOF⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎EOF
-pass|-|bash|107 区切りが E'OF' なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<E'OF'⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎EOF
+pass|-|bash|104 $(cat <<EOF) の本文に $ も ` も \ も無ければ通す|gh issue create -t x --body "$(cat <<EOF⏎前置き⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF⏎)"
+pass|-|bash|105 <<'EOF' の本文の $ ` \ は字面のまま読んで通す|gh issue create -t x --body-file - <<'EOF'⏎前置き $X `code` \z⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF
+pass|-|bash|106 シングルクォートの本文の $ ` \ は字面のまま読んで通す|gh issue create -t x --body '前置き $X `code` \z⏎種類の提案: flow:feature（根拠）⏎⏎@S'
+pass|-|bash|107 区切りが "EOF" なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<"EOF"⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF
+pass|-|bash|107 区切りが \EOF なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<\EOF⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF
+pass|-|bash|107 区切りが E'OF' なら本文の $ と ` を字面のまま読んで通す|gh issue create -t x --body-file - <<E'OF'⏎前置き $X `code`⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF
 deny|unreadable|bash|108 ダブルクォートの中の $(…) は止める|gh issue create -t x --body "種類の提案: flow:feature（$(echo 根拠)）"
 deny|unreadable|bash|109 ダブルクォートの中の \$ も止める|gh issue create -t x --body "種類の提案: flow:feature（\$5）"
-pass|-|bash|110 <<-EOF で行頭のタブを除くと合う行は通す|gh issue create -t x --body-file - <<-EOF⏎⇥種類の提案: flow:feature（根拠）⏎⇥EOF
+pass|-|bash|110 <<-EOF で行頭のタブを除くと合う行は通す|gh issue create -t x --body-file - <<-EOF⏎⇥種類の提案: flow:feature（根拠）⏎⏎@S⏎⇥EOF
 deny|missing|bash|111 -f body=@file は字面のまま送るので止める|gh api repos/acme/widgets/issues -f title=x -f body=@@W/prop.md
 pass|-|bash|112 -Fbody=@file で通す|gh api repos/acme/widgets/issues -f title=x -Fbody=@@W/prop.md
 deny|missing|bash|113 --raw-field body=@file は止める|gh api repos/acme/widgets/issues -f title=x --raw-field body=@@W/prop.md
-pass|-|bash|114 -F body=@- <<'EOF' で通す|gh api repos/acme/widgets/issues -f title=x -F body=@- <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF
+pass|-|bash|114 -F body=@- <<'EOF' で通す|gh api repos/acme/widgets/issues -f title=x -F body=@- <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF
 deny|unreadable|bash|115 -F body=@- にパイプで渡したら止める|printf '%s' '種類の提案: flow:feature（根拠）' ¦ gh api repos/acme/widgets/issues -f title=x -F body=@-
 deny|unreadable|bash|116 <<< の後に続く行は本文として読まない|gh issue create -t x --body-file - <<<EOF⏎種類の提案: flow:feature（根拠）⏎EOF
 deny|missing|bash|117 issues?x=1 は止める|gh api 'repos/acme/widgets/issues?x=1' -f title=x
@@ -256,17 +256,17 @@ deny|missing|bash|119 -X POST は止める|gh api -X POST repos/acme/widgets/iss
 pass|-|bash|120 -X GET -f は止めない|gh api -X GET repos/acme/widgets/issues -f state=open
 pass|-|bash|121 --repo other/repo は通す|gh issue create -t x --repo other/repo
 deny|missing|bash|122 --repo が大文字小文字違いの自リポジトリなら止める|gh issue create -t x --repo Acme/WIDGETS
-pass|-|bash|123 -b に行があれば通す|gh issue create -t x -b '種類の提案: flow:feature（根拠）'
+pass|-|bash|123 -b に行があれば通す|gh issue create -t x -b '種類の提案: flow:feature（根拠）⏎⏎@S'
 deny|missing|bash|124 -b に行がなければ止める|gh issue create -t x -b '本文だけ'
 deny|unreadable|bash|125 ダブルクォートの中で ` の範囲が提案の行をまたぐなら止める|gh issue create -t x --body "前 `echo⏎種類の提案: flow:feature（根拠）⏎` 後"
 deny|unreadable|bash|126 <<EOF の中で $(… の範囲が提案の行をまたぐなら止める|gh issue create -t x --body-file - <<EOF⏎説明 $(true⏎種類の提案: flow:feature（根拠）⏎)⏎EOF
-pass|-|bash|127 シングルクォートの本文に cat <<EOF と提案の行があれば通す|gh issue create -t x --body '前⏎cat <<EOF⏎種類の提案: flow:feature（根拠）⏎EOF⏎後'
-pass|-|bash|128 ダブルクォートの本文に cat <<EOF と提案の行があれば通す|gh issue create -t x --body "前⏎cat <<EOF⏎種類の提案: flow:feature（根拠）⏎EOF⏎後"
+pass|-|bash|127 シングルクォートの本文に cat <<EOF と提案の行があれば通す|gh issue create -t x --body '前⏎cat <<EOF⏎種類の提案: flow:feature（根拠）⏎EOF⏎後⏎⏎@S'
+pass|-|bash|128 ダブルクォートの本文に cat <<EOF と提案の行があれば通す|gh issue create -t x --body "前⏎cat <<EOF⏎種類の提案: flow:feature（根拠）⏎EOF⏎後⏎⏎@S"
 deny|unreadable|bash|168 "$(cat <<'EOF' …)" の区切りの行と閉じ括弧の間にパイプが続けば止める|gh issue create -t x --body "$(cat <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎¦ tr a b)"
-pass|-|bash|129 $(cat <<'EOF') の本文に " と ) を含む行があっても通す|gh issue create -t x --body "$(cat <<'EOF'⏎" ) を含む行⏎種類の提案: flow:feature（根拠）⏎EOF⏎)"
+pass|-|bash|129 $(cat <<'EOF') の本文に " と ) を含む行があっても通す|gh issue create -t x --body "$(cat <<'EOF'⏎" ) を含む行⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF⏎)"
 deny|unreadable|bash|130 止めすぎを固定: $(sed … <<'EOF' …) は止める|gh issue create -t x --body "$(sed s/a/b/ <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎)"
 deny|missing|bash|131 --label "flow:$K" だけなら止める|gh issue create -t x --label "flow:$K"
-pass|-|bash|132 --label "flow:$K" と --label flow:feature なら通す|gh issue create -t x --label "flow:$K" --label flow:feature
+pass|-|bash|132 --label "flow:$K" と --label flow:feature なら通す|gh issue create -t x --label "flow:$K" --label flow:feature --body-file @W/sections.md
 deny|missing|bash|133 -R "$REPO" は自リポジトリとして止める|gh issue create -t x -R "$REPO"
 deny|missing|bash|133 --repo "$REPO" は自リポジトリとして止める|gh issue create -t x --repo "$REPO"
 deny|missing|bash|134 GH_REPO=$R gh issue create は止める|GH_REPO=$R gh issue create -t x
@@ -275,7 +275,7 @@ deny|unreadable|bash|136 <<EOF の提案の行に $(echo 根拠) を含むなら
 deny|unreadable|bash|137 <<EOF の提案の行に $R を含むなら止める|gh issue create -t x --body-file - <<EOF⏎種類の提案: flow:feature（$R）⏎EOF
 deny|unreadable|bash|138 止めすぎを固定: <<EOF の本文の \$ も確定できないとして止める|gh issue create -t x --body-file - <<EOF⏎種類の提案: flow:feature（根拠 \$5）⏎EOF
 deny|unreadable|bash|139 残る穴を固定: $'a\'b…' は止める|gh issue create -t x --body $'a\'b⏎種類の提案: flow:feature（根拠）'
-pass|-|bash|141 URL=$(gh issue create --body-file - <<'EOF' …) で通す|URL=$(gh issue create --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF⏎)
+pass|-|bash|141 URL=$(gh issue create --body-file - <<'EOF' …) で通す|URL=$(gh issue create --body-file - <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF⏎)
 pass|-|bash|142 gh を含まず字句に分けられないコマンドは通す|echo 'issue の話
 deny|missing|bash|143 for … do の後ろの作成も止める|for i in 1; do gh issue create -t x; done
 deny|missing|bash|144 if … then の後ろの作成も止める|if true; then gh issue create -t x; fi
@@ -307,29 +307,66 @@ deny|unreadable|bash|160 閉じない ` の後ろの gh を含むなら止める
 deny|unreadable|bash|161 閉じない " の後ろの gh を含むなら止める|echo "gh issue create -t x
 deny|unreadable|bash|162 閉じない ' の後ろの gh を含むなら止める|echo 'gh issue create -t x
 deny|unreadable|bash|163 止めすぎを固定: 算術の ((…<<…)) の後ろの作成はラベルがあっても止める|(( x = 1<<2 )); gh issue create -t x --label flow:feature
-pass|-|bash|163 $((…<<…)) は中身を別に読むので、ラベルのある作成は通す|gh issue create -t $((1<<2)) --label flow:feature
+pass|-|bash|163 $((…<<…)) は中身を別に読むので、ラベルのある作成は通す|gh issue create -t $((1<<2)) --label flow:feature --body-file @W/sections.md
 deny|missing|bash|169 --input があれば -f 'labels[]=flow:*' はクエリに回るので止める|gh api repos/acme/widgets/issues --input @W/in-plain.json -f 'labels[]=flow:feature'
 deny|missing|bash|169 --input があれば -f body= の提案の行はクエリに回るので止める|gh api repos/acme/widgets/issues --input @W/in-plain.json -f body='種類の提案: flow:feature（根拠）'
 deny|missing|bash|169 --input を 2 つ書けば最後のものを読む|gh api repos/acme/widgets/issues --input @W/in-body.json --input @W/in-plain.json
 pass|-|bash|169 --input を 2 つ書き、最後のものに提案の行があれば通す|gh api repos/acme/widgets/issues --input @W/in-plain.json --input @W/in-body.json
 deny|unreadable|bash|170 ヒアドキュメントの後の < file が標準入力になるなら止める|gh issue create -t x --body-file - <<'EOF' < @W/plain.md⏎種類の提案: flow:feature（根拠）⏎EOF
 deny|unreadable|bash|170 ヒアドキュメントの後の <<< が標準入力になるなら止める|gh issue create -t x --body-file - <<'EOF' <<< x⏎種類の提案: flow:feature（根拠）⏎EOF
-pass|-|bash|170 < file の後のヒアドキュメントが標準入力になるなら通す|gh issue create -t x --body-file - < @W/plain.md <<'EOF'⏎種類の提案: flow:feature（根拠）⏎EOF
+pass|-|bash|170 < file の後のヒアドキュメントが標準入力になるなら通す|gh issue create -t x --body-file - < @W/plain.md <<'EOF'⏎種類の提案: flow:feature（根拠）⏎⏎@S⏎EOF
 deny|missing|bash|171 根拠が空白だけの行は満たさない|gh issue create -t x -b '種類の提案: flow:feature（ 　 ）'
-pass|-|bash|171 根拠の前後に空白があっても通す|gh issue create -t x -b '種類の提案: flow:feature（ 根拠 ）  '
+pass|-|bash|171 根拠の前後に空白があっても通す|gh issue create -t x -b '種類の提案: flow:feature（ 根拠 ）  ⏎⏎@S'
 deny|missing|bash|172 --body-file があれば --body の提案の行は送られないので止める|gh issue create -t x -b '種類の提案: flow:feature（根拠）' --body-file @W/plain.md
 deny|missing|bash|172 --body-file を後に書いても前に書いても --body-file を読む|gh issue create -t x --body-file @W/plain.md -b '種類の提案: flow:feature（根拠）'
 deny|missing|bash|172 --body を 2 つ書けば最後のものを読む|gh issue create -t x -b '種類の提案: flow:feature（根拠）' -b '本文だけ'
-pass|-|bash|172 --body を 2 つ書き、最後のものに提案の行があれば通す|gh issue create -t x -b '本文だけ' -b '種類の提案: flow:feature（根拠）'
+pass|-|bash|172 --body を 2 つ書き、最後のものに提案の行があれば通す|gh issue create -t x -b '本文だけ' -b '種類の提案: flow:feature（根拠）⏎⏎@S'
 deny|missing|bash|172 --body-file を 2 つ書けば最後のものを読む|gh issue create -t x --body-file @W/prop.md --body-file @W/plain.md
-pass|-|bash|173 クォートした () は区切りでないので、ラベルのある作成は通す|gh issue create --title '()' -l flow:feature
-pass|-|bash|173 ダブルクォートした ; は区切りでないので、ラベルのある作成は通す|gh issue create --title ";" -l flow:feature
-pass|-|bash|173 \¦ は区切りでないので、ラベルのある作成は通す|gh issue create --title \¦ -l flow:feature
+pass|-|bash|173 クォートした () は区切りでないので、ラベルのある作成は通す|gh issue create --title '()' -l flow:feature --body-file @W/sections.md
+pass|-|bash|173 ダブルクォートした ; は区切りでないので、ラベルのある作成は通す|gh issue create --title ";" -l flow:feature --body-file @W/sections.md
+pass|-|bash|173 \¦ は区切りでないので、ラベルのある作成は通す|gh issue create --title \¦ -l flow:feature --body-file @W/sections.md
 deny|missing|bash|174 --web=false は作成するので止める|gh issue create -t x --web=false
 deny|missing|bash|174 -w=false は作成するので止める|gh issue create -t x -w=false
 deny|missing|bash|174 --web の後の --web=0 は作成するので止める|gh issue create -t x --web --web=0
 pass|-|bash|174 --web=true は通す|gh issue create -t x --web=true
-pass|-|bash|174 -l=flow:feature は gh が値として読むので通す|gh issue create -t x -l=flow:feature
+pass|-|bash|174 -l=flow:feature は gh が値として読むので通す|gh issue create -t x -l=flow:feature --body-file @W/sections.md
+deny|sections|mcp|sections-missing MCP 作成は完了の確かめ方がなければ止める|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"## ゴール\n作成できる\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n既定に従う"}
+deny|sections|bash|sections-missing-goal ゴールがなければ止める|gh issue create -t x -l flow:feature -b '## 完了の確かめ方⏎結果を確認する⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'
+deny|sections|bash|sections-missing-authority 拠り所がなければ止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎## 完了の確かめ方⏎結果を確認する⏎⏎## 決めてよい範囲⏎既定に従う'
+deny|sections|bash|sections-missing-scope 決めてよい範囲がなければ止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎## 完了の確かめ方⏎結果を確認する⏎⏎## 拠り所⏎無し'
+deny|sections|bash|sections-empty 完了の確かめ方が空白だけなら止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎## 完了の確かめ方⏎ ⇥ ⏎## 拠り所⏎無し⏎## 決めてよい範囲⏎既定に従う'
+deny|sections|bash|sections-in-code コードフェンスの中にしか共通節がなければ止める|gh issue create -t x -l flow:feature -b '```markdown⏎@S⏎```'
+deny|sections|bash|sections-in-comment HTML コメントの中にしか共通節がなければ止める|gh issue create -t x -l flow:feature -b '<!--⏎@S⏎-->'
+deny|sections|bash|sections-comment-only-answer 完了の確かめ方が HTML コメントだけなら止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎## 完了の確かめ方⏎<!-- 結果を確認する -->⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'
+deny|sections|bash|sections-in-quote 引用の中にしか完了の確かめ方がなければ止める|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎> ## 完了の確かめ方⏎> 結果を確認する⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'
+pass|-|bash|sections-fenced-command 完了の確かめ方がコードフェンス内のコマンドだけでも通す|gh issue create -t x -l flow:feature -b '## ゴール⏎作成できる⏎⏎## 完了の確かめ方⏎```sh⏎bash test.sh⏎```⏎⏎## 拠り所⏎無し⏎⏎## 決めてよい範囲⏎既定に従う'
+deny|sections|bash|sections-form-heading-rest REST 作成はフォームの見出しだけなら止める|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/sections-h3.md
+deny|sections|mcp|sections-form-heading-mcp MCP 作成はフォームの見出しだけなら止める|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"### ゴール\n作成できる\n\n### 完了の確かめ方\n結果を確認する\n\n### 拠り所\n無し\n\n### 決めてよい範囲\n既定に従う"}
+pass|-|bash|sections-complete-rest REST 作成は正規の共通節で通す|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/sections.md
+pass|-|mcp|sections-complete-mcp MCP 作成は正規の共通節で通す|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"@SJ"}
+deny|sections|bash|sections-effective-body-last-raw REST 作成は最後の raw 本文を検査する|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -f 'body=@S' -f body=本文だけ
+pass|-|bash|sections-effective-body-last-raw-pass 不完全な raw 本文より最後の完全な raw 本文を使う|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -f body=本文だけ -f 'body=@S'
+deny|sections|bash|sections-effective-body-last-typed REST 作成は最後の typed 本文を検査する|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/sections.md -F body=@@W/plain.md
+deny|sections|bash|sections-effective-body-typed REST 作成は後から raw があっても typed 本文を優先する|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/plain.md -f 'body=@S'
+pass|-|bash|sections-effective-body-typed-pass typed の完全な本文が raw の不完全な本文に勝てば通す|gh api repos/acme/widgets/issues -f title=x -f 'labels[]=flow:feature' -F body=@@W/sections.md -f body=本文だけ
+deny|sections|bash|sections-effective-body-input REST 作成はフィールドより input の本文を優先する|gh api --method POST repos/acme/widgets/issues --input @W/in-missing-completion.json -f 'body=@S'
+deny|sections|bash|sections-effective-body-file CLI 作成は直接指定より body-file の本文を優先する|gh issue create -t x -l flow:feature --body-file @W/plain.md -b '@S'
+pass|-|bash|sections-effective-body-file-pass 直接指定が不完全でも完全な body-file があれば通す|gh issue create -t x -l flow:feature --body-file @W/sections.md -b 本文だけ
+deny|sections|bash|sections-effective-body-two-calls 2 件目だけ共通節がなければ止める|gh issue create -t a -l flow:feature --body-file @W/sections.md && gh issue create -t b -l flow:feature -b 本文だけ
+deny|sections|mcp|sections-declaration-only 種類の提案だけは節の内容に数えない|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n結果を確認する\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n種類の提案: flow:feature（根拠）"}
+deny|sections|mcp|sections-opt-out-only 対象外宣言だけは節の内容に数えない|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n結果を確認する\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n種類: implementation-flow に通さない（棚卸しのため）"}
+pass|-|mcp|sections-declared-with-content 節の内容と種類の提案が両方あれば通す|{"method":"create","owner":"acme","repo":"widgets","title":"x","body":"@SJ\n種類の提案: flow:feature（根拠）"}
+pass|-|mcp|sections-inline-code インラインコード中の記号はコメントを開かない|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n`<!--` の表示を確かめる\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n既定に従う"}
+pass|-|mcp|sections-multiline-code 改行をまたぐインラインコード内の記号はコメントを開かない|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n`<!--\n` の表示を確かめる\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n既定に従う"}
+deny|sections|mcp|sections-code-block-boundary 前の段落のバッククォートは別ブロックのコメントを隠さない|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"前置きに ` を書く\n\n<!--\n` はコメント内\n@SJ\n-->"}
+pass|-|mcp|sections-unclosed-heading-marker 見出し行で閉じない記号は後続の節を隠さない|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"# Notes <!--\n\n@SJ\n\n-->"}
+pass|-|mcp|sections-heading-inline-comment 見出しが行内コメントより前に読めるなら共通節に数える|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"## ゴール <!-- 補足 -->\n作成できる\n\n## 完了の確かめ方\n結果を確認する\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n既定に従う"}
+pass|-|mcp|sections-multiline-code-bullet 箇条書き内で改行をまたぐコードはコメントを開かない|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n- `<!--\n  ` の表示を確かめる\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n既定に従う"}
+pass|-|mcp|sections-multiline-code-ordered 番号付きリスト内で改行をまたぐコードはコメントを開かない|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n1. `<!--\n   ` の表示を確かめる\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n既定に従う"}
+pass|-|mcp|sections-multiline-code-quote 引用内で改行をまたぐコードはコメントを開かない|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n> `<!--\n> ` の表示を確かめる\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n既定に従う"}
+deny|sections|mcp|sections-list-item-code-boundary 別の項目の記号はコメントを隠さない|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"- ` はそのまま\n- <!--\n  ` を隠す\n  ## ゴール\n  作成できる\n\n  ## 完了の確かめ方\n  結果を確認する\n\n  ## 拠り所\n  無し\n\n  ## 決めてよい範囲\n  既定に従う\n  -->"}
+pass|-|mcp|sections-escaped-comment エスケープされた記号はコメントを開かない|{"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"## ゴール\n作成できる\n\n## 完了の確かめ方\n\\<!-- の表示を確かめる\n\n## 拠り所\n無し\n\n## 決めてよい範囲\n既定に従う"}
+pass|-|bash|sections-empty-body-file 最後の空の body-file は無視して直接指定を使う|gh issue create -t x -l flow:feature --body-file @W/plain.md --body-file '' -b '@S'
 CASES
 )"
 
@@ -352,7 +389,7 @@ CASES
 detector_rows() {
   local expected category form label input origin
   while IFS='|' read -r expected category form label input; do
-    [ -n "$label" ] && printf 'cases|%s|%s|%s|%s|%s|%s\n' "$expected" "$category" "$form" "$own_origin" "$label" "$input"
+    [ -n "$label" ] && printf 'cases|%s|%s|%s|%s|%s|%s\n' "$expected" "$category" "$form" "$own_origin" "$label" "$(expand_section_tokens "$input")"
   done <<<"$cases"
   while IFS='|' read -r expected origin label input; do
     [ -n "$label" ] && printf 'origin_cases|%s|missing|bash|%s|%s|%s\n' "$expected" "$origin" "$label" "$input"
@@ -426,7 +463,8 @@ git -C "$hook_copy" init -q && git -C "$hook_copy" remote add origin "$own_origi
 
 hook_cases="$(cat <<'CASES'
 deny|real|ok|ok|84 欠けた作成は deny になる|gh issue create -t x
-pass|real|ok|ok|88 ラベル付きの MCP 作成は通す|@mcp {"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"]}
+pass|real|ok|ok|88 sections-hook-complete ラベルと共通節が揃った MCP 作成は通す|@mcp {"method":"create","owner":"acme","repo":"widgets","title":"x","labels":["flow:feature"],"body":"@SJ"}
+deny|real|ok|ok|sections-hook-missing フックは本文が不完全な作成を止める|gh issue create -t x -l flow:feature --body '本文だけ'
 deny|crash|ok|ok|89 traceback で落ちる検出器なら deny になる|gh issue create -t x
 deny|summary-exit1|ok|ok|89 報告の行を出さずに exit 1 で終わる検出器なら deny になる|gh issue create -t x
 deny|usage|ok|ok|89 exit 2 で終わる検出器なら deny になる|gh issue create -t x
@@ -444,9 +482,11 @@ report_column_count hook_cases 6 "$hook_cases"
 #
 # $1 表に書いた入力
 hook_payload() {
-  case "$1" in
-    "@mcp "*) payload mcp "${1#@mcp }" ;;
-    *) payload bash "$1" ;;
+  local text
+  text="$(expand_section_tokens "$1")"
+  case "$text" in
+    "@mcp "*) payload mcp "${text#@mcp }" ;;
+    *) payload bash "$text" ;;
   esac
 }
 
@@ -487,6 +527,15 @@ while IFS='|' read -r label text; do
   report "載る" "$found" "$label"
 done <<<"$reason_cases"
 report_cases_ran reason_cases "$cases_before"
+
+sections_reason="$(run_hook real ok ok "$(payload bash "gh issue create -t x -l flow:feature --body '$missing_completion_body'")")"
+found="載らない"
+[[ "$sections_reason" == *"完了の確かめ方"* ]] && found="載る"
+report "載る" "$found" "sections-hook-guidance 不足した見出しを拒否文に載せる"
+
+found="載らない"
+[[ "$sections_reason" == *"作業の種類がまだ決まっていない場合は"* ]] && found="載る"
+report "載る" "$found" "sections-hook-guidance-kind 種類の決め方は未確定の場合だけ案内する"
 
 # 86: 人に尋ねる道が、人がいない起動の行と書式より先に出る(拒否文が写せる行を先に出すと、
 # 対話中でも人に尋ねない道が最短になる)。
