@@ -1,0 +1,90 @@
+{
+  "version": 2,
+  "pr": 1503,
+  "headBranch": "claude/affectionate-hypatia-6fjk2z",
+  "baseBranch": "main",
+  "mergeBase": "efa2803e2f150f496f94d6b73424154d9843e7ea",
+  "head": "b1283eee3903af107a449dd655e4383ec7aaf412",
+  "groups": [
+    {
+      "label": "ハーネス",
+      "files": [
+        {
+          "path": ".claude/agents/harness-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/case-law/process.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        },
+        {
+          "path": "harness/records/pr-1498.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "changed": true,
+          "target": null
+        }
+      ]
+    }
+  ],
+  "tests": {
+    "added": [],
+    "removed": [],
+    "files": []
+  },
+  "commits": [
+    {
+      "sha": "b1283eee3903af107a449dd655e4383ec7aaf412",
+      "merge": false,
+      "author": "Claude",
+      "date": "2026-11-28T00:03:02Z",
+      "subject": "📝 [Doc]: #1502 判定が代わりの条件を見ていた形を判例へ",
+      "body": "harness の再発 8 件のうち 5 件（pr-1495 / pr-1498）は、判定・終了の\n条件が守りたい事実の手前の代わりを見ていた形だった。前回 pr-1447 が\n層=hook のため同じ層を外し、process.md に NG / OK と判定の分かれ目を\n足した。harness-reviewer の観点から判例へ 1 行で参照する。\n\nCo-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>\nClaude-Session: https://claude.ai/code/session_018ajQ2R27RwWe95HppuapW7",
+      "files": [
+        {
+          "path": ".claude/agents/harness-reviewer.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 1,
+          "deletions": 0,
+          "patch": "@@ -39,4 +39,5 @@ model: opus\n `分類: harness`（判例 `tooling-rule-scope-gap`・判例 `tool-behavior-unverified`）。`.claude/hooks/` `.github/scripts/` `harness/` のスクリプトが対象。\n \n - **ブロックのネスト 3 段まで・条件式に名前を付ける、が対象言語（シェル・Python）を問わず守られているか**（`rules/coding.md`「規約の適用範囲」）\n+- **判定・終了の条件が、守りたい事実の代わりの条件を見ていないか**（判例 `harness`「判定・終了の条件が、守りたい事実の代わりの条件を見ていた」）。スキルの収束・打ち切り条件も対象\n - **シェル・CLI・パーサの挙動を前提にした箇所を、小さく再現して確かめたか。** 確かめた跡が差分・Issue になければ、自分で再現して確かめる（`rules/coding.md`「外部の挙動は動かして確かめる」）",
+          "patchLines": 6,
+          "truncated": false
+        },
+        {
+          "path": "harness/case-law/process.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 23,
+          "deletions": 0,
+          "patch": "@@ -415,6 +415,29 @@ pr-508（2026-09-13）から `#620`（同 09-19）までに `rules/` を触っ\n \n (`rules/coding.md`「外部の挙動は動かして確かめる」から、規範の 1 文を残して移した。)\n \n+## `harness` — 判定・終了の条件が、守りたい事実の代わりの条件を見ていた\n+\n+bot に届いた 5 件（pr-1495 指摘 1・2 / pr-1498 指摘 1・2・3）は、どれも**ハーネスの判定が、守りたい事実の手前にある\n+代わりの条件を見ていた**。代わりの条件は普段は事実と一致するが、端の状態では一致せず、事実が成り立たないまま通した。\n+\n+- **NG:** 要素の矩形が画面内にあるので表示済みとする（pr-1498 指摘 3: 祖先のスクロール枠で完全に隠れていた）。\n+  **OK:** ブラウザが求める交差領域（実際に描画される範囲）を見る\n+- **NG:** 入力欄へフォーカスを指示したので、そこに入力されるとする（pr-1498 指摘 1: fieldset から継承した無効状態で\n+  フォーカスが移らず、別の欄に入った）。**OK:** 指示した後に、フォーカスが実際に指定の欄にあるかを見てから入力する\n+- **NG:** 押下の前に座標の要素を検査し、そのまま押す（pr-1498 指摘 2: ポインターを動かしたらホバーで覆いが出て、\n+  押下が別の要素に届いた）。**OK:** 状態を変える操作（移動・1 回目の押下）の後に、同じ検査をもう一度行う\n+- **NG:** 採用 0 件なら収束とする（pr-1495 指摘 2: 担当外の回帰が残っていた）。**OK:** 収束は「未解消の問題が残っていない」\n+  ことで判定し、採用件数はその一部として扱う\n+- **NG:** 版番号（v3 到達）と観点単位の差し戻し回数で打ち切る（pr-1495 指摘 1: 前の指摘を解消しても、別の指摘で第 3 周へ\n+  進めなかった）。**OK:** 打ち切りは「同じ未解消指摘が繰り返し戻ってくる」ことで数える\n+\n+**判定の分かれ目:** 判定・終了の条件を書いたら、**それが守りたい事実そのものか、事実の手前の代わりか**を言葉にする。\n+代わりなら、代わりが成り立って事実が成り立たない状態（隠れている・継承されている・後から変わる・別枠に残っている）を\n+1 つ挙げ、判定表かテストのケースに入れる。1 つも挙げられないなら、それは代わりではなく事実を見ている。\n+\n+フックにしない理由: ある条件が事実の代わりになっているかは意味の判断であり、文字列・AST・コマンドの成否では白黒が付かない\n+（前回の介入 pr-1447 は層=hook で、同じ層は候補から外した）。\n+\n ## 単発（まだ語彙にしていない）\n \n 2 件目が出たら語彙へ昇格する候補。",
+          "patchLines": 30,
+          "truncated": false
+        },
+        {
+          "path": "harness/records/pr-1498.md",
+          "status": "M",
+          "oldPath": null,
+          "additions": 2,
+          "deletions": 0,
+          "patch": "@@ -178,3 +178,5 @@ Claude Code の発火ログは確認できなかった。別エージェント\n ## 規約への反映\n \n 無し。実装時の表示確認手順の移管とは別に、振り返りを理由にした規約・フック・スキルの介入は行っていない。\n+\n+- 対策済: `harness` 層=case-law at pr-1503",
+          "patchLines": 6,
+          "truncated": false
+        }
+      ]
+    }
+  ],
+  "dependencies": []
+}
