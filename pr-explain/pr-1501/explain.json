@@ -1,7 +1,7 @@
 {
   "version": 1,
   "pr": 1501,
-  "sha": "a14abed76ed064cece041b26c52279cf07ce983f",
+  "sha": "a2201ef69e10647655028bfe6ef186e8dfff92b5",
   "issue": 1479,
   "overview": {
     "title": "共通の節をそろえてから Issue を作る",
@@ -19,6 +19,9 @@
       },
       {
         "text": "フォームで起票する人は、種類別の入力欄と共通の必須欄を見ながら書ける。"
+      },
+      {
+        "text": "同じ段落のコード内にあるコメント開始記号は本文の表示文字として扱い、見出し内で閉じたコメントは見出し名に含めない。"
       }
     ],
     "highlights": [
@@ -234,6 +237,106 @@
       "targets": [
         ".claude/hooks/lib/issue-flow-kind-violations.py"
       ]
+    },
+    {
+      "id": "multiline-code-comment-marker",
+      "suite": "hook-cases",
+      "name": "sections-multiline-code 改行をまたぐインラインコード内の記号はコメントを開かない",
+      "techniques": [
+        "regression",
+        "boundary"
+      ],
+      "why": "コード中の表示用記号で正しい必須節が隠れた扱いになるのを防ぐ。",
+      "given": "同じ段落のインラインコードが改行をまたぎ、その中にコメント開始記号がある本文。",
+      "when": "作成前に共通節を照合する。",
+      "then": "コメントを開始せず、後続の共通節を含む完全な本文として通す。",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 360,
+        "end": 360,
+        "text": "pass|-|mcp|sections-multiline-code 改行をまたぐインラインコード内の記号はコメントを開かない|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":\"## ゴール\\n作成できる\\n\\n## 完了の確かめ方\\n`<!--\\n` の表示を確かめる\\n\\n## 拠り所\\n無し\\n\\n## 決めてよい範囲\\n既定に従う\"}"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-body"
+      ]
+    },
+    {
+      "id": "inline-heading-comment",
+      "suite": "hook-cases",
+      "name": "sections-heading-inline-comment 見出しが行内コメントより前に読めるなら共通節に数える",
+      "techniques": [
+        "regression",
+        "boundary"
+      ],
+      "why": "GitHubで見えている題名と作成前の判定を揃える。",
+      "given": "必須節の見出しと、その後ろに同じ行で閉じるコメントがある本文。",
+      "when": "作成前に共通節を照合する。",
+      "then": "見えている見出し名で節を判定する。",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 363,
+        "end": 363,
+        "text": "pass|-|mcp|sections-heading-inline-comment 見出しが行内コメントより前に読めるなら共通節に数える|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":\"## ゴール <!-- 補足 -->\\n作成できる\\n\\n## 完了の確かめ方\\n結果を確認する\\n\\n## 拠り所\\n無し\\n\\n## 決めてよい範囲\\n既定に従う\"}"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-body"
+      ]
+    },
+    {
+      "id": "list-multiline-code",
+      "suite": "hook-cases",
+      "name": "sections-multiline-code-bullet 箇条書き内で改行をまたぐコードはコメントを開かない",
+      "techniques": [
+        "regression",
+        "boundary"
+      ],
+      "why": "同じ箇条書きの項目にまたがるコード内の開始記号は、後続の節を隠さない。",
+      "given": "複数行のインラインコードを含む完全な本文。",
+      "when": "作成前に共通節を照合する。",
+      "then": "見えている後続節を検査対象として通過する。",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 364,
+        "end": 364,
+        "text": "pass|-|mcp|sections-multiline-code-bullet 箇条書き内で改行をまたぐコードはコメントを開かない|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":\"## ゴール\\n作成できる\\n\\n## 完了の確かめ方\\n- `<!--\\n  ` の表示を確かめる\\n\\n## 拠り所\\n無し\\n\\n## 決めてよい範囲\\n既定に従う\"}"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-body"
+      ]
+    },
+    {
+      "id": "quote-multiline-code",
+      "suite": "hook-cases",
+      "name": "sections-multiline-code-quote 引用内で改行をまたぐコードはコメントを開かない",
+      "techniques": [
+        "regression",
+        "boundary"
+      ],
+      "why": "同じ引用段落内のコードの記号は、実際の HTML コメントではない。",
+      "given": "複数行のインラインコードを含む完全な本文。",
+      "when": "作成前に共通節を照合する。",
+      "then": "見えている後続節を検査対象として通過する。",
+      "excerpt": {
+        "path": ".claude/hooks/lib/issue-flow-kind-cases.sh",
+        "start": 366,
+        "end": 366,
+        "text": "pass|-|mcp|sections-multiline-code-quote 引用内で改行をまたぐコードはコメントを開かない|{\"method\":\"create\",\"owner\":\"acme\",\"repo\":\"widgets\",\"title\":\"x\",\"labels\":[\"flow:feature\"],\"body\":\"## ゴール\\n作成できる\\n\\n## 完了の確かめ方\\n> `<!--\\n> ` の表示を確かめる\\n\\n## 拠り所\\n無し\\n\\n## 決めてよい範囲\\n既定に従う\"}"
+      },
+      "targets": [
+        ".claude/hooks/lib/issue-flow-kind-violations.py"
+      ],
+      "covers": [
+        "judge-body"
+      ]
     }
   ],
   "impact": {
@@ -297,6 +400,25 @@
       ],
       "tests": [
         "effective-body"
+      ]
+    },
+    {
+      "id": "markdown-comment-boundaries",
+      "kind": "codebase",
+      "category": "作成前の検査",
+      "label": "コメントとコードの境目",
+      "gist": "コードスパン内の記号は表示用の文字になる。見出し内のコメントはその行だけ、行頭から始まるブロックコメントは閉じる記号までを対象とする。",
+      "occurrences": [
+        {
+          "path": ".claude/hooks/lib/issue-flow-kind-violations.py",
+          "text": "節を探す前にインラインコードとコメントの範囲を判定する。"
+        }
+      ],
+      "tests": [
+        "multiline-code-comment-marker",
+        "inline-heading-comment",
+        "list-multiline-code",
+        "quote-multiline-code"
       ]
     }
   ],
@@ -380,6 +502,12 @@
           "text": "テスト用のサーバーが Issue の機能照会に答える。"
         }
       ]
+    },
+    {
+      "sha": "a2201ef69e10647655028bfe6ef186e8dfff92b5",
+      "phase": "revise",
+      "role": "Markdown のコードとコメントの境界をそろえる。",
+      "why": "作成前の検査を、GitHub 上で実際に見える共通節の扱いに合わせる。"
     }
   ]
 }
