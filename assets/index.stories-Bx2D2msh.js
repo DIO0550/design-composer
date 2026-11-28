@@ -1,0 +1,58 @@
+import{n as e}from"./chunk-BneVvdWh.js";import{t}from"./jsx-runtime-DweqXWlm.js";import{n,t as r}from"./Option-PwGEWw_t.js";import{i,r as a}from"./ArrayEx-5tj-IZIR.js";import{n as o,r as s,t as ee}from"./document-error-list-DrBa-WyT.js";import{i as c,n as l,r as u,t as d}from"./file-paths-CEMAofDo.js";import{n as te,t as ne}from"./document-json-nS6NhPnX.js";import{i as re,n as ie,r as ae,t as oe}from"./document-tab-bar-DmMk2yzn.js";import{f as se,g as ce,h as le,m as ue}from"./elapsed-1SlOYrOy.js";import{a as de,c as f,i as fe,l as p,n as m,o as pe,r as me,s as h,t as he}from"./opened-document-editor-CvJjWpm5.js";import{a as ge,d as g,f as _,m as _e,o as ve,p as ye,r as be,s as xe}from"./shown-shortcut-CicCfpJ0.js";import{a as Se,c as Ce,i as we,l as Te,n as Ee,o as v,t as De,u as Oe}from"./document-start-Bfx_tHwS.js";import{n as ke,t as y}from"./opened-documents-BR-Urufg.js";import{S as b,b as x,w as S,x as C,y as w}from"./use-node-drag-UvTtzTlm.js";import{i as Ae,t as je}from"./document-open-failure-Dyy1Qq8V.js";function Me(e){let t=Object.values(T).find(t=>t===e);return r.fromNullable(t)}function Ne(e){return{async subscribeCommand(t){try{let n=await e.listen(E,e=>{let n=Me(e);r.isSome(n)&&t(n.value)});return a.ok(n)}catch(e){return a.err({message:String(e)})}}}}var T,E,Pe=e((()=>{n(),i(),T={Open:`open`,Create:`create`,CloseTab:`close-tab`},E=`document-menu`}));function Fe(){let e=h(E);return{menu:Ne(e.ipc),choose:e.deliver,deliverUnknown:e.deliver,denySubscribe:e.denySubscribe}}var Ie=e((()=>{f(),Pe()}));function Le(e){return{message:g.toFailureMessage(e)}}function Re(e){return e===null?a.ok(r.none):typeof e==`string`?a.ok(r.some(e)):a.err({message:`load_app_state が文字列でも null でもない値を返した: ${String(e)}`})}function ze(e){let t=g.caller(e,Le);return{async load(){return a.flatMap(await t(`load_app_state`,{}),Re)},async save(e){return a.map(await t(`save_app_state`,{content:e}),()=>void 0)}}}var Be=e((()=>{_(),n(),i()}));function D(e){return Promise.reject({message:`app-state.json: ${e}`})}function O(e){let t=e,n=!1,i=!1,a=()=>n?D(`読み込みが拒まれた`):Promise.resolve(t??null),o=e=>typeof e==`string`?i?D(`書き込みが拒まれた`):(t=e,Promise.resolve(void 0)):p(`save_app_state: content が文字列でない`);return{ipc:ze({invoke(e,t){switch(e){case`load_app_state`:return a();case`save_app_state`:return o(t.content);default:return p(`Command ${e} not found`)}},listen(e){return p(`Event ${e} not emitted`)}}),storedContent(){return r.fromNullable(t)},denyLoad(){n=!0},denySave(){i=!0}}}var Ve=e((()=>{f(),n(),Be()}));function He(e){let t=g.caller(e,e=>({message:String(e)}));return{async close(){return a.map(await t(`close_current_window`,{}),()=>void 0)}}}var Ue=e((()=>{_(),i()}));function We(){let e=!1,t=!1,n=()=>t?p(`close_current_window: ウィンドウを閉じられない`):(e=!0,Promise.resolve(void 0));return{appWindow:He({invoke(e){return e===`close_current_window`?n():p(`Command ${e} not found`)},listen(e){return p(`Event ${e} not emitted`)}}),isWindowClosed(){return e},denyClose(){t=!0}}}var Ge=e((()=>{f(),Ue()}));function Ke(e){return{message:g.toFailureMessage(e)}}function qe(e,t){if(t===null)return a.ok(r.none);if(typeof t!=`string`)return a.err({message:`${e} が文字列以外を返した: ${String(t)}`});let n=u.create(t);return r.isSome(n)?a.ok(n):a.err({message:`選ばれたパスがファイル名を持たない: ${t}`})}function Je(e){let t=g.caller(e,Ke),n=async e=>a.flatMap(await t(e,{}),t=>qe(e,t));return{chooseOpenPath(){return n(`choose_open_document_path`)},chooseSavePath(){return n(`choose_save_document_path`)}}}var Ye=e((()=>{c(),_(),n(),i()}));function k(e){switch(e.kind){case`chosen`:return Promise.resolve(e.path);case`canceled`:return Promise.resolve(null);case`refused`:return Promise.reject({kind:`invalidPath`,message:e.message});case`failed`:return p(e.message)}}function Xe(e){return{dialog:Je({invoke(t){switch(t){case`choose_open_document_path`:return k(e.open);case`choose_save_document_path`:return k(e.save);default:return p(`Command ${t} not found`)}},listen(e){return p(`Event ${e} not emitted`)}})}}var A,j,Ze=e((()=>{f(),Ye(),A={kind:`canceled`},j={Canceled:A,chosen(e){return{kind:`chosen`,path:e}},refused(e){return{kind:`refused`,message:e}},failed(e){return{kind:`failed`,message:e}}}}));function Qe(e){if(!ye.isObject(e))return r.none;let{paths:t}=e;if(!Array.isArray(t)||!t.every(e=>typeof e==`string`))return r.none;let n=t.flatMap(e=>{let t=u.create(e);return r.isSome(t)?[t.value]:[]});return n.length>0?r.some(n):r.none}function $e(e){return{async subscribeDropped(t){try{let n=await e.listen(M,e=>{let n=Qe(e);r.isSome(n)&&t(n.value)});return a.ok(n)}catch(e){return a.err({message:String(e)})}}}}var M,et=e((()=>{c(),_e(),n(),i(),M=`document-dropped`}));function tt(){let e=h(M);return{drop:$e(e.ipc),dropFiles(t){e.deliver({paths:[...t]})},deliverUnknown:e.deliver,denySubscribe:e.denySubscribe}}var nt=e((()=>{f(),et()})),rt=e((()=>{Ae(),Ee(),ie(),Ce(),we()}));function it(e){S(Array.from({length:N},(t,n)=>({shortcut:{kind:C.PhysicalKey,codes:[`Digit${n+1}`],withCommandKey:!0,withShiftKey:!1},onPress:()=>e(n)})))}var N,at=e((()=>{b(),N=9}));function ot({opened:e,clock:t,ipc:n,operatingSystem:r}){let i=y.activePath(e);return(0,F.jsx)(`div`,{className:`min-h-0 flex-1`,children:y.documents(e).map(e=>{let a=e.path===i;return(0,F.jsx)(`div`,{hidden:!a,className:`h-full`,children:(0,F.jsx)(w,{scope:a?x.Listening:x.Suspended,children:(0,F.jsx)(he,{clock:t,ipc:n,opened:e,operatingSystem:r})})},e.path)})})}function P({clock:e,ports:t,operatingSystem:n}){let{session:i,recentPaths:a,recentFilesFailure:s,actions:c,tabActions:l,commandFailure:u}=Se(t),d=v.failure(i);return it(l.activateAt),v.hasOpenedDocuments(i)?(0,F.jsxs)(`div`,{className:`flex h-screen w-screen flex-col overflow-hidden`,children:[(0,F.jsx)(oe,{opened:i.documents.value,onSelect:l.activate,onClose:l.close,onReorder:l.reorder}),r.isSome(d)&&(0,F.jsx)(je,{failure:d.value}),(0,F.jsx)(ot,{opened:i.documents.value,clock:e,ipc:t.ipc,operatingSystem:n})]}):(0,F.jsx)(`div`,{className:`flex h-screen w-screen flex-col overflow-hidden`,children:(0,F.jsx)(`div`,{className:`min-h-0 flex-1`,children:(0,F.jsx)(De,{attempt:i.attempt,actions:c,recentPaths:a,recentFilesFailure:s,commandFailure:u,operatingSystem:n,renderErrors:e=>(0,F.jsx)(ee,{errors:e,origin:o.UnopenedFile})})})})}var F,st=e((()=>{ke(),s(),m(),rt(),at(),b(),n(),F=t();try{P.displayName=`EditorScreen`,P.__docgenInfo={description:`アプリの画面。1 つも開いていない間は開始画面を、開いていればタブ列と編集画面を出す
+（docs/05-architecture.md「Tauri IPC」/ docs/06-ui.md「画面構成」）。
+
+実物の組み立ては \`app/\` が持つ（rules/architecture.md）。`,displayName:`EditorScreen`,filePath:`/home/runner/work/design-composer/design-composer/src/features/editor/components/editor-screen/index.tsx`,methods:[],props:{clock:{defaultValue:null,declarations:[{fileName:`design-composer/src/features/editor/components/editor-screen/index.tsx`,name:`TypeLiteral`}],description:``,name:`clock`,required:!0,tags:{},type:{name:`Readonly<{ now(): Readonly<{ epochMs: number; }>; subscribeSeconds(listener: () => void): () => void; }>`}},ports:{defaultValue:null,declarations:[{fileName:`design-composer/src/features/editor/components/editor-screen/index.tsx`,name:`TypeLiteral`}],description:``,name:`ports`,required:!0,tags:{},type:{name:`Readonly<{ ipc: Readonly<{ canonicalize(path: FilePath): Promise<Result<FilePath, Readonly<{ kind: DocumentIpcErrorKind; message: string; }>>>; ... 4 more ...; subscribeChanged(listener: (changed: Readonly<...>) => void): Promise<...>; }>; ... 4 more ...; appWindow: Readonly<...>; }>`}},operatingSystem:{defaultValue:null,declarations:[{fileName:`design-composer/src/features/editor/components/editor-screen/index.tsx`,name:`TypeLiteral`}],description:`アプリが動いている OS。`,name:`operatingSystem`,required:!0,tags:{},type:{name:`enum`,raw:`OperatingSystem`,value:[{value:`"mac-os"`},{value:`"other"`}]}}},tags:{}}}catch{}}));function I(e,t){let n=me(e),r=Xe({open:j.chosen(B),save:j.chosen(`/work/untitled.dcmp`)}),i=tt(),a=O(t===void 0?void 0:Te.serialize({recentPaths:t}));return{ports:{ipc:n.ipc,dialog:r.dialog,menu:Fe().menu,drop:i.drop,appState:a.ipc,appWindow:We().appWindow},drop:i}}var L,R,z,B,V,H,U,W,G,K,q,J,Y,X,Z,Q,$;e((()=>{l(),re(),ue(),ce(),Ie(),Ve(),Oe(),Ge(),pe(),Ze(),fe(),te(),nt(),xe(),ge(),st(),{expect:L,screen:R,waitFor:z}=__STORYBOOK_MODULE_TEST__,B=d(`/work/sample.dcmp`),V=d(`/work/settings.dcmp`),H=d(`/work/missing.dcmp`),U={[B]:ne.serialize(le.document(se)),[V]:ae(`settings`)},W=I(U),G=I(U),K=I(U),q=I(U,[B]),J={title:`features/editor/EditorScreen`,component:P,parameters:{layout:`fullscreen`},args:{clock:de().clock,ports:W.ports,operatingSystem:ve.fromNavigator(be)}},Y={name:`開始画面`},X={name:`前回のファイルを開いた直後`,args:{ports:q.ports}},Z={name:`複数開いている`,args:{ports:G.ports},play:async()=>{await z(()=>{L(R.getByRole(`button`,{name:`開く`}).hasAttribute(`disabled`)).toBe(!1)}),G.drop.dropFiles([B,V]),await z(()=>{L(R.getByRole(`navigation`,{name:`開いているドキュメント`})).toBeDefined()})}},Q={name:`開いたまま開けなかった`,args:{ports:K.ports},play:async()=>{await z(()=>{L(R.getByRole(`button`,{name:`開く`}).hasAttribute(`disabled`)).toBe(!1)}),K.drop.dropFiles([B]),await z(()=>{L(R.getByRole(`navigation`,{name:`開いているドキュメント`})).toBeDefined()}),K.drop.dropFiles([H]),await z(()=>{L(R.getByRole(`alert`,{name:`ファイルを開けませんでした`})).toBeDefined()})}},Y.parameters={...Y.parameters,docs:{...Y.parameters?.docs,source:{originalSource:`{
+  name: "開始画面"
+}`,...Y.parameters?.docs?.source},description:{story:`何も開いていない状態の画面。「開く」でサンプルのドキュメントが、
+「新規作成」で雛形のドキュメントが開くところまでここで操作して確認できる。`,...Y.parameters?.docs?.description}}},X.parameters={...X.parameters,docs:{...X.parameters?.docs,source:{originalSource:`{
+  name: "前回のファイルを開いた直後",
+  args: {
+    ports: restored.ports
+  }
+}`,...X.parameters?.docs?.source},description:{story:`前回開いていたファイルが起動時にそのまま開いた状態。`,...X.parameters?.docs?.description}}},Z.parameters={...Z.parameters,docs:{...Z.parameters?.docs,source:{originalSource:`{
+  name: "複数開いている",
+  args: {
+    ports: twoOpened.ports
+  },
+  play: async () => {
+    // 購読が張られる前に落とすと指示が届かないので、張れるまで待つ。
+    await waitFor(() => {
+      expect(screen.getByRole("button", {
+        name: "開く"
+      }).hasAttribute("disabled")).toBe(false);
+    });
+    twoOpened.drop.dropFiles([SamplePath, SettingsPath]);
+    await waitFor(() => {
+      expect(screen.getByRole("navigation", {
+        name: "開いているドキュメント"
+      })).toBeDefined();
+    });
+  }
+}`,...Z.parameters?.docs?.source},description:{story:`2 つ開いた状態。タブ列と上端の帯と 3 ペインの高さの配分は、ここでしか絵にならない
+（タブ列だけのストーリーでは器との合わせ目が映らない）。`,...Z.parameters?.docs?.description}}},Q.parameters={...Q.parameters,docs:{...Q.parameters?.docs,source:{originalSource:`{
+  name: "開いたまま開けなかった",
+  args: {
+    ports: openFailed.ports
+  },
+  play: async () => {
+    await waitFor(() => {
+      expect(screen.getByRole("button", {
+        name: "開く"
+      }).hasAttribute("disabled")).toBe(false);
+    });
+    openFailed.drop.dropFiles([SamplePath]);
+    await waitFor(() => {
+      expect(screen.getByRole("navigation", {
+        name: "開いているドキュメント"
+      })).toBeDefined();
+    });
+    // 置かれていないファイルを落とす。タブは増えず、理由だけが帯に出る。
+    openFailed.drop.dropFiles([MissingPath]);
+    await waitFor(() => {
+      expect(screen.getByRole("alert", {
+        name: "ファイルを開けませんでした"
+      })).toBeDefined();
+    });
+  }
+}`,...Q.parameters?.docs?.source},description:{story:`開いているものがある状態で、別のファイルを開けなかったところ。タブは残したまま
+理由だけを帯で出す。`,...Q.parameters?.docs?.description}}},$=[`Default`,`RestoredDocument`,`MultipleDocuments`,`OpenFailedWhileOpened`]}))();export{Y as Default,Z as MultipleDocuments,Q as OpenFailedWhileOpened,X as RestoredDocument,$ as __namedExportsOrder,J as default};
