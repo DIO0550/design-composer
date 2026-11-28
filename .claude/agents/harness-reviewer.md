@@ -39,4 +39,5 @@ model: opus
 `分類: harness`（判例 `tooling-rule-scope-gap`・判例 `tool-behavior-unverified`）。`.claude/hooks/` `.github/scripts/` `harness/` のスクリプトが対象。
 
 - **ブロックのネスト 3 段まで・条件式に名前を付ける、が対象言語（シェル・Python）を問わず守られているか**（`rules/coding.md`「規約の適用範囲」）
+- **判定・終了の条件が、守りたい事実の代わりの条件を見ていないか**（判例 `harness`「判定・終了の条件が、守りたい事実の代わりの条件を見ていた」）。スキルの収束・打ち切り条件も対象
 - **シェル・CLI・パーサの挙動を前提にした箇所を、小さく再現して確かめたか。** 確かめた跡が差分・Issue になければ、自分で再現して確かめる（`rules/coding.md`「外部の挙動は動かして確かめる」）
