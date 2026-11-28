@@ -82,7 +82,8 @@ description: "design-composer の実装を ゴールの確定 → タスクの�
    - 対話中なら AskUserQuestion で尋ね、**人が答えた種類のラベル**を親が付ける（`gh api -X POST 'repos/{owner}/{repo}/issues/<番号>/labels' -f 'labels[]=<人が答えたラベル>'`。`<人が答えたラベル>` は `flow:bugfix` のようにラベル全体）。複数付いているラベルや表にない値を外すのも、人が答えたときだけにする
    - 人がいない起動（Issue の assign から起動した等）なら、提案と根拠をセッション URL と一緒に Issue に書いて止める
 4. AI が Issue を新規作成するときは、**作成の呼び出しの中で**種類を決め、本文に共通 4 節の `##` 見出しと内容を書く。対応する自リポジトリへの作成では `block-issue-without-flow-kind.sh` が両方を検査する。書式は `.claude/hooks/lib/issue-flow-kind-violations.py` の定数と拒否理由を参照する
-   - (a) 対話中なら AskUserQuestion で尋ね、人が答えた `flow:*` を作成の呼び出しのラベルに含める
+   - 人と対話でき、通常の Issue または Epic を起票する場合は、作成前に [`grill`](../grill/SKILL.md) で本文と判断を詰める。既に `grill` で確定した内容は引き継ぐ
+   - (a) 対話中の通常の Issue は、種類が未確定なら尋ねる。人が答えた `flow:*` を作成の呼び出しのラベルに含める
    - (b) 人がいない起動なら、本文に提案の行を書く
    - (c) `implementation-flow` に通さない Issue（`harness-growth` の介入・棚卸し・Epic など）は、本文に通さない行を書く。Epic なら、作成の呼び出しのラベルに `epic` も含める
 5. **親が自分で選んだ `flow:*` ラベルは付けない・外さない。** 親は提案までとし、決めるのは人にする。選ぶ側と手順が軽くなって得をする側が同じだと軽い側へ倒れる（`implementation-flow` を通さず検証エージェントだけを呼んだ実例が `harness/case-law/process.md`「単発（まだ語彙にしていない）」の pr-473 にある）。「なければ `flow:feature`」のような既定値も同じ理由で置かない（ラベルのない Issue でバグ修正の再現テストが抜けるため）
